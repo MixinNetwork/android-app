@@ -956,13 +956,9 @@ class ConversationFragment() :
                             .show()
                     }
                 } else {
-                    if (checkFloatingPermission()) {
-                        checkVoicePermissions {
-                            initAudioSwitch()
-                            voiceCall()
-                        }
-                    } else {
-                        requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+                    checkVoicePermissions {
+                        initAudioSwitch()
+                        voiceCall()
                     }
                 }
             }
@@ -1893,13 +1889,9 @@ class ConversationFragment() :
                     .show()
                 return@setOnClickListener
             }
-            if (checkFloatingPermission()) {
-                checkBlueToothConnectPermissions {
-                    initAudioSwitch()
-                    receiveInvite(requireContext(), conversationId, playRing = false)
-                }
-            } else {
-                requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+            checkBlueToothConnectPermissions {
+                initAudioSwitch()
+                receiveInvite(requireContext(), conversationId, playRing = false)
             }
         }
         callState.observe(viewLifecycleOwner) { state ->
@@ -2845,13 +2837,9 @@ class ConversationFragment() :
                                         .show()
                                 }
                             } else {
-                                if (checkFloatingPermission()) {
-                                    checkVoicePermissions {
-                                        initAudioSwitch()
-                                        voiceCall()
-                                    }
-                                } else {
-                                    requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+                                checkVoicePermissions {
+                                    initAudioSwitch()
+                                    voiceCall()
                                 }
                             }
                         }
@@ -3569,12 +3557,8 @@ class ConversationFragment() :
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             RxPermissions(this)
                 .request(Manifest.permission.BLUETOOTH_CONNECT)
-                .autoDispose(stopScope).subscribe({ granted ->
-                    if (granted) {
-                        callback.invoke()
-                    } else {
-                        context?.openPermissionSetting()
-                    }
+                .autoDispose(stopScope).subscribe({
+                    callback.invoke()
                 }, {
                     reportException(it)
                 })
@@ -3585,18 +3569,10 @@ class ConversationFragment() :
 
     private fun checkVoicePermissions(callback: () -> Unit) {
         RxPermissions(this)
-            .request(
-                * (
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT)
-                    } else {
-                        arrayOf(Manifest.permission.RECORD_AUDIO)
-                    }
-                ),
-            )
+            .request(Manifest.permission.RECORD_AUDIO)
             .autoDispose(stopScope).subscribe({ granted ->
                 if (granted) {
-                    callback.invoke()
+                    checkBlueToothConnectPermissions(callback)
                 } else {
                     context?.openPermissionSetting()
                 }
@@ -3608,7 +3584,7 @@ class ConversationFragment() :
     private var initAudioSwitch = false
 
     private fun initAudioSwitch() {
-        if (!requireContext().isAuto() && !initAudioSwitch && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED)) {
+        if (!requireContext().isAuto() && !initAudioSwitch) {
             initAudioSwitch = true
             audioSwitch.start()
         }

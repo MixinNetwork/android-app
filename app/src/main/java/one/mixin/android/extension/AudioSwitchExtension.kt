@@ -1,5 +1,6 @@
 package one.mixin.android.extension
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
@@ -18,6 +19,7 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import androidx.core.content.ContextCompat
 import one.mixin.android.util.reportException
 import one.mixin.android.webrtc.TAG_AUDIO
 import timber.log.Timber
@@ -475,6 +477,10 @@ class AudioSwitch(
     }
 
     private fun bluetoothHeadsetDeviceLocked(): AudioDevice.BluetoothHeadset? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+        ) return null
+
         val name = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             communicationDevices().firstOrNull { it.isBluetoothHeadset() }?.productName?.toString()
         } else {
