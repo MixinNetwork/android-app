@@ -9,6 +9,7 @@ import androidx.room3.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.withNonNullTradingFields
 import one.mixin.android.db.BaseDao
 import org.threeten.bp.OffsetDateTime
 
@@ -30,7 +31,9 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
             val updatedAt = current.updatedAt?.let(OffsetDateTime::parse)
             if (updatedAt != null && OffsetDateTime.parse(entity.updatedAt).isBefore(updatedAt)) return
         }
-        insert(if (entity.walletId.isBlank()) entity.copy(walletId = current?.walletId.orEmpty()) else entity)
+        insert(entity.withNonNullTradingFields().let {
+            if (it.walletId.isBlank()) it.copy(walletId = current?.walletId.orEmpty()) else it
+        })
     }
 
     @Query("""

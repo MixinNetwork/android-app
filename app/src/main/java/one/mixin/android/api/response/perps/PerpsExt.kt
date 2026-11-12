@@ -28,12 +28,17 @@ fun PerpsPositionItem.toPosition(): PerpsPosition {
         markPrice = markPrice ?: "0",
         unrealizedPnl = unrealizedPnl ?: "0",
         estimatedCloseFee = estimatedCloseFee,
-        leaderPositionId = leaderPositionId,
+        leaderPositionId = leaderPositionId.orEmpty(),
         fundingAmount = fundingAmount,
-        maxDecreaseMargin = maxDecreaseMargin,
+        maxDecreaseMargin = maxDecreaseMargin.orEmpty(),
         roe = roe ?: "0",
         walletId = walletId ?: "",
         createdAt = createdAt ?: "",
         updatedAt = updatedAt ?: "",
     )
 }
+
+fun PerpsPosition.withNonNullTradingFields(): PerpsPosition = copy(
+    leaderPositionId = (leaderPositionId as String?).orEmpty(),
+    maxDecreaseMargin = (maxDecreaseMargin as String?).orEmpty(),
+)

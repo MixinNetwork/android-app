@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 13,
-    "identityHash": "17269850dfebfa31390941f2b5950228",
+    "identityHash": "b291a62d04bfb85ee6e2cfa05f11f8e2",
     "entities": [
       {
         "tableName": "positions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `margin` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `state` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `unrealized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `settle_asset_id` TEXT NOT NULL, `open_pay_amount` TEXT NOT NULL, `open_pay_asset_id` TEXT NOT NULL, `take_profit_price` TEXT, `stop_loss_price` TEXT, `liquidation_price` TEXT, `bot_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `funding_amount` TEXT, `leader_position_id` TEXT, `estimated_close_fee` TEXT DEFAULT '', `max_decrease_margin` TEXT, PRIMARY KEY(`position_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `quantity` TEXT NOT NULL, `entry_price` TEXT NOT NULL, `margin` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `state` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `unrealized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `settle_asset_id` TEXT NOT NULL, `open_pay_amount` TEXT NOT NULL, `open_pay_asset_id` TEXT NOT NULL, `take_profit_price` TEXT, `stop_loss_price` TEXT, `liquidation_price` TEXT, `bot_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `funding_amount` TEXT, `leader_position_id` TEXT NOT NULL DEFAULT '', `estimated_close_fee` TEXT DEFAULT '', `max_decrease_margin` TEXT NOT NULL DEFAULT '', PRIMARY KEY(`position_id`))",
         "fields": [
           {
             "fieldPath": "positionId",
@@ -139,7 +139,9 @@
           {
             "fieldPath": "leaderPositionId",
             "columnName": "leader_position_id",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
           },
           {
             "fieldPath": "estimatedCloseFee",
@@ -150,7 +152,9 @@
           {
             "fieldPath": "maxDecreaseMargin",
             "columnName": "max_decrease_margin",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
           }
         ],
         "primaryKey": {
@@ -573,7 +577,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '17269850dfebfa31390941f2b5950228')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b291a62d04bfb85ee6e2cfa05f11f8e2')"
     ]
   }
 }

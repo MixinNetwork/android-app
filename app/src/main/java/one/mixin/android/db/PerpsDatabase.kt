@@ -154,8 +154,8 @@ abstract class PerpsDatabase : RoomDatabase() {
         val MIGRATION_12_13 =
             object : Migration(12, 13) {
                 override suspend fun migrate(connection: SQLiteConnection) {
-                    connection.execSQL("ALTER TABLE `positions` ADD COLUMN `leader_position_id` TEXT")
-                    connection.execSQL("ALTER TABLE `positions` ADD COLUMN `max_decrease_margin` TEXT")
+                    connection.execSQL("ALTER TABLE `positions` ADD COLUMN `leader_position_id` TEXT NOT NULL DEFAULT ''")
+                    connection.execSQL("ALTER TABLE `positions` ADD COLUMN `max_decrease_margin` TEXT NOT NULL DEFAULT ''")
                 }
             }
 

@@ -279,8 +279,8 @@ class PerpsMigrationTest {
         db.query("SELECT margin, leader_position_id, max_decrease_margin FROM positions WHERE position_id = 'position-1'").use { cursor ->
             assertTrue(cursor.moveToFirst())
             assertEquals("100", cursor.getString(0))
-            assertTrue(cursor.isNull(1))
-            assertTrue(cursor.isNull(2))
+            assertEquals("", cursor.getString(1))
+            assertEquals("", cursor.getString(2))
         }
     }
 
