@@ -34,6 +34,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.PopupWindow
@@ -1782,6 +1783,61 @@ class ConversationFragment() :
         binding.groupClose.setOnClickListener {
             requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(conversationId, false)
             binding.groupFlag.isVisible = false
+        }
+        binding.tapJoinView.root.apply {
+            val container = parent as View
+            val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+            val location = IntArray(2)
+            var downX = 0f
+            var downY = 0f
+            var startX = 0f
+            var startY = 0f
+            var dragging = false
+
+            fun constrainPosition() {
+                if (!isLaidOut) return
+                container.getLocationInWindow(location)
+                val maxX = (container.width - width).coerceAtLeast(0).toFloat()
+                val maxY = minOf(container.height, rootView.height / 2 - location[1]) - height
+                val minY = minOf(10.dp, maxY.coerceAtLeast(0)).toFloat()
+                x = x.coerceIn(0f, maxX)
+                y = y.coerceIn(minY, maxY.coerceAtLeast(0).toFloat())
+            }
+
+            addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> constrainPosition() }
+            container.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> constrainPosition() }
+            setOnTouchListener { view, event ->
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        downX = event.rawX
+                        downY = event.rawY
+                        startX = x
+                        startY = y
+                        dragging = false
+                        parent.requestDisallowInterceptTouchEvent(true)
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val dx = event.rawX - downX
+                        val dy = event.rawY - downY
+                        if (!dragging && (abs(dx) > touchSlop || abs(dy) > touchSlop)) {
+                            dragging = true
+                        }
+                        if (dragging) {
+                            x = startX + dx
+                            y = startY + dy
+                            constrainPosition()
+                        }
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        parent.requestDisallowInterceptTouchEvent(false)
+                        if (!dragging) view.performClick()
+                    }
+                    MotionEvent.ACTION_CANCEL -> {
+                        parent.requestDisallowInterceptTouchEvent(false)
+                    }
+                }
+                true
+            }
         }
         binding.tapJoinView.root.setOnClickListener {
             if (!requireContext().networkConnected()) {
