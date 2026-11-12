@@ -10,7 +10,10 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.view.View
 import one.mixin.android.extension.dp
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.sin
 
 class GroupCallEdgeDrawable(private val banner: View) : Drawable() {
     private val bannerBackground = banner.background.mutate() as GradientDrawable
@@ -32,7 +35,7 @@ class GroupCallEdgeDrawable(private val banner: View) : Drawable() {
         val distance = (if (left) banner.x else maxX - banner.x).coerceAtLeast(0f)
         val progress = (distance / attachmentDistance).coerceIn(0f, 1f)
         val radius = banner.height / 2f
-        val attachedRadius = radius * progress
+        val attachedRadius = if (distance == 0f) 0f else radius
         val leftRadius = if (left) attachedRadius else radius
         val rightRadius = if (left) radius else attachedRadius
         radii[0] = leftRadius
@@ -50,16 +53,22 @@ class GroupCallEdgeDrawable(private val banner: View) : Drawable() {
         if (distance > 0f && progress < 1f) {
             val edgeX = if (left) 0f else container.width.toFloat()
             val direction = if (left) 1f else -1f
-            val joinX = edgeX + direction * (distance + attachedRadius)
+            val angle = PI / 2 * (1f - progress * 0.75f)
+            val sinAngle = sin(angle).toFloat()
+            val cosAngle = cos(angle).toFloat()
+            val joinX = edgeX + direction * (distance + radius * (1f - cosAngle))
             val centerY = banner.y + radius
             val anchorHalf = radius * (1f - progress)
-            val bodyHalf = radius * (1f - progress * 0.5f)
-            val neckHalf = anchorHalf * (1f - progress) * 0.5f
-            val controlX = edgeX + (joinX - edgeX) * 0.5f
+            val bodyHalf = radius * sinAngle
+            val handleLength = min(radius, bodyHalf * 0.75f / cosAngle.coerceAtLeast(0.01f))
+            val edgeControlX = edgeX + direction * distance * 0.35f
+            // Match the pill's circular tangent at both ends of the bridge.
+            val bodyControlX = joinX - direction * sinAngle * handleLength
+            val bodyControlHalf = bodyHalf - cosAngle * handleLength
             bridge.moveTo(edgeX, centerY - anchorHalf)
-            bridge.cubicTo(controlX, centerY - neckHalf, controlX, centerY - neckHalf, joinX, centerY - bodyHalf)
+            bridge.cubicTo(edgeControlX, centerY - anchorHalf, bodyControlX, centerY - bodyControlHalf, joinX, centerY - bodyHalf)
             bridge.lineTo(joinX, centerY + bodyHalf)
-            bridge.cubicTo(controlX, centerY + neckHalf, controlX, centerY + neckHalf, edgeX, centerY + anchorHalf)
+            bridge.cubicTo(bodyControlX, centerY + bodyControlHalf, edgeControlX, centerY + anchorHalf, edgeX, centerY + anchorHalf)
             bridge.close()
 
             body.rewind()
