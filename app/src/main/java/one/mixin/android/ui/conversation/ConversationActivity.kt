@@ -202,10 +202,9 @@ class ConversationActivity : BlazeBaseActivity() {
             recipientId: String? = null,
             keyword: String? = null,
         ) {
-            val mainIntent = Intent(context, ConversationActivity::class.java)
-            mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             val conversationIntent = putIntent(context, conversationId, recipientId, messageId, keyword)
-            context.startActivities(arrayOf(mainIntent, conversationIntent))
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            context.startActivity(conversationIntent)
         }
     }
 }
