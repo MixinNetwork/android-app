@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -68,11 +69,15 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -200,7 +205,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val reduceInput = when {
             reduceByPercent == inputIsPercentage -> amount
             reduceByPercent -> percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString().orEmpty()
-            else -> amountValue?.let(::marginReductionAmountInput).orEmpty()
+            else -> amountValue?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
         }
         val tokenBalance = perpsMarginTokenBalance(selectedToken)
         val insufficientBalance = increase && amountValue != null && tokenBalance != null && amountValue > tokenBalance
@@ -471,7 +476,6 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         amount = amountValue,
                         percentage = percentage,
                         margin = reductionBase?.toBigDecimalOrNull(),
-                        decimalPlaces = if (reduceByPercent) 0 else if (hasServerReductionLimit) TRADE_INPUT_MAX_DECIMAL_PLACES else 2,
                         errorText = reductionLimitError ?: errorText,
                         enabled = !loading,
                         onInputChanged = ::changeAmount,
@@ -483,10 +487,6 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             }
                         },
                         onToggleMode = {
-                            if (reduceByPercent) {
-                                amount = amountValue?.let(::marginReductionAmountInput).orEmpty()
-                            }
-                            inputIsPercentage = false
                             reduceByPercent = !reduceByPercent
                             error = null
                         },
@@ -698,12 +698,8 @@ internal fun PerpsReductionInput(
         inputValue <= BigDecimal.ZERO -> MixinAppTheme.colors.textRemarks
         else -> MixinAppTheme.colors.textPrimary
     }
-    val inputTextStyle = TextStyle(fontSize = 36.sp, lineHeight = 40.sp, platformStyle = PlatformTextStyle(includeFontPadding = false), fontWeight = FontWeight.W600, color = inputColor, textAlign = TextAlign.Center)
     val textMeasurer = rememberTextMeasurer()
     val placeholder = "0"
-    val inputWidth = with(LocalDensity.current) {
-        textMeasurer.measure(input.ifEmpty { placeholder }, style = inputTextStyle, softWrap = false).size.width.toDp() + 2.dp
-    }
     LaunchedEffect(Unit) {
         if (autoFocus) {
             focusRequester.requestFocus()
@@ -716,12 +712,8 @@ internal fun PerpsReductionInput(
             onPercentageSelected(value)
             return
         }
-        if (isPercentage) {
-            updateInput(formatInput(value))
-        } else {
-            val selected = reduceMarginAmount(margin?.toPlainString(), value.toPlainString(), true) ?: BigDecimal.ZERO
-            updateInput(marginReductionAmountInput(selected))
-        }
+        val selected = if (isPercentage) value else reduceMarginAmount(margin?.toPlainString(), value.toPlainString(), true) ?: BigDecimal.ZERO
+        updateInput(formatInput(selected))
     }
     Column(
         modifier = Modifier
@@ -740,32 +732,48 @@ internal fun PerpsReductionInput(
             ) {
                 Icon(painterResource(R.drawable.ic_perps_minus), stringResource(R.string.perps_reduce_action), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
             }
-            Row(modifier = Modifier.weight(1f, fill = false), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                if (!isPercentage) Text(PERPS_USD_SYMBOL, style = inputTextStyle)
-                BasicTextField(
-                    value = textFieldValue,
-                    onValueChange = { value ->
-                        val text = value.text
-                        if (text.length <= 40 && text.all { it in '0'..'9' || (decimalPlaces > 0 && it == '.') } && text.count { it == '.' } <= 1 &&
-                            text.substringAfter('.', "").length <= decimalPlaces) {
-                            textFieldValue = value
-                            if (text != input) onInputChanged(text)
-                        }
-                    },
-                    enabled = enabled,
-                    singleLine = true,
-                    modifier = Modifier.widthIn(min = 20.dp, max = 160.dp).width(inputWidth).focusRequester(focusRequester),
-                    textStyle = inputTextStyle,
-                    keyboardOptions = KeyboardOptions(keyboardType = if (decimalPlaces == 0) KeyboardType.Number else KeyboardType.Decimal),
-                    cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-                    decorationBox = { field ->
-                        Box(contentAlignment = Alignment.Center) {
-                            if (input.isEmpty()) Text(placeholder, style = inputTextStyle)
-                            field()
-                        }
-                    },
+            BoxWithConstraints(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                val shown = input.ifEmpty { placeholder }
+                val sign = if (isPercentage) "%" else PERPS_USD_SYMBOL
+                val fontSize = marginInputFontSize(shown + sign, maxWidth, textMeasurer, LocalDensity.current)
+                val inputTextStyle = TextStyle(
+                    fontSize = fontSize,
+                    lineHeight = (fontSize.value * 40f / 36f).sp,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false),
+                    fontWeight = FontWeight.W600,
+                    color = inputColor,
+                    textAlign = TextAlign.Center,
                 )
-                if (isPercentage) Text("%", style = inputTextStyle)
+                val inputWidth = with(LocalDensity.current) {
+                    textMeasurer.measure(shown, style = inputTextStyle, softWrap = false).size.width.toDp() + 2.dp
+                }
+                Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                    if (!isPercentage) Text(sign, style = inputTextStyle)
+                    BasicTextField(
+                        value = textFieldValue,
+                        onValueChange = { value ->
+                            val text = value.text
+                            if (text.length <= 40 && text.all { it in '0'..'9' || (decimalPlaces > 0 && it == '.') } && text.count { it == '.' } <= 1 &&
+                                text.substringAfter('.', "").length <= decimalPlaces) {
+                                textFieldValue = value
+                                if (text != input) onInputChanged(text)
+                            }
+                        },
+                        enabled = enabled,
+                        singleLine = true,
+                        modifier = Modifier.widthIn(min = 20.dp).width(inputWidth).focusRequester(focusRequester),
+                        textStyle = inputTextStyle,
+                        keyboardOptions = KeyboardOptions(keyboardType = if (decimalPlaces == 0) KeyboardType.Number else KeyboardType.Decimal),
+                        cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+                        decorationBox = { field ->
+                            Box(contentAlignment = Alignment.Center) {
+                                if (input.isEmpty()) Text(placeholder, style = inputTextStyle)
+                                field()
+                            }
+                        },
+                    )
+                    if (isPercentage) Text(sign, style = inputTextStyle)
+                }
             }
             IconButton(
                 onClick = { updateInput(formatInput((inputValue + BigDecimal.ONE).min(maximum))) },
@@ -877,6 +885,26 @@ internal fun PerpsReductionInput(
 internal fun syncPerpsMarginInput(value: TextFieldValue, input: String): TextFieldValue =
     if (value.text == input) value else TextFieldValue(input, TextRange(input.length))
 
+private fun marginInputFontSize(text: String, maxWidth: Dp, measurer: TextMeasurer, density: Density): TextUnit {
+    var size = 36f
+    while (size > 12f) {
+        val width = with(density) {
+            measurer.measure(
+                text,
+                style = TextStyle(
+                    fontSize = size.sp,
+                    fontWeight = FontWeight.W600,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false),
+                ),
+                softWrap = false,
+            ).size.width.toDp() + 12.dp
+        }
+        if (width <= maxWidth) break
+        size -= 1f
+    }
+    return size.sp
+}
+
 @Preview(name = "100%", widthDp = 360, heightDp = 560, locale = "zh")
 @Composable
 private fun PerpsMarginPercentagePreview() {
@@ -951,8 +979,6 @@ private fun PerpsMarginPreviewContent(initialInput: String, initialIsPercentage:
                     inputIsPercentage = isPercentage
                 },
                 onToggleMode = {
-                    input = amount?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
-                    inputIsPercentage = false
                     isPercentage = !isPercentage
                 },
             )

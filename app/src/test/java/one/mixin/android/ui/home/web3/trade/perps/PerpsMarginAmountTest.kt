@@ -163,11 +163,11 @@ class PerpsMarginAmountTest {
     @Test
     fun percentageSelectionFillsTwoDollarDecimalsWithoutExceedingTheLimit() {
         val maximum = BigDecimal("3.99006413")
-        val input = marginReductionAmountInput(requireNotNull(reduceMarginAmount(maximum.toPlainString(), "100", true)))
+        val input = formatMarginAdjustmentInput(requireNotNull(reduceMarginAmount(maximum.toPlainString(), "100", true)), false)
         assertEquals("3.99", input)
         assertTrue(requireNotNull(reduceMarginAmount(maximum.toPlainString(), input, false)) <= maximum)
-        assertEquals("4", marginReductionAmountInput(BigDecimal("4.00064131")))
-        assertEquals("0.00006413", marginReductionAmountInput(BigDecimal("0.00006413")))
+        assertEquals("4", formatMarginAdjustmentInput(BigDecimal("4.00064131"), false))
+        assertEquals("0", formatMarginAdjustmentInput(BigDecimal("0.00006413"), false))
     }
 
     @Test
