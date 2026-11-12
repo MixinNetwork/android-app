@@ -1410,7 +1410,7 @@ private fun OpenPositionCard(
                 color = MixinAppTheme.colors.textMinor
             )
             if (!position.leaderPositionId.isNullOrBlank()) {
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(4.dp))
                 val copyingColor = colorResource(R.color.text_quote_orange)
                 Text(
                     text = stringResource(R.string.perps_copy_trade),
