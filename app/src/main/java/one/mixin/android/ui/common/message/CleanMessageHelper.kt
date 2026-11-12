@@ -8,6 +8,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.deleteMessageByIds
 import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.db.flow.MessageFlow
+import one.mixin.android.extension.getFilePath
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.deleteByMessageIds
 import one.mixin.android.job.AttachmentDeleteJob
@@ -19,7 +20,9 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isTranscript
+import java.io.File
 import javax.inject.Inject
+import timber.log.Timber
 
 class CleanMessageHelper
     @Inject
@@ -70,9 +73,11 @@ class CleanMessageHelper
             conversationId: String,
             messageItems: List<MediaMessageMinimal>,
         ) {
+            val context = MixinApplication.appContext
             messageItems.forEach { item ->
-                item.absolutePath(MixinApplication.appContext, conversationId, item.mediaUrl)?.takeIf { it.isNotBlank() }?.let {
-                    jobManager.addJobInBackground(AttachmentDeleteJob(it))
+                item.absolutePath(context, conversationId, item.mediaUrl)?.takeIf { it.isNotBlank() }?.getFilePath()?.let {
+                    val file = File(it)
+                    if (!file.delete() && file.exists()) Timber.e("Failed to delete ${file.absolutePath}")
                 }
             }
             deleteMessages(conversationId, messageItems.map { it.messageId })

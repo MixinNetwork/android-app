@@ -2,21 +2,32 @@
 
 package one.mixin.android.ui.web
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Bundle
+import android.view.View
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
+import androidx.core.animation.doOnEnd
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityWebBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isSupportBotPage
 import one.mixin.android.extension.openCustomerServiceIfMatched
 import one.mixin.android.extension.supportsS
 import one.mixin.android.session.Session
@@ -85,8 +96,18 @@ class WebActivity : BaseActivity() {
 
     private lateinit var binding: ActivityWebBinding
 
+    private val supportPage by lazy {
+        intent.extras?.let {
+            isSupportBotPage(it.getParcelableCompat(WebFragment.ARGS_APP, App::class.java)?.appId, it.getString(WebFragment.URL).orEmpty())
+        } == true
+    }
+    private val sheetDim by lazy { Color.BLACK.toDrawable().apply { alpha = 0 } }
+    private var sheetDismissing = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (intent.extras != null) {
+        if (supportPage) {
+            overridePendingTransition(0, 0)
+        } else if (intent.extras != null) {
             overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
         } else {
             overridePendingTransition(R.anim.fade_in, R.anim.stay)
@@ -95,7 +116,9 @@ class WebActivity : BaseActivity() {
         binding = ActivityWebBinding.inflate(layoutInflater)
         setContentView(binding.root)
         SystemUIManager.setSafeContainerPadding(window, binding.container, colorFromAttribute(R.attr.bg_white))
-        getScreenshot()?.let {
+        if (supportPage) {
+            showSupportSheet()
+        } else getScreenshot()?.let {
             supportsS({
                 binding.background.background = it.toDrawable(resources)
                 binding.background.setRenderEffect(RenderEffect.createBlurEffect(10f, 10f, Shader.TileMode.MIRROR))
@@ -104,7 +127,7 @@ class WebActivity : BaseActivity() {
             })
         }
         binding.container.setOnClickListener {
-            onBackPressed()
+            if (supportPage) finish() else onBackPressed()
         }
 
         binding.six.setOnCloseListener(
@@ -220,12 +243,48 @@ class WebActivity : BaseActivity() {
         handleExtras(intent)
     }
 
+    // Match the enter and exit motion of BottomSheet used by the legacy support sheet
+    private fun showSupportSheet() {
+        window.setBackgroundDrawable(sheetDim)
+        binding.container.background = null
+        binding.close.isVisible = false
+        binding.clear.isVisible = false
+        binding.six.isVisible = false
+        binding.container.doOnPreDraw { container ->
+            container.translationY = container.height.toFloat()
+            AnimatorSet().apply {
+                playTogether(
+                    ObjectAnimator.ofFloat(container, View.TRANSLATION_Y, 0f),
+                    ObjectAnimator.ofInt(sheetDim, "alpha", 153),
+                )
+                duration = 200
+                startDelay = 20
+                interpolator = DecelerateInterpolator()
+            }.start()
+        }
+    }
+
     private var isExpand = false
 
     override fun finish() {
+        if (supportPage && !sheetDismissing && ::binding.isInitialized) {
+            sheetDismissing = true
+            AnimatorSet().apply {
+                playTogether(
+                    ObjectAnimator.ofFloat(binding.container, View.TRANSLATION_Y, binding.container.height.toFloat()),
+                    ObjectAnimator.ofInt(sheetDim, "alpha", 0),
+                )
+                duration = 180
+                interpolator = AccelerateInterpolator()
+                doOnEnd { finish() }
+            }.start()
+            return
+        }
         collapse()
         super.finish()
-        if (isExpand) {
+        if (supportPage) {
+            overridePendingTransition(0, 0)
+        } else if (isExpand) {
             overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)
         } else {
             overridePendingTransition(R.anim.stay, R.anim.fade_out)
