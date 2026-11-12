@@ -2,9 +2,9 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
-import one.mixin.android.db.deleteMessageById
+import one.mixin.android.db.deleteMessageByIds
 import one.mixin.android.db.flow.MessageFlow
-import one.mixin.android.fts.deleteByMessageId
+import one.mixin.android.fts.deleteByMessageIds
 import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isAttachment
@@ -21,9 +21,9 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
 
     override fun onRun() {
         val cIds = messageDao.findConversationsByMessages(messageIds)
+        mixinDatabase.deleteMessageByIds(messageIds)
+        messageIds.chunked(500).forEach { ids -> ftsDatabase.deleteByMessageIds(ids) }
         messageIds.forEach { messageId ->
-            mixinDatabase.deleteMessageById(messageId)
-            ftsDatabase.deleteByMessageId(messageId)
             transcriptMessageDao.getTranscript(messageId).forEach { transcriptMessage ->
                 if (transcriptMessage.isAttachment()) {
                     transcriptMessageDao.delete(transcriptMessage)

@@ -99,7 +99,7 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                                             (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text))
                                                 .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                                         }.apply {
-                                            snackbar?.config(anchorView.context)
+                                            config(anchorView.context)
                                         }
                                 snackbar?.show()
                                 distance = 0

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="perps_realized_pnl_tip">未平倉的合約不計入統計</string>
+    <string name="mixin_support">Mixin 客服</string>
+    <string name="real_people_real_support">真人客服，隨時為您服務。</string>
 </resources>
