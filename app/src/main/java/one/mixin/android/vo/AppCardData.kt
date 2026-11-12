@@ -89,11 +89,12 @@ fun AppCardData.shareDataErrorReasons(): List<String> {
         reasons.add("coverSize=${cover?.width}x${cover?.height}")
     }
     val titleLength = title?.length ?: 0
-    if (titleLength !in APP_CARD_TITLE_MIN_LENGTH..APP_CARD_TITLE_MAX_LENGTH) {
+    val descriptionLength = description?.length ?: 0
+    val emptyContent = !oldVersion && titleLength == 0 && descriptionLength == 0
+    if (!emptyContent && titleLength !in APP_CARD_TITLE_MIN_LENGTH..APP_CARD_TITLE_MAX_LENGTH) {
         reasons.add("titleLength=$titleLength")
     }
-    val descriptionLength = description?.length ?: 0
-    if (descriptionLength !in APP_CARD_DESCRIPTION_MIN_LENGTH..APP_CARD_DESCRIPTION_MAX_LENGTH) {
+    if (!emptyContent && descriptionLength !in APP_CARD_DESCRIPTION_MIN_LENGTH..APP_CARD_DESCRIPTION_MAX_LENGTH) {
         reasons.add("descriptionLength=$descriptionLength")
     }
     return reasons
