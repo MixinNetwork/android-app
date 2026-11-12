@@ -6,6 +6,7 @@ import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import one.mixin.android.db.WalletDatabase
@@ -38,6 +39,31 @@ class LimitOrderPagingTest {
     @AfterTest
     fun tearDown() {
         database.close()
+    }
+
+    @Test
+    fun tradeMenuCountsOnlyPendingLimitOrdersForCurrentWallet() = runBlocking {
+        val dao = database.orderDao()
+        val walletId = order().walletId
+        assertEquals(0, dao.observePendingOrderCount(walletId, "limit").first())
+        assertEquals(0, dao.observePendingOrderCount(walletId, "swap").first())
+        val pendingStates = listOf("created", "pricing", "quoting", "pending")
+        val otherStates = listOf("settled", "success", "expired", "cancelled", "canceled", "failed", "refunded", "cancelling")
+        dao.insertListSuspend(
+            (pendingStates + otherStates).map { state -> order().copy(orderId = state, state = state) } + listOf(
+                order().copy(orderId = "swap", orderType = "swap"),
+                order().copy(orderId = "swap-settled", orderType = "swap", state = "settled"),
+                order().copy(orderId = "swap-other-wallet", orderType = "swap", walletId = "other"),
+                order().copy(orderId = "other-wallet", walletId = "other"),
+            ),
+        )
+        assertEquals(pendingStates.size, dao.observePendingOrderCount(walletId, "limit").first())
+        assertEquals(1, dao.observePendingOrderCount(walletId, "swap").first())
+        val filter = OrderFilterParams(walletIds = listOf(walletId), orderTypes = listOf("limit"), statuses = pendingStates)
+        val page = load(LimitOrderDataProvider.allOrders(database, filter))
+        assertEquals(pendingStates.toSet(), page.data.map { it.orderId }.toSet())
+        dao.insertListSuspend(pendingStates.map { state -> order().copy(orderId = state, state = "settled") })
+        assertEquals(0, dao.observePendingOrderCount(walletId, "limit").first())
     }
 
     @Test

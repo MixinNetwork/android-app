@@ -9,7 +9,6 @@ import androidx.paging.PagingSource
 import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
@@ -552,20 +551,6 @@ class ConversationRepository
         suspend fun getConversationNameById(cid: String) = conversationDao.getConversationNameById(cid)
 
         // DELETE
-        fun deleteMediaMessageByConversationAndCategory(
-            conversationId: String,
-            signalCategory: String,
-            plainCategory: String,
-            encryptedCategory: String,
-        ) {
-            val count = messageDao.countDeleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
-            repeat((count / DB_DELETE_LIMIT) + 1) {
-                val ids = messageDao.findMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
-                appDatabase.deleteMessageByIds(ids)
-                MessageFlow.delete(conversationId, ids)
-            }
-        }
-
         suspend fun findTranscriptIdByConversationId(conversationId: String) = messageDao.findTranscriptIdByConversationId(conversationId)
 
         suspend fun createSuspend(request: ConversationRequest) = conversationService.createSuspend(request)

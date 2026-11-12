@@ -13,4 +13,6 @@
     <string name="group_disappearing_message_disabled_editable">本羣尚未啓用限時消息。輕觸修改設置或瞭解更多。</string>
     <string name="chat_disappearing_message_enabled_editable">本會話已將限時消息時長設置為 %1$s。輕觸修改設置或瞭解更多。</string>
     <string name="chat_disappearing_message_disabled_editable">本會話尚未啓用限時消息。輕觸修改設置或瞭解更多。</string>
+    <string name="mixin_support">Mixin 客服</string>
+    <string name="real_people_real_support">真人客服，隨時為您服務。</string>
 </resources>
