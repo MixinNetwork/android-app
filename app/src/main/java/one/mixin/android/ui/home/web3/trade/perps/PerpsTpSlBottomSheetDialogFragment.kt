@@ -366,6 +366,22 @@ private fun PerpsTpSlContent(
         )
     }
 
+    var percentInitialized by rememberSaveable(initialPrice, mode.name) {
+        mutableStateOf(normalizedInitialPrice.isBlank() || pnlBasis != null)
+    }
+    LaunchedEffect(pnlBasis, percentInitialized) {
+        if (!percentInitialized && pnlBasis != null) {
+            percentFieldValue = textFieldValueAtEnd(
+                normalizePercentInput(derivePercentMagnitudeInput(normalizedInitialPrice, pnlBasis, isLong))
+            )
+            isProfitPnl = normalizedInitialPrice.toBigDecimalOrNull()
+                ?.let { pnlBasis.pnlAt(it, isLong)?.signedPnl }
+                ?.let { it >= BigDecimal.ZERO }
+                ?: isTakeProfit
+            percentInitialized = true
+        }
+    }
+
     val percentMagnitudeInput = percentFieldValue.text
     val priceInput = if (inputType == InputType.PNL) {
         percentToPriceInput(
@@ -397,6 +413,7 @@ private fun PerpsTpSlContent(
         priceScale = safePriceScale,
     )
     val errorText = if (inputType == InputType.PNL) percentErrorText else priceErrorText
+    val canApply = errorText == null && percentInitialized
     val currentPriceText = formatPerpsPrice(currentPriceValue, safePriceScale)
     val entryPriceText = remember(entryPriceValue) {
         entryPriceValue?.let { formatPerpsPrice(it, safePriceScale) }
@@ -464,7 +481,7 @@ private fun PerpsTpSlContent(
     }
 
     fun selectInputType(newType: InputType) {
-        if (newType == inputType) return
+        if (newType == inputType || pnlBasis == null) return
         if (newType == InputType.PRICE) {
             priceFieldValue = textFieldValueAtEnd(priceInput)
         } else {
@@ -472,7 +489,7 @@ private fun PerpsTpSlContent(
                 normalizePercentInput(derivePercentMagnitudeInput(priceInput, pnlBasis, isLong))
             )
             isProfitPnl = priceInput.toBigDecimalOrNull()
-                ?.let { pnlBasis?.pnlAt(it, isLong)?.signedPnl }
+                ?.let { pnlBasis.pnlAt(it, isLong)?.signedPnl }
                 ?.let { it >= BigDecimal.ZERO }
                 ?: isTakeProfit
         }
@@ -552,12 +569,14 @@ private fun PerpsTpSlContent(
                     modifier = Modifier.wrapContentSize(),
                     text = stringResource(R.string.PnL),
                     selected = inputType == InputType.PNL,
+                    enabled = pnlBasis != null,
                     onClick = { selectInputType(InputType.PNL) },
                 )
                 TpSlTypeChip(
                     modifier = Modifier.wrapContentSize(),
                     text = stringResource(R.string.limit_price),
                     selected = inputType == InputType.PRICE,
+                    enabled = pnlBasis != null,
                     onClick = { selectInputType(InputType.PRICE) },
                 )
             }
@@ -595,6 +614,7 @@ private fun PerpsTpSlContent(
                             fontSize = 14.sp,
                             color = MixinAppTheme.colors.accent,
                             modifier = Modifier.clickable {
+                                percentInitialized = true
                                 percentFieldValue = textFieldValueAtEnd("")
                                 priceFieldValue = textFieldValueAtEnd("")
                                 isProfitPnl = isTakeProfit
@@ -623,39 +643,45 @@ private fun PerpsTpSlContent(
                         focusRequester = inputFocusRequester,
                         onPercentFieldValueChange = { fieldValue ->
                             val normalized = normalizePercentInput(fieldValue.text)
+                            if (normalized != percentFieldValue.text) {
+                                percentInitialized = true
+                                priceFieldValue = textFieldValueAtEnd(
+                                    percentToPriceInput(
+                                        percentMagnitudeInput = normalized,
+                                        calculationBasis = pnlBasis,
+                                        isLong = isLong,
+                                        isProfit = isProfitPnl,
+                                        priceScale = safePriceScale,
+                                    )
+                                )
+                            }
                             percentFieldValue = fieldValue.copy(
                                 text = normalized,
                                 selection = TextRange(fieldValue.selection.end.coerceAtMost(normalized.length)),
                             )
-                            priceFieldValue = textFieldValueAtEnd(
-                                percentToPriceInput(
-                                    percentMagnitudeInput = normalized,
-                                    calculationBasis = pnlBasis,
-                                    isLong = isLong,
-                                    isProfit = isProfitPnl,
-                                    priceScale = safePriceScale,
-                                )
-                            )
                         },
                         onPriceFieldValueChange = { fieldValue ->
                             val normalized = normalizePriceInput(fieldValue.text, safePriceScale)
+                            if (normalized != priceFieldValue.text) {
+                                percentInitialized = true
+                                percentFieldValue = textFieldValueAtEnd(
+                                    normalizePercentInput(
+                                        derivePercentMagnitudeInput(
+                                            priceInput = normalized,
+                                            calculationBasis = pnlBasis,
+                                            isLong = isLong,
+                                        )
+                                    )
+                                )
+                                isProfitPnl = normalized.toBigDecimalOrNull()
+                                    ?.let { pnlBasis?.pnlAt(it, isLong)?.signedPnl }
+                                    ?.let { it >= BigDecimal.ZERO }
+                                    ?: isTakeProfit
+                            }
                             priceFieldValue = fieldValue.copy(
                                 text = normalized,
                                 selection = TextRange(normalized.length),
                             )
-                            percentFieldValue = textFieldValueAtEnd(
-                                normalizePercentInput(
-                                    derivePercentMagnitudeInput(
-                                        priceInput = normalized,
-                                        calculationBasis = pnlBasis,
-                                        isLong = isLong,
-                                    )
-                                )
-                            )
-                            isProfitPnl = normalized.toBigDecimalOrNull()
-                                ?.let { pnlBasis?.pnlAt(it, isLong)?.signedPnl }
-                                ?.let { it >= BigDecimal.ZERO }
-                                ?: isTakeProfit
                         },
                         priceScale = safePriceScale,
                     )
@@ -674,7 +700,9 @@ private fun PerpsTpSlContent(
                             modifier = Modifier.wrapContentSize(),
                             text = "${if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) "+" else "-"}$option%",
                             selected = activePercentText == option && isProfitPnl == isTakeProfit,
+                            enabled = pnlBasis != null,
                             onClick = {
+                                percentInitialized = true
                                 isProfitPnl = isTakeProfit
                                 percentFieldValue = textFieldValueAtEnd(option)
                                 priceFieldValue = textFieldValueAtEnd(
@@ -794,18 +822,18 @@ private fun PerpsTpSlContent(
             }
             MixinButton(
                 onClick = {
-                    if (errorText == null) {
+                    if (canApply) {
                         val value = priceInput.trim().takeIf { it.isNotEmpty() }
                         onApply(value)
                     }
                 },
-                enabled = errorText == null,
+                enabled = canApply,
                 modifier = Modifier
                     .weight(1f)
                     .height(48.dp),
                 shape = RoundedCornerShape(32.dp),
                 contentPadding = PaddingValues(vertical = 12.dp),
-                backgroundColor = if (errorText == null) {
+                backgroundColor = if (canApply) {
                     MixinAppTheme.colors.accent
                 } else {
                     MixinAppTheme.colors.backgroundGrayLight
@@ -814,7 +842,7 @@ private fun PerpsTpSlContent(
                 Text(
                     text = stringResource(R.string.Set),
                     fontSize = 16.sp,
-                    color = if (errorText == null) Color.White else MixinAppTheme.colors.textAssist,
+                    color = if (canApply) Color.White else MixinAppTheme.colors.textAssist,
                 )
             }
         }
@@ -826,6 +854,7 @@ private fun TpSlTypeChip(
     modifier: Modifier = Modifier,
     text: String,
     selected: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit,
 ) {
     Box(
@@ -835,10 +864,10 @@ private fun TpSlTypeChip(
             .background(Color.Transparent)
             .border(
                 width = 1.dp,
-                color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor,
+                color = if (!enabled) MixinAppTheme.colors.textAssist else if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor,
                 shape = RoundedCornerShape(16.dp),
             )
-            .clickable(onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -848,7 +877,7 @@ private fun TpSlTypeChip(
             textAlign = TextAlign.Center,
             text = text,
             fontSize = 12.sp,
-            color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary,
+            color = if (!enabled) MixinAppTheme.colors.textAssist else if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary,
         )
     }
 }
@@ -858,6 +887,7 @@ private fun TpSlQuickChip(
     modifier: Modifier = Modifier,
     text: String,
     selected: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit,
 ) {
     Box(
@@ -867,10 +897,10 @@ private fun TpSlQuickChip(
             .background(Color.Transparent)
             .border(
                 width = 1.dp,
-                color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor,
+                color = if (!enabled) MixinAppTheme.colors.textAssist else if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderColor,
                 shape = RoundedCornerShape(16.dp),
             )
-            .clickable(onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -880,7 +910,7 @@ private fun TpSlQuickChip(
             textAlign = TextAlign.Center,
             text = text,
             fontSize = 12.sp,
-            color = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary,
+            color = if (!enabled) MixinAppTheme.colors.textAssist else if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

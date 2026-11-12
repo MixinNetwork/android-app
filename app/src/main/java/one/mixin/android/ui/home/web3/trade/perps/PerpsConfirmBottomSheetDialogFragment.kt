@@ -796,12 +796,17 @@ private fun calculateTpSlSubValue(
     val profitColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     val fullText = stringResource(R.string.price_change_tpsl, priceChangeText, outcomeText)
+    val outcomeColor = when {
+        pnl.signedPnl > BigDecimal.ZERO -> profitColor
+        pnl.signedPnl < BigDecimal.ZERO -> lossColor
+        else -> MixinAppTheme.colors.textAssist
+    }
     return buildAnnotatedString {
         append(fullText)
         val outcomeStart = fullText.indexOf(outcomeText)
         if (outcomeStart >= 0) {
             addStyle(
-                style = SpanStyle(color = if (isTakeProfit) profitColor else lossColor),
+                style = SpanStyle(color = outcomeColor),
                 start = outcomeStart,
                 end = outcomeStart + outcomeText.length,
             )

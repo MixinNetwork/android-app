@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ClipOp
@@ -173,6 +174,8 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         var error by remember { mutableStateOf<String?>(null) }
         var availableMargin by remember(currentPosition.margin, currentPosition.quantity) { mutableStateOf<BigDecimal?>(null) }
         var maximumReductionError by remember(currentPosition.margin, currentPosition.quantity) { mutableStateOf<String?>(null) }
+        var maximumReductionRetry by remember { mutableStateOf(0) }
+        var maximumReductionLoading by remember { mutableStateOf(false) }
         fun changeAmount(value: String) {
             if (!loading) {
                 amount = value
@@ -212,22 +215,27 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 maximumReduction != null && amountValue != null && amountValue <= maximumReduction
             }
 
-        LaunchedEffect(increase, currentPosition.positionId, currentPosition.margin, currentPosition.quantity) {
+        LaunchedEffect(increase, currentPosition.positionId, currentPosition.margin, currentPosition.quantity, maximumReductionRetry) {
             if (increase) return@LaunchedEffect
             val margin = marginValue ?: run {
                 maximumReductionError = getString(R.string.Data_error)
                 return@LaunchedEffect
             }
             maximumReductionError = null
-            availableMargin = requestMaximumMarginReduction(
-                margin = margin,
-                onFailure = { maximumReductionError = it ?: getString(R.string.Data_error) },
-            ) {
-                viewModel.estimateLiquidationPrice(
-                    amount = margin.stripTrailingZeros().toPlainString(),
-                    positionId = currentPosition.positionId,
-                    action = "decrease_margin",
-                )
+            maximumReductionLoading = true
+            try {
+                availableMargin = requestMaximumMarginReduction(
+                    margin = margin,
+                    onFailure = { maximumReductionError = it ?: getString(R.string.Data_error) },
+                ) {
+                    viewModel.estimateLiquidationPrice(
+                        amount = margin.stripTrailingZeros().toPlainString(),
+                        positionId = currentPosition.positionId,
+                        action = "decrease_margin",
+                    )
+                }
+            } finally {
+                maximumReductionLoading = false
             }
         }
 
@@ -508,6 +516,15 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             error = null
                         },
                     )
+                    if (!maximumReductionLoading && (maximumReduction == null || maximumReduction <= BigDecimal.ZERO)) {
+                        Text(
+                            text = stringResource(R.string.Retry),
+                            color = MixinAppTheme.colors.accent,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().clickable { maximumReductionRetry++ }.padding(12.dp),
+                        )
+                    }
                 }
             }
         }
@@ -722,8 +739,9 @@ internal fun PerpsReductionInput(
     val inputWidth = with(LocalDensity.current) {
         textMeasurer.measure(input.ifEmpty { placeholder }, style = inputTextStyle, softWrap = false).size.width.toDp() + 2.dp
     }
-    LaunchedEffect(Unit) {
-        if (autoFocus) {
+    var hasFocused by remember { mutableStateOf(false) }
+    LaunchedEffect(autoFocus, enabled) {
+        if (autoFocus && enabled && !hasFocused) {
             focusRequester.requestFocus()
             keyboardController?.show()
         }
@@ -768,7 +786,9 @@ internal fun PerpsReductionInput(
                     },
                     enabled = enabled,
                     singleLine = true,
-                    modifier = Modifier.widthIn(min = 20.dp, max = 160.dp).width(inputWidth).focusRequester(focusRequester),
+                    modifier = Modifier.widthIn(min = 20.dp, max = 160.dp).width(inputWidth)
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { if (it.isFocused) hasFocused = true },
                     textStyle = inputTextStyle,
                     keyboardOptions = KeyboardOptions(keyboardType = if (decimalPlaces == 0) KeyboardType.Number else KeyboardType.Decimal),
                     cursorBrush = SolidColor(MixinAppTheme.colors.accent),

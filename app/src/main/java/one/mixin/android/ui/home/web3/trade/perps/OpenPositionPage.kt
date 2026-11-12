@@ -681,6 +681,7 @@ fun OpenPositionPage(
                         title = stringResource(R.string.Take_Profit),
                         value = takeProfitPrice.takeIf { it.isNotBlank() }?.let(::formatPerpsPrice),
                         valueColor = tpColor,
+                        enabled = !hasInputAmount || (!isLiquidationLoading && remoteLiquidationPrice?.toBigDecimalOrNull()?.let { it >= BigDecimal.ZERO } == true),
                         onClick = {
                             showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT)
                         },
@@ -693,6 +694,7 @@ fun OpenPositionPage(
                         title = stringResource(R.string.Stop_Loss),
                         value = stopLossPrice.takeIf { it.isNotBlank() }?.let(::formatPerpsPrice),
                         valueColor = slColor,
+                        enabled = !hasInputAmount || (!isLiquidationLoading && remoteLiquidationPrice?.toBigDecimalOrNull()?.let { it >= BigDecimal.ZERO } == true),
                         onClick = {
                             showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS)
                         },
@@ -1073,13 +1075,14 @@ private fun PerpsActionRow(
     title: String,
     value: String?,
     valueColor: Color? = null,
+    enabled: Boolean = true,
     onClick: () -> Unit,
     onTipClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -1088,7 +1091,7 @@ private fun PerpsActionRow(
             Text(
                 text = value ?: stringResource(R.string.Add),
                 fontSize = 14.sp,
-                color = if (value == null) MixinAppTheme.colors.accent else (valueColor ?: MixinAppTheme.colors.textPrimary),
+                color = if (!enabled) MixinAppTheme.colors.textAssist else if (value == null) MixinAppTheme.colors.accent else (valueColor ?: MixinAppTheme.colors.textPrimary),
             )
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
