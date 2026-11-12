@@ -11,6 +11,17 @@ import java.math.BigDecimal
 
 class WalletSearchModelsTest {
     @Test
+    fun positionSearchMatchesMarketTagsAndSymbol() {
+        val tags = listOf("bitcoin", "比特币", "比特幣")
+        assertTrue(matchesWalletPosition("BTC", "btc", tags))
+        assertTrue(matchesWalletPosition("BITCOIN", "BTC", tags))
+        assertTrue(matchesWalletPosition("比特币", "BTC", tags))
+        assertTrue(matchesWalletPosition("比特幣", "BTC", tags))
+        assertFalse(matchesWalletPosition("eth", "BTC", tags))
+        assertFalse(matchesWalletPosition("bitcoin", null, emptyList()))
+    }
+
+    @Test
     fun recentTapMovesToFrontAndDeduplicatesByTypeAndId() {
         val searches = listOf(asset("a"), collectible("a"), asset("b"), asset("a"))
         val updated = searches.addWalletRecentSearch(asset("a"))

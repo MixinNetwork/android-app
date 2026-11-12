@@ -46,6 +46,9 @@ internal fun SharedPreferences.clearWalletSearchHistory() {
     edit().remove(PREF_WALLET_SEARCH_RECENT).putBoolean("${PREF_WALLET_SEARCH_RECENT}_cleared", true).apply()
 }
 
+internal fun matchesWalletPosition(query: String, symbol: String?, tags: List<String>): Boolean =
+    symbol.orEmpty().contains(query, ignoreCase = true) || tags.any { it.contains(query, ignoreCase = true) }
+
 @HiltViewModel
 internal class WalletSearchViewModel @Inject constructor(
     application: Application,
@@ -181,8 +184,10 @@ internal class WalletSearchViewModel @Inject constructor(
         val escaped = query.escapeSql()
         val assets = sortQueryAsset(query, tokenRepository.fuzzySearchAssetIgnoreAmount(escaped), emptyList())
             .map { WalletSearchResult.Asset(it) }
-        val positions = positionDao.getOpenPositions(Session.getAccountId().orEmpty())
-            .filter { it.tokenSymbol.orEmpty().contains(query, true) }
+        val openPositions = positionDao.getOpenPositions(Session.getAccountId().orEmpty())
+        val markets = perpsMarketRepository.getMarkets(openPositions.map { it.marketId }.distinct()).associateBy { it.marketId }
+        val positions = openPositions
+            .filter { matchesWalletPosition(query, it.tokenSymbol, markets[it.marketId]?.tags.orEmpty()) }
             .map { positionResult(it) }
         val earn = preferences.getWalletHomeCacheState(walletHomeCacheKey(WalletHomeType.PRIVACY, Session.getAccountId().orEmpty()))
             ?.earnAccounts.orEmpty()

@@ -51,6 +51,8 @@ class PerpsMarketRepository
 
         suspend fun getMarket(marketId: String): PerpsMarket? = marketDao.getMarket(marketId)
 
+        suspend fun getMarkets(marketIds: List<String>): List<PerpsMarket> = marketDao.getMarkets(marketIds)
+
         suspend fun syncAllMarkets(): List<PerpsMarket>? {
             val markets = fetchMarkets() ?: return null
             marketDao.upsertList(markets)
