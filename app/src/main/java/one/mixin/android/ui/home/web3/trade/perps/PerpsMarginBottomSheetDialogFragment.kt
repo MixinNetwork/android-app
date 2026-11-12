@@ -200,7 +200,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val reduceInput = when {
             reduceByPercent == inputIsPercentage -> amount
             reduceByPercent -> percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString().orEmpty()
-            else -> amountValue?.let { if (hasServerReductionLimit) it.stripTrailingZeros().toPlainString() else formatMarginAdjustmentInput(it, false) }.orEmpty()
+            else -> amountValue?.let(::marginReductionAmountInput).orEmpty()
         }
         val tokenBalance = perpsMarginTokenBalance(selectedToken)
         val insufficientBalance = increase && amountValue != null && tokenBalance != null && amountValue > tokenBalance
@@ -477,18 +477,15 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         onInputChanged = ::changeAmount,
                         onApplyReductionLimit = maximumReduction?.takeIf { reductionLimitError != null }?.let { maximum ->
                             {
-                                if (reduceByPercent && !canFillMarginReductionAsPercentage(reductionBase, maximum)) {
-                                    reduceByPercent = false
-                                }
-                                changeAmount(
-                                    if (hasServerReductionLimit && !reduceByPercent) {
-                                        maximum.setScale(TRADE_INPUT_MAX_DECIMAL_PLACES, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
-                                    } else maximumMarginReductionInput(reductionBase, maximum, reduceByPercent),
-                                )
+                                val asPercentage = reduceByPercent && canFillMarginReductionAsPercentage(reductionBase, maximum)
+                                if (reduceByPercent && !asPercentage) reduceByPercent = false
+                                changeAmount(maximumMarginReductionInput(reductionBase, maximum, asPercentage))
                             }
                         },
                         onToggleMode = {
-                            amount = amountValue?.let { if (hasServerReductionLimit) it.stripTrailingZeros().toPlainString() else formatMarginAdjustmentInput(it, false) }.orEmpty()
+                            if (reduceByPercent) {
+                                amount = amountValue?.let(::marginReductionAmountInput).orEmpty()
+                            }
                             inputIsPercentage = false
                             reduceByPercent = !reduceByPercent
                             error = null
@@ -719,8 +716,12 @@ internal fun PerpsReductionInput(
             onPercentageSelected(value)
             return
         }
-        val selected = if (isPercentage) value else reduceMarginAmount(margin?.toPlainString(), value.toPlainString(), true) ?: BigDecimal.ZERO
-        updateInput(formatInput(selected))
+        if (isPercentage) {
+            updateInput(formatInput(value))
+        } else {
+            val selected = reduceMarginAmount(margin?.toPlainString(), value.toPlainString(), true) ?: BigDecimal.ZERO
+            updateInput(marginReductionAmountInput(selected))
+        }
     }
     Column(
         modifier = Modifier

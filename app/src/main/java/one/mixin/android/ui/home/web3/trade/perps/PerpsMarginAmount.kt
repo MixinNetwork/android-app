@@ -39,6 +39,9 @@ internal fun snapMarginReductionPercentage(value: Float): Int {
 internal fun formatMarginAdjustmentInput(value: BigDecimal, isPercentage: Boolean): String =
     value.setScale(if (isPercentage) 0 else 2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
 
+internal fun marginReductionAmountInput(value: BigDecimal): String =
+    if (value.signum() > 0 && value < BigDecimal("0.01")) value.stripTrailingZeros().toPlainString() else formatMarginAdjustmentInput(value, false)
+
 internal fun maximumMarginReductionInput(currentMargin: String?, maximumReduction: BigDecimal, isPercentage: Boolean): String =
     if (!isPercentage && maximumReduction < BigDecimal("0.01")) maximumReduction.stripTrailingZeros().toPlainString() else formatMarginAdjustmentInput(
         if (isPercentage) marginReductionPercentage(currentMargin, maximumReduction) ?: BigDecimal.ZERO else maximumReduction,
