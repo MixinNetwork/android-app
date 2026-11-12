@@ -458,7 +458,8 @@ inline fun <reified T : CallService> startService(
 
 inline fun <reified T : CallService> logCallState(ctx: Context) = startService<T>(ctx, ACTION_LOG_CALL_STATE) {}
 
-fun anyCallServiceRunning(context: Context) = isVoiceCallServiceRunning(context) || isGroupCallServiceRunning(context)
+fun anyCallServiceRunning(context: Context) =
+    context.isServiceRunning(VoiceCallService::class.java, GroupCallService::class.java)
 
 fun isVoiceCallServiceRunning(context: Context) = context.isServiceRunning(VoiceCallService::class.java)
 
