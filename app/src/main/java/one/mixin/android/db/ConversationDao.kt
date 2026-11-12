@@ -5,6 +5,7 @@ import androidx.paging.PagingSource
 import androidx.room3.Dao
 import androidx.room3.Query
 import androidx.room3.RoomWarnings
+import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
@@ -133,7 +134,8 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query(
         """
-        SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified 
+        SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified,
+        (SELECT sum(m.media_size) FROM messages m WHERE m.conversation_id = c.conversation_id AND m.category IN ($TRANSCRIPTS)) AS transcript_size
         FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id WHERE c.category IS NOT NULL 
         """,
     )

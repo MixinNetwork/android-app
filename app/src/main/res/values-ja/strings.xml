@@ -1232,5 +1232,18 @@
     <string name="Last_Updated">最終更新</string>
     <string name="Last_Updated_at">最終更新: %1$s</string>
     <string name="number_of_networks">%1$d ネットワーク</string>
+    <string name="Trade_Simple">スワップ</string>
+    <string name="Trade_Advanced">指値</string>
+    <string name="Trade_Pro">Pro</string>
+    <string name="Trade_Swap_Orders">スワップ注文</string>
+    <string name="Trade_Limit_Orders">指値注文</string>
+    <string name="Trade_Perpetual_Activity">無期限契約の取引履歴</string>
+    <string name="Trade_Pro_Description">高度なチャート、クロスマージン、指値注文。</string>
+    <string name="Trade_Now">今すぐ取引</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin はスワップと指値注文に対応しており、DEX と CEX から集約した流動性を活用して、複数のチェーンや資産を取引できます。</string>
+    <string name="Spot_Trade_Guide_Swap_Desc">スワップでは、利用可能な最良の市場価格で即座に取引できます。</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">指値注文では、希望する約定価格を設定できます。市場価格が指定した価格に達した場合にのみ注文が約定します。</string>
     <string name="perps_realized_pnl_tip">未決済のポジションは統計に含まれません。</string>
+    <string name="mixin_support">Mixin サポート</string>
+    <string name="real_people_real_support">本物の人による、本物のサポート。</string>
 </resources>
