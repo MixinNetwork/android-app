@@ -22,6 +22,8 @@ class ConversationStorageUsage(
     val ownerIdentityNumber: String,
     @ColumnInfo(name = "is_verified")
     val ownerIsVerified: Boolean,
+    @ColumnInfo(name = "transcript_size")
+    val transcriptSize: Long?,
 ) {
     @Ignore
     var mediaSize: Long = 0L

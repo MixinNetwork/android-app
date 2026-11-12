@@ -801,6 +801,12 @@
     <string name="perps_include_pnl">Termasuk PnL</string>
     <string name="perps_position_amount">Jumlah Posisi</string>
     <string name="perps_margin_amount">Jumlah Margin</string>
+    <string name="membership_benefit_mixin_card_platinum">Kartu kredit Visa Platinum gratis</string>
+    <string name="membership_benefit_mixin_card_signature">Kartu kredit Visa Signature gratis</string>
+    <string name="free_inheritance_service">Layanan Warisan Gratis</string>
+    <string name="membership_benefit_free_inheritance_service">Gunakan layanan warisan secara gratis.</string>
+    <string name="membership_renew_option_card_desc">Gunakan Google Pay, kartu kredit atau debit untuk memperpanjang paket Anda.</string>
+    <string name="membership_renew_option_crypto_desc">Gunakan USDT, USDC, atau kripto lainnya untuk memperpanjang paket Anda.</string>
     <string name="changed_disappearing_message_settings_hint">%1$s mengubah setelan pesan yang hilang. Ketuk untuk membuka setelan pesan yang hilang.</string>
     <string name="disable_disappearing_message_hint">%1$s menonaktifkan pesan yang hilang. Ketuk untuk membuka setelan pesan yang hilang.</string>
     <string name="set_disappearing_message_time_to_hint">%1$s menyetel waktu hilangnya pesan ke %2$s. Ketuk untuk membuka setelan pesan yang hilang.</string>
@@ -830,8 +836,21 @@
     <string name="Select_asset">Pilih aset untuk dilihat</string>
     <string name="Select_market_item">Pilih pasar untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
+    <string name="Trade_Simple">Swap</string>
+    <string name="Trade_Advanced">Limit</string>
+    <string name="Trade_Pro">Pro</string>
+    <string name="Trade_Swap_Orders">Order Swap</string>
+    <string name="Trade_Limit_Orders">Order Limit</string>
+    <string name="Trade_Perpetual_Activity">Aktivitas Perpetual</string>
+    <string name="Trade_Pro_Description">Grafik tingkat lanjut, margin silang, dan order limit.</string>
+    <string name="Trade_Now">Trading Sekarang</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin mendukung swap dan order limit, sehingga Anda dapat memperdagangkan berbagai aset di banyak blockchain dengan likuiditas gabungan dari DEX dan CEX.</string>
+    <string name="Spot_Trade_Guide_Swap_Desc">Swap memungkinkan perdagangan instan dengan harga pasar terbaik yang tersedia.</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">Order limit memungkinkan Anda menetapkan harga eksekusi yang diinginkan. Order hanya dieksekusi saat pasar mencapai harga yang Anda tentukan.</string>
     <string name="perps_realized_pnl_tip">Posisi yang masih terbuka tidak termasuk dalam statistik.</string>
     <string name="network_fee_description">Biaya jaringan adalah biaya transaksi yang dibayarkan kepada penambang atau validator untuk memproses dan mengonfirmasi transaksi di blockchain.</string>
     <string name="network_fee_charged_by">Biaya jaringan dikenakan oleh jaringan %1$s.</string>
     <string name="network_fee_independent_of_amount">Biaya jaringan tidak bergantung pada jumlah transfer.</string>
+    <string name="mixin_support">Dukungan Mixin</string>
+    <string name="real_people_real_support">Orang Sungguhan. Dukungan Nyata.</string>
 </resources>

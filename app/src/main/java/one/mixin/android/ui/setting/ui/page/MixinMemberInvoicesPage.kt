@@ -47,6 +47,7 @@ fun MixinMemberInvoicesPage(
     membership: Membership,
     onPop: () -> Unit,
     onViewPlanClick: () -> Unit,
+    onRenewPlanClick: () -> Unit,
     onAll: () -> Unit,
     onOrderClick: (MembershipOrder) -> Unit,
     onReferral:() -> Unit
@@ -117,7 +118,8 @@ fun MixinMemberInvoicesPage(
                 Spacer(modifier = Modifier.height(10.dp))
                 MembershipPlanCard(
                     membership = membership,
-                    onViewPlanClick = onViewPlanClick
+                    onViewPlanClick = onViewPlanClick,
+                    onRenewPlanClick = onRenewPlanClick,
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
