@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import one.mixin.android.MixinApplication
@@ -28,6 +27,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import kotlin.test.assertEquals
@@ -52,13 +52,18 @@ class SystemHolderTest {
     private class NoticeResources(base: Resources) : Resources(base.assets, base.displayMetrics, base.configuration) {
         override fun getText(id: Int): CharSequence = when (id) {
             R.string.You -> "self"
-            R.string.set_disappearing_message_time_to_hint -> "enabled(%1\$s,%2\$s)"
-            R.string.disable_disappearing_message_hint -> "disabled(%1\$s)"
-            R.string.changed_disappearing_message_settings_hint -> "changed(%1\$s)"
-            R.string.group_disappearing_message_enabled_hint -> "group-enabled(%1\$s)"
-            R.string.group_disappearing_message_disabled_hint -> "group-disabled"
-            R.string.chat_disappearing_message_enabled_hint -> "chat-enabled(%1\$s)"
-            R.string.chat_disappearing_message_disabled_hint -> "chat-disabled"
+            R.string.set_disappearing_message_time_to_read_only -> "enabled-learn(%1\$s,%2\$s)"
+            R.string.disable_disappearing_message_read_only -> "disabled-learn(%1\$s)"
+            R.string.changed_disappearing_message_settings_read_only -> "changed-learn(%1\$s)"
+            R.string.group_disappearing_message_enabled_read_only -> "group-enabled-learn(%1\$s)"
+            R.string.group_disappearing_message_disabled_read_only -> "group-disabled-learn"
+            R.string.set_disappearing_message_time_to_editable -> "enabled(%1\$s,%2\$s)"
+            R.string.disable_disappearing_message_editable -> "disabled(%1\$s)"
+            R.string.changed_disappearing_message_settings_editable -> "changed(%1\$s)"
+            R.string.group_disappearing_message_enabled_editable -> "group-enabled(%1\$s)"
+            R.string.group_disappearing_message_disabled_editable -> "group-disabled"
+            R.string.chat_disappearing_message_enabled_editable -> "chat-enabled(%1\$s)"
+            R.string.chat_disappearing_message_disabled_editable -> "chat-disabled"
             R.string.secret_url -> "https://example.com/encryption"
             R.string.created_this_group -> "created(%1\$s)"
             R.string.Learn_More -> "learn"
@@ -82,8 +87,6 @@ class SystemHolderTest {
             if (id == R.array.name_colors) intArrayOf(Color.BLACK) else super.getIntArray(id)
 
         override fun getColor(id: Int, theme: Theme?): Int = when (id) {
-            R.color.disappearing_message_background -> Color.MAGENTA
-            R.color.disappearing_message_disabled_background, R.color.bgGrayNight -> Color.GRAY
             R.color.textPrimary -> Color.BLACK
             R.color.textPrimaryNight -> Color.WHITE
             R.color.colorBlue -> Color.BLUE
@@ -137,34 +140,34 @@ class SystemHolderTest {
 
     @Test
     fun enabledDisabledAndLegacyNoticesShowActorAndMatchingState() {
-        holder.bind(message("86400", "me"), false, false, listener)
+        holder.bind(message("86400", "me"), false, false, true, listener)
         assertEquals("enabled(self,1 day-unit)", holder.binding.chatInfo.text.toString())
-        assertEquals(ContextCompat.getColor(context, R.color.disappearing_message_background), holder.binding.chatInfo.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing, shadowOf(holder.binding.chatInfo.background).createdFromResId)
         assertEquals(Int.MAX_VALUE, holder.binding.chatInfo.maxLines)
         assertNull(holder.binding.chatInfo.ellipsize)
 
-        holder.bind(message("5184000").copy(userFullName = "Crossle"), false, false, listener)
+        holder.bind(message("5184000").copy(userFullName = "Crossle"), false, false, true, listener)
         assertEquals("enabled(Crossle,2 month-unit)", holder.binding.chatInfo.text.toString())
 
-        holder.bind(message("0"), false, false, listener)
+        holder.bind(message("0"), false, false, true, listener)
         assertEquals("disabled(Alice)", holder.binding.chatInfo.text.toString())
-        assertEquals(ContextCompat.getColor(context, R.color.disappearing_message_disabled_background), holder.binding.chatInfo.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing_off, shadowOf(holder.binding.chatInfo.background).createdFromResId)
 
-        holder.bind(message(null), false, false, listener)
+        holder.bind(message(null), false, false, true, listener)
         assertEquals("changed(Alice)", holder.binding.chatInfo.text.toString())
     }
 
     @Test
     fun textAndRowOpenSettingsButSelectionModeStillSelects() {
         val message = message("604800")
-        holder.bind(message, false, false, listener)
+        holder.bind(message, false, false, true, listener)
         holder.binding.chatInfo.performClick()
         holder.itemView.performClick()
         holder.binding.chatInfo.performLongClick()
         assertEquals(2, openedSettings)
         assertEquals(1, longPressed)
 
-        holder.bind(message, true, false, listener)
+        holder.bind(message, true, false, true, listener)
         holder.binding.chatInfo.performClick()
         holder.itemView.performClick()
         holder.binding.chatInfo.performLongClick()
@@ -175,20 +178,20 @@ class SystemHolderTest {
 
     @Test
     fun recycledNoticesClearLinksAndDoNotKeepSettingsClicks() {
-        holder.bind(message(null).copy(actionName = "UNSUPPORTED"), false, false, listener)
+        holder.bind(message(null).copy(actionName = "UNSUPPORTED"), false, false, true, listener)
         assertNotNull(holder.binding.chatInfo.movementMethod)
 
-        holder.bind(message("2592000"), false, false, listener)
+        holder.bind(message("2592000"), false, false, true, listener)
         assertNull(holder.binding.chatInfo.movementMethod)
         holder.binding.chatInfo.performClick()
         assertEquals(1, openedSettings)
 
-        holder.bind(message(null).copy(actionName = SystemConversationAction.CREATE.name), false, false, listener)
+        holder.bind(message(null).copy(actionName = SystemConversationAction.CREATE.name), false, false, true, listener)
         assertFalse(holder.binding.chatInfo.isClickable)
         assertFalse(holder.binding.chatInfo.isLongClickable)
         assertEquals(2, holder.binding.chatInfo.maxLines)
         assertEquals(TextUtils.TruncateAt.END, holder.binding.chatInfo.ellipsize)
-        assertNull(holder.binding.chatInfo.backgroundTintList)
+        assertEquals(R.drawable.chat_bubble_info, shadowOf(holder.binding.chatInfo.background).createdFromResId)
         holder.binding.chatInfo.performClick()
         holder.itemView.performClick()
         assertEquals(1, openedSettings)
@@ -202,30 +205,49 @@ class SystemHolderTest {
         val secretHolder = SecretHolder(ItemChatSecretBinding.bind(root))
         val notice = secretHolder.binding.disappearingInfo
 
-        secretHolder.bind(86400L, true, true, false, listener)
+        secretHolder.bind(86400L, true, true, true, false, listener)
         assertEquals(View.VISIBLE, secretHolder.binding.chatInfo.visibility)
         assertEquals(View.VISIBLE, notice.visibility)
         assertEquals("group-enabled(1 day-unit)", notice.text.toString())
-        assertEquals(Color.MAGENTA, notice.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing, shadowOf(notice.background).createdFromResId)
         notice.performClick()
         assertEquals(1, openedSettings)
 
-        secretHolder.bind(1209600L, true, true, false, listener)
+        secretHolder.bind(1209600L, true, true, true, false, listener)
         assertEquals("group-enabled(2 week-unit)", notice.text.toString())
-        secretHolder.bind(2592000L, true, true, false, listener)
+        secretHolder.bind(2592000L, true, true, true, false, listener)
         assertEquals("group-enabled(1 month-unit)", notice.text.toString())
 
-        secretHolder.bind(0L, true, true, false, listener)
+        secretHolder.bind(0L, true, true, true, false, listener)
         assertEquals("group-disabled", notice.text.toString())
-        assertEquals(Color.GRAY, notice.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing_off, shadowOf(notice.background).createdFromResId)
         notice.performClick()
         assertEquals(2, openedSettings)
 
-        secretHolder.bind(86400L, true, true, true, listener)
+        secretHolder.bind(86400L, true, true, true, true, listener)
         notice.performClick()
         assertEquals(2, openedSettings)
         secretHolder.binding.chatInfo.performClick()
         assertEquals("https://example.com/encryption", openedUrl)
+    }
+
+    @Test
+    fun groupMemberNoticesOfferOnlyHelp() {
+        holder.bind(message("86400"), false, false, false, listener)
+        assertEquals("enabled-learn(Alice,1 day-unit)", holder.binding.chatInfo.text.toString())
+        holder.bind(message("0"), false, false, false, listener)
+        assertEquals("disabled-learn(Alice)", holder.binding.chatInfo.text.toString())
+        holder.bind(message(null), false, false, false, listener)
+        assertEquals("changed-learn(Alice)", holder.binding.chatInfo.text.toString())
+
+        val root = LinearLayout(context)
+        root.addView(TextView(context).apply { id = R.id.chat_info })
+        root.addView(TextView(context).apply { id = R.id.disappearing_info })
+        val secretHolder = SecretHolder(ItemChatSecretBinding.bind(root))
+        secretHolder.bind(86400L, true, true, false, false, listener)
+        assertEquals("group-enabled-learn(1 day-unit)", secretHolder.binding.disappearingInfo.text.toString())
+        secretHolder.bind(0L, true, true, false, false, listener)
+        assertEquals("group-disabled-learn", secretHolder.binding.disappearingInfo.text.toString())
     }
 
     @Test
@@ -236,24 +258,24 @@ class SystemHolderTest {
         val secretHolder = SecretHolder(ItemChatSecretBinding.bind(root))
         val notice = secretHolder.binding.disappearingInfo
 
-        secretHolder.bind(0L, true, false, false, listener)
+        secretHolder.bind(0L, true, false, true, false, listener)
         assertEquals(View.VISIBLE, secretHolder.binding.chatInfo.visibility)
         assertEquals("chat-disabled", notice.text.toString())
 
-        secretHolder.bind(0L, false, false, false, listener)
+        secretHolder.bind(0L, false, false, true, false, listener)
         assertEquals(View.GONE, secretHolder.binding.chatInfo.visibility)
         assertFalse(secretHolder.binding.chatInfo.isClickable)
         secretHolder.binding.chatInfo.performClick()
         assertNull(openedUrl)
         assertEquals(View.VISIBLE, notice.visibility)
         assertEquals("chat-disabled", notice.text.toString())
-        assertEquals(Color.GRAY, notice.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing_off, shadowOf(notice.background).createdFromResId)
         notice.performClick()
         assertEquals(1, openedSettings)
 
-        secretHolder.bind(2592000L, false, false, false, listener)
+        secretHolder.bind(2592000L, false, false, true, false, listener)
         assertEquals("chat-enabled(1 month-unit)", notice.text.toString())
-        assertEquals(Color.MAGENTA, notice.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing, shadowOf(notice.background).createdFromResId)
         assertEquals(View.GONE, secretHolder.binding.chatInfo.visibility)
         notice.performClick()
         assertEquals(2, openedSettings)
