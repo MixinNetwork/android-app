@@ -1,29 +1,30 @@
 package one.mixin.android.ui.address
 
-import android.annotation.SuppressLint
-import android.app.Dialog
-import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.address.page.AddressSearchBottomSheet
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.Chain
+import one.mixin.android.widget.bottomSheetHeight
 
 @AndroidEntryPoint
 class AddressSearchBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "AddressSearchBottomSheetDialogFragment"
         private const val ARGS_CHAIN_ID = "args_chain_id"
@@ -42,35 +43,19 @@ class AddressSearchBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, R.style.MixinBottomSheet)
-        dialog.window?.let { window ->
-            SystemUIManager.lightUI(window, requireContext().isNightMode())
-        }
-        dialog.window?.setGravity(Gravity.BOTTOM)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-        )
-    }
-
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.let { window ->
-            SystemUIManager.lightUI(
-                window,
-                !requireContext().booleanFromAttribute(R.attr.flag_night),
-            )
-        }
-    }
-
     @Composable
     override fun ComposeContent() {
         MixinAppTheme {
-            val addresses by viewModel.addressesFlow(chainId).collectAsState(initial = emptyList())
+            val addressFlow = remember(chainId) { viewModel.addressesFlow(chainId) }
+            val addresses by addressFlow.collectAsState(initial = emptyList())
+            var chain by remember { mutableStateOf<Chain?>(null) }
+            LaunchedEffect(addresses) {
+                chain = viewModel.getChains().firstOrNull { it.chainId == chainId }
+            }
             AddressSearchBottomSheet(
                 addresses = addresses,
+                chainId = chainId,
+                chain = chain,
                 onAddressClick = { address ->
                     dismiss()
                     onAddressClick?.invoke(address)
@@ -88,7 +73,7 @@ class AddressSearchBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop() - requireContext().appCompatActionBarHeight()
     }
 
     override fun showError(error: String) {

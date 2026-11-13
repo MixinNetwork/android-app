@@ -102,6 +102,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE trace_id = :traceId")
     suspend fun findSnapshotByTraceId(traceId: String): SnapshotItem?
 
+    @RawQuery
+    suspend fun snapshotItems(query: RoomRawQuery): List<SnapshotItem>
+
     @RawQuery(observedEntities = [SafeSnapshot::class, User::class, Token::class, InscriptionItem::class, InscriptionCollection::class])
     fun getSnapshots(query: RoomRawQuery): PagingSource<Int, SnapshotItem>
 
