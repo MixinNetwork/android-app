@@ -913,6 +913,9 @@
     <string name="Spot_Trade_Guide_Swap_Desc">Pertukaran membolehkan dagangan serta-merta pada harga pasaran terbaik yang tersedia.</string>
     <string name="Spot_Trade_Guide_Limit_Desc">Pesanan had membolehkan anda menetapkan harga pelaksanaan pilihan anda. Pesanan hanya dilaksanakan apabila pasaran mencapai harga yang anda tetapkan.</string>
     <string name="perps_realized_pnl_tip">Posisi yang masih terbuka tidak termasuk dalam statistik.</string>
+    <string name="transfer_token">Pindah %1$s</string>
+    <string name="transfer_token_description">Pindah dari dompet anda yang lain</string>
+    <string name="wallet_changed_try_again">Dompet semasa telah berubah. Sila cuba lagi.</string>
     <string name="mixin_support">Sokongan Mixin</string>
     <string name="real_people_real_support">Orang Sebenar. Sokongan Sebenar.</string>
 </resources>

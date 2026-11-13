@@ -848,6 +848,9 @@
     <string name="Spot_Trade_Guide_Swap_Desc">Swap memungkinkan perdagangan instan dengan harga pasar terbaik yang tersedia.</string>
     <string name="Spot_Trade_Guide_Limit_Desc">Order limit memungkinkan Anda menetapkan harga eksekusi yang diinginkan. Order hanya dieksekusi saat pasar mencapai harga yang Anda tentukan.</string>
     <string name="perps_realized_pnl_tip">Posisi yang masih terbuka tidak termasuk dalam statistik.</string>
+    <string name="transfer_token">Transfer %1$s</string>
+    <string name="transfer_token_description">Transfer dari dompet Anda yang lain</string>
+    <string name="wallet_changed_try_again">Dompet saat ini telah berubah. Silakan coba lagi.</string>
     <string name="mixin_support">Dukungan Mixin</string>
     <string name="real_people_real_support">Orang Sungguhan. Dukungan Nyata.</string>
 </resources>

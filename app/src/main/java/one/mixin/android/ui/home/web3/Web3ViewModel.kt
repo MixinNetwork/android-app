@@ -233,6 +233,11 @@ class Web3ViewModel @Inject constructor(
             tokenRepository.findAndSyncDepositEntry(token.chainId, token.assetId)
         }
 
+    suspend fun findAndSyncDepositEntry(chainId: String, assetId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findAndSyncDepositEntry(chainId, assetId)
+        }
+
     suspend fun getFees(
         id: String,
         destination: String,

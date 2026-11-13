@@ -2722,4 +2722,7 @@
     <string name="Select_asset">자산을 선택해 확인하세요</string>
     <string name="Select_market_item">시장을 선택해 확인하세요</string>
     <string name="Select_explore_item">항목을 선택해 여세요</string>
+    <string name="transfer_token">%1$s 이체</string>
+    <string name="transfer_token_description">내 다른 지갑에서 이체</string>
+    <string name="wallet_changed_try_again">현재 지갑이 변경되었습니다. 다시 시도하세요.</string>
 </resources>

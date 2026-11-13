@@ -1291,6 +1291,9 @@
     <string name="Spot_Trade_Guide_Swap_Desc">El intercambio permite operar al instante al mejor precio de mercado disponible.</string>
     <string name="Spot_Trade_Guide_Limit_Desc">Las órdenes limitadas te permiten establecer el precio de ejecución que prefieras. Solo se ejecutan cuando el mercado alcanza el precio especificado.</string>
     <string name="perps_realized_pnl_tip">Las posiciones abiertas no se incluyen en las estadísticas.</string>
+    <string name="transfer_token">Transferir %1$s</string>
+    <string name="transfer_token_description">Transferir desde otra de tus billeteras</string>
+    <string name="wallet_changed_try_again">La billetera actual ha cambiado. Inténtalo de nuevo.</string>
     <string name="mixin_support">Soporte de Mixin</string>
     <string name="real_people_real_support">Personas reales. Soporte real.</string>
 </resources>

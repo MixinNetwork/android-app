@@ -26,6 +26,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -107,6 +108,7 @@ import one.mixin.android.web3.SolanaRecipientAccountState
 import one.mixin.android.web3.hasSolBalanceAfterFeeAndRent
 import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.nativeSolSpendableBalance
 import one.mixin.android.web3.send.BtcTransactionBuilder
@@ -135,6 +137,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
         const val ARGS_WEB3_TOKEN = "args_web3_token"
         const val ARGS_WEB3_CHAIN_TOKEN = "args_web3_chain_token"
+        const val ARGS_RESTORE_SIGNER_WALLET_ID = "args_restore_signer_wallet_id"
 
         const val ARGS_TOKEN = "args_token"
 
@@ -263,6 +266,26 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     override fun onResume() {
         super.onResume()
         bindingOrNull()?.root?.hideKeyboard()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (activity?.isChangingConfigurations == true) return
+        restoreSignerWallet()
+    }
+
+    // Switch the global signer back after a transfer started from another wallet, unless the user picked a wallet meanwhile
+    private fun restoreSignerWallet() {
+        val restoreWalletId = arguments?.getString(ARGS_RESTORE_SIGNER_WALLET_ID) ?: return
+        val sourceWalletId = web3Token?.walletId ?: return
+        val viewModel = web3ViewModel
+        MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
+            val category = if (restoreWalletId.isEmpty()) WalletCategory.CLASSIC.value else viewModel.findWalletById(restoreWalletId)?.category ?: return@launch
+            val addresses = if (restoreWalletId.isEmpty()) emptyList() else viewModel.getAddresses(restoreWalletId)
+            Web3Signer.setWalletIfCurrent(sourceWalletId, restoreWalletId, category) { queryWalletId ->
+                if (queryWalletId == restoreWalletId) addresses else emptyList()
+            }
+        }
     }
 
     override fun onDestroyView() {

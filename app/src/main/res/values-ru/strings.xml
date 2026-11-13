@@ -1232,6 +1232,9 @@
     <string name="Spot_Trade_Guide_Swap_Desc">Обмен позволяет мгновенно совершать сделки по лучшей доступной рыночной цене.</string>
     <string name="Spot_Trade_Guide_Limit_Desc">Лимитные ордера позволяют задать желаемую цену исполнения. Ордера исполняются только тогда, когда рыночная цена достигает указанного уровня.</string>
     <string name="perps_realized_pnl_tip">Открытые позиции не учитываются в статистике.</string>
+    <string name="transfer_token">Перевести %1$s</string>
+    <string name="transfer_token_description">Перевод из другого вашего кошелька</string>
+    <string name="wallet_changed_try_again">Текущий кошелёк изменился. Попробуйте снова.</string>
     <string name="mixin_support">Поддержка Mixin</string>
     <string name="real_people_real_support">Живые люди. Настоящая поддержка.</string>
 </resources>
