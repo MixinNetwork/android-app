@@ -47,6 +47,7 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.util.reportException
 import one.mixin.android.web3.send.BtcTransactionBuilder
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import one.mixin.android.web3.validateEip712ChainId
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
@@ -463,6 +464,7 @@ object WalletConnectV2 : WalletConnect() {
             if (!signMessage.isV1 && signMessage.signatures.size <= 1) {
                 signMessage.message.recentBlockhash = getBlockhash()
             }
+            signMessage.throwIfAnyMaliciousInstruction(holder.publicKey.toBase58())
             signMessage.sign(holder)
             return signMessage
         } else if (signMessage is WcSolanaMessage) {
