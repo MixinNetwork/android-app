@@ -2,7 +2,21 @@ package org.sol4kt
 
 import okio.Buffer
 import org.sol4kt.VersionedTransactionCompat.Companion.PUBLIC_KEY_LENGTH
+import org.sol4kt.exception.MaliciousInstructionException
 import org.sol4kt.instruction.CompiledInstruction
+
+// A raw signature over a serialized transaction message is a valid transaction signature,
+// so refuse message bytes that decode to a transaction requiring this signer.
+fun requireNotTransactionMessage(
+    message: ByteArray,
+    signer: org.sol4k.PublicKey,
+) {
+    if (message.size > MessageV1Codec.MAX_TRANSACTION_SIZE) return
+    val parsed = runCatching { MessageCompat.deserialize(message) }.getOrNull() ?: return
+    if (signer in parsed.accounts.take(parsed.header.numRequireSignatures)) {
+        throw MaliciousInstructionException("Refusing to sign a Solana transaction as a message")
+    }
+}
 
 data class MessageCompat(
     val version: MessageVersion,

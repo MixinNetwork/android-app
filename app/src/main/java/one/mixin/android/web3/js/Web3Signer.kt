@@ -47,6 +47,7 @@ import org.sol4kt.SignInInput
 import org.sol4kt.SignInOutput
 import org.sol4kt.VersionedTransactionCompat
 import org.sol4kt.exception.MaliciousInstructionException
+import org.sol4kt.requireNotTransactionMessage
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -84,6 +85,9 @@ object Web3Signer {
         data object Pearl : JsSignerNetwork("pearl")
         data object Litecoin : JsSignerNetwork("litecoin")
     }
+
+    fun jsNetworkOf(chain: Chain): String =
+        if (chain == Chain.Solana) JsSignerNetwork.Solana.name else JsSignerNetwork.Ethereum.name
 
     private const val TAG = "Web3Signer"
     private val walletSelectionMutex = Mutex()
@@ -436,11 +440,12 @@ object Web3Signer {
         priv: ByteArray,
         message: String,
         type: Int,
+        chain: Chain = currentChain,
     ): String {
-        return if (currentChain == Chain.Solana && type != JsSignMessage.TYPE_TYPED_MESSAGE) {
+        return if (chain == Chain.Solana && type != JsSignMessage.TYPE_TYPED_MESSAGE) {
             signSolanaMessage(priv, message)
         } else {
-            signEthMessage(priv, message, type)
+            signEthMessage(priv, message, type, chain)
         }
     }
 
@@ -448,6 +453,7 @@ object Web3Signer {
         priv: ByteArray,
         message: String,
         type: Int,
+        chain: Chain = currentChain,
     ): String {
         val keyPair = ECKeyPair.create(priv)
         val signature =
@@ -455,7 +461,7 @@ object Web3Signer {
                 JsSignMessage.TYPE_GASLESS_TRANSFER ->
                     Sign.signMessage(Numeric.hexStringToByteArray(message), keyPair, false)
                 JsSignMessage.TYPE_TYPED_MESSAGE -> {
-                    validateEip712ChainId(message, currentChain.chainReference, MixinApplication.appContext.getString(R.string.eip712_invalid_chain_id))
+                    validateEip712ChainId(message, chain.chainReference, MixinApplication.appContext.getString(R.string.eip712_invalid_chain_id))
                     Sign.signMessage(hashEip712Message(message), keyPair, false)
                 }
                 else -> Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message), keyPair)
@@ -516,6 +522,7 @@ object Web3Signer {
         message: ByteArray,
     ): String {
         val keyPair = Keypair.fromSecretKey(secret)
+        requireNotTransactionMessage(message, keyPair.publicKey)
         val sig = keyPair.sign(message)
         return sig.toHex()
     }
