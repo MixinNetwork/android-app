@@ -33,7 +33,6 @@ import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -276,28 +275,24 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }
 
         fun submit(submittedAmount: String) {
-            if (loading) return
-            if (position?.state != PerpsPosition.STATE_OPEN || !isCurrentWallet) {
-                showSubmissionError(getString(R.string.Data_error))
+            if (loading || !increase || position?.state != PerpsPosition.STATE_OPEN || !isCurrentWallet) {
+                if (!loading) showSubmissionError(getString(R.string.Data_error))
                 return
             }
             val value = marginAdjustmentAmount(submittedAmount)
-            if (value == null || marginAfterAdjustment(currentPosition.margin, submittedAmount, increase, maximumReduction) == null) {
-                val message = if (!increase && value != null && maximumReduction != null && value > maximumReduction) {
-                    getString(R.string.max_removable, formatPerpsMarginLimit(reductionBase, maximumReduction, false))
-                } else getString(R.string.Data_error)
-                showSubmissionError(message)
+            if (value == null || marginAfterAdjustment(currentPosition.margin, submittedAmount, true) == null) {
+                showSubmissionError(getString(R.string.Data_error))
                 return
             }
             val token = selectedToken
             val estimatedLiquidationPrice = remoteLiquidationPrice
-            if (increase && (token == null || token.assetId !in acceptedAssets || tokenBalance == null || value > tokenBalance || estimatedLiquidationPrice == null)) {
+            if (token == null || token.assetId !in acceptedAssets || tokenBalance == null || value > tokenBalance || estimatedLiquidationPrice == null) {
                 showSubmissionError(
                     if (tokenBalance != null && value > tokenBalance) getString(R.string.insufficient_balance) else getString(R.string.Data_error),
                 )
                 return
             }
-            if (increase) AnalyticsTracker.trackPerpsAddMarginPreview()
+            AnalyticsTracker.trackPerpsAddMarginPreview()
             loading = true
             isCancelable = false
             error = null
@@ -308,47 +303,31 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         AdjustMarginRequest(
                             type = if (increase) "increase" else "decrease",
                             amount = value.stripTrailingZeros().toPlainString(),
-                            assetId = token?.assetId.takeIf { increase },
+                            assetId = token.assetId,
                         ),
                     )
                     val data = response.data
                     if (response.isSuccess && data != null) {
-                        if (increase && token != null) {
-                            if (data.paymentUrl.isNullOrBlank() || (data.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) {
-                                showSubmissionError(getString(R.string.Data_error))
-                                return@launch
-                            }
-                            PerpsConfirmBottomSheetDialogFragment.newInstance(
-                                marketSymbol = currentPosition.displaySymbol ?: currentPosition.tokenSymbol.orEmpty(),
-                                marketIcon = currentPosition.iconUrl.orEmpty(),
-                                isLong = currentPosition.side.equals("long", ignoreCase = true),
-                                amount = data.payAmount,
-                                leverage = currentPosition.leverage,
-                                entryPrice = market?.last ?: currentPosition.entryPrice,
-                                marginAssetPrice = token.priceUsd,
-                                tokenSymbol = token.symbol,
-                                liquidationPrice = estimatedLiquidationPrice,
-                                priceScale = market?.priceScale ?: currentPosition.priceScale,
-                                payUrl = data.paymentUrl,
-                                isAddMargin = true,
-                                marginBefore = currentPosition.margin,
-                            ).show(parentFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
-                        } else {
-                            AnalyticsTracker.trackPerpsReduceMarginEnd()
-                            RxBus.publish(PerpsTradeCompletedEvent)
-                            toast(R.string.perps_margin_submitted)
-                            viewModel.refreshSinglePosition(currentPosition.positionId, currentPosition.walletId)
-                            viewModel.refreshOrders(currentPosition.walletId)
+                        if (data.paymentUrl.isNullOrBlank() || (data.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) {
+                            showSubmissionError(getString(R.string.Data_error))
+                            return@launch
                         }
+                        PerpsConfirmBottomSheetDialogFragment.newInstance(
+                            marketSymbol = currentPosition.displaySymbol ?: currentPosition.tokenSymbol.orEmpty(),
+                            marketIcon = currentPosition.iconUrl.orEmpty(),
+                            isLong = currentPosition.side.equals("long", ignoreCase = true),
+                            amount = data.payAmount,
+                            leverage = currentPosition.leverage,
+                            entryPrice = market?.last ?: currentPosition.entryPrice,
+                            marginAssetPrice = token.priceUsd,
+                            tokenSymbol = token.symbol,
+                            liquidationPrice = estimatedLiquidationPrice,
+                            priceScale = market?.priceScale ?: currentPosition.priceScale,
+                            payUrl = data.paymentUrl,
+                            isAddMargin = true,
+                            marginBefore = currentPosition.margin,
+                        ).show(parentFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                         dismiss()
-                    } else if (!increase && response.errorCode == 10653) {
-                        availableMargin = availableMarginFromError(response.error?.extra)
-                        val maximum = maximumMarginReduction(currentPosition.margin, currentPosition.maxDecreaseMargin, availableMargin)
-                        showSubmissionError(
-                            if (availableMargin != null && maximum != null) {
-                                getString(R.string.max_removable, formatPerpsMarginLimit(reductionBase, maximum, false))
-                            } else requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription),
-                        )
                     } else {
                         showSubmissionError(
                             if (response.isSuccess) getString(R.string.Data_error) else
@@ -367,17 +346,6 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }
 
         val submitCurrent by rememberUpdatedState(::submit)
-        if (!increase) {
-            DisposableEffect(lifecycleOwner) {
-                val manager = childFragmentManager
-                manager.setFragmentResultListener(PerpsCloseBottomSheetDialogFragment.RESULT_MARGIN_CONFIRMED, lifecycleOwner) { _, result ->
-                    if (result.getString(PerpsCloseBottomSheetDialogFragment.RESULT_POSITION_ID) == initialPosition.positionId) {
-                        result.getString(PerpsCloseBottomSheetDialogFragment.RESULT_AMOUNT)?.let { submitCurrent(it) }
-                    }
-                }
-                onDispose { manager.clearFragmentResultListener(PerpsCloseBottomSheetDialogFragment.RESULT_MARGIN_CONFIRMED) }
-            }
-        }
         MixinAppTheme {
             val reductionLimitError = if (exceedsReductionLimit && maximumReduction != null) {
                 val limit = formatPerpsMarginLimit(reductionBase, maximumReduction, reduceByPercent)
@@ -394,6 +362,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     val approvedAmount = normalizedAmount
                     AnalyticsTracker.trackPerpsReduceMarginPreview()
                     PerpsCloseBottomSheetDialogFragment.newInstance(currentPosition.toPosition(), reduceMarginAmount = approvedAmount)
+                        .setOnDone { dismiss() }
                         .show(childFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                 }
             }
