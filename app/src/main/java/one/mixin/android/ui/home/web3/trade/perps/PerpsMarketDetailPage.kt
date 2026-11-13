@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import android.content.SharedPreferences
+import android.net.Uri
 import android.text.Layout
 import android.util.TypedValue
 import androidx.compose.animation.core.Animatable
@@ -61,6 +62,7 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
@@ -109,6 +111,7 @@ import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.selectLocalizedMarketDescription
 import one.mixin.android.ui.wallet.MarketShareBottomFragment
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
@@ -178,11 +181,17 @@ fun PerpsMarketDetailPage(
             when (action) {
                 PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
                 PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_MARGIN -> {
-                    PerpsMarginBottomSheetDialogFragment.newInstance(
-                        position,
-                        increase = action == PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
-                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST,
-                    ).show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                    if (action == PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_MARGIN &&
+                        position.maxDecreaseMargin?.toBigDecimalOrNull()?.signum() == 0
+                    ) {
+                        toast(R.string.perps_no_reducible_margin)
+                    } else {
+                        PerpsMarginBottomSheetDialogFragment.newInstance(
+                            position,
+                            increase = action == PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
+                            source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST,
+                        ).show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                    }
                 }
                 PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_POSITION -> {
                     isAddingProcessing = true
@@ -1400,6 +1409,24 @@ private fun OpenPositionCard(
                 fontWeight = FontWeight.W400,
                 color = MixinAppTheme.colors.textMinor
             )
+            if (!position.leaderPositionId.isNullOrBlank()) {
+                Spacer(modifier = Modifier.width(4.dp))
+                val copyingColor = colorResource(R.color.text_quote_orange)
+                Text(
+                    text = stringResource(R.string.perps_copy_trade),
+                    color = copyingColor,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = FontWeight.W500,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(copyingColor.copy(alpha = 0.1f))
+                        .clickable {
+                            UrlInterpreterActivity.show(context, Uri.parse("mixin://users/44bef2fb-0d9d-44b1-bb1f-fef747f0d4ee?action=open&page=follow&position_id=${position.positionId}"))
+                        }
+                        .padding(horizontal = 3.dp, vertical = 1.dp),
+                )
+            }
             Spacer(modifier = Modifier.weight(1f))
             Icon(
                 painter = painterResource(id = R.drawable.ic_share_arrow),

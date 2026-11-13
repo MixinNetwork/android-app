@@ -37,6 +37,7 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.api.response.perps.withNonNullTradingFields
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.api.service.RouteService
@@ -144,7 +145,7 @@ class PerpetualViewModel @Inject constructor(
             val response = withContext(Dispatchers.IO) {
                 routeService.getPerpsPositions(walletId = walletId)
             }
-            val positions = response.data?.map { it.copy(walletId = walletId) }
+            val positions = response.data?.map { it.withNonNullTradingFields().copy(walletId = walletId) }
             if (!response.isSuccess || positions == null) {
                 error("Failed to refresh perps positions: ${response.errorDescription}")
             }
@@ -786,7 +787,7 @@ class PerpetualViewModel @Inject constructor(
                     withContext(Dispatchers.IO) {
                         if (remotePosition != null) {
                             perpsPositionDao.upsertSuspend(
-                                remotePosition.copy(
+                                remotePosition.withNonNullTradingFields().copy(
                                     walletId = knownWalletId ?: remotePosition.walletId
                                 )
                             )
@@ -1087,7 +1088,7 @@ class PerpetualViewModel @Inject constructor(
                 val data = response.data
                 if (response.isSuccess && data != null) {
                     val resolvedWalletId = data.walletId.ifBlank { localBefore?.walletId ?: "" }
-                    val positionForDb = data.copy(walletId = resolvedWalletId)
+                    val positionForDb = data.withNonNullTradingFields().copy(walletId = resolvedWalletId)
                     
                     val currentPosition = withContext(Dispatchers.IO) {
                         perpsPositionDao.upsertSuspend(positionForDb)

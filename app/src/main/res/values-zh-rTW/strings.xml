@@ -2730,4 +2730,8 @@
     <string name="Select_asset">選擇一個資產查看</string>
     <string name="Select_market_item">選擇一個行情查看</string>
     <string name="Select_explore_item">選擇一項打開</string>
+    <string name="perps_copy_trade">跟單中</string>
+    <string name="perps_publish_copy_trade">發布跟單</string>
+    <string name="perps_publish_copy_trade_desc">獲得跟單者 10% 的收益分潤</string>
+    <string name="perps_no_reducible_margin">目前沒有可減少的保證金</string>
 </resources>

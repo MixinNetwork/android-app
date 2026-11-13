@@ -913,6 +913,10 @@
     <string name="Spot_Trade_Guide_Swap_Desc">Pertukaran membolehkan dagangan serta-merta pada harga pasaran terbaik yang tersedia.</string>
     <string name="Spot_Trade_Guide_Limit_Desc">Pesanan had membolehkan anda menetapkan harga pelaksanaan pilihan anda. Pesanan hanya dilaksanakan apabila pasaran mencapai harga yang anda tetapkan.</string>
     <string name="perps_realized_pnl_tip">Posisi yang masih terbuka tidak termasuk dalam statistik.</string>
+    <string name="perps_copy_trade">Menyalin</string>
+    <string name="perps_publish_copy_trade">Terbitkan Copy Trade</string>
+    <string name="perps_publish_copy_trade_desc">Dapatkan 10% perkongsian keuntungan daripada penyalin</string>
+    <string name="perps_no_reducible_margin">Tiada margin yang boleh dikurangkan</string>
     <string name="mixin_support">Sokongan Mixin</string>
     <string name="real_people_real_support">Orang Sebenar. Sokongan Sebenar.</string>
 </resources>

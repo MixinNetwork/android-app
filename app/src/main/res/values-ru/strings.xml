@@ -1232,6 +1232,10 @@
     <string name="Spot_Trade_Guide_Swap_Desc">Обмен позволяет мгновенно совершать сделки по лучшей доступной рыночной цене.</string>
     <string name="Spot_Trade_Guide_Limit_Desc">Лимитные ордера позволяют задать желаемую цену исполнения. Ордера исполняются только тогда, когда рыночная цена достигает указанного уровня.</string>
     <string name="perps_realized_pnl_tip">Открытые позиции не учитываются в статистике.</string>
+    <string name="perps_copy_trade">Копирование</string>
+    <string name="perps_publish_copy_trade">Опубликовать копи-трейд</string>
+    <string name="perps_publish_copy_trade_desc">Получайте 10% прибыли от копировщиков</string>
+    <string name="perps_no_reducible_margin">Нет маржи, доступной для уменьшения</string>
     <string name="mixin_support">Поддержка Mixin</string>
     <string name="real_people_real_support">Живые люди. Настоящая поддержка.</string>
 </resources>

@@ -86,7 +86,7 @@ class Room3DatabaseCompatibilityTest {
             "SELECT COUNT(*) FROM perps_orders",
             "0",
             schemaVersion = 9,
-            migrations = arrayOf(PerpsDatabase.MIGRATION_9_10, PerpsDatabase.MIGRATION_10_11, PerpsDatabase.MIGRATION_11_12),
+            migrations = arrayOf(PerpsDatabase.MIGRATION_9_10, PerpsDatabase.MIGRATION_10_11, PerpsDatabase.MIGRATION_11_12, PerpsDatabase.MIGRATION_12_13),
         )
     }
 
@@ -105,10 +105,10 @@ class Room3DatabaseCompatibilityTest {
                     '2026-10-09T00:00:00Z', '2026-10-09T00:00:00Z'
                 )
             """.trimIndent(),
-            "SELECT margin || ':' || unrealized_pnl || ':' || estimated_close_fee FROM positions",
-            "10:2:",
+            "SELECT margin || ':' || unrealized_pnl || ':' || estimated_close_fee || ':' || leader_position_id || ':' || max_decrease_margin FROM positions",
+            "10:2:::",
             schemaVersion = 10,
-            migrations = arrayOf(PerpsDatabase.MIGRATION_10_11, PerpsDatabase.MIGRATION_11_12),
+            migrations = arrayOf(PerpsDatabase.MIGRATION_10_11, PerpsDatabase.MIGRATION_11_12, PerpsDatabase.MIGRATION_12_13),
         )
     }
 
