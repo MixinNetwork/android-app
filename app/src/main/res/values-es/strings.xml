@@ -1291,6 +1291,9 @@
     <string name="Spot_Trade_Guide_Swap_Desc">El intercambio permite operar al instante al mejor precio de mercado disponible.</string>
     <string name="Spot_Trade_Guide_Limit_Desc">Las órdenes limitadas te permiten establecer el precio de ejecución que prefieras. Solo se ejecutan cuando el mercado alcanza el precio especificado.</string>
     <string name="perps_realized_pnl_tip">Las posiciones abiertas no se incluyen en las estadísticas.</string>
+    <string name="network_fee_description">Las comisiones de red son tarifas de transacción que se pagan a mineros o validadores por procesar y confirmar transacciones en la blockchain.</string>
+    <string name="network_fee_charged_by">La red %1$s cobra las comisiones de red.</string>
+    <string name="network_fee_independent_of_amount">Las comisiones de red no dependen del importe de la transferencia.</string>
     <string name="mixin_support">Soporte de Mixin</string>
     <string name="real_people_real_support">Personas reales. Soporte real.</string>
 </resources>

@@ -1232,6 +1232,9 @@
     <string name="Spot_Trade_Guide_Swap_Desc">Обмен позволяет мгновенно совершать сделки по лучшей доступной рыночной цене.</string>
     <string name="Spot_Trade_Guide_Limit_Desc">Лимитные ордера позволяют задать желаемую цену исполнения. Ордера исполняются только тогда, когда рыночная цена достигает указанного уровня.</string>
     <string name="perps_realized_pnl_tip">Открытые позиции не учитываются в статистике.</string>
+    <string name="network_fee_description">Сетевая комиссия — это плата майнерам или валидаторам за обработку и подтверждение транзакций в блокчейне.</string>
+    <string name="network_fee_charged_by">Сетевую комиссию взимает сеть %1$s.</string>
+    <string name="network_fee_independent_of_amount">Сетевая комиссия не зависит от суммы перевода.</string>
     <string name="mixin_support">Поддержка Mixin</string>
     <string name="real_people_real_support">Живые люди. Настоящая поддержка.</string>
 </resources>

@@ -302,11 +302,38 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <TextView
-                        style="@style/TransactionTitleTextStyle"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/Network_Fee" />
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginBottom="5dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/fee_title_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/Network_Fee"
+                            android:textColor="?attr/text_assist"
+                            android:textSize="14sp" />
+
+                        <ImageView
+                            android:id="@+id/fee_tip_iv"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="-2dp"
+                            android:layout_marginTop="-6dp"
+                            android:layout_marginBottom="-6dp"
+                            android:background="@drawable/mixin_ripple_small"
+                            android:contentDescription="@string/Network_Fee"
+                            android:padding="7.5dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_tip"
+                            app:tint="?attr/text_assist" />
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/fee_tv"

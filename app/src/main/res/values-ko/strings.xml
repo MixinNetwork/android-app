@@ -2722,4 +2722,7 @@
     <string name="Select_asset">자산을 선택해 확인하세요</string>
     <string name="Select_market_item">시장을 선택해 확인하세요</string>
     <string name="Select_explore_item">항목을 선택해 여세요</string>
+    <string name="network_fee_description">네트워크 수수료는 블록체인에서 거래를 처리하고 확인하는 채굴자 또는 검증자에게 지불되는 거래 수수료입니다.</string>
+    <string name="network_fee_charged_by">네트워크 수수료는 %1$s 네트워크에서 부과합니다.</string>
+    <string name="network_fee_independent_of_amount">네트워크 수수료는 전송 금액과 관계없습니다.</string>
 </resources>
