@@ -1291,6 +1291,13 @@
     <string name="Spot_Trade_Guide_Swap_Desc">El intercambio permite operar al instante al mejor precio de mercado disponible.</string>
     <string name="Spot_Trade_Guide_Limit_Desc">Las órdenes limitadas te permiten establecer el precio de ejecución que prefieras. Solo se ejecutan cuando el mercado alcanza el precio especificado.</string>
     <string name="perps_realized_pnl_tip">Las posiciones abiertas no se incluyen en las estadísticas.</string>
+    <string name="desktop_intro_title">Usa Mixin Messenger en tu ordenador.</string>
+    <string name="desktop_intro_desc">Descarga la aplicación de escritorio en messenger.mixin.one y vincúlala escaneando un código QR.</string>
+    <string name="Scan_to_Link_Desktop">Escanear para vincular el escritorio</string>
+    <string name="desktop_e2ee_tip">Tus mensajes personales y la información de tus chats están protegidos con cifrado de extremo a extremo en todos los dispositivos.</string>
+    <string name="desktop_help_step_1">Abre messenger.mixin.one en tu ordenador.</string>
+    <string name="desktop_help_step_2">Descarga y abre Mixin Messenger para escritorio.</string>
+    <string name="desktop_help_step_3">Escanea su código QR con Mixin Messenger.</string>
     <string name="mixin_support">Soporte de Mixin</string>
     <string name="real_people_real_support">Personas reales. Soporte real.</string>
 </resources>
