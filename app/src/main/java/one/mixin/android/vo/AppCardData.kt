@@ -46,7 +46,7 @@ data class AppCardData(
     }
 
     @IgnoredOnParcel
-    val oldVersion: BooleanSame as server: title and description may be empty
+    val oldVersion: Boolean
         get() {
             return !action.isNullOrBlank()
         }
