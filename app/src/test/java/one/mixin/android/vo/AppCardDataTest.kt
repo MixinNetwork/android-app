@@ -102,4 +102,21 @@ class AppCardDataTest {
         assertTrue(coverUrlOnly.hasMediaCover)
         assertFalse(nestedCover.hasMediaCover)
     }
+
+    @Test
+    fun `shareDataErrorReasons allows empty title and description`() {
+        val appCardData = AppCardData(
+            appId = "app-id",
+            iconUrl = null,
+            coverUrl = null,
+            cover = null,
+            title = "",
+            description = null,
+            action = null,
+            updatedAt = null,
+            shareable = true,
+        )
+
+        assertTrue(appCardData.shareDataErrorReasons().isEmpty())
+    }
 }
