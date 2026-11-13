@@ -96,7 +96,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         private const val ARGS_ENTRY_PRICE = "args_entry_price"
         private const val ARGS_MARK_PRICE = "args_mark_price"
         private const val ARGS_UNREALIZED_PNL = "args_unrealized_pnl"
-        private const val ARGS_ESTIMATED_CLOSE_FEE = "args_estimated_close_fee"
         private const val ARGS_ROE = "args_roe"
         private const val ARGS_WALLET_NAME = "args_wallet_name"
 
@@ -117,7 +116,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 putString(ARGS_MARK_PRICE, position.markPrice)
                 putString(ARGS_UNREALIZED_PNL, position.unrealizedPnl)
                 putString(ARGS_ROE, position.roe)
-                putString(ARGS_ESTIMATED_CLOSE_FEE, position.estimatedCloseFee)
             }
         }
     }
@@ -191,7 +189,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private var latestUnrealizedPnl by mutableStateOf("")
     private var latestQuantity by mutableStateOf("")
     private var latestMargin by mutableStateOf("")
-    private var estimatedCloseFee by mutableStateOf<String?>("")
+    private var feeRate by mutableStateOf<String?>(null)
     private var marketIconUrl by mutableStateOf("")
     private var marketSymbol by mutableStateOf("")
     private var tokenSymbol by mutableStateOf("")
@@ -207,7 +205,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             latestUnrealizedPnl = unrealizedPnl
             latestQuantity = arguments?.getString(ARGS_QUANTITY).orEmpty()
             latestMargin = margin
-            estimatedCloseFee = arguments?.getString(ARGS_ESTIMATED_CLOSE_FEE).orEmpty()
         }
 
         LaunchedEffect(positionId) {
@@ -217,7 +214,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 latestUnrealizedPnl = position.unrealizedPnl ?: latestUnrealizedPnl
                 latestQuantity = position.quantity
                 latestMargin = position.margin ?: latestMargin
-                estimatedCloseFee = position.estimatedCloseFee
+                feeRate = position.feeRate
                 marketIconUrl = position.iconUrl.orEmpty()
                 marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty()
                 tokenSymbol = position.tokenSymbol.orEmpty()
@@ -227,6 +224,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 )
 
                 viewModel.getMarketFromDb(position.marketId)?.let { market ->
+                    feeRate = market.feeRate
                     marketIconUrl = market.iconUrl
                     marketSymbol = market.displaySymbol
                     tokenSymbol = market.tokenSymbol
@@ -240,10 +238,10 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     latestUnrealizedPnl = position.unrealizedPnl
                     latestQuantity = position.quantity
                     latestMargin = position.margin
-                    estimatedCloseFee = position.estimatedCloseFee
 
                     lifecycleScope.launch {
                         viewModel.getMarketFromDb(position.marketId)?.let { market ->
+                            feeRate = market.feeRate
                             marketIconUrl = market.iconUrl
                             marketSymbol = market.displaySymbol
                             tokenSymbol = market.tokenSymbol
@@ -253,6 +251,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     viewModel.loadMarketDetail(
                         marketId = position.marketId,
                         onSuccess = { market ->
+                            feeRate = market.feeRate
                             marketIconUrl = market.iconUrl
                             marketSymbol = market.displaySymbol
                             tokenSymbol = market.tokenSymbol
@@ -385,6 +384,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     )
                     Box(modifier = Modifier.height(20.dp))
 
+                    val estimatedCloseFee = perpsCloseFee(latestQuantity, latestMarkPrice, feeRate)?.toPlainString()
                     val closeReturn = estimatedPerpsCloseReturn(latestMargin, latestUnrealizedPnl, estimatedCloseFee)
                     val estimatedReceive = if (isReduceMargin) {
                         reduceMarginAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO

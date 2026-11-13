@@ -9,7 +9,7 @@ internal data class TpSlCalculationBasis(
     val entryPrice: BigDecimal,
     val margin: BigDecimal,
     val absoluteQuantity: BigDecimal,
-    val feeRate: BigDecimal = BigDecimal.ZERO,
+    val feeRate: BigDecimal,
 ) {
     fun pnlAt(targetPrice: BigDecimal, isLong: Boolean): TpSlPnlResult? {
         if (targetPrice <= BigDecimal.ZERO) return null
@@ -38,11 +38,6 @@ internal data class TpSlCalculationBasis(
         return numerator.divide(denominator, TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
     }
 
-    fun takeProfitPriceBound(currentPrice: BigDecimal, isLong: Boolean): BigDecimal? {
-        val breakEvenPrice = priceAtPnl(BigDecimal.ZERO, isLong) ?: return null
-        return if (isLong) currentPrice.max(breakEvenPrice) else currentPrice.min(breakEvenPrice)
-    }
-
     fun zeroPriceRoiPercentCeiling(isLong: Boolean): BigDecimal {
         val openFee = entryPrice.multiply(absoluteQuantity).multiply(feeRate)
         val pricePnlAtZero = entryPrice.multiply(absoluteQuantity)
@@ -64,8 +59,7 @@ internal fun resolveTpSlCalculationBasis(
     marginAmount: String,
     positionQuantity: String?,
     leverage: Int,
-    estimatedCloseFee: String? = null,
-    feeReferencePrice: String? = null,
+    feeRate: String? = null,
 ): TpSlCalculationBasis? {
     val margin = marginAmount.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
     val parsedEntry = entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
@@ -83,53 +77,26 @@ internal fun resolveTpSlCalculationBasis(
     } else {
         positionQuantity.toBigDecimalOrNull()?.abs()?.takeIf { it > BigDecimal.ZERO } ?: return null
     }
-    val feeRate = if (positionQuantity == null) {
-        BigDecimal.ZERO
-    } else {
-        perpsTpSlFeeRate(
-            estimatedCloseFee = estimatedCloseFee,
-            referencePrice = feeReferencePrice ?: currentPrice,
-            absoluteQuantity = absoluteQuantity,
-        )
-    }
-    return TpSlCalculationBasis(entry, margin, absoluteQuantity, feeRate)
-}
-
-private fun perpsTpSlFeeRate(
-    estimatedCloseFee: String?,
-    referencePrice: String?,
-    absoluteQuantity: BigDecimal,
-): BigDecimal {
-    val fee = estimatedCloseFee?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return BigDecimal.ZERO
-    val reference = referencePrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return BigDecimal.ZERO
-    val notional = reference.multiply(absoluteQuantity)
-    if (notional.signum() <= 0) return BigDecimal.ZERO
-    val rate = fee.divide(notional, TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-    if (rate.signum() <= 0 || rate >= BigDecimal.ONE) return BigDecimal.ZERO
-    return rate
+    val parsedFeeRate = feeRate?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO && it < BigDecimal.ONE } ?: return null
+    return TpSlCalculationBasis(entry, margin, absoluteQuantity, parsedFeeRate)
 }
 
 internal fun targetPriceForRoiPercent(
     basis: TpSlCalculationBasis,
     percentMagnitudeInput: String,
     isLong: Boolean,
-    isTakeProfit: Boolean,
+    isProfit: Boolean,
     priceScale: Int,
 ): String {
     val magnitude = percentMagnitudeInput.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return ""
     val signedRoi = magnitude
         .divide(BigDecimal(100), TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-        .let { if (isTakeProfit) it else it.negate() }
+        .let { if (isProfit) it else it.negate() }
     val netPnl = signedRoi.multiply(basis.margin)
     val targetPrice = basis.priceAtPnl(netPnl, isLong) ?: return ""
     if (targetPrice <= BigDecimal.ZERO) return ""
     val safeScale = priceScale.coerceAtLeast(0)
-    var roundedPrice = targetPrice.setScale(safeScale, RoundingMode.HALF_UP)
-    if (roundedPrice <= BigDecimal.ZERO) return ""
-    if (isTakeProfit && basis.pnlAt(roundedPrice, isLong)?.signedPnl?.signum() != 1) {
-        val tick = BigDecimal.ONE.movePointLeft(safeScale)
-        roundedPrice = if (isLong) roundedPrice.add(tick) else roundedPrice.subtract(tick)
-    }
+    val roundedPrice = targetPrice.setScale(safeScale, RoundingMode.HALF_UP)
     if (roundedPrice <= BigDecimal.ZERO) return ""
     return formatPerpsPriceInput(roundedPrice, safeScale)
 }
