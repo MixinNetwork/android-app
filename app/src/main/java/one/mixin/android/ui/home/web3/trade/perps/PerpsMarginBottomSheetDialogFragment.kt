@@ -270,13 +270,33 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             }
         }
 
+        fun showSubmissionError(message: String) {
+            error = message
+            toast(message)
+        }
+
         fun submit(submittedAmount: String) {
-            if (loading || position?.state != PerpsPosition.STATE_OPEN || !isCurrentWallet) return
-            val value = marginAdjustmentAmount(submittedAmount) ?: return
-            if (marginAfterAdjustment(currentPosition.margin, submittedAmount, increase, maximumReduction) == null) return
+            if (loading) return
+            if (position?.state != PerpsPosition.STATE_OPEN || !isCurrentWallet) {
+                showSubmissionError(getString(R.string.Data_error))
+                return
+            }
+            val value = marginAdjustmentAmount(submittedAmount)
+            if (value == null || marginAfterAdjustment(currentPosition.margin, submittedAmount, increase, maximumReduction) == null) {
+                val message = if (!increase && value != null && maximumReduction != null && value > maximumReduction) {
+                    getString(R.string.max_removable, formatPerpsMarginLimit(reductionBase, maximumReduction, false))
+                } else getString(R.string.Data_error)
+                showSubmissionError(message)
+                return
+            }
             val token = selectedToken
             val estimatedLiquidationPrice = remoteLiquidationPrice
-            if (increase && (token == null || token.assetId !in acceptedAssets || tokenBalance == null || value > tokenBalance || estimatedLiquidationPrice == null)) return
+            if (increase && (token == null || token.assetId !in acceptedAssets || tokenBalance == null || value > tokenBalance || estimatedLiquidationPrice == null)) {
+                showSubmissionError(
+                    if (tokenBalance != null && value > tokenBalance) getString(R.string.insufficient_balance) else getString(R.string.Data_error),
+                )
+                return
+            }
             if (increase) AnalyticsTracker.trackPerpsAddMarginPreview()
             loading = true
             isCancelable = false
@@ -295,7 +315,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     if (response.isSuccess && data != null) {
                         if (increase && token != null) {
                             if (data.paymentUrl.isNullOrBlank() || (data.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) {
-                                error = getString(R.string.Data_error)
+                                showSubmissionError(getString(R.string.Data_error))
                                 return@launch
                             }
                             PerpsConfirmBottomSheetDialogFragment.newInstance(
@@ -323,15 +343,22 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         dismiss()
                     } else if (!increase && response.errorCode == 10653) {
                         availableMargin = availableMarginFromError(response.error?.extra)
-                        error = if (availableMargin == null) requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription) else null
+                        val maximum = maximumMarginReduction(currentPosition.margin, currentPosition.maxDecreaseMargin, availableMargin)
+                        showSubmissionError(
+                            if (availableMargin != null && maximum != null) {
+                                getString(R.string.max_removable, formatPerpsMarginLimit(reductionBase, maximum, false))
+                            } else requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription),
+                        )
                     } else {
-                        error = if (response.isSuccess) getString(R.string.Data_error) else
-                            requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                        showSubmissionError(
+                            if (response.isSuccess) getString(R.string.Data_error) else
+                                requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription),
+                        )
                     }
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    error = ErrorHandler.getErrorMessage(e)
+                    showSubmissionError(ErrorHandler.getErrorMessage(e))
                 } finally {
                     loading = false
                     isCancelable = true
