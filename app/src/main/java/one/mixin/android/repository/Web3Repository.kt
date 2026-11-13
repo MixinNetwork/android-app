@@ -190,6 +190,9 @@ constructor(
 
     fun web3TokenItemById(walletId: String, assetId: String) = web3TokenDao.web3TokenItemById(walletId, assetId)
 
+    suspend fun findAndRefreshWeb3TokenItem(walletId: String, assetId: String): Web3TokenItem? =
+        getTokenByWalletAndAssetId(walletId, assetId)
+
     fun observeWeb3TokenItemById(walletId: String, assetId: String) = web3TokenDao.observeWeb3TokenItemById(walletId, assetId)
     
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
