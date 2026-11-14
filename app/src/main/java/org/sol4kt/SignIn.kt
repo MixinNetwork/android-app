@@ -1,5 +1,7 @@
 package org.sol4kt
 
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONObject
 
 data class SignInInput(
@@ -65,21 +67,24 @@ data class SignInInput(
     companion object {
         private val validChainIds = listOf("mainnet", "testnet", "devnet", "localnet", "solana:mainnet", "solana:testnet", "solana:devnet")
 
-        fun from(jsonData: String, addr: String? = null): SignInInput {
-            val o = JSONObject(jsonData)
-            val domain = if (o.has("domain")) {
-                o.getString("domain")
-            } else {
-                throw SignInException("empty domain")
+        fun from(jsonData: String, addr: String?, pageUrl: String?): SignInInput {
+            if (pageUrl.isNullOrBlank() || pageUrl.any { it == '\r' || it == '\n' }) {
+                throw SignInException("unknown page origin")
             }
-            val address = if (o.has("address")) {
-                o.getString("address")
-            } else {
-                if (addr.isNullOrBlank()) {
-                    throw SignInException("empty address")
-                } else {
-                    addr
-                }
+            val page = pageUrl.toHttpUrlOrNull() ?: throw SignInException("unknown page origin")
+            val host = if (page.host.contains(':')) "[${page.host}]" else page.host
+            val authority = if (page.port == HttpUrl.defaultPort(page.scheme)) host else "$host:${page.port}"
+            if (addr.isNullOrBlank()) {
+                throw SignInException("empty address")
+            }
+            val o = JSONObject(jsonData)
+            val domain = if (o.has("domain")) o.getString("domain") else authority
+            val address = if (o.has("address")) o.getString("address") else addr
+            if (domain != authority) {
+                throw SignInException("domain does not match page origin")
+            }
+            if (address != addr) {
+                throw SignInException("address does not match local account")
             }
             val statement = if (o.has("statement")) {
                 o.getString("statement")
@@ -120,6 +125,11 @@ data class SignInInput(
                 }
                 rs
             } else emptyList()
+
+            val fields = listOf(domain, address, statement, uri, version, chainId, nonce, issuedAt, expirationTime, notBefore, requestId) + resources
+            if (fields.any { field -> field != null && (field.contains('\r') || field.contains('\n')) }) {
+                throw SignInException("invalid sign-in field")
+            }
 
             return SignInInput(domain, address, statement, uri, version, chainId, nonce, issuedAt, expirationTime, notBefore, requestId, resources)
         }

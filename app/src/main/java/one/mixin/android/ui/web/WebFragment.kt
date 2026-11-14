@@ -572,6 +572,7 @@ class WebFragment : BaseFragment() {
 
         webView.webViewClient =
             WebViewClientImpl(
+                webView.webViewClient as? SignInWebViewClient,
                 object : WebViewClientImpl.OnPageFinishedListener {
                     override fun onPageFinished() {
                         reloadTheme()
@@ -1013,7 +1014,11 @@ class WebFragment : BaseFragment() {
                             showGasCheckAndBrowserBottomSheetDialogFragment(
                                 requireActivity(),
                                 message,
-                                currentUrl = currentUrl,
+                                currentUrl = if (message.type == JsSignMessage.TYPE_SIGN_IN) {
+                                    (webView.webViewClient as? WebViewClientImpl)?.getSignInPageUrl(webView)
+                                } else {
+                                    currentUrl
+                                },
                                 currentTitle = currentTitle,
                                 onReject = {
                                     lifecycleScope.launch {
@@ -1367,7 +1372,7 @@ class WebFragment : BaseFragment() {
         webView.removeJavascriptInterface("MixinContext")
         webView.removeJavascriptInterface("mixin")
         webView.webChromeClient = null
-        webView.webViewClient = object : WebViewClient() {}
+        webView.webViewClient = SignInWebViewClient(webView.webViewClient as? SignInWebViewClient)
 
         return WebClip(
             currentUrl,
@@ -1847,6 +1852,7 @@ class WebFragment : BaseFragment() {
 
     @Suppress("DEPRECATION")
     class WebViewClientImpl(
+        previousClient: SignInWebViewClient?,
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
         private val context: Context,
@@ -1858,7 +1864,7 @@ class WebFragment : BaseFragment() {
         private val onFinished: (url: String?) -> Unit,
         private val onWebpageLoaded: (title: String?, url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit,
-    ) : WebViewClient() {
+    ) : SignInWebViewClient(previousClient) {
         private var redirect = false
         private var loadingError = false
         private val jsInjectorClient by lazy {
@@ -1919,6 +1925,7 @@ class WebFragment : BaseFragment() {
             handler: SslErrorHandler?,
             error: SslError?,
         ) {
+            super.onReceivedSslError(view, handler, error)
             error?.let { e ->
                 reportException(Exception("$e ${view?.url}"))
             }
@@ -1982,6 +1989,7 @@ class WebFragment : BaseFragment() {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
             }
             if (url.isWebUrl()) {
+                invalidateSignInPage()
                 view.loadUrl(url, extraHeaders)
                 return true
             } else {
@@ -1999,6 +2007,7 @@ class WebFragment : BaseFragment() {
                     } catch (e: ActivityNotFoundException) {
                         val fallbackUrl = intent.extras?.getString("browser_fallback_url")
                         if (fallbackUrl != null && isFallbackUrlValid(fallbackUrl)) {
+                            invalidateSignInPage()
                             view.loadUrl(fallbackUrl, extraHeaders)
                         } else {
                             throw e
@@ -2008,6 +2017,7 @@ class WebFragment : BaseFragment() {
                     if (e is ActivityNotFoundException) {
                         // do nothing
                     } else {
+                        invalidateSignInPage()
                         view.loadUrl(url, extraHeaders)
                     }
                 }
