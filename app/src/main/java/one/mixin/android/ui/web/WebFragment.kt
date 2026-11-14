@@ -983,9 +983,6 @@ class WebFragment : BaseFragment() {
                     getAssetAction = { ids, callback ->
                         getAssets(ids, callback)
                     },
-                    signBotSignature = { appId, reloadPublicKey, metho, path, body, callbackFunction ->
-                        botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
-                    },
                     openInBrowserAction = { url ->
                         openInBrowser(url)
                     },
@@ -994,6 +991,10 @@ class WebFragment : BaseFragment() {
                     },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
+            if (webView.botSigningBridge == null) {
+                webView.botSigningBridge = BotSigningBridge().also { it.install(webView) }
+            }
+            webView.botSigningBridge?.onRequest = ::botSign
             webView.addJavascriptInterface(
                 Web3Interface(
                     onWalletActionSuccessful = { e ->
@@ -1222,36 +1223,41 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
-        if (!isValidJavaScriptCallback(callbackFunction)) return
-        if (viewDestroyed()) return
+    private fun botSign(request: BotSigningBridge.Request) {
+        if (viewDestroyed() || !request.isCurrent()) return
+        val (appId, reloadPublicKey, method, path, body) = request.arguments
 
         if (appId != app?.appId) {
-            webView.evaluateJavascript("$callbackFunction('[]')") {}
+            request.respond("[]")
             return
         }
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
+            if (!request.isCurrent()) return@launch
             val app = bottomViewModel.findAndSync(appId)
+            if (!request.isCurrent()) return@launch
             if (app == null) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                request.respond("[]")
                 return@launch
             }
-            if (!isVerifiedBot(appId)) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+            val verified = isVerifiedBot(appId)
+            if (!request.isCurrent()) return@launch
+            if (!verified) {
+                request.respond("[]")
                 return@launch
             }
-            if (webView.url?.matchResourcePattern(app.resourcePatterns) != true) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+            if (!request.pageUrl.matchesBotSigningResource(app.resourcePatterns)) {
+                request.respond("[]")
                 bottomViewModel.refreshUser(appId, true)
                 return@launch
             }
-            val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
+            val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey.toBoolean())
+            if (!request.isCurrent()) return@launch
             if (publicKey.isNullOrBlank()) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                request.respond("[]")
                 return@launch
             }
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
-            webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(ts.toString())}, ${JSONObject.quote(signature)})") {}
+            request.respond(ts.toString(), signature)
         }
     }
 
@@ -1387,6 +1393,7 @@ class WebFragment : BaseFragment() {
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
+        webView.botSigningBridge?.detach()
         webView.stopLoading()
         when {
             hold -> {
@@ -1876,6 +1883,7 @@ class WebFragment : BaseFragment() {
         ) {
             super.onPageStarted(view, url, favicon)
             view ?: return
+            (view as? MixinWebView)?.botSigningBridge?.invalidate()
             view.clearCache(true)
             Timber.e("onPageStarted ${Web3Signer.currentChain.name}")
             // Inject on every page start, including pages reached through
@@ -1900,6 +1908,11 @@ class WebFragment : BaseFragment() {
             onFinished(url)
             redirect = false
             loadingError = false
+        }
+
+        override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+            super.doUpdateVisitedHistory(view, url, isReload)
+            (view as? MixinWebView)?.botSigningBridge?.invalidate()
         }
 
         override fun onReceivedError(
@@ -2294,7 +2307,6 @@ class WebFragment : BaseFragment() {
         var getTipAddressAction: ((String, String) -> Unit)? = null,
         var tipSignAction: ((String, String, String) -> Unit)? = null,
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
-        var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
         var openInBrowserAction: ((String) -> Boolean)? = null,
         var verifyPinAction: ((String) -> Unit)? = null,
     ) {
@@ -2366,22 +2378,6 @@ class WebFragment : BaseFragment() {
             callbackFunction: String,
         ) {
             tipSignAction?.invoke(chainId, message, callbackFunction)
-        }
-
-        @JavascriptInterface
-        fun signBotSignature(
-            messageBody: Array<String>,
-        ) {
-            if (messageBody.isEmpty()) {
-                return
-            }
-            val appId = messageBody[0]
-            val reloadPublicKey = messageBody[1]
-            val method = messageBody[2]
-            val path = messageBody[3]
-            val body = messageBody[4]
-            val callbackFunction = messageBody[5]
-            signBotSignature?.invoke(appId, reloadPublicKey.toBoolean(), method, path, body, callbackFunction)
         }
     }
 
