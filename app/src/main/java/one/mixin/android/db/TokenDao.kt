@@ -29,15 +29,15 @@ interface TokenDao : BaseDao<Token> {
             a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
             a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName,
             a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, a1.collection_hash as collectionHash,
-            a1.precision, a1.primitive_asset_id AS primitiveAssetId
+            a1.precision, a1.primitive_asset_id AS primitiveAssetId, COALESCE(a1.level, 11) AS level
             FROM tokens a1 
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
            """
         const val POSTFIX =
-            " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
+            " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(a1.level, 11) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM =
-            " ORDER BY (CASE WHEN a1.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, c.name ASC"
+            " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(a1.level, 11) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, c.name ASC"
         const val NOT_PRIMITIVE_ASSET = "(a1.primitive_asset_id IS NULL OR a1.primitive_asset_id = '')"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
             " WHERE (ae.hidden IS NULL OR NOT ae.hidden) AND $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM"
@@ -77,7 +77,7 @@ interface TokenDao : BaseDao<Token> {
     suspend fun findAllTokenIds(): List<String>
 
     @Query("$PREFIX_ASSET_ITEM WHERE a1.symbol = 'XIN' $POSTFIX_ASSET_ITEM limit 1")
-    fun getXIN(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): TokenItem?
+    fun getXIN(): TokenItem?
 
     @Query("SELECT * FROM tokens WHERE asset_id = :id")
     fun asset(id: String): LiveData<Token?>
@@ -87,17 +87,16 @@ interface TokenDao : BaseDao<Token> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.hidden = 1 AND $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM")
-    fun hiddenAssetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
+    fun hiddenAssetItems(): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN")
-    fun assetItemsNotHidden(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
+    fun assetItemsNotHidden(): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN LIMIT :limit")
     fun walletHomeAssetItemsNotHiddenLimit(
         limit: Int,
-        defaultIconUrl: String = Constants.DEFAULT_ICON_URL,
     ): LiveData<List<TokenItem>>
 
     @Query(
@@ -119,22 +118,22 @@ interface TokenDao : BaseDao<Token> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN LIMIT 3")
-    fun topAssetItemsNotHiddenLimit(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
+    fun topAssetItemsNotHiddenLimit(): LiveData<List<TokenItem>>
 
     @RawQuery
     fun assetItemsNotHiddenRaw(query: RoomRawQuery): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM")
-    fun assetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
+    fun assetItems(): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM")
-    suspend fun allAssetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): List<TokenItem>
+    suspend fun allAssetItems(): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("""$PREFIX_ASSET_ITEM WHERE $NOT_PRIMITIVE_ASSET AND a1.asset_id IN (:assetIds) $POSTFIX_ASSET_ITEM """)
-    fun assetItems(assetIds: List<String>, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
+    fun assetItems(assetIds: List<String>): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE $NOT_PRIMITIVE_ASSET AND a1.asset_id IN (:ids)")
@@ -144,9 +143,8 @@ interface TokenDao : BaseDao<Token> {
     @Query(
         """$PREFIX_ASSET_ITEM 
         WHERE $NOT_PRIMITIVE_ASSET AND (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
-        ORDER BY 
-            a1.symbol = :symbol COLLATE NOCASE OR a1.name = :name COLLATE NOCASE DESC,
-            a1.price_usd*ae.balance DESC
+        AND (COALESCE(a1.level, 11) >= 10 OR ae.hidden IS NULL OR NOT ae.hidden)
+        ORDER BY CASE WHEN a1.symbol LIKE :symbol $ESCAPE_SUFFIX THEN 1 ELSE 0 END DESC, COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(a1.level, 11) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, c.name ASC
         """,
     )
     suspend fun fuzzySearchAssetIgnoreAmount(
@@ -172,15 +170,15 @@ interface TokenDao : BaseDao<Token> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) AND $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM")
-    fun assetItemsWithBalance(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
+    fun assetItemsWithBalance(): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE (ae.hidden IS NULL OR NOT ae.hidden) AND $NOT_PRIMITIVE_ASSET AND a1.asset_id IN (:usdAssetIds) $POSTFIX_ASSET_ITEM")
-    fun usdAssetItemsWithBalance(usdAssetIds: List<String>, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
+    fun usdAssetItemsWithBalance(usdAssetIds: List<String>): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) AND $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM")
-    suspend fun findAssetItemsWithBalance(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): List<TokenItem>
+    suspend fun findAssetItemsWithBalance(): List<TokenItem>
 
     @Query("SELECT a1.symbol, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance, a1.price_usd AS priceUsd FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE ae.balance > 0 AND (ae.hidden IS NULL OR ae.hidden = 0) AND $NOT_PRIMITIVE_ASSET ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC")
     suspend fun findUnifiedAssetItem(): List<UnifiedAssetItem>

@@ -527,11 +527,7 @@ class TokenRepository
         fun walletHomeTokenSummary() = tokenDao.walletHomeTokenSummary()
 
         fun assetItemsNotHiddenRaw() = tokenDao.assetItemsNotHiddenRaw(
-            RoomRawQuery(
-            "$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN", onBindStatement = {
-                    it.bindText(1, Constants.DEFAULT_ICON_URL)
-                }
-        ))
+            RoomRawQuery("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN"))
 
         fun assetItems() = tokenDao.assetItems()
 
@@ -660,22 +656,30 @@ class TokenRepository
                     asset.toAssetItem(chainIconUrl)
                 }
                 val localTokens = if (web3) emptyMap() else tokenDao.suspendFindAssetsByIds(assetList.map { it.assetId }).associateBy { it.assetId }
-                val onlyRemoteItems = arrayListOf<TokenItem>()
                 val updates = arrayListOf<TokenSearchUpdate>()
                 tokenItemList.forEach {
                     val exists = localTokens[it.assetId]
                     if (exists != null) {
-                        updates.add(it.toSearchUpdate(exists.primitiveAssetId))
-                    } else {
-                        onlyRemoteItems.add(it)
+                        updates.add(it.toSearchUpdate(exists.primitiveAssetId, exists.level))
                     }
                 }
 
-                val result = if (updates.isNotEmpty()) {
+                if (updates.isNotEmpty()) {
                     tokenDao.updateSearchResults(updates)
-                    onlyRemoteItems + tokenDao.suspendFindAssetsByIds(localTokens.keys.toList())
-                } else {
-                    tokenItemList
+                }
+                val result = tokenItemList.map { remote ->
+                    localTokens[remote.assetId]?.let { local ->
+                        remote.copy(
+                            balance = local.balance,
+                            hidden = local.hidden,
+                            chainIconUrl = remote.chainIconUrl ?: local.chainIconUrl,
+                            chainSymbol = local.chainSymbol,
+                            chainName = local.chainName,
+                            withdrawalMemoPossibility = local.withdrawalMemoPossibility,
+                            primitiveAssetId = remote.primitiveAssetId ?: local.primitiveAssetId,
+                            level = remote.level ?: local.level,
+                        )
+                    } ?: remote.copy(level = remote.level ?: Constants.AssetLevel.VERIFIED)
                 }
                 return if (web3) {
                     (result + localLike

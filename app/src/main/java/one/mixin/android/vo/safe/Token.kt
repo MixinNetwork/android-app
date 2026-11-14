@@ -10,6 +10,7 @@ import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import one.mixin.android.Constants
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -86,6 +87,10 @@ data class Token(
     @SerializedName("primitive_asset_id")
     @SerialName("primitive_asset_id")
     val primitiveAssetId: String? = null,
+    @ColumnInfo(name = "level", defaultValue = "11")
+    @SerializedName("level")
+    @SerialName("level")
+    val level: Int? = Constants.AssetLevel.VERIFIED,
 ) : Parcelable
 
 data class TokenSearchUpdate(
@@ -101,10 +106,12 @@ data class TokenSearchUpdate(
     val changeBtc: String,
     @ColumnInfo(name = "primitive_asset_id")
     val primitiveAssetId: String?,
+    @ColumnInfo(name = "level")
+    val level: Int?,
 )
 
-fun TokenItem.toSearchUpdate(localPrimitiveAssetId: String?) = TokenSearchUpdate(
-    assetId, priceBtc, priceUsd, changeUsd, changeBtc, primitiveAssetId ?: localPrimitiveAssetId,
+fun TokenItem.toSearchUpdate(localPrimitiveAssetId: String?, localLevel: Int? = null) = TokenSearchUpdate(
+    assetId, priceBtc, priceUsd, changeUsd, changeBtc, primitiveAssetId ?: localPrimitiveAssetId, level ?: localLevel,
 )
 
 fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
@@ -128,7 +135,7 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
         dust,
         null,
         collectionHash,
-        null,
+        level,
         precision,
         primitiveAssetId,
     )

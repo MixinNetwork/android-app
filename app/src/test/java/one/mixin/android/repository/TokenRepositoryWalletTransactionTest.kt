@@ -5,13 +5,16 @@ import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import com.birbit.android.jobqueue.config.Configuration
+import one.mixin.android.util.GsonHelper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import one.mixin.android.Constants
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.web3.WalletOutput
+import one.mixin.android.api.service.TokenService
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.datasource.RoomDatabaseCompat
@@ -22,6 +25,7 @@ import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.vo.safe.Token
 import org.bitcoinj.core.Transaction
 import org.junit.After
 import org.junit.Before
@@ -81,6 +85,35 @@ class TokenRepositoryWalletTransactionTest {
             wallet.close()
             withContext(Dispatchers.IO) { jobs.destroy() }
         }
+    }
+
+    @Test
+    fun searchUsesRemoteDetailsAndPreservesLocalBalance() = runBlocking {
+        RoomDatabaseCompat.execute(main, "INSERT INTO chains(chain_id, name, symbol, icon_url, threshold, withdrawal_memo_possibility) VALUES ('chain', 'Chain', 'CH', 'icon', 1, 'possible')")
+        RoomDatabaseCompat.execute(main, "INSERT INTO tokens(asset_id, kernel_asset_id, symbol, name, icon_url, price_btc, price_usd, chain_id, change_usd, change_btc, confirmations, asset_key, dust, precision) VALUES ('asset', 'kernel', 'OLD', 'Old', '', '0', '1', 'chain', '0', '0', 1, '', '0', 8)")
+        RoomDatabaseCompat.execute(main, "INSERT INTO tokens_extra(asset_id, kernel_asset_id, hidden, balance, updated_at) VALUES ('asset', 'kernel', 1, '2', '')")
+        val remote = Token("asset", "kernel", "NEW", "New", "new-icon", "0", "5", "chain", "0", "0", 1, "", "0", null, 8, level = 12)
+        val response = MixinResponse<List<Token>>().apply { data = listOf(remote) }
+        val service = Proxy.newProxyInstance(TokenService::class.java.classLoader, arrayOf(TokenService::class.java)) { _, method, _ ->
+            if (method.name == "queryAssets") response else error("Unexpected network call: ${method.name}")
+        } as TokenService
+
+        val result = repository(tokenService = service).queryAsset(null, "NEW").single()
+
+        assertEquals("NEW", result.symbol)
+        assertEquals("New", result.name)
+        assertEquals("5", result.priceUsd)
+        assertEquals(12, result.level)
+        assertEquals(12, main.tokenDao().findAssetItemById("asset")?.level)
+        val missingLevel = GsonHelper.customGson.fromJson(GsonHelper.customGson.toJson(remote).replace(",\"level\":12", ""), Token::class.java)
+        assertNull(missingLevel.level)
+        response.data = listOf(missingLevel)
+        assertEquals(12, repository(tokenService = service).queryAsset(null, "NEW").single().level)
+        assertEquals(12, main.tokenDao().findAssetItemById("asset")?.level)
+        assertEquals("2", result.balance)
+        assertEquals(true, result.hidden)
+        assertEquals("Chain", result.chainName)
+        assertEquals("2", main.tokenDao().findAssetItemById("asset")?.balance)
     }
 
     @Test
@@ -343,10 +376,10 @@ class TokenRepositoryWalletTransactionTest {
 
     private fun clearFailure() = RoomDatabaseCompat.execute(wallet, "DROP TRIGGER fail_write")
 
-    private fun repository(transactions: Web3TransactionDao = wallet.web3TransactionDao()) = TokenRepository(
+    private fun repository(transactions: Web3TransactionDao = wallet.web3TransactionDao(), tokenService: TokenService = unavailableService()) = TokenRepository(
         appDatabase = main,
         walletDatabase = wallet,
-        tokenService = unavailableService(),
+        tokenService = tokenService,
         assetService = unavailableService(),
         utxoService = unavailableService(),
         userService = unavailableService(),
