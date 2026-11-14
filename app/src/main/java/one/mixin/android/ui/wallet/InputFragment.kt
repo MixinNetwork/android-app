@@ -1381,7 +1381,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun handleSuccessfulWeb3Transfer() {
         if (!isAdded) return
-        AnalyticsTracker.trackAssetSendEnd()
+        AnalyticsTracker.trackAssetSendEnd(TradeWallet.WEB3, AnalyticsTracker.AssetSendDestination.USER)
         val navController = findNavController()
         val backStackEntryCount = parentFragmentManager.backStackEntryCount
         val currentDestination = navController.currentDestination?.id

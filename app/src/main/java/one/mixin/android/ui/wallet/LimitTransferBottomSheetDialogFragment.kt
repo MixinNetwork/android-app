@@ -638,7 +638,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private fun trackLimitSuccess() {
         val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
         AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
-        AnalyticsTracker.trackSpotEnd(wallet, inAmount, inAsset.price)
+        AnalyticsTracker.trackSpotEnd(wallet, inAsset.symbol, inAmount, inAsset.price)
     }
 
     private suspend fun handleError(error: ResponseError?): String? {
