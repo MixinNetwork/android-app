@@ -16,7 +16,7 @@
         android:padding="8dp"
         android:layout_marginStart="8dp"
         android:src="@drawable/ic_msg_close"
-        tools:ignore="ContentDescription" />
+        android:contentDescription="@string/Close" />
 
     <TextView
         android:id="@+id/count_tv"
@@ -40,7 +40,7 @@
         android:padding="8dp"
         android:layout_marginEnd="8dp"
         android:src="@drawable/ic_msg_delete"
-        tools:ignore="ContentDescription" />
+        android:contentDescription="@string/Delete" />
 
     <ImageView
         android:id="@+id/copy_iv"
@@ -52,7 +52,7 @@
         android:padding="8dp"
         android:src="@drawable/ic_content_copy"
         android:layout_marginEnd="8dp"
-        tools:ignore="ContentDescription" />
+        android:contentDescription="@string/Copy" />
 
     <ImageView
         android:id="@+id/forward_iv"
@@ -64,7 +64,7 @@
         android:padding="8dp"
         android:src="@drawable/ic_msg_forward"
         android:layout_marginEnd="8dp"
-        tools:ignore="ContentDescription" />
+        android:contentDescription="@string/Forward" />
 
     <ImageView
         android:id="@+id/add_sticker_iv"
@@ -76,7 +76,7 @@
         android:padding="8dp"
         android:src="@drawable/ic_sticker_add"
         android:layout_marginEnd="8dp"
-        tools:ignore="ContentDescription" />
+        android:contentDescription="@string/Add_Sticker" />
 
     <ImageView
         android:id="@+id/reply_iv"
@@ -88,7 +88,7 @@
         android:padding="8dp"
         android:src="@drawable/ic_reply"
         android:layout_marginEnd="8dp"
-        tools:ignore="ContentDescription" />
+        android:contentDescription="@string/Reply" />
 
     <ImageView
         android:id="@+id/pin_iv"
@@ -100,7 +100,7 @@
         android:padding="8dp"
         android:src="@drawable/ic_message_pin"
         android:layout_marginEnd="8dp"
-        tools:ignore="ContentDescription" />
+        android:contentDescription="@string/pin_title" />
 
     <ImageView
         android:id="@+id/share_iv"
@@ -112,5 +112,16 @@
         android:padding="8dp"
         android:src="@drawable/ic_share"
         android:layout_marginEnd="8dp"
-        tools:ignore="ContentDescription" />
+        android:contentDescription="@string/Share" />
+    <ImageView
+        android:id="@+id/more_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/mixin_ripple"
+        android:contentDescription="@string/More"
+        android:padding="8dp"
+        android:src="@drawable/ic_more" />
 </RelativeLayout>
