@@ -351,6 +351,15 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             }
             if (m is WCEthereumTransaction) {
                 refreshEstimatedGasAndAsset(chain)
+            } else if (m is WcBitcoinSendTransfer) {
+                this@WalletConnectBottomSheetDialogFragment.signData = signData.copy(bitcoinFee = null)
+                try {
+                    asset = viewModel.refreshAsset(Chain.Bitcoin.assetId)
+                    val bitcoinFee = viewModel.estimateBitcoinFee(m, account)
+                    this@WalletConnectBottomSheetDialogFragment.signData = signData.copy(bitcoinFee = bitcoinFee)
+                } catch (e: Exception) {
+                    handleException(e)
+                }
             } else if (m is VersionedTransactionCompat) {
                 asset = viewModel.refreshAsset(Chain.Solana.assetId)
                 try {
@@ -509,9 +518,6 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                 },
                                 { address ->
                                     viewModel.outputsByAddress(address, Chain.Bitcoin.assetId)
-                                },
-                                { rawTx ->
-                                    viewModel.estimateBitcoinFee(rawTx)
                                 },
                             )
                     }
