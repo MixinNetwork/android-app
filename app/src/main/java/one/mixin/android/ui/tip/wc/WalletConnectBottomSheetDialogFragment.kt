@@ -331,7 +331,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     try {
                         viewModel.parseV2SignData(account, sessionRequest)
                     } catch (e: Exception) {
-                        toast(e.message ?: "Unknown error")
+                        toast(ErrorHandler.getErrorMessage(e))
                         null
                     }
             }
