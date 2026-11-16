@@ -291,6 +291,7 @@ import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
 import one.mixin.android.widget.linktext.AutoLinkMode
+import one.mixin.android.widget.picker.DEFAULT_NEW_CHAT_EXPIRE_IN
 import timber.log.Timber
 import java.io.File
 import java.util.UUID
@@ -1532,7 +1533,13 @@ class ConversationFragment() :
     }
 
     private fun initView() {
-        binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
+        viewLifecycleOwner.lifecycleScope.launch {
+            val context = requireContext()
+            val wallpaper = withContext(Dispatchers.IO) {
+                WallpaperManager.getWallpaper(context)
+            }
+            binding.inputLayout.backgroundImage = wallpaper
+        }
         binding.chatControl.callback = chatControlCallback
         binding.chatControl.activity = requireActivity()
         binding.chatControl.inputLayout = binding.inputLayout
@@ -2041,7 +2048,11 @@ class ConversationFragment() :
                 }
             }
             chatViewModel.observeConversation(conversationId).observe(viewLifecycleOwner) { conversation ->
-                val expireIn = conversation?.expireIn ?: 0L
+                val expireIn = if (conversation == null && !isGroup) {
+                    DEFAULT_NEW_CHAT_EXPIRE_IN
+                } else {
+                    conversation?.expireIn ?: 0L
+                }
                 binding.actionBar.setExpireIconVisible(expireIn > 0L)
                 messageAdapter.expireIn = expireIn
             }

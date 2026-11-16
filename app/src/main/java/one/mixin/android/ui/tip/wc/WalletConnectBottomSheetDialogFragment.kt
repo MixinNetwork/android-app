@@ -55,6 +55,7 @@ import one.mixin.android.tip.wc.WalletConnectV2.getNamespaceProposal
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WcBitcoinSendTransfer
+import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.tip.wc.internal.WalletConnectException
@@ -81,6 +82,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.eip712SigningChain
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.exception.RpcException
@@ -343,6 +345,10 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             this@WalletConnectBottomSheetDialogFragment.signData = signData
 
             val m = signData.signMessage
+            // Typed data is signed for its domain's chain, not the request's: show that one.
+            if (m is WCEthereumSignMessage && m.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
+                runCatching { eip712SigningChain(m.data, null, "") }.getOrNull()?.let { chain = it }
+            }
             if (m is WCEthereumTransaction) {
                 refreshEstimatedGasAndAsset(chain)
             } else if (m is VersionedTransactionCompat) {
