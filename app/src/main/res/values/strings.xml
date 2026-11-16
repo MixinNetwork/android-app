@@ -2772,4 +2772,7 @@
     <string name="Last_Updated">Last Updated</string>
     <string name="Last_Updated_at">Last Updated: %1$s</string>
     <string name="number_of_networks">%1$d Networks</string>
+    <string name="network_fee_description">Network fees are transaction fees paid to miners or validators for processing and confirming transactions on the blockchain.</string>
+    <string name="network_fee_charged_by">Network fees are charged by the %1$s network.</string>
+    <string name="network_fee_independent_of_amount">Network fees are independent of the transfer amount.</string>
 </resources>

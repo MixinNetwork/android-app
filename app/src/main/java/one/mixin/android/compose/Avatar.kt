@@ -36,7 +36,7 @@ fun UserAvatarImage(
     AvatarImage(
         name = user.fullName ?: "",
         imageUrl = user.avatarUrl,
-        identityNumber = user.identityNumber,
+        colorKey = user.userId,
         size = size,
     )
 }
@@ -49,7 +49,7 @@ fun AppAvatarImage(
     AvatarImage(
         name = app.name,
         imageUrl = app.iconUrl,
-        identityNumber = app.appNumber,
+        colorKey = app.appId,
         size = size,
     )
 }
@@ -58,7 +58,7 @@ fun AppAvatarImage(
 private fun AvatarImage(
     name: String,
     imageUrl: String?,
-    identityNumber: String,
+    colorKey: String,
     size: Dp,
 ) {
     if (!imageUrl.isNullOrEmpty()) {
@@ -72,7 +72,7 @@ private fun AvatarImage(
         )
     } else {
         val avatarArray = integerArrayResource(id = R.array.avatar_colors)
-        val code = identityNumber.getColorCode(CodeType.Avatar(avatarArray.size))
+        val code = colorKey.getColorCode(CodeType.Avatar(avatarArray.size))
         val color = avatarArray.getOrElse(code) { avatarArray[0] }
         val fontSize = with(LocalDensity.current) { (size * (22f / 48f)).toSp() }
         Box(
@@ -111,7 +111,7 @@ fun AvatarImagePreview() {
         AvatarImage(
             name = "Test",
             imageUrl = null,
-            identityNumber = "1234124",
+            colorKey = "1234124",
             size = 100.dp,
         )
     }

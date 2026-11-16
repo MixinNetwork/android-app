@@ -29,6 +29,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.uber.autodispose.autoDispose
 import one.mixin.android.BuildConfig
@@ -71,6 +72,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_URL = "args_url"
         private const val ARGS_TITLE = "args_title"
         private const val ARGS_SUBTITLE = "args_subtitle"
+        private const val DISABLE_EME_SCRIPT =
+            "Navigator.prototype.requestMediaKeySystemAccess = function() { " +
+                "return Promise.reject(new DOMException('Unsupported keySystem or supportedConfigurations.', 'NotSupportedError')); };"
 
         fun newInstance(
             url: String,
@@ -162,6 +166,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             settings.userAgentString = settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME + " GOOGLE_PAY_SUPPORTED"
             if (WebViewFeature.isFeatureSupported(WebViewFeature.PAYMENT_REQUEST)) {
                 WebSettingsCompat.setPaymentRequestEnabled(settings, true)
+            }
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+                // Probing EME support makes WebView query the DRM HAL on the main thread, which can hang and cause ANRs
+                WebViewCompat.addDocumentStartJavaScript(this, DISABLE_EME_SCRIPT, setOf("*"))
             }
             webChromeClient =
                 object : WebChromeClient() {

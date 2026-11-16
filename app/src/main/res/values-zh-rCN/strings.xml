@@ -2688,4 +2688,7 @@
     <string name="Last_Updated">最后更新</string>
     <string name="Last_Updated_at">最后更新： %1$s</string>
     <string name="number_of_networks">%1$d 个网络</string>
+    <string name="network_fee_description">网络费是区块链处理交易时产生的手续费，用于支付矿工或验证节点处理和确认交易的费用。</string>
+    <string name="network_fee_charged_by">网络费由 %1$s 网络收取</string>
+    <string name="network_fee_independent_of_amount">网络费与转账金额无关</string>
 </resources>

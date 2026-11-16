@@ -2737,4 +2737,7 @@
     <string name="Last_Updated">最後更新</string>
     <string name="Last_Updated_at">最後更新： %1$s</string>
     <string name="number_of_networks">%1$d 個網路</string>
+    <string name="network_fee_description">網路費是區塊鏈處理交易時產生的手續費，用於支付礦工或驗證節點處理和確認交易的費用。</string>
+    <string name="network_fee_charged_by">網路費由 %1$s 網路收取</string>
+    <string name="network_fee_independent_of_amount">網路費與轉帳金額無關</string>
 </resources>
