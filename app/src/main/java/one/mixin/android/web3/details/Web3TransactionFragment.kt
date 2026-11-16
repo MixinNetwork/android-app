@@ -500,7 +500,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             feeLl.isVisible = shouldShowFee(currentStatus)
             feeTv.text = "${transaction.displayFeeAmount()} ${transaction.displayFeeSymbol() ?: ""}"
             val showFeeInfo = View.OnClickListener {
-                NetworkFeeInfoBottomSheetDialogFragment.newInstance(token.chainName.orEmpty())
+                NetworkFeeInfoBottomSheetDialogFragment.newInstance(token.getChainDisplayName())
                     .show(parentFragmentManager, NetworkFeeInfoBottomSheetDialogFragment.TAG)
             }
             feeTitleTv.setOnClickListener(showFeeInfo)

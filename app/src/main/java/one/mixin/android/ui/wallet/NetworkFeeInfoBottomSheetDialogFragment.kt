@@ -1,14 +1,20 @@
 package one.mixin.android.ui.wallet
 
 import android.view.View
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -25,7 +31,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.widget.components.DotText
 import one.mixin.android.widget.components.MixinButton
 
 @AndroidEntryPoint
@@ -71,15 +76,13 @@ class NetworkFeeInfoBottomSheetDialogFragment : MixinComposeBottomSheetDialogFra
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(12.dp))
-                DotText(
+                NetworkFeeBulletItem(
                     text = stringResource(R.string.network_fee_charged_by, requireArguments().getString(ARGS_CHAIN_NAME).orEmpty()),
-                    color = MixinAppTheme.colors.textMinor,
                     style = bodyStyle,
                 )
                 Spacer(Modifier.height(4.dp))
-                DotText(
+                NetworkFeeBulletItem(
                     text = stringResource(R.string.network_fee_independent_of_amount),
-                    color = MixinAppTheme.colors.textMinor,
                     style = bodyStyle,
                 )
                 Spacer(Modifier.height(34.dp))
@@ -92,6 +95,31 @@ class NetworkFeeInfoBottomSheetDialogFragment : MixinComposeBottomSheetDialogFra
                     Text(stringResource(R.string.Got_it), color = Color.White, fontSize = 16.sp)
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun NetworkFeeBulletItem(
+        text: String,
+        style: TextStyle,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(top = 8.5.dp)
+                    .size(4.dp)
+                    .background(color = MixinAppTheme.colors.textAssist, shape = CircleShape),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = text,
+                style = style,
+                color = MixinAppTheme.colors.textMinor,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 
