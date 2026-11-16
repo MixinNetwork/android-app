@@ -339,6 +339,13 @@ androidComponents {
     }
 }
 
+// The BugSnag plugin extracts its embedded bugsnag-cli to a temp file at configuration time and the
+// configuration cache stores that path. Once the OS cleans the temp dir, cached builds fail with
+// "A problem occurred starting process '.../bugsnag-cli…'", so force a fresh configuration for these tasks.
+tasks.matching { it.name.startsWith("bugsnag") }.configureEach {
+    notCompatibleWithConfigurationCache("bugsnag-cli is extracted to a temp file at configuration time")
+}
+
 room3 {
     schemaDirectory("googlePlay", "$projectDir/schemas/googlePlay")
     schemaDirectory("otherChannel", "$projectDir/schemas/otherChannel")
