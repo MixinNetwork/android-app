@@ -76,6 +76,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Chain
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.toAddressItem
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
@@ -227,18 +228,26 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                                     title = stringResource(R.string.Transactions),
                                     showViewAll = (transactionCount ?: 0) > 10,
                                     onClick = {
+                                        val iconUrl = chains.firstOrNull { it.chainId == address.chainId }?.iconUrl
                                         if (currentWalletId == null) {
                                             findNavController().navigate(
                                                 R.id.action_address_book_to_all_transactions,
                                                 Bundle().apply {
                                                     putParcelable(AllTransactionsFragment.ARGS_ADDRESS, address)
+                                                    putString(AllTransactionsFragment.ARGS_ADDRESS_ICON_URL, iconUrl)
                                                 },
                                             )
                                         } else {
                                             findNavController().navigate(
                                                 R.id.action_address_book_to_all_web3_transactions,
                                                 Bundle().apply {
-                                                    putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(walletId = currentWalletId, address = address))
+                                                    putParcelable(
+                                                        AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS,
+                                                        Web3FilterParams(
+                                                            walletId = currentWalletId,
+                                                            addresses = listOf(address.toAddressItem(iconUrl)),
+                                                        ),
+                                                    )
                                                 },
                                             )
                                         }

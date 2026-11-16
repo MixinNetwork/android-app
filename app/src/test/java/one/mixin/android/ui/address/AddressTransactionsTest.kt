@@ -22,6 +22,7 @@ import one.mixin.android.ui.wallet.WalletFilterQueryGenerated
 import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.toAddressItem
 import one.mixin.android.vo.safe.SafeDeposit
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeWithdrawal
@@ -312,6 +313,55 @@ class AddressTransactionsTest {
         assertEquals(
             WalletFilterQueryGenerated.web3Transactions("WHERE w.address IN (SELECT destination FROM addresses WHERE wallet_id = 'wallet-a') AND w.level >= 11", "ORDER BY w.transaction_at DESC", "wallet-a").sql,
             Web3FilterParams(walletId = "wallet-a").buildQuery().sql,
+        )
+    }
+
+    @Test
+    fun recipientAddressItemsMatchSingleAndMultipleChainsAndAllowClearing() = runBlocking {
+        val base = Constants.ChainId.Base
+        val solana = Constants.ChainId.Solana
+        main.tokenDao().insertSuspend(token("base", base), token("solana", solana))
+        wallet.web3AddressDao().insertSuspend(Web3Address("solana", "wallet-a", solana, "SOL-OWNER", null, time))
+        val ethAddress = address
+        val baseAddress = address.copy(addressId = "saved-base", assetId = "base", chainId = base, label = "Base")
+        val solAddress = Address("saved-sol", "address", "solana", solana, "SolDest", "Solana", time, null, null)
+
+        main.safeSnapshotDao().insertListSuspend(
+            listOf(
+                snapshot("eth-1", "0xabcd", "asset"),
+                snapshot("base-1", "0xabcd", "base"),
+                snapshot("sol-1", "SolDest", "solana"),
+                snapshot("other-1", "0x9999", "asset"),
+            ),
+        )
+        assertEquals(
+            privacy(FilterParams(address = ethAddress)).map { it.snapshotId },
+            privacy(FilterParams(recipients = listOf(ethAddress.toAddressItem()))).map { it.snapshotId },
+        )
+        assertEquals(
+            listOf("sol-1", "eth-1"),
+            privacy(FilterParams(recipients = listOf(ethAddress.toAddressItem(), solAddress.toAddressItem()))).map { it.snapshotId },
+        )
+
+        wallet.web3TransactionDao().insertListSuspend(
+            listOf(
+                transaction("eth-tx").copy(address = "OWNER-A"),
+                transaction("base-tx").copy(chainId = base, address = "OWNER-A"),
+                transaction("sol-tx").copy(chainId = solana, address = "SOL-OWNER", senders = listOf(AssetChange("solana", "1", to = "SolDest"))),
+                transaction("other-tx").copy(address = "OWNER-A", senders = listOf(AssetChange("asset", "1", to = "0x9999"))),
+            ),
+        )
+        assertEquals(
+            web3(Web3FilterParams(walletId = "wallet-a", address = baseAddress)).map { it.transactionHash },
+            web3(Web3FilterParams(walletId = "wallet-a", addresses = listOf(baseAddress.toAddressItem()))).map { it.transactionHash },
+        )
+        assertEquals(
+            listOf("sol-tx", "base-tx"),
+            web3(Web3FilterParams(walletId = "wallet-a", addresses = listOf(baseAddress.toAddressItem(), solAddress.toAddressItem()))).map { it.transactionHash },
+        )
+        assertEquals(
+            setOf("sol-tx", "other-tx", "eth-tx", "base-tx"),
+            web3(Web3FilterParams(walletId = "wallet-a", addresses = null)).map { it.transactionHash }.toSet(),
         )
     }
 

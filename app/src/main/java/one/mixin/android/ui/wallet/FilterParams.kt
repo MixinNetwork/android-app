@@ -108,14 +108,19 @@ class FilterParams(
             }
             val addressSql = if (addresses.isNotEmpty()) {
                 addresses.joinToString(" OR ") { item ->
-                    val address = item.displayAddress()
-                        .replace("\\", "\\\\")
-                        .replace("%", "\\%")
-                        .replace("_", "\\_")
-                    val pattern = "%$address%"
-                    addressArgs.add(pattern)
-                    addressArgs.add(pattern)
-                    "s.withdrawal LIKE ? ESCAPE '\\' OR s.deposit LIKE ? ESCAPE '\\'"
+                    if (item.chainId.isNotBlank()) {
+                        val chainIdSql = item.chainId.replace("'", "''")
+                        "(t.chain_id = '$chainIdSql' AND (${jsonAddressPredicate(item.chainId, item.destination, item.tag, "s.deposit", "sender")} OR ${jsonAddressPredicate(item.chainId, item.destination, item.tag, "s.withdrawal", "receiver")}))"
+                    } else {
+                        val address = item.displayAddress()
+                            .replace("\\", "\\\\")
+                            .replace("%", "\\%")
+                            .replace("_", "\\_")
+                        val pattern = "%$address%"
+                        addressArgs.add(pattern)
+                        addressArgs.add(pattern)
+                        "(s.withdrawal LIKE ? ESCAPE '\\' OR s.deposit LIKE ? ESCAPE '\\')"
+                    }
                 }
             } else {
                 null
@@ -151,7 +156,7 @@ class FilterParams(
             SortOrder.Amount -> "ORDER BY abs(s.amount) DESC"
             else -> ""
         }
-        if (address != null) {
+        if (address != null || recipients?.any { it is AddressItem } == true) {
             orderSql += when (order) {
                 SortOrder.Recent -> ", s.snapshot_id DESC"
                 SortOrder.Oldest -> ", s.snapshot_id ASC"
@@ -173,7 +178,16 @@ class FilterParams(
     }
 }
 
-internal fun Address.jsonAddressPredicate(column: String, field: String): String {
+internal fun Address.jsonAddressPredicate(column: String, field: String): String =
+    jsonAddressPredicate(chainId, destination, tag, column, field)
+
+internal fun jsonAddressPredicate(
+    chainId: String,
+    destination: String,
+    tag: String?,
+    column: String,
+    field: String,
+): String {
     val ignoreCase = chainId in Constants.Web3EvmChainIds
     val marker = "\"$field\":"
     if (tag.isNullOrEmpty()) {

@@ -1,6 +1,9 @@
 package one.mixin.android.db
 
 import android.content.Context
+import android.os.Looper
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.room3.Room
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.Dispatchers
@@ -8,10 +11,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.Chain
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 
 @RunWith(RobolectricTestRunner::class)
 class AddressBookDaoTest {
@@ -48,8 +53,34 @@ class AddressBookDaoTest {
 
             dao.deleteById(bnb.addressId)
             assertEquals(listOf(ethereum), dao.allAddressesFlow().first())
+
+            database.chainDao().insertSuspend(
+                Chain(
+                    chainId = ChainId.ETHEREUM_CHAIN_ID,
+                    name = "Ethereum",
+                    symbol = "ETH",
+                    iconUrl = "https://example.com/eth.png",
+                    threshold = 1,
+                ),
+            )
+            val items = dao.allAddresses().read()
+            assertEquals(1, items.size)
+            assertEquals(ChainId.ETHEREUM_CHAIN_ID, items.single().chainId)
+            assertEquals("https://example.com/eth.png", items.single().iconUrl)
+            assertEquals("https://example.com/eth.png", items.single().chainUrl)
         } finally {
             database.close()
+        }
+    }
+
+    private fun <T> LiveData<T>.read(): T {
+        val observer = Observer<T> {}
+        observeForever(observer)
+        try {
+            shadowOf(Looper.getMainLooper()).idle()
+            return requireNotNull(value)
+        } finally {
+            removeObserver(observer)
         }
     }
 }
