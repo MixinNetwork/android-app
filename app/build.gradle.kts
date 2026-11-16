@@ -1,3 +1,22 @@
+import java.io.BufferedOutputStream
+import java.io.FileOutputStream
+import java.util.TreeMap
+import java.util.jar.JarEntry
+import java.util.jar.JarOutputStream
+import java.util.zip.ZipFile
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.commons.ClassRemapper
+import org.objectweb.asm.commons.Remapper
+
 plugins {
     id("com.android.application")
     id("dagger.hilt.android.plugin")
@@ -112,7 +131,6 @@ val jsonVersion = rootProject.extra["jsonVersion"] as String
 val composeVersion = rootProject.extra["composeVersion"] as String
 val accompanistVersion = rootProject.extra["accompanistVersion"] as String
 val sol4kVersion = rootProject.extra["sol4kVersion"] as String
-val protobufVersion = rootProject.extra["protobufVersion"] as String
 val kotsonVersion = rootProject.extra["kotsonVersion"] as String
 val lottieComposeVersion = rootProject.extra["lottieComposeVersion"] as String
 val composeBomVersion = rootProject.extra["composeBomVersion"] as String
@@ -351,6 +369,83 @@ room3 {
     schemaDirectory("otherChannel", "$projectDir/schemas/otherChannel")
 }
 
+@CacheableTask
+abstract class RelocateSignalProtobufTask : DefaultTask() {
+    @get:Classpath
+    abstract val inputJars: ConfigurableFileCollection
+
+    @get:OutputFile
+    abstract val outputJar: RegularFileProperty
+
+    @TaskAction
+    fun relocate() {
+        val sourceInternalPrefix = "com/google/protobuf/"
+        val targetInternalPrefix = "org/whispersystems/libsignal/shaded/protobuf/"
+        val sourceDotPrefix = "com.google.protobuf."
+        val targetDotPrefix = "org.whispersystems.libsignal.shaded.protobuf."
+
+        val remapper = object : Remapper(Opcodes.ASM9) {
+            override fun map(internalName: String): String =
+                if (internalName.startsWith(sourceInternalPrefix)) {
+                    targetInternalPrefix + internalName.removePrefix(sourceInternalPrefix)
+                } else {
+                    internalName
+                }
+
+            override fun mapValue(value: Any?): Any? =
+                if (value is String && value.startsWith(sourceDotPrefix)) {
+                    targetDotPrefix + value.removePrefix(sourceDotPrefix)
+                } else {
+                    super.mapValue(value)
+                }
+        }
+
+        val relocatedEntries = TreeMap<String, ByteArray>()
+        inputJars.files.sortedBy { it.name }.forEach { jarFile ->
+            ZipFile(jarFile).use { zip ->
+                val entries = zip.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
+                    val name = entry.name
+                    if (!name.endsWith(".class") || name == "module-info.class") continue
+                    val bytes = zip.getInputStream(entry).use { it.readBytes() }
+                    val reader = ClassReader(bytes)
+                    val writer = ClassWriter(0)
+                    reader.accept(ClassRemapper(writer, remapper), 0)
+                    val mappedName = remapper.map(name.removeSuffix(".class")) + ".class"
+                    check(relocatedEntries.put(mappedName, writer.toByteArray()) == null) {
+                        "Duplicate relocated class entry: $mappedName"
+                    }
+                }
+            }
+        }
+
+        val outFile = outputJar.get().asFile
+        outFile.parentFile.mkdirs()
+        JarOutputStream(BufferedOutputStream(FileOutputStream(outFile))).use { jos ->
+            for ((entryName, classBytes) in relocatedEntries) {
+                val jarEntry = JarEntry(entryName).apply { time = 0L }
+                jos.putNextEntry(jarEntry)
+                jos.write(classBytes)
+                jos.closeEntry()
+            }
+        }
+    }
+}
+
+// signal-protocol-java 2.8.1 uses protoc 3.10.0 proto2 raw message info, which fails at runtime
+// on protobuf-javalite >= 3.14. Relocate its protobuf classes so other libraries can use modern javalite.
+val signalProtobufShade = configurations.create("signalProtobufShade") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
+
+val relocateSignalProtobuf = tasks.register<RelocateSignalProtobufTask>("relocateSignalProtobuf") {
+    inputJars.from(signalProtobufShade)
+    outputJar.set(layout.buildDirectory.file("generated/shadedJars/signal-protocol-shaded.jar"))
+}
+
 dependencies {
     implementation("org.bitcoinj:bitcoinj-core:$bitcoinVersion") {
         exclude(group = "net.jcip", module = "jcip-annotations")
@@ -358,6 +453,11 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:$desugarJdkLibsVersion")
     implementation(platform("com.google.firebase:firebase-bom:$firebaseBomVersion"))
     implementation("com.google.firebase:firebase-perf")
+    constraints {
+        implementation("com.google.firebase:protolite-well-known-types:19.0.0") {
+            because("protobuf-javalite 4.x bundles DescriptorProtos and descriptor.proto")
+        }
+    }
     implementation(fileTree(mapOf("include" to listOf("*.aar"), "dir" to "libs")))
     implementation("androidx.fragment:fragment-ktx:$fragmentVersion")
     implementation("androidx.activity:activity-ktx:$activityVersion")
@@ -472,12 +572,6 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
 
-    implementation("com.google.protobuf:protobuf-javalite") {
-        version {
-            strictly(protobufVersion)
-        }
-    }
-
     implementation("com.google.mlkit:barcode-scanning:$mlkitBarcodeVersion")
     implementation("com.google.android.play:app-update-ktx:$playVersion")
     implementation("com.google.android.gms:play-services-maps:$playServicesMapsVersion")
@@ -485,7 +579,16 @@ dependencies {
     implementation("com.google.android.gms:play-services-cronet:$googlePlayServicesVersion")
     implementation("com.google.zxing:core:$zxingVersion")
     implementation("com.github.tougee:sticky-headers-recyclerview:$stickyHeadersRecyclerViewVersion")
-    implementation("org.whispersystems:signal-protocol-android:$signalVersion")
+    signalProtobufShade("org.whispersystems:signal-protocol-java:$signalVersion")
+    signalProtobufShade("com.google.protobuf:protobuf-javalite") {
+        version {
+            strictly("3.11.0")
+        }
+    }
+    implementation(files(relocateSignalProtobuf))
+    implementation("org.whispersystems:signal-protocol-android:$signalVersion") {
+        exclude(group = "org.whispersystems", module = "signal-protocol-java")
+    }
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
@@ -600,12 +703,6 @@ dependencies {
 
     // ML Kit
     implementation("com.google.mlkit:entity-extraction:$entityExtractionVersion")
-
-    testImplementation("com.google.protobuf:protobuf-javalite") {
-        version {
-            strictly(protobufVersion)
-        }
-    }
 
     // AppsFlyer
     implementation("com.appsflyer:af-android-sdk:$appsFlyerVersion") {
