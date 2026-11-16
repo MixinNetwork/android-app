@@ -64,6 +64,7 @@ fun PageScaffold(
     onTopBarLongClick: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     backIcon: Int = R.drawable.ic_back,
+    titleContent: @Composable (() -> Unit)? = null,
     body: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
@@ -72,13 +73,17 @@ fun PageScaffold(
             MixinTopAppBar(
                 title = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        BasicText(
-                            text = title,
-                            style = LocalTextStyle.current.copy(color = MixinAppTheme.colors.textPrimary),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 18.sp, stepSize = 0.5.sp),
-                        )
+                        if (titleContent != null) {
+                            titleContent()
+                        } else {
+                            BasicText(
+                                text = title,
+                                style = LocalTextStyle.current.copy(color = MixinAppTheme.colors.textPrimary),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 18.sp, stepSize = 0.5.sp),
+                            )
+                        }
                         subtitle?.invoke()
                     }
                 },

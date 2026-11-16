@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.homeNavigationInset
+import one.mixin.android.ui.home.homeNavigationScroll
 import one.mixin.android.ui.wallet.home.components.BannerPager
 import one.mixin.android.ui.wallet.home.components.ImportSafetyFooter
 import one.mixin.android.ui.wallet.home.components.SupportCard
@@ -34,7 +36,9 @@ fun WalletHomePage(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MixinAppTheme.colors.background)
-                .verticalScroll(rememberScrollState()),
+                .homeNavigationScroll()
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = homeNavigationInset()),
         ) {
             Spacer(modifier = Modifier.height(10.dp))
             if (state.isLoading && state.cards.isEmpty()) {

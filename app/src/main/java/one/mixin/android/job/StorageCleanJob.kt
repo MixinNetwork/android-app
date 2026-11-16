@@ -31,15 +31,25 @@ class StorageCleanJob :
             CleanNotification.show()
             mediaPath?.listFiles()?.forEach { parentDir ->
                 parentDir.listFiles()?.forEach { dir ->
-                    dir.listFiles()?.forEach { file ->
-                        if (file.isFile) {
-                            val name = file.name.getFileNameNoEx()
-                            if (name.isUUID() && messageDao.exists(name) == null) { // message's media file
+                    val files =
+                        dir.listFiles()
+                            ?.filter { it.isFile }
+                            ?.groupBy { it.name.getFileNameNoEx() }
+                            ?.filterKeys { it.isUUID() }
+                            .orEmpty()
+                    if (files.isNotEmpty()) {
+                        val existing = files.keys.chunked(500).flatMapTo(HashSet()) { ids -> messageDao.findExistingIds(ids) }
+                        var deleted = false
+                        files.forEach { (name, list) ->
+                            if (name in existing) return@forEach
+                            list.forEach { file ->
                                 size += file.length()
                                 file.delete()
-                                Timber.e("delete ${file.absolutePath} ${size.fileSize()}")
-                                CleanNotification.show(getLocalString(MixinApplication.appContext, R.string.deep_cleaning_deleted, size.fileSize()))
+                                deleted = true
                             }
+                        }
+                        if (deleted) {
+                            CleanNotification.show(getLocalString(MixinApplication.appContext, R.string.deep_cleaning_deleted, size.fileSize()))
                         }
                     }
                 }

@@ -58,7 +58,7 @@ class TransferReceiverItem : LinearLayout {
                 }
             }
             name.setName(user, "${user.fullName} (${user.identityNumber})")
-            userAvatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
+            userAvatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         }
     }
 }

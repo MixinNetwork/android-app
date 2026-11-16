@@ -47,6 +47,33 @@
         </RelativeLayout>
 
         <RelativeLayout
+            android:id="@+id/glass_bottom_nav_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:background="?attr/bg_white"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <TextView
+                style="@style/NormalTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/glass_bottom_nav_sc"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginEnd="@dimen/padding8"
+                android:text="@string/Glass_navigation_bar" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/glass_bottom_nav_sc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:contentDescription="@string/Glass_navigation_bar" />
+        </RelativeLayout>
+
+        <RelativeLayout
             android:id="@+id/language_rl"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
