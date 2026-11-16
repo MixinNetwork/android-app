@@ -724,9 +724,15 @@ class FetchWalletViewModel @Inject constructor(
     private suspend fun selectImportedWalletIfNeeded(walletId: String, category: String) {
         if (_importedWalletDestination.value != null) return
         _importedWalletDestination.value = walletDestinationForWallet(walletId, category)
-        if (category == WalletCategory.WATCH_ADDRESS.value) return
-        val addresses = web3Repository.getAddresses(walletId)
-        Web3Signer.setWallet(walletId, category) { queryWalletId ->
+        val wallet = web3Repository.findWalletById(walletId)
+        val hasLocalKey = wallet?.hasLocalPrivateKey == true
+        val effectiveCategory = wallet?.category ?: category
+        val addresses = if (hasLocalKey || effectiveCategory == WalletCategory.CLASSIC.value) {
+            web3Repository.getAddresses(walletId)
+        } else {
+            emptyList()
+        }
+        Web3Signer.setWallet(walletId, effectiveCategory, hasLocalKey) { queryWalletId ->
             if (queryWalletId == walletId) addresses else emptyList()
         }
     }

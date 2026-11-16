@@ -61,4 +61,25 @@ class WalletDestinationTest {
         assertEquals(null, WalletDestination.Watch("watch-id", WalletCategory.WATCH_ADDRESS.value).signerTarget())
         assertEquals(null, WalletDestination.Safe("safe-id", true, null, null).signerTarget())
     }
+
+    @Test
+    fun walletSelectionTargetIncludesWatchAndSafeWhileExcludingPrivacy() {
+        assertEquals(
+            WalletSignerTarget("classic-id", WalletCategory.CLASSIC.value),
+            WalletDestination.Classic("classic-id").walletSelectionTarget(),
+        )
+        assertEquals(
+            WalletSignerTarget("imported-id", WalletCategory.IMPORTED_PRIVATE_KEY.value),
+            WalletDestination.Import("imported-id", WalletCategory.IMPORTED_PRIVATE_KEY.value).walletSelectionTarget(),
+        )
+        assertEquals(
+            WalletSignerTarget("watch-id", WalletCategory.WATCH_ADDRESS.value),
+            WalletDestination.Watch("watch-id", WalletCategory.WATCH_ADDRESS.value).walletSelectionTarget(),
+        )
+        assertEquals(
+            WalletSignerTarget("safe-id", WalletCategory.MIXIN_SAFE.value),
+            WalletDestination.Safe("safe-id", true, null, null).walletSelectionTarget(),
+        )
+        assertEquals(null, WalletDestination.Privacy.walletSelectionTarget())
+    }
 }

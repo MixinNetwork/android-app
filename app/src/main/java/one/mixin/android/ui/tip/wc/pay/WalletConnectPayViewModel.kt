@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
@@ -17,7 +18,13 @@ class WalletConnectPayViewModel
     @Inject
     internal constructor(
         private val tip: Tip,
+        private val web3Repository: Web3Repository,
     ) : ViewModel() {
+
+        suspend fun findWalletById(walletId: String) =
+            withContext(Dispatchers.IO) {
+                if (walletId.isBlank()) null else web3Repository.findWalletById(walletId)
+            }
 
         suspend fun getPaymentOptions(paymentLink: String): Wallet.Model.PaymentOptionsResponse =
             withContext(Dispatchers.IO) {

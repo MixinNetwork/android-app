@@ -37,6 +37,7 @@ import one.mixin.android.databinding.FragmentWalletBinding
 import one.mixin.android.databinding.ViewClassicWalletBottomBinding
 import one.mixin.android.databinding.ViewImportWalletBottomBinding
 import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
+import one.mixin.android.db.web3.vo.isWalletConnectSigningEligible
 import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.defaultSharedPreferences
@@ -62,7 +63,7 @@ import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFr
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
-import one.mixin.android.ui.wallet.components.signerTarget
+import one.mixin.android.ui.wallet.components.walletSelectionTarget
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.reloadWebViewInClips
 import one.mixin.android.util.GsonHelper
@@ -81,15 +82,24 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     companion object {
         const val TAG = "WalletFragment"
         private const val ARG_WALLET_DESTINATION = "wallet_destination"
+        private const val ARG_OPEN_WALLET_SELECTOR = "open_wallet_selector"
 
-        fun newInstance(walletDestination: WalletDestination? = null): WalletFragment = WalletFragment().apply {
+        fun newInstance(
+            walletDestination: WalletDestination? = null,
+            openWalletSelector: Boolean = false,
+        ): WalletFragment = WalletFragment().apply {
             arguments = Bundle().apply {
                 walletDestination?.let { destination ->
                     putString(ARG_WALLET_DESTINATION, GsonHelper.customGson.toJson(destination))
                 }
+                if (openWalletSelector) {
+                    putBoolean(ARG_OPEN_WALLET_SELECTOR, true)
+                }
             }
         }
     }
+
+    private var pendingOpenWalletSelector: Boolean = false
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -213,6 +223,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             refresh = false,
         )
 
+        if (pendingOpenWalletSelector || arguments?.getBoolean(ARG_OPEN_WALLET_SELECTOR, false) == true) {
+            pendingOpenWalletSelector = false
+            arguments?.remove(ARG_OPEN_WALLET_SELECTOR)
+            binding.root.post {
+                openWalletSelector()
+            }
+        }
+
         binding.apply {
             badge.isVisible = defaultSharedPreferences.getBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, true)
 
@@ -293,35 +311,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
 
             titleRl.setOnClickListener {
-                badge.isVisible = false
-                defaultSharedPreferences.putBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, false)
-                if (compose.isVisible.not()) {
-                    compose.visibility = VISIBLE
-                    val centerX = titleTv.x.toInt() + titleTv.width / 2
-                    val centerY = titleTv.y.toInt() + titleTv.height / 2
-                    val startRadius = 0
-                    val endRadius = hypot(
-                        binding.root.width.toDouble(),
-                        binding.root.height.toDouble()
-                    ).toInt()
-
-                    val anim = ViewAnimationUtils.createCircularReveal(
-                        compose,
-                        centerX,
-                        centerY,
-                        startRadius.toFloat(),
-                        endRadius.toFloat()
-                    )
-                    anim.duration = 300
-
-                    anim.addListener(object : AnimatorListenerAdapter() {
-                        override fun onAnimationEnd(animation: Animator) {
-                            super.onAnimationEnd(animation)
-                        }
-                    })
-
-                    anim.start()
-                }
+                openWalletSelector()
             }
         }
 
@@ -461,14 +451,56 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }
     }
 
+    fun requestOpenWalletSelector() {
+        if (!isAdded || _binding == null) {
+            pendingOpenWalletSelector = true
+            return
+        }
+        binding.root.post {
+            openWalletSelector()
+        }
+    }
+
+    fun openWalletSelector() {
+        if (viewDestroyed() || _binding == null) return
+        binding.badge.isVisible = false
+        defaultSharedPreferences.putBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, false)
+        if (binding.compose.isVisible) return
+        binding.compose.visibility = VISIBLE
+        if (!binding.root.isLaidOut) return
+        val centerX = binding.titleTv.x.toInt() + binding.titleTv.width / 2
+        val centerY = binding.titleTv.y.toInt() + binding.titleTv.height / 2
+        val startRadius = 0
+        val endRadius = hypot(
+            binding.root.width.toDouble(),
+            binding.root.height.toDouble(),
+        ).toInt()
+        val anim = ViewAnimationUtils.createCircularReveal(
+            binding.compose,
+            centerX,
+            centerY,
+            startRadius.toFloat(),
+            endRadius.toFloat(),
+        )
+        anim.duration = 300
+        anim.start()
+    }
+
     private fun synchronizeWalletSigner(destination: WalletDestination) {
         val selectionVersion = walletSignerSelectionVersion.incrementAndGet()
-        val target = destination.signerTarget() ?: return
+        val target = destination.walletSelectionTarget() ?: return
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val addresses = walletViewModel.getAddresses(target.walletId)
+            val wallet = walletViewModel.findWalletById(target.walletId)
+            val category = wallet?.category ?: target.category
+            val hasLocalKey = wallet?.hasLocalPrivateKey ?: (category == WalletCategory.CLASSIC.value)
+            val addresses = if (isWalletConnectSigningEligible(category, hasLocalKey)) {
+                walletViewModel.getAddresses(target.walletId)
+            } else {
+                emptyList()
+            }
             walletSignerMutex.withLock {
                 if (selectionVersion != walletSignerSelectionVersion.get()) return@withLock
-                Web3Signer.setWallet(target.walletId, target.category) { queryWalletId ->
+                Web3Signer.setWallet(target.walletId, category, hasLocalKey) { queryWalletId ->
                     if (queryWalletId == target.walletId) addresses else emptyList()
                 }
             }
@@ -487,7 +519,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             walletSignerMutex.withLock {
                 if (selectionVersion != walletSignerSelectionVersion.get()) return@withLock
-                Web3Signer.setWallet("", WalletCategory.CLASSIC.value) { emptyList() }
+                Web3Signer.setWallet("", WalletCategory.CLASSIC.value, false) { emptyList() }
             }
             if (selectionVersion == walletSignerSelectionVersion.get()) {
                 withContext(Dispatchers.Main) {

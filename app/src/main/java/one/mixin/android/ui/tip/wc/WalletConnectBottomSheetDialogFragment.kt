@@ -44,6 +44,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.tip.wc.SessionRequestGuardResult
+import one.mixin.android.tip.wc.SigningWalletPrecheck
 import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.tip.wc.WCSessionDeleteEvent
 import one.mixin.android.tip.wc.WalletConnect
@@ -66,6 +68,7 @@ import one.mixin.android.tip.wc.internal.getChainByChainId
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.error.JupiterErrorHandler
 import one.mixin.android.ui.home.web3.error.ProgramErrorHandler
 import one.mixin.android.ui.home.web3.error.RaydiumErrorHandler
@@ -101,6 +104,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         const val ARGS_REQUEST_TYPE = "args_request_type"
         const val ARGS_VERSION = "args_version"
         const val ARGS_TOPIC = "args_topic"
+        private const val ARGS_BLOCKED_MESSAGE = "args_blocked_message"
 
         fun newInstance(
             requestType: RequestType,
@@ -111,6 +115,13 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             putInt(ARGS_VERSION, version.ordinal)
             topic?.let { putString(ARGS_TOPIC, it) }
         }
+
+        fun newBlockedInstance(blockedMessage: String) =
+            WalletConnectBottomSheetDialogFragment().withArgs {
+                putInt(ARGS_REQUEST_TYPE, RequestType.SessionProposal.ordinal)
+                putInt(ARGS_VERSION, WalletConnect.Version.V2.ordinal)
+                putString(ARGS_BLOCKED_MESSAGE, blockedMessage)
+            }
     }
 
     enum class Step {
@@ -130,14 +141,20 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private val solanaErrorHandler = SolanaErrorHandler()
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
+    @Volatile
     private var processCompleted = false
 
     private val requestType by lazy { RequestType.entries[requireArguments().getInt(ARGS_REQUEST_TYPE)] }
     private val version by lazy { WalletConnect.Version.entries[requireArguments().getInt(ARGS_VERSION)] }
     private val topic: String by lazy { requireArguments().getString(ARGS_TOPIC) ?: "" }
+    private val initialBlockedMessage: String? by lazy { arguments?.getString(ARGS_BLOCKED_MESSAGE) }
 
     var step by mutableStateOf(Step.Input)
         private set
+    var isSigningBlocked by mutableStateOf(false)
+        private set
+    private var isEligibilityChecked by mutableStateOf(false)
+    private var initialWalletId: String = ""
     private var chain: Chain by mutableStateOf(Chain.Ethereum)
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
@@ -168,6 +185,9 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     topic,
                     sessionProposal,
                     errorInfo,
+                    isSigningBlocked = isSigningBlocked,
+                    isEligibilityChecked = isEligibilityChecked,
+                    onSwitchWallet = { switchWallet() },
                     onDismissRequest = { dismiss() },
                     showPin = { showPin() },
                 )
@@ -207,6 +227,15 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val blockedMessage = initialBlockedMessage
+        if (blockedMessage != null) {
+            isSigningBlocked = true
+            isEligibilityChecked = true
+            processCompleted = true
+            errorInfo = blockedMessage
+            step = Step.Error
+            return
+        }
         step =
             when (requestType) {
                 RequestType.Connect -> Step.Connecting
@@ -297,30 +326,107 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         lifecycleScope.launch {
             val topic = this@WalletConnectBottomSheetDialogFragment.topic
 
+            if (requestType == RequestType.Connect || requestType == RequestType.Pay) {
+                return@launch
+            }
+
+            val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
+            val precheck = WalletConnect.evaluateSigningWallet(wallet, Web3Signer.currentWalletConnectAddresses())
+
             when (requestType) {
                 RequestType.SessionProposal -> {
-                    sessionProposal =
-                        viewModel.getV2SessionProposal(topic)?.apply {
-                            this.getNamespaceProposal()?.chains?.firstOrNull { c ->
-                                c.getChain() != null
-                            }?.getChain()?.let { chain = it }
+                    initialWalletId = wallet?.id.orEmpty()
+                    if (precheck is SigningWalletPrecheck.Blocked) {
+                        if (version == WalletConnect.Version.V2 && topic.isNotBlank()) {
+                            WalletConnectV2.rejectSession(topic)
                         }
+                        processCompleted = true
+                        isSigningBlocked = true
+                        isEligibilityChecked = true
+                        errorInfo = precheck.localizedMessage(requireContext())
+                        step = Step.Error
+                        return@launch
+                    }
+                    val eligible = precheck as SigningWalletPrecheck.Eligible
+                    if (version == WalletConnect.Version.V2) {
+                        if (!WalletConnectV2.isProposalBoundToWallet(topic, eligible.walletId)) {
+                            if (topic.isNotBlank()) {
+                                WalletConnectV2.rejectSession(topic)
+                            }
+                            processCompleted = true
+                            isSigningBlocked = true
+                            isEligibilityChecked = true
+                            errorInfo = getString(R.string.connect_wallet_failed)
+                            step = Step.Error
+                            return@launch
+                        }
+                        sessionProposal =
+                            viewModel.getV2SessionProposal(topic)?.apply {
+                                this.getNamespaceProposal()?.chains?.firstOrNull { c ->
+                                    c.getChain() != null
+                                }?.getChain()?.let { chain = it }
+                            }
+                    }
+                    isEligibilityChecked = true
                 }
                 RequestType.SessionRequest -> {
-                    sessionRequest =
-                        viewModel.getV2SessionRequest(topic)?.apply {
-                            getChainByChainId(chainId)?.let { chain = it }
+                    if (version == WalletConnect.Version.TIP) {
+                        if (precheck !is SigningWalletPrecheck.Eligible ||
+                            (WalletConnectTIP.walletId != null && WalletConnectTIP.walletId != precheck.walletId)
+                        ) {
+                            processCompleted = true
+                            onRejectAction?.invoke()
+                            val msg = if (precheck is SigningWalletPrecheck.Blocked) {
+                                precheck.localizedMessage(requireContext())
+                            } else {
+                                getString(R.string.connect_wallet_failed)
+                            }
+                            toast(msg)
+                            dismiss()
+                            return@launch
                         }
+                        initialWalletId = precheck.walletId
+                    } else {
+                        val req = viewModel.getV2SessionRequest(topic)
+                        if (req == null) {
+                            processCompleted = true
+                            dismiss()
+                            return@launch
+                        }
+                        val guardResult = WalletConnectV2.validateSessionRequestForCurrentWallet(req, wallet)
+                        if (guardResult is SessionRequestGuardResult.Rejected) {
+                            WalletConnectV2.rejectRequest(guardResult.message, req, WalletConnect.CODE_SIGNING_BLOCKED)
+                            processCompleted = true
+                            val msg = if (precheck is SigningWalletPrecheck.Blocked) {
+                                precheck.localizedMessage(requireContext())
+                            } else {
+                                guardResult.message
+                            }
+                            toast(msg)
+                            dismiss()
+                            return@launch
+                        }
+                        val allowed = guardResult as SessionRequestGuardResult.Allowed
+                        initialWalletId = allowed.walletId
+                        sessionRequest =
+                            req.apply {
+                                getChainByChainId(chainId)?.let { chain = it }
+                            }
+                        account = allowed.address
+                    }
+                    isEligibilityChecked = true
                 }
                 else -> {}
             }
 
-            account =
-                if (requestType == RequestType.SessionProposal) {
-                    sessionProposal?.let { proposalAccountText(it) } ?: accountFor(chain)
-                } else {
-                    accountFor(chain)
-                }
+            if (requestType == RequestType.SessionProposal || account.isBlank()) {
+                account =
+                    if (requestType == RequestType.SessionProposal) {
+                        sessionProposal?.let { proposalAccountText(it) } ?: accountFor(chain)
+                    } else {
+                        accountFor(chain)
+                    }
+            }
 
             if (requestType != RequestType.SessionRequest) return@launch
             val sessionRequest = this@WalletConnectBottomSheetDialogFragment.sessionRequest ?: return@launch
@@ -427,6 +533,44 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             try {
                 val error =
                     withContext(Dispatchers.IO) {
+                        val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
+                        val precheck = WalletConnect.evaluateSigningWallet(wallet, Web3Signer.currentWalletConnectAddresses())
+                        if (precheck !is SigningWalletPrecheck.Eligible || (initialWalletId.isNotBlank() && precheck.walletId != initialWalletId)) {
+                            if (version == WalletConnect.Version.V2) {
+                                when (requestType) {
+                                    RequestType.SessionProposal -> if (topic.isNotBlank()) WalletConnectV2.rejectSession(topic)
+                                    RequestType.SessionRequest -> {
+                                        val req = sessionRequest ?: viewModel.getV2SessionRequest(topic)
+                                        if (req != null) {
+                                            WalletConnectV2.rejectRequest("Unauthorized wallet", req, WalletConnect.CODE_SIGNING_BLOCKED)
+                                        }
+                                    }
+                                    else -> {}
+                                }
+                            } else if (version == WalletConnect.Version.TIP) {
+                                withContext(Dispatchers.Main) {
+                                    onRejectAction?.invoke()
+                                }
+                            }
+                            processCompleted = true
+                            return@withContext if (precheck is SigningWalletPrecheck.Blocked) {
+                                precheck.localizedMessage(requireContext())
+                            } else {
+                                getString(R.string.connect_wallet_failed)
+                            }
+                        }
+                        if (version == WalletConnect.Version.V2 && requestType == RequestType.SessionRequest) {
+                            val req = sessionRequest ?: viewModel.getV2SessionRequest(topic)
+                            val guardResult = if (req == null) null else WalletConnectV2.validateSessionRequestForCurrentWallet(req, wallet)
+                            if (guardResult !is SessionRequestGuardResult.Allowed) {
+                                val msg = (guardResult as? SessionRequestGuardResult.Rejected)?.message ?: "Unauthorized session"
+                                if (req != null) {
+                                    WalletConnectV2.rejectRequest(msg, req, WalletConnect.CODE_SIGNING_BLOCKED)
+                                }
+                                processCompleted = true
+                                return@withContext msg
+                            }
+                        }
                         if (onPinCompleteAction != null) {
                             onPinCompleteAction?.invoke(pin)
                         } else {
@@ -639,16 +783,91 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             "",
         )
 
+    private fun switchWallet() {
+        if (version == WalletConnect.Version.V2 && topic.isNotBlank() && !processCompleted) {
+            WalletConnectV2.rejectSession(topic)
+        }
+        processCompleted = true
+        MainActivity.showWallet(requireContext(), openWalletSelector = true)
+        dismiss()
+    }
+
     private fun showPin() {
-        PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
-            lifecycleScope.launch(
-                CoroutineExceptionHandler { _, error ->
-                    handleException(error)
-                },
-            ) {
-                doAfterPinComplete(pin)
+        lifecycleScope.launch {
+            val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
+            val precheck = WalletConnect.evaluateSigningWallet(wallet, Web3Signer.currentWalletConnectAddresses())
+            val walletChanged = initialWalletId.isNotBlank() && wallet?.id != initialWalletId
+            if (requestType == RequestType.SessionProposal) {
+                val proposalMismatch =
+                    version == WalletConnect.Version.V2 &&
+                        precheck is SigningWalletPrecheck.Eligible &&
+                        !WalletConnectV2.isProposalBoundToWallet(topic, precheck.walletId)
+                if (precheck !is SigningWalletPrecheck.Eligible || walletChanged || proposalMismatch) {
+                    if (version == WalletConnect.Version.V2 && topic.isNotBlank()) {
+                        WalletConnectV2.rejectSession(topic)
+                    } else if (version == WalletConnect.Version.TIP) {
+                        onRejectAction?.invoke()
+                    }
+                    processCompleted = true
+                    isSigningBlocked = true
+                    errorInfo =
+                        if (precheck is SigningWalletPrecheck.Blocked) {
+                            precheck.localizedMessage(requireContext())
+                        } else {
+                            getString(R.string.connect_wallet_failed)
+                        }
+                    step = Step.Error
+                    return@launch
+                }
+            } else if (requestType == RequestType.SessionRequest) {
+                if (version == WalletConnect.Version.V2) {
+                    val req = sessionRequest ?: viewModel.getV2SessionRequest(topic)
+                    val guardResult = if (req == null) null else WalletConnectV2.validateSessionRequestForCurrentWallet(req, wallet)
+                    if (walletChanged || guardResult !is SessionRequestGuardResult.Allowed) {
+                        val msg =
+                            if (precheck is SigningWalletPrecheck.Blocked) {
+                                precheck.localizedMessage(requireContext())
+                            } else {
+                                (guardResult as? SessionRequestGuardResult.Rejected)?.message ?: getString(R.string.Data_error)
+                            }
+                        if (req != null) {
+                            WalletConnectV2.rejectRequest(msg, req, WalletConnect.CODE_SIGNING_BLOCKED)
+                        }
+                        processCompleted = true
+                        toast(msg)
+                        dismiss()
+                        return@launch
+                    }
+                } else if (version == WalletConnect.Version.TIP) {
+                    if (precheck !is SigningWalletPrecheck.Eligible ||
+                        walletChanged ||
+                        (WalletConnectTIP.walletId != null && WalletConnectTIP.walletId != precheck.walletId)
+                    ) {
+                        val msg =
+                            if (precheck is SigningWalletPrecheck.Blocked) {
+                                precheck.localizedMessage(requireContext())
+                            } else {
+                                getString(R.string.Data_error)
+                            }
+                        processCompleted = true
+                        onRejectAction?.invoke()
+                        toast(msg)
+                        dismiss()
+                        return@launch
+                    }
+                }
             }
-        }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+
+            PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
+                lifecycleScope.launch(
+                    CoroutineExceptionHandler { _, error ->
+                        handleException(error)
+                    },
+                ) {
+                    doAfterPinComplete(pin)
+                }
+            }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+        }
     }
 }
 
@@ -666,7 +885,13 @@ fun showWalletConnectBottomSheetDialogFragment(
         wcBottomSheet.setOnPinComplete { pin ->
             val result = tip.getOrRecoverTipPriv(fragmentActivity, pin)
             if (result.isSuccess) {
-                callback.invoke(result.getOrThrow())
+                val spendKey = tip.getSpendPrivFromEncryptedSalt(
+                    tip.getMnemonicFromEncryptedPreferences(fragmentActivity),
+                    tip.getEncryptedSalt(fragmentActivity),
+                    pin,
+                    result.getOrThrow(),
+                )
+                callback.invoke(spendKey)
                 return@setOnPinComplete null
             } else {
                 val e = result.exceptionOrNull()

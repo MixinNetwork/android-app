@@ -62,12 +62,17 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.exception.TipNetworkException
+import one.mixin.android.tip.wc.SigningWalletPrecheck
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.web3.js.Web3Signer
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -91,6 +96,8 @@ class WalletConnectPayBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
 
     private var step by mutableStateOf(Step.Loading)
     private var errorInfo: String? by mutableStateOf(null)
+    private var isSigningBlocked by mutableStateOf(false)
+    private var initialWalletId: String = ""
     private var paymentOptions: Wallet.Model.PaymentOptionsResponse? by mutableStateOf(null)
     private var selectedOptionIndex by mutableIntStateOf(0)
     private var collectDataUrl: String? by mutableStateOf(null)
@@ -323,18 +330,32 @@ class WalletConnectPayBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                 Text(text = error, fontSize = 14.sp, color = Color.Gray)
             }
             Spacer(modifier = Modifier.height(24.dp))
-            Button(
-                onClick = { dismiss() },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Text(text = stringResource(R.string.Done))
+            if (isSigningBlocked) {
+                ActionBottom(
+                    modifier = Modifier.fillMaxWidth(),
+                    cancelTitle = stringResource(R.string.Cancel),
+                    confirmTitle = stringResource(R.string.switch_wallet),
+                    cancelAction = { dismiss() },
+                    confirmAction = {
+                        MainActivity.showWallet(requireContext(), openWalletSelector = true)
+                        dismiss()
+                    },
+                )
+            } else {
+                Button(
+                    onClick = { dismiss() },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text(text = stringResource(R.string.Done))
+                }
             }
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initialWalletId = Web3Signer.currentWalletId
         fetchPaymentOptions()
     }
 
@@ -372,6 +393,7 @@ class WalletConnectPayBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     private fun fetchPaymentOptions() {
         val exHandler = CoroutineExceptionHandler { _, e ->
             Timber.e(e)
+            isSigningBlocked = false
             errorInfo = ErrorHandler.getErrorMessage(e)
             step = Step.Error
         }
@@ -390,14 +412,43 @@ class WalletConnectPayBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             collectDataUrl = collectData.url
             step = Step.CollectData
         } else {
-            showPin(options.paymentId, option.id)
+            checkSigningWalletBeforePin(options.paymentId, option.id)
         }
     }
 
     private fun onCollectDataComplete(json: String) {
         val options = paymentOptions ?: return
         val option = options.options.getOrNull(selectedOptionIndex) ?: return
-        showPin(options.paymentId, option.id)
+        checkSigningWalletBeforePin(options.paymentId, option.id)
+    }
+
+    private fun checkSigningWalletBeforePin(paymentId: String, optionId: String) {
+        lifecycleScope.launch(
+            CoroutineExceptionHandler { _, e ->
+                handleException(e)
+            },
+        ) {
+            val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
+            val precheck = WalletConnect.evaluateSigningWallet(wallet, Web3Signer.currentWalletConnectAddresses())
+            if (precheck is SigningWalletPrecheck.Blocked) {
+                isSigningBlocked = true
+                errorInfo = precheck.localizedMessage(requireContext())
+                step = Step.Error
+                return@launch
+            }
+            val eligible = precheck as SigningWalletPrecheck.Eligible
+            if (initialWalletId.isNotBlank() && eligible.walletId != initialWalletId) {
+                isSigningBlocked = false
+                errorInfo = getString(R.string.Data_error)
+                step = Step.Error
+                return@launch
+            }
+            if (initialWalletId.isBlank()) {
+                initialWalletId = eligible.walletId
+            }
+            isSigningBlocked = false
+            showPin(paymentId, optionId)
+        }
     }
 
     private fun showPin(paymentId: String, optionId: String) {
@@ -417,6 +468,20 @@ class WalletConnectPayBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     private suspend fun doPayment(pin: String, paymentId: String, optionId: String) {
         step = Step.Loading
         try {
+            val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
+            val precheck = WalletConnect.evaluateSigningWallet(wallet, Web3Signer.currentWalletConnectAddresses())
+            val walletChanged = initialWalletId.isNotBlank() && wallet?.id != initialWalletId
+            if (precheck !is SigningWalletPrecheck.Eligible || walletChanged) {
+                isSigningBlocked = precheck is SigningWalletPrecheck.Blocked
+                errorInfo =
+                    if (precheck is SigningWalletPrecheck.Blocked) {
+                        precheck.localizedMessage(requireContext())
+                    } else {
+                        getString(R.string.Data_error)
+                    }
+                step = Step.Error
+                return
+            }
             val priv = withContext(Dispatchers.IO) { viewModel.getWeb3Priv(requireContext(), pin) }
             val actions = viewModel.getRequiredPaymentActions(paymentId, optionId)
             viewModel.signAndConfirm(priv, paymentId, optionId, actions)
@@ -427,6 +492,7 @@ class WalletConnectPayBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     }
 
     private fun handleException(e: Throwable) {
+        isSigningBlocked = false
         errorInfo = when (e) {
             is TipNetworkException -> "code: ${e.error.code}, message: ${e.error.description}"
             else -> ErrorHandler.getErrorMessage(e)

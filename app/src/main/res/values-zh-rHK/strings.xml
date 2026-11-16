@@ -7,4 +7,8 @@
     <string name="network_fee_independent_of_amount">網絡費與轉賬金額無關</string>
     <string name="mixin_support">Mixin 客服</string>
     <string name="real_people_real_support">真人客服，隨時為您服務。</string>
+    <string name="no_key_wallet_dapp_connect_warning_message">當前錢包在此裝置上沒有私鑰，無法連接 dApp。請切換到可簽名的錢包。</string>
+    <string name="watch_only_wallet_dapp_connect_warning_message">這是觀察錢包，無法連接 dApp。請切換到可簽名的錢包。</string>
+    <string name="unsupported_wallet_dapp_connect_warning_message">當前錢包無法在此裝置上簽名，無法連接 dApp。請切換到可簽名的錢包。</string>
+    <string name="switch_wallet">切換錢包</string>
 </resources>

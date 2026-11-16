@@ -254,6 +254,28 @@ object CryptoWalletHelper {
         }
     }
 
+    fun privateKeyToAddress(privateKey: ByteArray, chainId: String): String {
+        return when (chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                fromSecretKey(privateKey).publicKey.toBase58()
+            }
+
+            Constants.ChainId.BITCOIN_CHAIN_ID,
+            Constants.ChainId.PEARL_CHAIN_ID,
+            Constants.ChainId.Litecoin -> {
+                UtxoKeyGenerator.privateKeyToAddress(privateKey, chainId)
+            }
+
+            in Constants.Web3EvmChainIds -> {
+                EthKeyGenerator.privateKeyToAddress(privateKey)
+            }
+
+            else -> {
+                throw IllegalArgumentException("Unsupported chainId: $chainId")
+            }
+        }
+    }
+
     fun mnemonicToAddress(
         mnemonic: String,
         chainId: String,

@@ -31,6 +31,15 @@ fun WalletDestination.signerTarget(): WalletSignerTarget? =
         is WalletDestination.Watch -> null
     }
 
+fun WalletDestination.walletSelectionTarget(): WalletSignerTarget? =
+    when (this) {
+        is WalletDestination.Classic -> WalletSignerTarget(walletId, WalletCategory.CLASSIC.value)
+        is WalletDestination.Import -> WalletSignerTarget(walletId, category)
+        is WalletDestination.Watch -> WalletSignerTarget(walletId, WalletCategory.WATCH_ADDRESS.value)
+        is WalletDestination.Safe -> WalletSignerTarget(walletId, WalletCategory.MIXIN_SAFE.value)
+        is WalletDestination.Privacy -> null
+    }
+
 fun walletDestinationForWallet(walletId: String, category: String): WalletDestination {
     return when (category) {
         WalletCategory.CLASSIC.value -> WalletDestination.Classic(walletId)

@@ -1238,4 +1238,8 @@
     <string name="network_fee_independent_of_amount">Сетевая комиссия не зависит от суммы перевода.</string>
     <string name="mixin_support">Поддержка Mixin</string>
     <string name="real_people_real_support">Живые люди. Настоящая поддержка.</string>
+    <string name="no_key_wallet_dapp_connect_warning_message">У этого кошелька нет приватного ключа на этом устройстве, и он не может подключаться к dApp. Переключитесь на кошелек, который может подписывать.</string>
+    <string name="watch_only_wallet_dapp_connect_warning_message">Это кошелек только для просмотра, он не может подключаться к dApp. Переключитесь на кошелек, который может подписывать.</string>
+    <string name="unsupported_wallet_dapp_connect_warning_message">Этот кошелек не может подписывать на этом устройстве и не может подключаться к dApp. Переключитесь на кошелек, который может подписывать.</string>
+    <string name="switch_wallet">Сменить кошелек</string>
 </resources>

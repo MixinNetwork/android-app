@@ -12,7 +12,16 @@ object WalletConnectTIP : WalletConnect() {
 
     var signData: WCSignData.TIPSignData? = null
 
+    var walletId: String? = null
+
+    fun clear() {
+        peer = null
+        signData = null
+        walletId = null
+    }
+
     fun getSessionProposalUI(): SessionProposalUI? {
+        if (!isCurrentWalletValid()) return null
         val p = peer ?: return null
         return SessionProposalUI(
             peer = p,
@@ -21,6 +30,7 @@ object WalletConnectTIP : WalletConnect() {
     }
 
     fun getSessionRequestUI(): SessionRequestUI<String?>? {
+        if (!isCurrentWalletValid()) return null
         val p = peer ?: return null
         return SessionRequestUI(
             peerUI = p,
@@ -28,5 +38,12 @@ object WalletConnectTIP : WalletConnect() {
             data = signData?.signMessage,
             chain = Chain.Ethereum,
         )
+    }
+
+    private fun isCurrentWalletValid(): Boolean {
+        val precheck = checkCurrentSigningWallet()
+        if (precheck !is SigningWalletPrecheck.Eligible) return false
+        val boundWalletId = walletId
+        return boundWalletId == null || boundWalletId == precheck.walletId
     }
 }

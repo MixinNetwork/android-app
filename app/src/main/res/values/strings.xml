@@ -2768,4 +2768,8 @@
     <string name="network_fee_description">Network fees are transaction fees paid to miners or validators for processing and confirming transactions on the blockchain.</string>
     <string name="network_fee_charged_by">Network fees are charged by the %1$s network.</string>
     <string name="network_fee_independent_of_amount">Network fees are independent of the transfer amount.</string>
+    <string name="no_key_wallet_dapp_connect_warning_message">This wallet has no private key on this device and cannot connect to dApps. Switch to a wallet that can sign.</string>
+    <string name="watch_only_wallet_dapp_connect_warning_message">This is a watch-only wallet and cannot connect to dApps. Switch to a wallet that can sign.</string>
+    <string name="unsupported_wallet_dapp_connect_warning_message">This wallet cannot sign on this device and cannot connect to dApps. Switch to a wallet that can sign.</string>
+    <string name="switch_wallet">Switch Wallet</string>
 </resources>

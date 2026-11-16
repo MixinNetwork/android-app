@@ -60,11 +60,14 @@ fun SessionProposalPage(
     topic: String,
     sessionProposal: Wallet.Model.SessionProposal?,
     errorInfo: String?,
+    isSigningBlocked: Boolean = false,
+    isEligibilityChecked: Boolean = true,
+    onSwitchWallet: () -> Unit = {},
     onDismissRequest: () -> Unit,
     showPin: () -> Unit,
 ) {
     val viewModel = hiltViewModel<SessionProposalViewModel>()
-    if (version != WalletConnect.Version.TIP && sessionProposal == null) {
+    if (!isSigningBlocked && (!isEligibilityChecked || (version != WalletConnect.Version.TIP && sessionProposal == null))) {
         Loading()
         return
     }
@@ -73,8 +76,13 @@ fun SessionProposalPage(
     var walletName by remember { mutableStateOf<String?>(null) }
     var walletDisplayInfo by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
-    val sessionProposalUI = viewModel.getSessionProposalUI(version, chain, sessionProposal)
-    if (sessionProposalUI == null) {
+    val sessionProposalUI =
+        if (isSigningBlocked && sessionProposal == null) {
+            null
+        } else {
+            viewModel.getSessionProposalUI(version, chain, sessionProposal)
+        }
+    if (!isSigningBlocked && sessionProposalUI == null) {
         Loading()
         return
     }
@@ -85,6 +93,10 @@ fun SessionProposalPage(
     }
 
     LaunchedEffect(account) {
+        if (account.isBlank()) {
+            walletDisplayInfo = null
+            return@LaunchedEffect
+        }
         try {
             walletDisplayInfo = viewModel.checkAddressAndGetDisplayName(account, null)
         } catch (e: Exception) {
@@ -131,14 +143,23 @@ fun SessionProposalPage(
                     )
                 }
                 else -> {
-                    CoilImage(
-                        model = sessionProposalUI.peer.icon,
-                        modifier =
-                            Modifier
-                                .size(70.dp)
-                                .clip(CircleShape),
-                        placeholder = R.drawable.ic_avatar_place_holder,
-                    )
+                    if (sessionProposalUI != null) {
+                        CoilImage(
+                            model = sessionProposalUI.peer.icon,
+                            modifier =
+                                Modifier
+                                    .size(70.dp)
+                                    .clip(CircleShape),
+                            placeholder = R.drawable.ic_avatar_place_holder,
+                        )
+                    } else {
+                        Icon(
+                            modifier = Modifier.size(70.dp),
+                            painter = painterResource(id = R.drawable.ic_transfer_status_failed),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                        )
+                    }
                 }
             }
             Box(modifier = Modifier.height(16.dp))
@@ -183,33 +204,43 @@ fun SessionProposalPage(
                         fontWeight = FontWeight.W400,
                     ),
                 textAlign = TextAlign.Center,
-                maxLines = 3,
+                maxLines = if (isSigningBlocked) 5 else 3,
                 minLines = 3,
             )
-            Box(modifier = Modifier.height(20.dp))
-            Box(
-                modifier =
-                    Modifier
-                        .height(10.dp)
-                        .fillMaxWidth()
-                        .background(MixinAppTheme.colors.backgroundWindow),
-            )
-            Box(modifier = Modifier.height(20.dp))
-            ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionProposalUI.peer.name, footer = sessionProposalUI.peer.uri)
-            Box(modifier = Modifier.height(20.dp))
+            if (sessionProposalUI != null) {
+                Box(modifier = Modifier.height(20.dp))
+                Box(
+                    modifier =
+                        Modifier
+                            .height(10.dp)
+                            .fillMaxWidth()
+                            .background(MixinAppTheme.colors.backgroundWindow),
+                )
+                Box(modifier = Modifier.height(20.dp))
+                ItemContent(title = stringResource(id = R.string.From).uppercase(), subTitle = sessionProposalUI.peer.name, footer = sessionProposalUI.peer.uri)
+                Box(modifier = Modifier.height(20.dp))
 
-            walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
-                val (displayName, _) = walletDisplayInfo
-                ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account, displayName)
-            }, {
-                ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)
-            })
+                walletDisplayInfo.notNullWithElse({ walletDisplayInfo ->
+                    val (displayName, _) = walletDisplayInfo
+                    ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account, displayName)
+                }, {
+                    ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)
+                })
+            }
             Box(
                 modifier =
                     Modifier
                         .weight(1f),
             )
-            if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
+            if (step == WalletConnectBottomSheetDialogFragment.Step.Error && isSigningBlocked) {
+                ActionBottom(
+                    modifier = Modifier,
+                    cancelTitle = stringResource(id = R.string.Cancel),
+                    confirmTitle = stringResource(id = R.string.switch_wallet),
+                    cancelAction = onDismissRequest,
+                    confirmAction = onSwitchWallet,
+                )
+            } else if (step == WalletConnectBottomSheetDialogFragment.Step.Done || step == WalletConnectBottomSheetDialogFragment.Step.Error) {
                 Row(
                     modifier =
                         Modifier

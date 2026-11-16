@@ -2684,4 +2684,8 @@
     <string name="network_fee_description">网络费是区块链处理交易时产生的手续费，用于支付矿工或验证节点处理和确认交易的费用。</string>
     <string name="network_fee_charged_by">网络费由 %1$s 网络收取</string>
     <string name="network_fee_independent_of_amount">网络费与转账金额无关</string>
+    <string name="no_key_wallet_dapp_connect_warning_message">当前钱包在此设备上没有私钥，无法连接 dApp。请切换到可签名的钱包。</string>
+    <string name="watch_only_wallet_dapp_connect_warning_message">这是一个仅供观察的钱包，无法连接 dApp。请切换到可签名的钱包。</string>
+    <string name="unsupported_wallet_dapp_connect_warning_message">当前钱包无法在此设备上签名，无法连接 dApp。请切换到可签名的钱包。</string>
+    <string name="switch_wallet">切换钱包</string>
 </resources>
