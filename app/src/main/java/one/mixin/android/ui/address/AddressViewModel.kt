@@ -53,20 +53,36 @@ class AddressViewModel
 
     fun refreshAddressBook(walletId: String?) {
         viewModelScope.launch {
-            val walletChainIds = walletChainIds(walletId)
-            try {
-                tokenRepository.refreshChains()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to refresh chains for address book")
-            }
-            val chains = tokenRepository.getChains()
-            addressBookStateFlow.value = AddressBookState(chains, walletChainIds)
-            addressBookNetworks(chains, walletChainIds).forEach { network ->
+            val state = loadAddressBookState(walletId)
+            addressBookStateFlow.value = state
+            addressBookNetworks(state.chains, state.walletChainIds).forEach { network ->
                 jobManager.addJobInBackground(RefreshAddressJob(network.chainId))
             }
         }
+    }
+
+    suspend fun loadAddressBookState(walletId: String?): AddressBookState {
+        val walletChainIds = walletChainIds(walletId)
+        try {
+            tokenRepository.refreshChains()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to refresh chains for address book")
+        }
+        return AddressBookState(tokenRepository.getChains(), walletChainIds)
+    }
+
+    suspend fun findOrRefreshChain(chainId: String): Chain? {
+        tokenRepository.getChains().firstOrNull { it.chainId == chainId }?.let { return it }
+        try {
+            tokenRepository.refreshChains()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to refresh chains")
+        }
+        return tokenRepository.getChains().firstOrNull { it.chainId == chainId }
     }
 
     // Null keeps all privacy wallet chains; other wallets resolve their chain capabilities by category.

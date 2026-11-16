@@ -1,5 +1,6 @@
 package one.mixin.android.ui.address
 
+import android.os.Bundle
 import android.view.View
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -86,7 +87,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    override fun onViewCreated(view: View, savedInstanceState: android.os.Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.refreshAddressBook(walletId)
     }

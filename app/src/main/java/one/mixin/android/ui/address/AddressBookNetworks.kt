@@ -36,20 +36,19 @@ internal fun addressBookWalletChainIds(
     else -> emptySet()
 }
 
-// Pinned networks keep the design order; the remaining privacy wallet chains follow by name.
+private val fallbackWalletNetworks: List<NetworkOption> =
+    evmChainList.map { NetworkOption(it.assetId, it.name) } + NetworkOption(ChainId.PEARL_CHAIN_ID, "Pearl")
+
+fun addressBookNetworkName(chainId: String, chain: Chain? = null): String? =
+    addressBookNetworks.firstOrNull { it.chainId == chainId }?.name
+        ?: chain?.name
+        ?: fallbackWalletNetworks.firstOrNull { it.chainId == chainId }?.name
+
+// Pinned networks keep the design order; the remaining supported chains follow by name.
 // Common wallets pass their chain ids to keep only the networks they support; null keeps all.
 fun addressBookNetworks(chains: List<Chain>, supportedChainIds: Set<String>? = null): List<NetworkOption> {
     val pinnedChainIds = addressBookNetworks.mapTo(HashSet()) { it.chainId }
-    val walletNetworks = if (supportedChainIds == null) emptyList() else {
-        evmChainList.map { NetworkOption(it.assetId, it.name) } + NetworkOption(ChainId.PEARL_CHAIN_ID, "Pearl")
-    }
-    val pinnedNetworks = if (supportedChainIds == null) {
-        val chainIds = chains.mapTo(HashSet()) { it.chainId }
-        addressBookNetworks.filter { it.chainId in chainIds }
-    } else {
-        addressBookNetworks
-    }
-    val networks = pinnedNetworks + (chains.map { NetworkOption(it.chainId, it.name) } + walletNetworks)
+    val networks = addressBookNetworks + (chains.map { NetworkOption(it.chainId, it.name) } + fallbackWalletNetworks)
         .distinctBy { it.chainId }
         .filter { it.chainId !in pinnedChainIds }
         .sortedBy { it.name.lowercase() }

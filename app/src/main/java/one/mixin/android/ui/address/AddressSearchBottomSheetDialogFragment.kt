@@ -49,8 +49,8 @@ class AddressSearchBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             val addressFlow = remember(chainId) { viewModel.addressesFlow(chainId) }
             val addresses by addressFlow.collectAsState(initial = emptyList())
             var chain by remember { mutableStateOf<Chain?>(null) }
-            LaunchedEffect(addresses) {
-                chain = viewModel.getChains().firstOrNull { it.chainId == chainId }
+            LaunchedEffect(chainId, addresses) {
+                chain = viewModel.findOrRefreshChain(chainId)
             }
             AddressSearchBottomSheet(
                 addresses = addresses,

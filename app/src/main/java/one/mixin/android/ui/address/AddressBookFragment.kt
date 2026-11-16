@@ -130,7 +130,12 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                 }
                 val transactionCount = transactions?.size ?: web3Transactions?.size
                 LaunchedEffect(address.addressId, currentWalletId) {
-                    chains = viewModel.getChains()
+                    val localChains = viewModel.getChains()
+                    chains = localChains
+                    if (localChains.none { it.chainId == address.chainId }) {
+                        viewModel.findOrRefreshChain(address.chainId)
+                        chains = viewModel.getChains()
+                    }
                     viewModel.refreshAddressTransactions(currentWalletId)
                 }
                 Column(modifier = Modifier.fillMaxSize().background(MixinAppTheme.colors.background)) {
@@ -205,8 +210,7 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                                 AddressBookField(stringResource(R.string.Address), address.destination, valueLineHeight = 25.sp)
                                 AddressBookField(
                                     stringResource(R.string.network),
-                                    addressBookNetworks.firstOrNull { it.chainId == address.chainId }?.name
-                                        ?: chains.firstOrNull { it.chainId == address.chainId }?.name
+                                    addressBookNetworkName(address.chainId, chains.firstOrNull { it.chainId == address.chainId })
                                         ?: stringResource(R.string.Unknown),
                                 )
                                 address.tag?.takeIf { it.isNotEmpty() }?.let { tag ->
@@ -290,7 +294,7 @@ internal fun AddressBookNetwork(chainId: String, chain: Chain?, textColor: Color
         CoilImage(chain?.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(18.dp).clip(CircleShape))
         Spacer(Modifier.width(4.dp))
         Text(
-            addressBookNetworks.firstOrNull { it.chainId == chainId }?.name ?: chain?.name ?: stringResource(R.string.Unknown),
+            addressBookNetworkName(chainId, chain) ?: stringResource(R.string.Unknown),
             color = textColor,
             fontSize = 14.sp,
         )

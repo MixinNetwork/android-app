@@ -35,12 +35,14 @@ class AddressBookNetworksTest {
     fun privacyWalletChainsFollowPinnedNetworksByName() {
         val chains = listOf(
             Chain("ton", "TON", "TON", "", 1),
-            Chain(ChainId.ETHEREUM_CHAIN_ID, "Ethereum", "ETH", "", 1),
+            Chain(ChainId.ETHEREUM_CHAIN_ID, "Server Ethereum", "ETH", "", 1),
             Chain("avax", "Avalanche X-Chain", "AVAX", "", 1),
         )
         val networks = addressBookNetworks(chains)
-        assertEquals(listOf(ChainId.ETHEREUM_CHAIN_ID, "avax", "ton"), networks.map { it.chainId })
-        assertEquals("Ethereum", networks.first().name)
+        assertEquals(addressBookNetworks, networks.take(addressBookNetworks.size))
+        val trailingNames = networks.drop(addressBookNetworks.size).map { it.name }
+        assertEquals(trailingNames.sortedBy { it.lowercase() }, trailingNames)
+        assertEquals(listOf("avax", "ton"), networks.filter { it.chainId == "avax" || it.chainId == "ton" }.map { it.chainId })
     }
 
     @Test
@@ -115,8 +117,11 @@ class AddressBookNetworksTest {
     }
 
     @Test
-    fun privacyNetworksAreEmptyWhenChainsAreEmpty() {
-        assertEquals(emptyList<Any>(), addressBookNetworks(emptyList()))
+    fun privacyNetworksIncludePinnedAndFallbackWalletChainsWhenChainsAreEmpty() {
+        val networks = addressBookNetworks(emptyList())
+        assertEquals(addressBookNetworks, networks.take(addressBookNetworks.size))
+        val expected = (addressBookNetworks.map { it.chainId } + Constants.Web3EvmChainIds + ChainId.PEARL_CHAIN_ID).toSet()
+        assertEquals(expected, networks.map { it.chainId }.toSet())
     }
 
     @Test
@@ -127,10 +132,20 @@ class AddressBookNetworksTest {
             Chain("avax", "Avalanche X-Chain", "AVAX", "", 1),
         )
         val networks = addressBookNetworks(chains, null)
-        assertEquals(listOf(ChainId.BITCOIN_CHAIN_ID, "avax", "ton"), networks.map { it.chainId })
+        assertEquals(addressBookNetworks, networks.take(addressBookNetworks.size))
         assertEquals("Bitcoin", networks.first().name)
+        assertEquals(listOf("avax", "ton"), networks.filter { it.chainId == "ton" || it.chainId == "avax" }.map { it.chainId })
         val supported = addressBookWalletChainIds(WalletCategory.CLASSIC.value, emptySet())
         assertEquals(emptyList<Any>(), addressBookNetworks(chains, supported).filter { it.chainId == "ton" || it.chainId == "avax" })
+    }
+
+    @Test
+    fun networkNameResolvesPinnedServerAndFallbackChains() {
+        assertEquals("Ethereum", addressBookNetworkName(ChainId.ETHEREUM_CHAIN_ID, Chain(ChainId.ETHEREUM_CHAIN_ID, "Server ETH", "ETH", "", 1)))
+        assertEquals("TON", addressBookNetworkName("ton", Chain("ton", "TON", "TON", "", 1)))
+        assertEquals("Base", addressBookNetworkName(ChainId.Base, null))
+        assertEquals("Pearl", addressBookNetworkName(ChainId.PEARL_CHAIN_ID, null))
+        assertEquals(null, addressBookNetworkName("unknown", null))
     }
 
     @Test
