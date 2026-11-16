@@ -15,4 +15,5 @@
 
     <item name="circle_progress" type="id" />
     <item name="market_favorite_icon_request" type="id" />
+    <item name="scroll_center_checked_radio_listener" type="id" />
 </resources>

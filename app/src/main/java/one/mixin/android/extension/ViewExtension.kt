@@ -39,6 +39,7 @@ import androidx.core.animation.doOnStart
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewPropertyAnimatorListener
+import androidx.core.view.doOnNextLayout
 import androidx.core.view.drawToBitmap
 import androidx.core.view.updateLayoutParams
 import androidx.navigation.NavController
@@ -48,6 +49,7 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
+import one.mixin.android.R
 import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.io.IOException
@@ -533,19 +535,49 @@ fun View.expandTouchArea(horizontal: Int = 8.dp, vertical: Int = 8.dp) {
     }
 }
 
-fun HorizontalScrollView.scrollToCenter(targetView: View) {
-    post {
-        val containerView: View = getChildAt(0) ?: return@post
+fun HorizontalScrollView.scrollToCenter(targetView: View, smooth: Boolean = true) {
+    fun centerTarget() {
+        val containerView: View = getChildAt(0) ?: return
+        if (width <= 0 || containerView.width <= 0 || targetView.width <= 0) return
         val targetCenterX: Int = targetView.left + (targetView.width / 2)
         val scrollToX: Int = targetCenterX - (width / 2)
         val maxScrollX: Int = max(0, containerView.width - width)
-        smoothScrollTo(scrollToX.coerceIn(0, maxScrollX), 0)
+        val clampedScrollX: Int = scrollToX.coerceIn(0, maxScrollX)
+        if (smooth) {
+            smoothScrollTo(clampedScrollX, 0)
+        } else {
+            scrollTo(clampedScrollX, 0)
+        }
+    }
+    post {
+        val containerView: View = getChildAt(0) ?: return@post
+        if (!isLaidOut || width <= 0 || isLayoutRequested || containerView.isLayoutRequested || targetView.isLayoutRequested) {
+            doOnNextLayout { centerTarget() }
+        } else {
+            centerTarget()
+        }
     }
 }
 
-fun HorizontalScrollView.scrollToCenterCheckedRadio(radioGroup: RadioGroup) {
+fun HorizontalScrollView.scrollToCenterCheckedRadio(radioGroup: RadioGroup, smooth: Boolean = true) {
+    if (getTag(R.id.scroll_center_checked_radio_listener) == null) {
+        val listener = View.OnLayoutChangeListener { _, left, _, right, _, oldLeft, _, oldRight, _ ->
+            val newWidth = right - left
+            val oldWidth = oldRight - oldLeft
+            if (oldWidth > 0 && newWidth > 0 && newWidth != oldWidth) {
+                val currentCheckedId = radioGroup.checkedRadioButtonId
+                if (currentCheckedId != View.NO_ID) {
+                    radioGroup.findViewById<View>(currentCheckedId)?.let { currentCheckedView ->
+                        scrollToCenter(currentCheckedView, smooth = false)
+                    }
+                }
+            }
+        }
+        addOnLayoutChangeListener(listener)
+        setTag(R.id.scroll_center_checked_radio_listener, listener)
+    }
     val checkedId: Int = radioGroup.checkedRadioButtonId
     if (checkedId == View.NO_ID) return
     val checkedView: View = radioGroup.findViewById(checkedId) ?: return
-    scrollToCenter(checkedView)
+    scrollToCenter(checkedView, smooth = smooth)
 }
