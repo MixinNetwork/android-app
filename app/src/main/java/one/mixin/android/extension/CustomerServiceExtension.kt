@@ -4,8 +4,11 @@ import android.content.Context
 import android.net.Uri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import one.mixin.android.Constants
+import one.mixin.android.Constants.RouteConfig.SAFE_BOT_USER_ID
 import one.mixin.android.R
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.WebBottomSheetDialogFragment
 import one.mixin.android.util.analytics.AnalyticsTracker
 
@@ -41,6 +44,19 @@ fun isCustomerServiceUrl(url: String): Boolean {
         currentPath == targetPath
 }
 
+private const val SUPPORT_PAGE = "support"
+
+private const val SUPPORT_BOT_URL = "${Constants.Scheme.APPS}/$SAFE_BOT_USER_ID?action=open&page=$SUPPORT_PAGE"
+
+fun isSupportBotPage(
+    appId: String?,
+    url: String,
+): Boolean {
+    if (appId != SAFE_BOT_USER_ID) return false
+    val page = runCatching { Uri.parse(url).getQueryParameter("page") }.getOrNull()
+    return page == SUPPORT_PAGE
+}
+
 fun Context.openCustomerServiceIfMatched(
     url: String,
     source: String? = null,
@@ -57,11 +73,24 @@ fun Context.openCustomerService(
     source: String? = null,
     wallet: String = AnalyticsTracker.TradeWallet.MAIN,
 ) {
+    val activity = findFragmentActivityOrNull()
+    if (Session.getAccount() == null || activity == null || activity.isFinishing || activity.isDestroyed) {
+        openLegacyCustomerService(source, wallet)
+        return
+    }
+    SUPPORT_BOT_URL.checkUserOrApp(activity, activity.supportFragmentManager, activity.lifecycleScope)
+    source?.let { AnalyticsTracker.trackCustomerServiceDialog(source = it, wallet = wallet) }
+}
+
+private fun Context.openLegacyCustomerService(
+    source: String?,
+    wallet: String,
+) {
     if (
         openWebBottomSheet(
             Constants.HelpLink.CUSTOMER_SERVICE,
             getString(R.string.mixin_support),
-            getString(R.string.ask_me_anything),
+            getString(R.string.real_people_real_support),
         )
     ) {
         source?.let { AnalyticsTracker.trackCustomerServiceDialog(source = it, wallet = wallet) }

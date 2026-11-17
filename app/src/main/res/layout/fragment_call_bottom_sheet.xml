@@ -124,7 +124,9 @@
         android:elevation="10dp"
         android:layout_alignParentBottom="true"
         android:background="?attr/bg_white"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:paddingStart="@dimen/padding8"
+        android:paddingEnd="@dimen/padding8">
 
         <one.mixin.android.widget.CallButton
             android:id="@+id/voice_cb"

@@ -99,13 +99,13 @@ fun AppCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(1.0f)
-                        .wrapContentHeight()
                         .padding(
                             start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
                                 if (isLast) 6.dp else 7.dp
                             } else 0.dp
                         )
+                        .aspectRatio(1.0f)
+                        .wrapContentHeight()
                         .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
                         .then(
                             if (coverClick != null) {
@@ -125,13 +125,13 @@ fun AppCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(appCardData.cover.radio)
-                        .wrapContentHeight()
                         .padding(
                             start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
                                 if (isLast) 6.dp else 7.dp
                             } else 0.dp
                         )
+                        .aspectRatio(appCardData.cover.radio)
+                        .wrapContentHeight()
                         .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
                         .then(
                             if (coverClick != null) {

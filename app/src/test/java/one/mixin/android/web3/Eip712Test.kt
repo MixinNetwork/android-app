@@ -2,6 +2,7 @@ package one.mixin.android.web3
 
 import com.google.gson.JsonParser
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -49,24 +50,35 @@ class Eip712Test {
         """.trimIndent()
 
     @Test
-    fun acceptsMatchingChainIdRepresentations() {
+    fun readsChainIdRepresentations() {
         listOf("42161", "42161.0", "4.2161e4", "\"42161\"", "\"0xa4b1\"", "\"0xA4B1\"").forEach { chainId ->
-            validateEip712ChainId("""{"domain":{"chainId":$chainId}}""", "42161", "Invalid chain ID")
+            assertEquals(BigInteger.valueOf(42161), eip712ChainId("""{"domain":{"chainId":$chainId}}""", "Invalid chain ID"))
         }
-        validateEip712ChainId("""{"domain":{"chainId":"18446744073709551615"}}""", "18446744073709551615", "Invalid chain ID")
+        assertEquals(BigInteger("18446744073709551615"), eip712ChainId("""{"domain":{"chainId":"18446744073709551615"}}""", "Invalid chain ID"))
     }
 
     @Test
-    fun acceptsMissingChainId() {
-        validateEip712ChainId("""{"domain":{"name":"Example"}}""", "1", "Invalid chain ID")
-        validateEip712ChainId("{}", "1", "Invalid chain ID")
+    fun missingChainIdSignsForTheCurrentChain() {
+        assertEquals(null, eip712ChainId("""{"domain":{"name":"Example"}}""", "Invalid chain ID"))
+        assertEquals(Chain.Base, eip712SigningChain("{}", Chain.Base, "Invalid chain ID"))
+        assertEquals(null, eip712SigningChain("{}", null, "Invalid chain ID"))
     }
 
     @Test
-    fun rejectsMismatchedOrInvalidChainId() {
-        listOf("1", "\"1\"", "\"0x1\"", "null", "true", "[]", "{}", "1.5", "-1", "\"\"", "\"0x\"", "\"0xzz\"", "\"1.0\"").forEach { chainId ->
+    fun signsForTheDomainChainWhateverTheCurrentChain() {
+        // Hyperliquid signs for Arbitrum while the dapp's signer is on Ethereum,
+        // e.g. after a Solana request: the signature only verifies on Arbitrum.
+        assertEquals(Chain.Arbitrum, eip712SigningChain(typedData, Chain.Ethereum, "Invalid chain ID"))
+        assertEquals(Chain.Ethereum, eip712SigningChain("""{"domain":{"chainId":"0x1"}}""", Chain.Arbitrum, "Invalid chain ID"))
+        assertEquals(Chain.Arbitrum, eip712SigningChain(typedData, null, "Invalid chain ID"))
+    }
+
+    @Test
+    fun rejectsUnsupportedOrInvalidChainId() {
+        // 1337 and 999999 are well formed, but no supported chain to show.
+        listOf("1337", "999999", "null", "true", "[]", "{}", "1.5", "-1", "\"\"", "\"0x\"", "\"0xzz\"", "\"1.0\"").forEach { chainId ->
             val error = assertThrows(IllegalArgumentException::class.java) {
-                validateEip712ChainId("""{"domain":{"chainId":$chainId}}""", "42161", "Invalid chain ID")
+                eip712SigningChain("""{"domain":{"chainId":$chainId}}""", Chain.Arbitrum, "Invalid chain ID")
             }
             assertEquals("Invalid chain ID", error.message)
         }

@@ -72,13 +72,15 @@ class Web3SigningChainTest {
     }
 
     @Test
-    fun typedMessageValidatesAgainstCapturedChainAfterSwitch() {
+    fun typedMessageUsesSupportedDomainChainAfterSwitch() {
         val data = """{"types":{"EIP712Domain":[{"name":"chainId","type":"uint256"}],"Message":[{"name":"value","type":"string"}]},"primaryType":"Message","domain":{"chainId":42161},"message":{"value":"hello"}}"""
         Web3Signer.switchChain(SwitchChain(Chain.Base.hexReference)).getOrThrow()
 
-        assertTrue(Web3Signer.signMessage(secret, data, JsSignMessage.TYPE_TYPED_MESSAGE, Chain.Arbitrum).isNotEmpty())
+        val signature = Web3Signer.signMessage(secret, data, JsSignMessage.TYPE_TYPED_MESSAGE, Chain.Arbitrum)
+        assertTrue(signature.isNotEmpty())
+        assertEquals(signature, Web3Signer.signMessage(secret, data, JsSignMessage.TYPE_TYPED_MESSAGE, Chain.Base))
         assertThrows(IllegalArgumentException::class.java) {
-            Web3Signer.signMessage(secret, data, JsSignMessage.TYPE_TYPED_MESSAGE, Chain.Base)
+            Web3Signer.signMessage(secret, data.replace("42161", "9999999"), JsSignMessage.TYPE_TYPED_MESSAGE, Chain.Base)
         }
     }
 
