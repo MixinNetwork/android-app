@@ -62,7 +62,6 @@ import one.mixin.android.api.response.WalletHomeBannerAction
 import one.mixin.android.ui.wallet.home.components.BannerPager
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.ui.home.homeNavigationInset
 import one.mixin.android.ui.home.homeNavigationScroll
 import one.mixin.android.ui.wallet.components.AssetDistribution
@@ -296,7 +295,7 @@ private fun SubTabs(
     }
 }
 
-private suspend fun LazyListState.animateScrollToCenteredItem(index: Int) {
+internal suspend fun LazyListState.animateScrollToCenteredItem(index: Int) {
     if (index < 0) return
     var itemInfo = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
     if (itemInfo == null) {
@@ -1150,12 +1149,3 @@ private fun formatPercent(change: BigDecimal): String {
     val prefix = if (change > BigDecimal.ZERO) "+" else ""
     return "$prefix${change.numberFormat2()}%"
 }
-
-private fun formatSpotVolume(
-    value: String,
-    fiatSymbol: String = Fiats.getSymbol(),
-    fiatRate: Double = Fiats.getRate(),
-): String =
-    runCatching {
-        "$fiatSymbol${BigDecimal(value).multiply(BigDecimal(fiatRate)).numberFormatCompact()}"
-    }.getOrDefault(value)

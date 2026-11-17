@@ -3,6 +3,7 @@
 package one.mixin.android.ui.home.web3.trade
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,6 +31,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +65,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Account.PREF_MARKET_TOP_PERCENTAGE
+import one.mixin.android.Constants.Account.PREF_QUOTE_COLOR
 import one.mixin.android.Constants.Account.PREF_SWAP_LAST_PAIR
 import one.mixin.android.Constants.Account.PREF_WEB3_SWAP_LAST_PAIR
 import one.mixin.android.R
@@ -77,6 +81,7 @@ import one.mixin.android.ui.home.web3.components.InputAction
 import one.mixin.android.ui.home.web3.components.InputArea
 import one.mixin.android.ui.home.web3.components.PriceInfo
 import one.mixin.android.ui.home.web3.components.TradeLayout
+import one.mixin.android.ui.home.web3.market.MarketPriceChangePeriod
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -113,6 +118,43 @@ fun SwapContent(
     val scope = rememberCoroutineScope()
 
     val viewModel = hiltViewModel<SwapViewModel>()
+    val allMarkets by remember { viewModel.observeAllMarkets() }.collectAsStateWithLifecycle(initialValue = emptyList())
+    var priceChangePeriod by remember {
+        mutableStateOf(
+            if (context.defaultSharedPreferences.getInt(PREF_MARKET_TOP_PERCENTAGE, 0) == 0) {
+                MarketPriceChangePeriod.SEVEN_DAYS
+            } else {
+                MarketPriceChangePeriod.TWENTY_FOUR_HOURS
+            },
+        )
+    }
+    var quoteColorReversed by remember {
+        mutableStateOf(context.defaultSharedPreferences.getBoolean(PREF_QUOTE_COLOR, false))
+    }
+    DisposableEffect(context) {
+        val prefs = context.defaultSharedPreferences
+        val listener =
+            SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                when (key) {
+                    PREF_MARKET_TOP_PERCENTAGE -> {
+                        priceChangePeriod =
+                            if (prefs.getInt(PREF_MARKET_TOP_PERCENTAGE, 0) == 0) {
+                                MarketPriceChangePeriod.SEVEN_DAYS
+                            } else {
+                                MarketPriceChangePeriod.TWENTY_FOUR_HOURS
+                            }
+                    }
+
+                    PREF_QUOTE_COLOR -> {
+                        quoteColorReversed = prefs.getBoolean(PREF_QUOTE_COLOR, false)
+                    }
+                }
+            }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            prefs.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -228,7 +270,12 @@ fun SwapContent(
                     Modifier.fillMaxSize()
                 }
             ) {
-                val hasRecommendedCards = stockMarkets.isNotEmpty() || trendingMarkets.isNotEmpty() || topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
+                val hasRecommendedCards =
+                    stockMarkets.isNotEmpty() ||
+                        trendingMarkets.isNotEmpty() ||
+                        topGainerMarkets.isNotEmpty() ||
+                        topLoserMarkets.isNotEmpty() ||
+                        allMarkets.isNotEmpty()
                 val showRecommendedCards = shouldShowSwapRecommendedMarketCards(
                     hasRecommendedCards = hasRecommendedCards,
                     inMixin = inMixin,
@@ -359,6 +406,9 @@ fun SwapContent(
                             onMarketClick = onRecommendedMarketClick,
                             onViewAllClick = { type -> onRecommendedMarketViewAllClick(type, isReverse) },
                             modifier = Modifier.padding(horizontal = 20.dp),
+                            allMarkets = allMarkets,
+                            priceChangePeriod = priceChangePeriod,
+                            quoteColorReversed = quoteColorReversed,
                         )
                         Spacer(modifier = Modifier.height(40.dp))
                     }

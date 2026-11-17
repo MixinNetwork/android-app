@@ -87,16 +87,18 @@ class SwapViewModel
     ): MixinResponse<List<Market>> = tokenRepository.markets(category = category, limit = limit, sort = sort, duration = duration)
 
     fun observeRecommendedMarkets(category: MarketCategory): Flow<List<MarketItem>> =
-        recommendedMarketsFromDatabase(
-            markets = tokenRepository.observeMarketsByCategory(category),
-            limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-        )
+        tokenRepository.observeMarketsByCategory(category)
+
+    fun observeAllMarkets(): Flow<List<MarketItem>> =
+        tokenRepository.observeAllMarkets()
 
     internal suspend fun refreshRecommendedMarkets(
         category: MarketCategory,
+        duration: String? = null,
     ): MarketRefreshResult =
         tokenRepository.fetchMarketsResult(
             category = category.apiValue,
+            duration = duration,
             limit = marketRefreshLimit(category),
             persist = true,
         )

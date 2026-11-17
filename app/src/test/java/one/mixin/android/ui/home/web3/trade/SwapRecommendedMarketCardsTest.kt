@@ -7,6 +7,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import one.mixin.android.ui.home.web3.market.MarketPriceChangePeriod
+import one.mixin.android.ui.home.web3.market.formatMarketPercent
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
@@ -157,9 +159,72 @@ class SwapRecommendedMarketCardsTest {
         assertEquals("-1.5K%", formatRecommendedMarketSignedPercent(BigDecimal("-1500.12")))
     }
 
+    @Test
+    fun buildSectionsOrdersCategoriesFiltersStocksAndUsesFallbackAndSortsMovers() {
+        val stockBtc = market("stock-nvda", change24H = "10", change7D = "25")
+        val btc = market("btc", change24H = "2", change7D = "8")
+        val eth = market("eth", change24H = "5", change7D = "3")
+        val sol = market("sol", change24H = "-4", change7D = "-12")
+        val xrp = market("xrp", change24H = "-1", change7D = "-20")
+
+        val sections7d =
+            buildSwapRecommendedMarketSections(
+                trendingMarkets = listOf(stockBtc, btc, eth),
+                stockMarkets = listOf(stockBtc),
+                topGainerMarkets = emptyList(),
+                topLoserMarkets = listOf(sol, stockBtc, xrp),
+                allMarkets = listOf(btc, eth, stockBtc),
+                priceChangePeriod = MarketPriceChangePeriod.SEVEN_DAYS,
+                limit = SWAP_RECOMMENDED_MARKET_LIMIT,
+            )
+
+        assertEquals(
+            listOf(
+                SwapRecommendedCategory.TRENDING,
+                SwapRecommendedCategory.STOCKS,
+                SwapRecommendedCategory.TOP_GAINERS,
+                SwapRecommendedCategory.TOP_LOSERS,
+            ),
+            sections7d.map { it.category },
+        )
+        assertEquals(listOf("btc", "eth"), sections7d[0].markets.map(MarketItem::coinId))
+        assertEquals(listOf("stock-nvda"), sections7d[1].markets.map(MarketItem::coinId))
+        assertEquals(listOf("btc", "eth"), sections7d[2].markets.map(MarketItem::coinId))
+        assertEquals(listOf("xrp", "sol"), sections7d[3].markets.map(MarketItem::coinId))
+
+        val sections24h =
+            buildSwapRecommendedMarketSections(
+                trendingMarkets = emptyList(),
+                stockMarkets = emptyList(),
+                topGainerMarkets = listOf(btc, eth),
+                topLoserMarkets = listOf(xrp, sol),
+                allMarkets = emptyList(),
+                priceChangePeriod = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
+                limit = 1,
+            )
+
+        assertEquals(
+            listOf(
+                SwapRecommendedCategory.TOP_GAINERS,
+                SwapRecommendedCategory.TOP_LOSERS,
+            ),
+            sections24h.map { it.category },
+        )
+        assertEquals(listOf("eth"), sections24h[0].markets.map(MarketItem::coinId))
+        assertEquals(listOf("sol"), sections24h[1].markets.map(MarketItem::coinId))
+    }
+
+    @Test
+    fun marketPercentMatchesMarketPageFormat() {
+        assertEquals("+2.35%", formatMarketPercent(BigDecimal("2.35")))
+        assertEquals("-0.04%", formatMarketPercent(BigDecimal("-0.04")))
+        assertEquals("0%", formatMarketPercent(BigDecimal.ZERO))
+    }
+
     private fun market(
         coinId: String,
         change24H: String,
+        change7D: String = "0",
     ) =
         MarketItem.fromMarket(
             Market(
@@ -176,7 +241,7 @@ class SwapRecommendedMarketCardsTest {
                 priceChange24h = "0",
                 priceChangePercentage1H = "0",
                 priceChangePercentage24H = change24H,
-                priceChangePercentage7D = "0",
+                priceChangePercentage7D = change7D,
                 priceChangePercentage30D = "0",
                 marketCapChange24h = "0",
                 marketCapChangePercentage24h = "0",
