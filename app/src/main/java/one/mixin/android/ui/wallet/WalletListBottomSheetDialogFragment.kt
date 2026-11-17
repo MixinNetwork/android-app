@@ -281,7 +281,7 @@ fun WalletListScreen(
                     onCategorySelected = { selectedCategory = it }
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             // Render unified wallet items
             walletItems.forEachIndexed { index, item ->
                 when (item) {

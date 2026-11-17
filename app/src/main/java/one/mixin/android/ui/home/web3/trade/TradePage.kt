@@ -317,7 +317,7 @@ fun TradePage(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 10.dp)
                 .padding(top = 4.dp, end = 4.dp),
             horizontalArrangement = Arrangement.Start,
         ) {

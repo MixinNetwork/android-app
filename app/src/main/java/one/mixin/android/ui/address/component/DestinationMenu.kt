@@ -77,7 +77,7 @@ fun DestinationMenu(
                 Color.Transparent, MixinAppTheme.colors.borderColor, cornerRadius = 8.dp
             )
             .clickable(onClick = onClick)
-            .padding(vertical = 13.dp, horizontal = 18.dp),
+            .padding(vertical = 13.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(

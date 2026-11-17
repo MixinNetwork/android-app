@@ -122,12 +122,12 @@ private fun PerpsAdjustContent(
                 )
             }
         }
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 10.dp)) {
             Spacer(Modifier.height(10.dp))
             SectionTitle(R.string.Margin)
             Spacer(Modifier.height(11.dp))
             AdjustAction(R.string.perps_add_margin, R.string.perps_add_margin_description, R.drawable.ic_perps_add_margin, onAddMargin)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
             AdjustAction(R.string.perps_reduce_margin, R.string.perps_reduce_margin_description, R.drawable.ic_perps_reduce_margin, onReduceMargin)
             Spacer(Modifier.height(17.dp))
             SectionTitle(R.string.perps_position)
@@ -179,7 +179,7 @@ private fun AdjustAction(
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
             .clickable(onClick = onClick)
-            .padding(start = 20.dp, end = 16.dp, top = 13.dp, bottom = 13.dp),
+            .padding(horizontal = 16.dp, vertical = 13.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Icon(painterResource(icon), null, tint = Color.Unspecified, modifier = Modifier.padding(top = 5.dp).size(24.dp))

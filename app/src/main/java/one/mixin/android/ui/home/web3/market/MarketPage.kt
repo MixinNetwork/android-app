@@ -208,8 +208,8 @@ private fun TopTabs(
     LazyRow(
         state = listState,
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         items(
             items = tabs,
@@ -238,7 +238,7 @@ private fun SubTabs(
     LazyRow(
         state = listState,
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(start = if (topTab == MarketTopTab.STOCK) 12.dp else 6.dp, end = 20.dp),
+        contentPadding = PaddingValues(start = if (topTab == MarketTopTab.STOCK) 10.dp else 6.dp, end = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

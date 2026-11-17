@@ -285,7 +285,7 @@ fun ImportWalletDetailPage(
                 modifier = Modifier
                     .imePadding()
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(horizontal = 10.dp, vertical = 16.dp)
             ) {
                 if (showWalletNameInput) {
                     TextField(

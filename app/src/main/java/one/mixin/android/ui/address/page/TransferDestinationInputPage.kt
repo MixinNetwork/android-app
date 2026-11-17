@@ -358,7 +358,7 @@ fun TransferDestinationInputPage(
                             },
                             true
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     } else {
                         DestinationMenu(
                             R.drawable.ic_destination_contact,
@@ -369,7 +369,7 @@ fun TransferDestinationInputPage(
                             },
                             true
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                     if (web3Token != null) {
                         DestinationMenu(
@@ -382,7 +382,7 @@ fun TransferDestinationInputPage(
                             },
                             isPrivacy = false
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     } else if (hasSafeWallet && safeWalletChainId != null) {
                         DestinationMenu(
                             R.drawable.ic_destination_wallet,
@@ -394,7 +394,7 @@ fun TransferDestinationInputPage(
                             },
                             isPrivacy = false
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     } else if (token?.chainId?.let { isWeb3TransferSupported(it) } == true) {
                         DestinationMenu(
                             R.drawable.ic_destination_wallet,
@@ -405,7 +405,7 @@ fun TransferDestinationInputPage(
                             },
                             free = true
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                 }
             } else {

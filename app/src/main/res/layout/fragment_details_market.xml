@@ -161,9 +161,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_below="@+id/radio_group"
-                            android:layout_marginStart="18dp"
+                            android:layout_marginStart="16dp"
                             android:layout_marginTop="2dp"
-                            android:layout_marginEnd="18dp"
+                            android:layout_marginEnd="16dp"
                             android:layout_marginBottom="24dp"
                             android:visibility="gone" />
 
@@ -563,9 +563,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingStart="36dp"
+                android:paddingStart="26dp"
                 android:paddingTop="20dp"
-                android:paddingEnd="36dp"
+                android:paddingEnd="26dp"
                 android:paddingBottom="20dp"
                 android:visibility="gone">
 
@@ -600,9 +600,9 @@
         android:background="?attr/bg_white"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="36dp"
+        android:paddingStart="26dp"
         android:paddingTop="16dp"
-        android:paddingEnd="36dp"
+        android:paddingEnd="26dp"
         android:paddingBottom="24dp">
 
         <LinearLayout

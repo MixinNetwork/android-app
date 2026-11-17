@@ -117,7 +117,7 @@ fun SpotTradeGuidePage(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 10.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -710,7 +710,7 @@ private fun SpotTradeGuideBottomNavigation(
     if (previousTab != null && nextTab == null) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 10.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
         ) {
@@ -732,7 +732,7 @@ private fun SpotTradeGuideBottomNavigation(
     if (previousTab != null && nextTab != null) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 10.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
         ) {

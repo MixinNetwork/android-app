@@ -168,7 +168,7 @@ fun PerpetualGuidePage(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 10.dp)
             ) {
                 LazyRow(
                     state = tabListState,

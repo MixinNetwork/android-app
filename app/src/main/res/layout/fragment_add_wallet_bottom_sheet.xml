@@ -54,8 +54,8 @@
                 android:id="@+id/create_new_wallet"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginBottom="10dp"
                 android:background="?attr/bg_market_card">
 
@@ -63,7 +63,7 @@
                     android:id="@+id/create_wallet_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:layout_marginStart="20dp"
+                    android:layout_marginStart="16dp"
                     android:layout_marginEnd="14dp"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_menu_create_wallet" />
@@ -98,8 +98,8 @@
                 android:id="@+id/import_mnemonic_phrase"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginBottom="10dp"
                 android:background="?attr/bg_market_card">
 
@@ -107,7 +107,7 @@
                     android:id="@+id/asset_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:layout_marginStart="20dp"
+                    android:layout_marginStart="16dp"
                     android:layout_marginEnd="14dp"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_menu_mnemonic_phrase"/>
@@ -142,8 +142,8 @@
                 android:id="@+id/import_private_key"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginBottom="10dp"
                 android:background="?attr/bg_market_card">
 
@@ -151,7 +151,7 @@
                     android:id="@+id/private_key_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:layout_marginStart="20dp"
+                    android:layout_marginStart="16dp"
                     android:layout_marginEnd="14dp"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_menu_private_key" />
@@ -186,8 +186,8 @@
                 android:id="@+id/add_watch_address"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginBottom="10dp"
                 android:background="?attr/bg_market_card">
 
@@ -195,7 +195,7 @@
                     android:id="@+id/watch_address_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:layout_marginStart="20dp"
+                    android:layout_marginStart="16dp"
                     android:layout_marginEnd="14dp"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_menu_watch_address" />
@@ -230,8 +230,8 @@
                 android:id="@+id/free_transfer_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginTop="36dp"
                 android:background="?attr/bg_market_card"
                 android:orientation="vertical"
@@ -308,8 +308,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginTop="16dp"
                 android:orientation="vertical"
                 android:padding="16dp">

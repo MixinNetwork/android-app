@@ -521,7 +521,7 @@ private fun PerpsMarginContent(
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                .padding(start = 10.dp, end = 10.dp, top = 16.dp),
         ) {
             val entryPrice = formatPerpsPrice(position.entryPrice, priceScale)
             val currentPrice = formatPerpsPrice(
@@ -529,7 +529,12 @@ private fun PerpsMarginContent(
                 priceScale,
             )
             val subtitle = stringResource(R.string.auto_close_subtitle_after_open, entryPrice, currentPrice)
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 CoilImage(
                     model = position.iconUrl,
                     placeholder = R.drawable.ic_avatar_place_holder,

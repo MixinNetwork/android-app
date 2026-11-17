@@ -24,10 +24,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
@@ -119,20 +124,31 @@ fun OpenPositionItem(
                     Text(
                         text = sideText,
                         fontSize = 16.sp,
+                        lineHeight = 20.sp,
+                        fontWeight = FontWeight.Normal,
                         color = MixinAppTheme.colors.textPrimary,
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = displaySymbol,
                         fontSize = 16.sp,
+                        lineHeight = 20.sp,
+                        fontWeight = FontWeight.Normal,
                         color = MixinAppTheme.colors.textPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${position.leverage}x",
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(fontFamily = FontFamily(Font(R.font.mixin_font)), fontWeight = FontWeight.Normal)) {
+                                append(position.leverage.toString())
+                            }
+                            withStyle(SpanStyle(fontWeight = FontWeight.Medium)) {
+                                append("x")
+                            }
+                        },
                         fontSize = 12.sp,
                         color = leverageTextColor,
                         lineHeight = 14.sp,
@@ -152,6 +168,8 @@ fun OpenPositionItem(
                     Text(
                         text = stringResource(if (isAdding) R.string.adding_position else R.string.Pending),
                         fontSize = 14.sp,
+                        lineHeight = 18.sp,
+                        fontWeight = FontWeight.Normal,
                         color = MixinAppTheme.colors.textAssist,
                         textAlign = TextAlign.End,
                     )
@@ -162,6 +180,8 @@ fun OpenPositionItem(
                         modifier = Modifier.widthIn(max = 120.dp),
                         style = TextStyle(
                             fontSize = 14.sp,
+                            lineHeight = 18.sp,
+                            fontWeight = FontWeight.Normal,
                             color = MixinAppTheme.colors.textPrimary,
                             textAlign = TextAlign.End
                         ),
@@ -177,7 +197,7 @@ fun OpenPositionItem(
                 }
             }
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -186,6 +206,8 @@ fun OpenPositionItem(
                 Text(
                     text = "$quantity ${position.tokenSymbol ?: ""}",
                     fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                    fontWeight = FontWeight.Normal,
                     color = MixinAppTheme.colors.textAssist,
                     modifier = Modifier.weight(1f)
                 )
@@ -208,6 +230,8 @@ fun OpenPositionItem(
                         modifier = Modifier.widthIn(max = 120.dp),
                         style = TextStyle(
                             fontSize = 14.sp,
+                            lineHeight = 18.sp,
+                            fontWeight = FontWeight.Normal,
                             color = pnlColor,
                             textAlign = TextAlign.End
                         ),
