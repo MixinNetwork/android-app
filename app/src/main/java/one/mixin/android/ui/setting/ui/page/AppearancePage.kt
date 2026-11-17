@@ -17,10 +17,14 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.RadioButton
 import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,9 +41,12 @@ import one.mixin.android.R
 import one.mixin.android.compose.MixinAlertDialog
 import one.mixin.android.compose.MixinBackButton
 import one.mixin.android.compose.MixinTopAppBar
+import one.mixin.android.compose.SettingTile
+import one.mixin.android.compose.booleanValueAsState
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findFragmentActivityOrNull
+import one.mixin.android.extension.isGlassBottomNavigationEnabled
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.singleChoice
 import one.mixin.android.session.Session
@@ -72,6 +79,9 @@ fun AppearancePage() {
     ) {
         Column(Modifier.padding(it)) {
             ThemeItem()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                GlassBottomNavigationItem()
+            }
 
             Box(modifier = Modifier.height(20.dp))
 
@@ -102,6 +112,33 @@ fun AppearancePage() {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun GlassBottomNavigationItem() {
+    val context = LocalContext.current
+    var checked by context.defaultSharedPreferences.booleanValueAsState(
+        key = Constants.Account.PREF_GLASS_BOTTOM_NAV,
+        defaultValue = context.isGlassBottomNavigationEnabled(),
+    )
+    SettingTile(
+        title = stringResource(R.string.Glass_navigation_bar),
+        trailing = {
+            Switch(
+                checked = checked,
+                colors =
+                    SwitchDefaults.colors(
+                        checkedThumbColor = MixinAppTheme.colors.accent,
+                        uncheckedThumbColor = MixinAppTheme.colors.unchecked,
+                        checkedTrackColor = MixinAppTheme.colors.accent,
+                        uncheckedTrackColor = MixinAppTheme.colors.unchecked,
+                    ),
+                onCheckedChange = null,
+            )
+        },
+    ) {
+        checked = !checked
     }
 }
 

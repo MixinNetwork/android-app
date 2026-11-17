@@ -69,7 +69,7 @@ class AudioHolder(itemView: View) : NormalHolder(itemView) {
         onLongClickListener: (messageId: String) -> Unit,
     ) {
         val isMe = item.userId == Session.getAccountId()
-        binding.avatar.setInfo(item.userFullName, item.userAvatarUrl, item.userIdentityNumber)
+        binding.avatar.setInfo(item.userFullName, item.userAvatarUrl, item.userId)
         binding.cover.round(itemView.context.dpToPx(25f))
         item.mediaWaveform?.let {
             binding.audioWaveform.setWaveform(it)

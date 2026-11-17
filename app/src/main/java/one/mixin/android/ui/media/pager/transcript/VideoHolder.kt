@@ -10,9 +10,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.toBitmap
@@ -33,12 +31,6 @@ class VideoHolder(
     private val mediaPagerAdapterListener: MediaPagerAdapterListener,
 ) : MediaPagerHolder(itemView) {
     val binding = ItemPagerVideoLayoutBinding.bind(itemView)
-
-    init {
-        itemView.post {
-            binding.playerView.playerControlView.bottomLayout.setPadding(12.dp, 24.dp, 12.dp, 12.dp + itemView.context.navigationBarHeight())
-        }
-    }
 
     fun bind(
         messageItem: ChatHistoryMessageItem,

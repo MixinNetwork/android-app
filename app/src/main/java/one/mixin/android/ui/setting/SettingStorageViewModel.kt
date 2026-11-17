@@ -2,32 +2,20 @@ package one.mixin.android.ui.setting
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
 import one.mixin.android.Constants.Storage.TRANSCRIPT
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.generateConversationPath
-import one.mixin.android.extension.getAudioPath
-import one.mixin.android.extension.getConversationAudioPath
-import one.mixin.android.extension.getConversationDocumentPath
-import one.mixin.android.extension.getConversationImagePath
-import one.mixin.android.extension.getConversationMediaSize
-import one.mixin.android.extension.getConversationVideoPath
-import one.mixin.android.extension.getDocumentPath
-import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getStorageUsageByConversationAndType
-import one.mixin.android.extension.getVideoPath
+import one.mixin.android.extension.fileStats
+import one.mixin.android.extension.getStorageTypePath
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.TranscriptDeleteJob
 import one.mixin.android.repository.ConversationRepository
@@ -47,146 +35,90 @@ class SettingStorageViewModel
         private val cleanMessageHelper: CleanMessageHelper,
         private val jobManager: MixinJobManager,
     ) : ViewModel() {
+        private val mediaTypes = listOf(IMAGE, VIDEO, AUDIO, DATA)
+
         suspend fun getStorageUsage(
             context: Context,
             conversationId: String,
         ): List<StorageUsage> =
             withContext(Dispatchers.IO) {
-                val result = mutableListOf<StorageUsage>()
-                context.getStorageUsageByConversationAndType(conversationId, IMAGE)?.apply {
-                    result.add(this)
+                val result =
+                    mediaTypes.map { type ->
+                        async {
+                            val stats = context.getStorageTypePath(type)?.let { File(it, conversationId).fileStats() } ?: return@async null
+                            if (stats.count == 0 || stats.size == 0L) return@async null
+                            StorageUsage(conversationId, type, stats.count, stats.size.toKb())
+                        }
+                    }.awaitAll().filterNotNull().toMutableList()
+                val transcriptSize = conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L
+                if (transcriptSize > 0) {
+                    result.add(StorageUsage(conversationId, TRANSCRIPT, conversationRepository.countTranscriptById(conversationId), transcriptSize.toKb()))
                 }
-                context.getStorageUsageByConversationAndType(conversationId, VIDEO)?.apply {
-                    result.add(this)
-                }
-                context.getStorageUsageByConversationAndType(conversationId, AUDIO)?.apply {
-                    result.add(this)
-                }
-                context.getStorageUsageByConversationAndType(conversationId, DATA)?.apply {
-                    result.add(this)
-                }
-                conversationRepository.getMediaSizeTotalById(conversationId)?.apply {
-                    if (this > 0) {
-                        result.add(StorageUsage(conversationId, TRANSCRIPT, conversationRepository.countTranscriptById(conversationId), this / 1024))
-                    }
-                }
-                result.toList()
+                result
             }
 
         suspend fun getConversationStorageUsage(context: Context): List<ConversationStorageUsage> =
             withContext(Dispatchers.IO) {
-                conversationRepository.getConversationStorageUsage()
-                    .map { item ->
-                        async(Dispatchers.IO) {
-                            item.apply { mediaSize = context.getConversationMediaSize(conversationId) + (conversationRepository.getMediaSizeTotalById(conversationId) ?: 0L) / 1024 }
-                        }
-                    }.awaitAll()
-                    .filter { conversationStorageUsage ->
-                        conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
-                    }.sortedByDescending { conversationStorageUsage ->
-                        conversationStorageUsage.mediaSize
-                    }.toList()
+                val conversations = async { conversationRepository.getConversationStorageUsage() }
+                // Scan each media root once and group by the conversation sub-directory.
+                val fileSizes = HashMap<String, Long>()
+                mediaTypes.map { type ->
+                    async {
+                        context.getStorageTypePath(type)?.listFiles()
+                            ?.filter { it.isDirectory }
+                            ?.map { it.name to it.fileStats().size }
+                            .orEmpty()
+                    }
+                }.awaitAll().forEach { sizes ->
+                    sizes.forEach { (conversationId, size) -> fileSizes.merge(conversationId, size, Long::plus) }
+                }
+                conversations.await()
+                    .onEach { item ->
+                        item.mediaSize = ((fileSizes[item.conversationId] ?: 0L) + (item.transcriptSize ?: 0L)).toKb()
+                    }.filter { item ->
+                        item.mediaSize != 0L && item.conversationId.isNotEmpty()
+                    }.sortedByDescending { item ->
+                        item.mediaSize
+                    }
             }
 
-        fun clear(
+        suspend fun clear(
             conversationId: String,
-            type: String,
-        ) {
-            if (MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_ATTACHMENT, false)) {
+            types: Collection<String>,
+        ) = withContext(Dispatchers.IO + NonCancellable) {
+            // Must finish once started, otherwise files and message rows can get out of sync.
+            types.forEach { type ->
                 when (type) {
-                    IMAGE -> {
-                        MixinApplication.get().getConversationImagePath(conversationId)?.deleteRecursively()
-                        conversationRepository.deleteMediaMessageByConversationAndCategory(
-                            conversationId,
-                            MessageCategory.SIGNAL_IMAGE.name,
-                            MessageCategory.PLAIN_IMAGE.name,
-                            MessageCategory.ENCRYPTED_IMAGE.name,
-                        )
-                    }
-                    VIDEO -> {
-                        MixinApplication.get().getConversationVideoPath(conversationId)?.deleteRecursively()
-                        conversationRepository.deleteMediaMessageByConversationAndCategory(
-                            conversationId,
-                            MessageCategory.SIGNAL_VIDEO.name,
-                            MessageCategory.PLAIN_VIDEO.name,
-                            MessageCategory.ENCRYPTED_VIDEO.name,
-                        )
-                    }
-                    AUDIO -> {
-                        MixinApplication.get().getConversationAudioPath(conversationId)?.deleteRecursively()
-                        conversationRepository.deleteMediaMessageByConversationAndCategory(
-                            conversationId,
-                            MessageCategory.SIGNAL_AUDIO.name,
-                            MessageCategory.PLAIN_AUDIO.name,
-                            MessageCategory.ENCRYPTED_AUDIO.name,
-                        )
-                    }
-                    DATA -> {
-                        MixinApplication.get().getConversationDocumentPath(conversationId)?.deleteRecursively()
-                        conversationRepository.deleteMediaMessageByConversationAndCategory(
-                            conversationId,
-                            MessageCategory.SIGNAL_DATA.name,
-                            MessageCategory.PLAIN_DATA.name,
-                            MessageCategory.ENCRYPTED_DATA.name,
-                        )
-                    }
+                    IMAGE -> clearMedia(conversationId, type, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name, MessageCategory.ENCRYPTED_IMAGE.name)
+                    VIDEO -> clearMedia(conversationId, type, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name, MessageCategory.ENCRYPTED_VIDEO.name)
+                    AUDIO -> clearMedia(conversationId, type, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name, MessageCategory.ENCRYPTED_AUDIO.name)
+                    DATA -> clearMedia(conversationId, type, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name, MessageCategory.ENCRYPTED_DATA.name)
                     TRANSCRIPT -> {
-                        conversationRepository.deleteMediaMessageByConversationAndCategory(
-                            conversationId,
-                            MessageCategory.SIGNAL_TRANSCRIPT.name,
-                            MessageCategory.PLAIN_TRANSCRIPT.name,
-                            MessageCategory.ENCRYPTED_TRANSCRIPT.name,
-                        )
+                        val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
+                        if (ids.isNotEmpty()) {
+                            jobManager.addJobInBackground(TranscriptDeleteJob(ids))
+                        }
                     }
-                }
-            } else {
-                when (type) {
-                    IMAGE -> clear(conversationId, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name, MessageCategory.ENCRYPTED_IMAGE.name)
-                    VIDEO -> clear(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name, MessageCategory.ENCRYPTED_VIDEO.name)
-                    AUDIO -> clear(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name, MessageCategory.ENCRYPTED_AUDIO.name)
-                    DATA -> clear(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name, MessageCategory.ENCRYPTED_DATA.name)
-                    TRANSCRIPT -> clear(conversationId, MessageCategory.SIGNAL_TRANSCRIPT.name, MessageCategory.PLAIN_TRANSCRIPT.name, MessageCategory.ENCRYPTED_TRANSCRIPT.name)
                 }
             }
             conversationRepository.refreshConversationById(conversationId)
         }
 
-        private fun clear(
+        private suspend fun clearMedia(
             conversationId: String,
+            type: String,
             signalCategory: String,
             plainCategory: String,
             encryptedCategory: String,
         ) {
-            if (signalCategory == MessageCategory.SIGNAL_TRANSCRIPT.name && plainCategory == MessageCategory.PLAIN_TRANSCRIPT.name && encryptedCategory == MessageCategory.ENCRYPTED_TRANSCRIPT.name) {
-                viewModelScope.launch(SINGLE_DB_THREAD) {
-                    val ids = conversationRepository.findTranscriptIdByConversationId(conversationId)
-                    if (ids.isEmpty()) {
-                        return@launch
-                    }
-                    jobManager.addJobInBackground(TranscriptDeleteJob(ids))
+            val list = conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
+            if (list.isNotEmpty()) {
+                withContext(SINGLE_DB_THREAD) {
+                    cleanMessageHelper.deleteMessageMinimals(conversationId, list)
                 }
-                return
             }
-            conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
-                .let { list ->
-                    viewModelScope.launch(SINGLE_DB_THREAD) {
-                        cleanMessageHelper.deleteMessageMinimals(conversationId, list)
-                    }
-                }
-            categoryPath(MixinApplication.appContext, signalCategory, conversationId)?.deleteRecursively()
+            MixinApplication.appContext.getStorageTypePath(type)?.let { File(it, conversationId) }?.deleteRecursively()
         }
 
-        private fun categoryPath(
-            context: Context,
-            category: String,
-            conversationId: String,
-        ): File? {
-            return when {
-                category.endsWith("_IMAGE") -> context.getImagePath().generateConversationPath(conversationId)
-                category.endsWith("_VIDEO") -> context.getVideoPath().generateConversationPath(conversationId)
-                category.endsWith("_AUDIO") -> context.getAudioPath().generateConversationPath(conversationId)
-                category.endsWith("_DATA") -> context.getDocumentPath().generateConversationPath(conversationId)
-                else -> null
-            }
-        }
+        private fun Long.toKb() = (this + 1023) / 1024
     }

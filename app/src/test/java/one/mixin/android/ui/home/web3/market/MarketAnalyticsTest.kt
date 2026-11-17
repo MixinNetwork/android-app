@@ -6,8 +6,9 @@ import org.junit.Test
 
 class MarketAnalyticsTest {
     @Test
-    fun stockPrimaryTabUsesStockAnalyticsValue() {
+    fun stockTabsUseStockAnalyticsValue() {
         assertEquals(AnalyticsTracker.MarketsTab.STOCK, MarketTopTab.STOCK.analyticsValue())
+        assertEquals(AnalyticsTracker.MarketsTab.STOCK, MarketSubTab.STOCKS.analyticsValue())
     }
 
     @Test

@@ -23,7 +23,6 @@ import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.PerpsMarketRepository
-import one.mixin.android.repository.SafeBoxStoreManager
 import one.mixin.android.repository.TokenRepository
 import org.junit.After
 import org.junit.Before
@@ -143,7 +142,6 @@ class PerpsOpenOrderTest {
             walletOutputDao = wallet.walletOutputDao(),
             web3WalletDao = wallet.web3WalletDao(),
             jobManager = jobs,
-            safeBoxStoreManager = SafeBoxStoreManager(context),
             web3AddressDao = wallet.web3AddressDao(),
         )
     }

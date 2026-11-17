@@ -379,7 +379,6 @@ class TokenRepositoryWalletTransactionTest {
         walletOutputDao = wallet.walletOutputDao(),
         web3WalletDao = wallet.web3WalletDao(),
         jobManager = jobs,
-        safeBoxStoreManager = SafeBoxStoreManager(context),
         web3AddressDao = wallet.web3AddressDao(),
     )
 

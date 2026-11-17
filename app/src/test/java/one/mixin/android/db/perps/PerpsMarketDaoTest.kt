@@ -109,6 +109,70 @@ class PerpsMarketDaoTest {
         }
 
     @Test
+    fun searchMarketsMatchesTagsAndPreservesVolumeFilteringAndOrder() =
+        runBlocking {
+            val tags = listOf("sandisk", "\u95ea\u8fea")
+            database.perpsMarketDao().upsertList(
+                listOf(
+                    market("lower-volume", volume = "9", score = 0).copy(tags = tags),
+                    market("higher-volume", volume = "100", score = 0).copy(tags = tags),
+                    market("zero-volume", volume = "0", score = 0).copy(tags = tags),
+                    market("no-tags", volume = "200", score = 0),
+                ),
+            )
+
+            for (query in listOf("\u95ea\u8fea", "\u95ea", "SanDisk", "disk")) {
+                assertEquals(
+                    listOf("higher-volume", "lower-volume"),
+                    database.perpsMarketDao().searchMarkets(query).map(PerpsMarket::marketId),
+                )
+            }
+        }
+
+    @Test
+    fun searchMarketsIgnoresSerializedTagJsonSyntax() =
+        runBlocking {
+            database.perpsMarketDao().upsertList(
+                listOf(
+                    market("untagged", volume = "300", score = 0),
+                    market("normal", volume = "200", score = 0).copy(tags = listOf("alpha", "beta")),
+                    market("escaped", volume = "100", score = 0).copy(tags = listOf("AT&T", "a<b>c")),
+                ),
+            )
+
+            for (query in listOf("[", "]", "\"", ",", "alpha\",\"beta", "alphabeta", "alpha beta", "alpha,beta", "u0026", "u003c")) {
+                assertEquals(
+                    "query: $query",
+                    emptyList<String>(),
+                    database.perpsMarketDao().searchMarkets(query).map(PerpsMarket::marketId),
+                )
+            }
+        }
+
+    @Test
+    fun searchMarketsMatchesTagsAsLiteralText() =
+        runBlocking {
+            val tags = listOf("AT&T", "a<b>c", "a=b", "it's", "say \"hi\"", "a\\b", "[x]", "a,b", "100%", "c_d")
+            database.perpsMarketDao().upsertList(
+                tags.mapIndexed { index, tag ->
+                    market("tag-$index", volume = "100", score = 0).copy(tags = listOf(tag))
+                } + market("plain", volume = "200", score = 0).copy(tags = listOf("100x", "cxd")),
+            )
+
+            val queries = mapOf(
+                "AT&T" to 0, "&" to 0, "<" to 1, ">" to 1, "=" to 2, "'" to 3,
+                "\"hi\"" to 4, "\\" to 5, "[x]" to 6, "a,b" to 7, "%" to 8, "_" to 9, "c_d" to 9,
+            )
+            for ((query, index) in queries) {
+                assertEquals(
+                    "query: $query",
+                    listOf("tag-$index"),
+                    database.perpsMarketDao().searchMarkets(query).map(PerpsMarket::marketId),
+                )
+            }
+        }
+
+    @Test
     fun upsertedRefreshedMarketsBecomeSearchableWithoutClearingDatabase() =
         runBlocking {
             database.perpsMarketDao().upsertList(

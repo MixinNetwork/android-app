@@ -42,7 +42,6 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
             )
             circleProgress.isVisible = false
             circleProgress.setBindId(messageItem.messageId)
-            imageView.setOnLongClickListener(null)
         } else {
             if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
                 imageView.loadImage(
@@ -94,11 +93,9 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         imageView.setOnClickListener {
             mediaPagerAdapterListener.onClick(messageItem)
         }
-        if (!messageItem.isAppCard()) {
-            imageView.setOnLongClickListener {
-                mediaPagerAdapterListener.onLongClick(messageItem, itemView)
-                return@setOnLongClickListener true
-            }
+        imageView.setOnLongClickListener {
+            mediaPagerAdapterListener.onLongClick(messageItem, itemView)
+            return@setOnLongClickListener true
         }
         if (needPostTransition) {
             ViewCompat.setTransitionName(imageView, "transition")

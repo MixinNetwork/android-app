@@ -4,18 +4,7 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
   <path
-      android:pathData="M4,11L6,11A1,1 0,0 1,7 12L7,19A1,1 0,0 1,6 20L4,20A1,1 0,0 1,3 19L3,12A1,1 0,0 1,4 11z"
-      android:strokeWidth="2"
+      android:pathData="M9.5,1.289C11.047,0.396 12.953,0.396 14.5,1.289L20.026,4.48C21.573,5.373 22.526,7.024 22.526,8.81V15.191C22.526,16.977 21.573,18.628 20.026,19.521L14.5,22.711C12.953,23.604 11.047,23.604 9.5,22.711L3.974,19.521C2.427,18.628 1.474,16.977 1.474,15.191V8.81C1.474,7.024 2.427,5.373 3.974,4.48L9.5,1.289ZM17.5,7.671L14.066,8.195C13.602,8.265 13.284,8.862 13.563,9.141L14.281,9.861L11.534,12.303L10.19,10.982C9.82,10.619 9.233,10.598 8.839,10.934L5.351,13.91C4.931,14.269 4.881,14.9 5.239,15.321C5.598,15.741 6.229,15.79 6.649,15.432L9.44,13.05L10.799,14.384C11.174,14.753 11.771,14.768 12.164,14.418L15.697,11.277L16.472,12.051C16.75,12.329 17.347,12.011 17.418,11.546L17.941,8.113C17.985,7.825 17.788,7.627 17.5,7.671Z"
       android:fillColor="?attr/icon_black"
-      android:strokeColor="?attr/icon_black"/>
-  <path
-      android:pathData="M11,4L13,4A1,1 0,0 1,14 5L14,19A1,1 0,0 1,13 20L11,20A1,1 0,0 1,10 19L10,5A1,1 0,0 1,11 4z"
-      android:strokeWidth="2"
-      android:fillColor="?attr/icon_black"
-      android:strokeColor="?attr/icon_black"/>
-  <path
-      android:pathData="M18,7L20,7A1,1 0,0 1,21 8L21,19A1,1 0,0 1,20 20L18,20A1,1 0,0 1,17 19L17,8A1,1 0,0 1,18 7z"
-      android:strokeWidth="2"
-      android:fillColor="?attr/icon_black"
-      android:strokeColor="?attr/icon_black"/>
+      android:fillType="evenOdd"/>
 </vector>

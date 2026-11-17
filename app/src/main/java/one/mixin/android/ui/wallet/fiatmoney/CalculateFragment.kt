@@ -658,12 +658,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             profileResponse.data!!.currencies.contains(it.name)
                         }
                     val supportAssetIds = profileResponse.data!!.assetIds
-                    val kycState = profileResponse.data!!.kycState
-                    val hideGooglePay =
-                        profileResponse.data!!.supportPayments.contains(Constants.RouteConfig.GOOGLE_PAY)
-                            .not()
-                    val routeProfile =
-                        RouteProfile(kycState, hideGooglePay, supportCurrencies, supportAssetIds)
+                    val routeProfile = RouteProfile(supportCurrencies, supportAssetIds)
                     (requireActivity() as WalletActivity).routeProfile = routeProfile
                     routeProfile
                 } else if (profileResponse != null) {

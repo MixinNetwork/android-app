@@ -32,6 +32,7 @@ import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.hashEip712Message
+import one.mixin.android.web3.eip712SigningChain
 import org.bitcoinj.base.Coin
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.core.TransactionInput
@@ -74,6 +75,16 @@ internal fun findChainByHexReference(hex: String?): Chain? =
         Chain.Solana,
     ).firstOrNull { it.hexReference == hex }
 
+// The EVM chain a dapp is on after a Solana request: Solana is not an EVM
+// chain, so return to the last EVM chain the dapp used instead of Ethereum,
+// which would fail typed data signed for that chain.
+internal fun evmChainAfter(current: Chain, lastEvm: Chain?): Chain =
+    when {
+        evmChainList.contains(current) -> current
+        lastEvm != null && evmChainList.contains(lastEvm) -> lastEvm
+        else -> Chain.Ethereum
+    }
+
 object Web3Signer {
     sealed class JsSignerNetwork(val name: String) {
         data object Ethereum : JsSignerNetwork("ethereum")
@@ -103,6 +114,7 @@ object Web3Signer {
         const val CLASSIC_WALLET_ID = "signer_classic_wallet_id"
         const val SELECTED_WEB3_WALLET_ID = "selected_web3_wallet_id"
         const val CURRENT_CHAIN = "signer_current_chain"
+        const val LAST_EVM_CHAIN = "signer_last_evm_chain"
     }
 
     var address: String = ""
@@ -128,6 +140,9 @@ object Web3Signer {
     var currentChain: Chain = Chain.Ethereum
         private set
 
+    // Kept while currentChain is Solana, so useEvm() can return to it.
+    private var lastEvmChain: Chain = Chain.Ethereum
+
     // now only ETH and SOL
     var currentNetwork = JsSignerNetwork.Ethereum.name
         private set
@@ -150,6 +165,7 @@ object Web3Signer {
         classicWalletId = sp.getString(Keys.CLASSIC_WALLET_ID, "") ?: ""
         currentChain = findChainByHexReference(sp.getString(Keys.CURRENT_CHAIN, Chain.Ethereum.hexReference))
             ?: Chain.Ethereum
+        lastEvmChain = evmChainAfter(currentChain, findChainByHexReference(sp.getString(Keys.LAST_EVM_CHAIN, null)))
         currentNetwork = if (currentChain == Chain.Solana) JsSignerNetwork.Solana.name else JsSignerNetwork.Ethereum.name
     }
 
@@ -165,6 +181,8 @@ object Web3Signer {
         sp.putString(Keys.CURRENT_WALLET_CATEGORY, currentWalletCategory)
         sp.putString(Keys.CLASSIC_WALLET_ID, classicWalletId)
         sp.putString(Keys.CURRENT_CHAIN, currentChain.hexReference)
+        if (evmChainList.contains(currentChain)) lastEvmChain = currentChain
+        sp.putString(Keys.LAST_EVM_CHAIN, lastEvmChain.hexReference)
     }
 
     fun updateAddress(
@@ -192,9 +210,7 @@ object Web3Signer {
 
     fun useEvm() {
         address = evmAddress
-        if (!evmChainList.contains(currentChain)) {
-            currentChain = Chain.Ethereum
-        }
+        currentChain = evmChainAfter(currentChain, lastEvmChain)
         currentNetwork = JsSignerNetwork.Ethereum.name
         persist()
     }
@@ -436,7 +452,7 @@ object Web3Signer {
         message: String,
         type: Int,
     ): String {
-        return if (currentChain == Chain.Solana) {
+        return if (currentChain == Chain.Solana && type != JsSignMessage.TYPE_TYPED_MESSAGE) {
             signSolanaMessage(priv, message)
         } else {
             signEthMessage(priv, message, type)
@@ -454,6 +470,7 @@ object Web3Signer {
                 JsSignMessage.TYPE_GASLESS_TRANSFER ->
                     Sign.signMessage(Numeric.hexStringToByteArray(message), keyPair, false)
                 JsSignMessage.TYPE_TYPED_MESSAGE -> {
+                    eip712SigningChain(message, currentChain, MixinApplication.appContext.getString(R.string.eip712_invalid_chain_id))
                     Sign.signMessage(hashEip712Message(message), keyPair, false)
                 }
                 else -> Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message), keyPair)

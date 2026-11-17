@@ -27,6 +27,6 @@ interface Web3RawTransactionDao : BaseDao<Web3RawTransaction> {
     @Query("DELETE FROM raw_transactions WHERE hash = :hash AND chain_id = :chainId")
     suspend fun deleteByHashAndChain(hash: String, chainId: String)
 
-    @Query("SELECT nonce FROM raw_transactions WHERE chain_id = :chainId AND state = 'pending' AND raw NOT LIKE 'gasless:%' AND account IN (SELECT DISTINCT destination FROM addresses WHERE wallet_id = :walletId) ORDER BY nonce DESC LIMIT 1")
+    @Query("SELECT nonce FROM raw_transactions WHERE chain_id = :chainId AND state = 'pending' AND raw NOT LIKE 'gasless:%' AND account IN (SELECT DISTINCT destination FROM addresses WHERE wallet_id = :walletId) ORDER BY CAST(nonce AS INTEGER) DESC LIMIT 1")
     suspend fun getNonce(walletId:String, chainId: String): String?
 }
