@@ -1499,7 +1499,8 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    if (messageAdapter.data.first()?.messageId == id) {
+                    if (viewDestroyed()) return@post
+                    if (messageAdapter.data.firstOrNull()?.messageId == id) {
                         messageAdapter.submitPrevious(pageData)
                     }
                 }
@@ -1514,7 +1515,8 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    if (messageAdapter.data.last()?.messageId == id) {
+                    if (viewDestroyed()) return@post
+                    if (messageAdapter.data.lastOrNull()?.messageId == id) {
                         messageAdapter.submitNext(pageData)
                     }
                 }
