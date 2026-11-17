@@ -2685,4 +2685,7 @@
     <string name="perps_publish_copy_trade">发布跟单</string>
     <string name="perps_publish_copy_trade_desc">获得跟单者 10% 的收益分润</string>
     <string name="perps_no_reducible_margin">当前没有可减少的保证金</string>
+    <string name="network_fee_description">网络费是区块链处理交易时产生的手续费，用于支付矿工或验证节点处理和确认交易的费用。</string>
+    <string name="network_fee_charged_by">网络费由 %1$s 网络收取</string>
+    <string name="network_fee_independent_of_amount">网络费与转账金额无关</string>
 </resources>

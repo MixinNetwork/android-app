@@ -917,6 +917,10 @@
     <string name="perps_publish_copy_trade">Terbitkan Copy Trade</string>
     <string name="perps_publish_copy_trade_desc">Dapatkan 10% perkongsian keuntungan daripada penyalin</string>
     <string name="perps_no_reducible_margin">Tiada margin yang boleh dikurangkan</string>
+    <string name="Network_Fee">Yuran Rangkaian</string>
+    <string name="network_fee_description">Yuran rangkaian ialah yuran transaksi yang dibayar kepada pelombong atau pengesah untuk memproses dan mengesahkan transaksi di rantaian blok.</string>
+    <string name="network_fee_charged_by">Yuran rangkaian dikenakan oleh rangkaian %1$s.</string>
+    <string name="network_fee_independent_of_amount">Yuran rangkaian tidak bergantung pada jumlah pemindahan.</string>
     <string name="mixin_support">Sokongan Mixin</string>
     <string name="real_people_real_support">Orang Sebenar. Sokongan Sebenar.</string>
 </resources>

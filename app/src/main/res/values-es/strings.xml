@@ -1295,6 +1295,10 @@
     <string name="perps_publish_copy_trade">Publicar copy trading</string>
     <string name="perps_publish_copy_trade_desc">Gana el 10% de las ganancias de tus copiadores</string>
     <string name="perps_no_reducible_margin">No hay margen disponible para reducir</string>
+    <string name="Network_Fee">Comisión de red</string>
+    <string name="network_fee_description">Las comisiones de red son tarifas de transacción que se pagan a mineros o validadores por procesar y confirmar transacciones en la blockchain.</string>
+    <string name="network_fee_charged_by">La red %1$s cobra las comisiones de red.</string>
+    <string name="network_fee_independent_of_amount">Las comisiones de red no dependen del importe de la transferencia.</string>
     <string name="mixin_support">Soporte de Mixin</string>
     <string name="real_people_real_support">Personas reales. Soporte real.</string>
 </resources>

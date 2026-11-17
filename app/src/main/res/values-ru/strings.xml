@@ -1236,6 +1236,10 @@
     <string name="perps_publish_copy_trade">Опубликовать копи-трейд</string>
     <string name="perps_publish_copy_trade_desc">Получайте 10% прибыли от копировщиков</string>
     <string name="perps_no_reducible_margin">Нет маржи, доступной для уменьшения</string>
+    <string name="Network_Fee">Сетевая комиссия</string>
+    <string name="network_fee_description">Сетевая комиссия — это плата майнерам или валидаторам за обработку и подтверждение транзакций в блокчейне.</string>
+    <string name="network_fee_charged_by">Сетевую комиссию взимает сеть %1$s.</string>
+    <string name="network_fee_independent_of_amount">Сетевая комиссия не зависит от суммы перевода.</string>
     <string name="mixin_support">Поддержка Mixin</string>
     <string name="real_people_real_support">Живые люди. Настоящая поддержка.</string>
 </resources>

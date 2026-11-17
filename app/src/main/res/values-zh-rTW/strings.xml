@@ -2734,4 +2734,7 @@
     <string name="perps_publish_copy_trade">發布跟單</string>
     <string name="perps_publish_copy_trade_desc">獲得跟單者 10% 的收益分潤</string>
     <string name="perps_no_reducible_margin">目前沒有可減少的保證金</string>
+    <string name="network_fee_description">網路費是區塊鏈處理交易時產生的手續費，用於支付礦工或驗證節點處理和確認交易的費用。</string>
+    <string name="network_fee_charged_by">網路費由 %1$s 網路收取</string>
+    <string name="network_fee_independent_of_amount">網路費與轉帳金額無關</string>
 </resources>

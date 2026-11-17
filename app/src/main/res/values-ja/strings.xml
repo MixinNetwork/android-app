@@ -1241,6 +1241,10 @@
     <string name="perps_publish_copy_trade">コピートレードを公開</string>
     <string name="perps_publish_copy_trade_desc">コピーした人の利益の 10% を獲得</string>
     <string name="perps_no_reducible_margin">減らせる証拠金がありません</string>
+    <string name="Network_Fee">ネットワーク手数料</string>
+    <string name="network_fee_description">ネットワーク手数料は、ブロックチェーン上で取引を処理・承認するマイナーまたはバリデーターに支払われる手数料です。</string>
+    <string name="network_fee_charged_by">ネットワーク手数料は %1$s ネットワークによって徴収されます。</string>
+    <string name="network_fee_independent_of_amount">ネットワーク手数料は送金額に関係ありません。</string>
     <string name="mixin_support">Mixin サポート</string>
     <string name="real_people_real_support">本物の人による、本物のサポート。</string>
 </resources>
