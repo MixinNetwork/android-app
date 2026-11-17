@@ -187,7 +187,7 @@ fun SwapRecommendedMarketCards(
             state = tabListState,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
