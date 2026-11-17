@@ -855,6 +855,10 @@
     <string name="desktop_help_step_1">Buka messenger.mixin.one di komputer Anda.</string>
     <string name="desktop_help_step_2">Unduh dan buka Mixin Messenger Desktop.</string>
     <string name="desktop_help_step_3">Pindai kode QR-nya dengan Mixin Messenger.</string>
+    <string name="Network_Fee">Biaya Jaringan</string>
+    <string name="network_fee_description">Biaya jaringan adalah biaya transaksi yang dibayarkan kepada penambang atau validator untuk memproses dan mengonfirmasi transaksi di blockchain.</string>
+    <string name="network_fee_charged_by">Biaya jaringan dikenakan oleh jaringan %1$s.</string>
+    <string name="network_fee_independent_of_amount">Biaya jaringan tidak bergantung pada jumlah transfer.</string>
     <string name="mixin_support">Dukungan Mixin</string>
     <string name="real_people_real_support">Orang Sungguhan. Dukungan Nyata.</string>
 </resources>

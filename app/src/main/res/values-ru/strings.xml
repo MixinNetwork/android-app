@@ -1239,6 +1239,10 @@
     <string name="desktop_help_step_1">Откройте messenger.mixin.one на компьютере.</string>
     <string name="desktop_help_step_2">Скачайте и запустите Mixin Messenger для компьютера.</string>
     <string name="desktop_help_step_3">Отсканируйте его QR-код в Mixin Messenger.</string>
+    <string name="Network_Fee">Сетевая комиссия</string>
+    <string name="network_fee_description">Сетевая комиссия — это плата майнерам или валидаторам за обработку и подтверждение транзакций в блокчейне.</string>
+    <string name="network_fee_charged_by">Сетевую комиссию взимает сеть %1$s.</string>
+    <string name="network_fee_independent_of_amount">Сетевая комиссия не зависит от суммы перевода.</string>
     <string name="mixin_support">Поддержка Mixin</string>
     <string name="real_people_real_support">Живые люди. Настоящая поддержка.</string>
 </resources>

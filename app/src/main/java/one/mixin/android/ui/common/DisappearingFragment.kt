@@ -21,6 +21,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroupConversation
+import one.mixin.android.widget.picker.DEFAULT_NEW_CHAT_EXPIRE_IN
 import one.mixin.android.widget.picker.INTERVAL_DAY
 import one.mixin.android.widget.picker.INTERVAL_MONTH
 import one.mixin.android.widget.picker.INTERVAL_WEEK
@@ -120,7 +121,11 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
             } else {
                 conversation != null || userId != null
             }
-            timeInterval = conversation?.expireIn
+            timeInterval = if (conversation == null && userId != null) {
+                DEFAULT_NEW_CHAT_EXPIRE_IN
+            } else {
+                conversation?.expireIn
+            }
             timeInterval.initOption()
             options.forEach {
                 it.isEnabled = canEdit
