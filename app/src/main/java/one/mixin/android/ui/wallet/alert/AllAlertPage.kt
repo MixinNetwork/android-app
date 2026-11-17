@@ -124,14 +124,11 @@ fun AllAlertPage(coins: Set<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit,
             Spacer(modifier = Modifier.height(12.dp))
             LazyColumn(
                 modifier = Modifier
-                    .padding(horizontal = 14.dp)
+                    .padding(horizontal = 10.dp)
                     .fillMaxSize()
             ) {
                 items(alertGroups.size) { index ->
                     val group = alertGroups[index]
-                    if (index != 0) {
-                        Spacer(modifier = Modifier.height(2.dp))
-                    }
                     AlertGroupItem(group, index == 0, onEdit = onEdit)
                 }
             }

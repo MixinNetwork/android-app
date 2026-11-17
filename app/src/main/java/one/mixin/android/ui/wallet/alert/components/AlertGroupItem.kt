@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet.alert.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -52,19 +51,17 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 6.dp)
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .padding(top = 16.dp, bottom = 16.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 ConstraintLayout(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand }) {
+                        .clickable { expand = !expand }
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                ) {
                     val (starIcon, endIcon, title, subtitle) = createRefs()
                     CoilImage(
                         alertGroup.iconUrl,
@@ -100,8 +97,7 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
                                 end.linkTo(parent.end)
                                 bottom.linkTo(starIcon.bottom)
                             }
-                            .wrapContentSize()
-                            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand },
+                            .wrapContentSize(),
                         painter = painterResource(id = R.drawable.ic_alert_arrow_down),
                         contentDescription = null,
                         tint = Color.Unspecified,
@@ -116,8 +112,8 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                     ) {
-                        Spacer(modifier = Modifier.height(16.dp))
                         alerts.forEachIndexed { index, alert ->
                             if (index != 0) {
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -128,7 +124,7 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
                 }
             }
         }
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(10.dp))
     }
 }
 

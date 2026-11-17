@@ -2,7 +2,6 @@ package one.mixin.android.ui.setting.ui.page
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +17,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,7 +73,7 @@ fun MixinMemberInvoicesPage(
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 10.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -89,10 +87,10 @@ fun MixinMemberInvoicesPage(
                                 )
                             )
                         )
-                        .padding(16.dp)
-                        .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                        .clickable {
                             onReferral.invoke()
-                        },
+                        }
+                        .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
@@ -129,12 +127,16 @@ fun MixinMemberInvoicesPage(
                             MixinAppTheme.colors.background,
                             MixinAppTheme.colors.borderColor
                         )
-                        .padding(horizontal = 16.dp, vertical = 20.dp)
                 ) {
-                    Row(modifier = Modifier.clickable{
-                        onAll.invoke()
-                    },
-                        verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onAll.invoke()
+                            }
+                            .padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Text(stringResource(R.string.Invoices), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
                         Spacer(modifier = Modifier.weight(1f))
                         Icon(

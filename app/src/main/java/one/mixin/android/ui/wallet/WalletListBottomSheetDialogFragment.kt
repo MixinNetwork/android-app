@@ -266,7 +266,7 @@ fun WalletListScreen(
 
         Column(
             modifier = Modifier
-                .padding(top = 8.dp, start = 16.dp, end = 16.dp)
+                .padding(top = 8.dp, start = 10.dp, end = 10.dp)
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
         ) {

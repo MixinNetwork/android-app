@@ -144,17 +144,17 @@ private fun RecommendedMarketCard(
             .wrapContentHeight()
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-            .padding(vertical = 16.dp),
+            .padding(bottom = 16.dp),
     ) {
         val headerModifier = if (card.showViewAll) {
             Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onViewAllClick)
-                .padding(horizontal = 16.dp)
+                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 12.dp)
         } else {
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 12.dp)
         }
 
         Row(
@@ -179,6 +179,9 @@ private fun RecommendedMarketCard(
 
         val rows = card.items.chunked(RECOMMENDED_MARKET_COLUMNS)
         rows.forEachIndexed { index, rowItems ->
+            if (index > 0) {
+                Spacer(modifier = Modifier.height(6.dp))
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,7 +216,6 @@ private fun RecommendedMarketGridItem(
 ) {
     Column(
         modifier = Modifier
-            .offset(y = 6.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = item.onClick)
             .padding(horizontal = 4.dp, vertical = 8.dp),

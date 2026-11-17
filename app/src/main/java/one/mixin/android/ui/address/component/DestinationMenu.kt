@@ -72,11 +72,11 @@ fun DestinationMenu(
     val badgeText = badge ?: if (free) stringResource(R.string.FREE) else null
     Row(
         modifier = Modifier
-            .clickable(onClick = onClick)
             .fillMaxWidth()
             .cardBackground(
                 Color.Transparent, MixinAppTheme.colors.borderColor, cornerRadius = 8.dp
             )
+            .clickable(onClick = onClick)
             .padding(vertical = 13.dp, horizontal = 18.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -230,7 +230,7 @@ fun SelectContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 10.dp)
         ) {
             Row {
                 Text(

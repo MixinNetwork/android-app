@@ -225,8 +225,6 @@ fun PositionRecycler(
         OpenPositionItem(
             position = positions[index],
             onClick = { onClick(index) },
-            compact = compact,
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = if (compact) 4.dp else 8.dp),
         )
     }
 }
@@ -368,7 +366,7 @@ private fun WalletTokenItemLayout(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         WalletAssetIcon(
@@ -617,7 +615,7 @@ private fun WalletTransactionRow(
             .fillMaxWidth()
             .clip(CircleShape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CoilImage(

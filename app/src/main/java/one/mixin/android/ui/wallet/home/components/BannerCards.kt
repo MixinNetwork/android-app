@@ -91,7 +91,7 @@ internal fun BannerPager(
     onAddWalletClick: () -> Unit = {},
     onAddWalletClose: () -> Unit = {},
     bordered: Boolean = true,
-    horizontalPadding: Dp = 20.dp,
+    horizontalPadding: Dp = 10.dp,
 ) {
     val pages = remember(showAddWalletBanner, banners) {
         buildList {

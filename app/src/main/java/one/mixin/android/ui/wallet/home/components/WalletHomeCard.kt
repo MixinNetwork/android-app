@@ -73,13 +73,13 @@ internal fun WalletHomeCard(
     val contentPadding = when {
         card.hasSelfPaddedItems() -> Modifier
         card == WalletHomeCardType.BALANCE -> Modifier.padding(top = 20.dp, bottom = 12.dp)
-        card == WalletHomeCardType.CASH -> Modifier.padding(start = 16.dp, top = 20.dp, end = 20.dp, bottom = 20.dp)
-        else -> Modifier.padding(20.dp)
+        card == WalletHomeCardType.CASH -> Modifier.padding(horizontal = 16.dp, vertical = 20.dp)
+        else -> Modifier.padding(horizontal = 16.dp, vertical = 20.dp)
     }
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 10.dp)
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
             .then(
@@ -96,7 +96,7 @@ internal fun WalletHomeCard(
             WalletHomeCardType.BALANCE -> BalanceCard(
                 state,
                 callbacks,
-                contentHorizontalPadding = 20.dp,
+                contentHorizontalPadding = 16.dp,
             )
             WalletHomeCardType.BANNER -> Unit
             WalletHomeCardType.CASH -> CashAccountCard(
@@ -109,6 +109,9 @@ internal fun WalletHomeCard(
                 showViewAll = WalletHomeSection.hasMore(state.totalPositionCount),
                 onClick = callbacks::onViewMorePositionsClicked,
                 contentUsesOwnPadding = true,
+                headerPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 12.dp),
+                viewAllTopPadding = 12.dp,
+                bottomSpacerHeight = 12.dp,
                 headerTrailing = {
                     PositionSummaryHeader(
                         summary = state.positionSummary,
@@ -118,12 +121,11 @@ internal fun WalletHomeCard(
                 PositionRecycler(
                     positions = state.positions.take(PREVIEW_LIMIT),
                     onClick = callbacks::onPositionClicked,
-                    compact = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
             WalletHomeCardType.TOP_MOVERS -> {
-                Column(modifier = Modifier.padding(vertical = 16.dp)) {
+                Column(modifier = Modifier.padding(bottom = 16.dp)) {
                     TopMoversCard(
                         markets = state.topMovers,
                         quoteColorReversed = state.quoteColorReversed,
@@ -178,14 +180,14 @@ internal fun WalletHomeCard(
                 contentUsesOwnPadding = true,
                 contentFlush = true,
                 showBottomSpacer = false,
-                headerPadding = PaddingValues(20.dp),
+                headerPadding = PaddingValues(16.dp),
             ) {
                 state.collectibles.take(PREVIEW_LIMIT).forEach { collectible ->
                     Row(
                         modifier = Modifier.fillMaxWidth()
                             .height(70.dp).padding(bottom = 20.dp)
                             .clickable { callbacks.onCollectibleClicked(collectible.inscriptionHash) }
-                            .padding(horizontal = 20.dp),
+                            .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         CoilImage(
@@ -213,7 +215,7 @@ internal fun WalletHomeCard(
                         transactions = state.privacyTransactions.take(PREVIEW_LIMIT),
                         onClick = callbacks::onTransactionClicked,
                         onUserClick = callbacks::onTransactionUserClicked,
-                        contentHorizontalPadding = 20.dp,
+                        contentHorizontalPadding = 16.dp,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 } else {
@@ -221,7 +223,7 @@ internal fun WalletHomeCard(
                         transactions = state.web3Transactions.take(PREVIEW_LIMIT),
                         onClick = callbacks::onTransactionClicked,
                         onTokenClick = callbacks::onTransactionTokenClicked,
-                        contentHorizontalPadding = 20.dp,
+                        contentHorizontalPadding = 16.dp,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -249,7 +251,7 @@ private fun CashAccountCard(
             contentDescription = null,
             modifier = Modifier.size(42.dp),
         )
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
             Row(modifier = Modifier.heightIn(min = 18.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -343,14 +345,14 @@ private fun BalanceCardGroup(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 10.dp),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                .padding(20.dp),
+                .padding(horizontal = 16.dp, vertical = 20.dp),
         ) {
             BalanceCard(state, callbacks)
         }

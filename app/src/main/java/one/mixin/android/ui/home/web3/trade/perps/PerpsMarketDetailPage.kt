@@ -369,7 +369,7 @@ fun PerpsMarketDetailPage(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 10.dp)
                     .padding(bottom = 80.dp)
             ) {
 
@@ -407,7 +407,7 @@ fun PerpsMarketDetailPage(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 if (currentPosition != null && market != null) {
                     val pnl = currentPosition.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -520,7 +520,7 @@ fun PerpsMarketDetailPage(
                             },
                             layout = PerpsTpSlGuideCardLayout.DETAIL,
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                     OpenPositionCard(
                         position = currentPosition,
@@ -529,7 +529,7 @@ fun PerpsMarketDetailPage(
                             onSharePosition(currentPosition)
                         },
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
 
                 if (market != null) {
@@ -543,7 +543,7 @@ fun PerpsMarketDetailPage(
                                 ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                             }
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                     MarketInfoCard(
                         market = market!!,
@@ -557,7 +557,7 @@ fun PerpsMarketDetailPage(
                 }
 
                 if (closedPositions.isNotEmpty() && market != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     ClosedPositionsSection(
                         positions = closedPositions,
                         onViewAll = {
@@ -581,7 +581,7 @@ fun PerpsMarketDetailPage(
                 }
 
                 if (currentPosition != null && market != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     HowPerpsWorksCard(
                         onLearnClick = {
                             AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
@@ -597,7 +597,7 @@ fun PerpsMarketDetailPage(
                     selectLocalizedMarketDescription(descriptions, Locale.getDefault().language)
                 }
                 if (!description.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     MarketAboutSection(description)
                 }
 
@@ -1608,7 +1608,7 @@ private fun OpenPositionCard(
         }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1803,13 +1803,13 @@ private fun ClosedPositionsSection(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(vertical = 16.dp)
+            .padding(bottom = 16.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onViewAll)
-                .padding(horizontal = 16.dp),
+                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -1827,8 +1827,6 @@ private fun ClosedPositionsSection(
                 modifier = Modifier.size(16.dp).offset(x = 4.dp)
             )
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         var previousDate: String? = null
         displayPositions.forEach { order ->

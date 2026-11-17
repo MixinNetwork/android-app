@@ -57,7 +57,7 @@ fun TopMoversCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onViewAllClick)
-            .padding(horizontal = 16.dp),
+            .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -76,6 +76,9 @@ fun TopMoversCard(
 
     val rows = markets.chunked(TOP_MOVERS_COLUMNS)
     rows.forEachIndexed { index, rowMarkets ->
+        if (index > 0) {
+            Spacer(modifier = Modifier.height(6.dp))
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -118,7 +121,6 @@ private fun TopMoverGridItem(
 
     Column(
         modifier = Modifier
-            .offset(y = 6.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 8.dp),

@@ -65,7 +65,7 @@ fun InvoicesList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 10.dp),
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -79,8 +79,8 @@ fun InvoicesList(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 10.dp, horizontal = 5.dp)
-                        .clickable { onInvoiceClick(order) },
+                        .clickable { onInvoiceClick(order) }
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (order.category != "TRANS") {
@@ -165,12 +165,11 @@ fun InvoicesList(
         }
 
         if (maxDisplayCount != null && invoices.size > maxDisplayCount) {
-            Spacer(modifier = Modifier.height(16.dp))
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
-                    .clickable { onShowMoreClick?.invoke() },
+                    .clickable { onShowMoreClick?.invoke() }
+                    .padding(horizontal = 16.dp, vertical = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -179,6 +178,8 @@ fun InvoicesList(
                     fontSize = 14.sp
                 )
             }
+        } else {
+            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }

@@ -66,14 +66,14 @@ internal fun WalletHomeAccountCards(
             accounts = state.earnAccounts,
             quoteColorReversed = state.quoteColorReversed,
             callbacks = callbacks,
-            modifier = Modifier.padding(horizontal = 20.dp),
+            modifier = Modifier.padding(horizontal = 10.dp),
         )
     } else {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(IntrinsicSize.Min)
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             CompactCashAccountCard(
@@ -209,7 +209,7 @@ private fun EarnAccountCard(
     val account = accounts.summary()
     AccountCardSurface(
         modifier = modifier.clickable { callbacks.onEarnAccountClicked() },
-        contentPadding = PaddingValues(start = 16.dp, top = 20.dp, end = 20.dp, bottom = 20.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -220,7 +220,7 @@ private fun EarnAccountCard(
                 contentDescription = null,
                 modifier = Modifier.size(42.dp),
             )
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 18.dp),
@@ -332,7 +332,7 @@ internal fun AccountApy(
 @Composable
 private fun AccountCardSurface(
     modifier: Modifier,
-    contentPadding: PaddingValues = PaddingValues(20.dp),
+    contentPadding: PaddingValues = PaddingValues(16.dp),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(

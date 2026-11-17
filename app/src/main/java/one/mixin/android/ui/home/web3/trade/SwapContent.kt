@@ -325,7 +325,7 @@ fun SwapContent(
                                     onDeposit = null,
                                 )
                                 if (!showRecommendedCards) {
-                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Spacer(modifier = Modifier.height(10.dp))
                                     QuoteInfoBox(
                                         availableHeight = availableHeight,
                                         quoteError = quoteError,
@@ -358,7 +358,7 @@ fun SwapContent(
                             topLoserMarkets = topLoserMarkets,
                             onMarketClick = onRecommendedMarketClick,
                             onViewAllClick = { type -> onRecommendedMarketViewAllClick(type, isReverse) },
-                            modifier = Modifier.padding(horizontal = 20.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp),
                         )
                         Spacer(modifier = Modifier.height(40.dp))
                     }

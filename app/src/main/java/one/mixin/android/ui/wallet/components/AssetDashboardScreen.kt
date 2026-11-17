@@ -140,7 +140,7 @@ fun AssetDashboardScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 10.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -213,7 +213,7 @@ fun AssetDashboardScreen(
                     selectedCategory = it
                 }
             )
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -223,7 +223,7 @@ fun AssetDashboardScreen(
             ) {
                 if (showTotalAssetsCard) {
                     TotalAssetsCard(selectedCategory = selectedCategory)
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
 
                 if (selectedCategory == "import" && !hasImportedWallets) {
@@ -807,6 +807,7 @@ fun UpgradeSafeCard(
             Box(
                 modifier = Modifier
                     .weight(1f)
+                    .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
                     .clickable { onUpgradeClick() }
                     .padding(6.dp),
                 contentAlignment = Alignment.Center
@@ -819,7 +820,6 @@ fun UpgradeSafeCard(
                     color = MixinAppTheme.colors.accent,
                     modifier = Modifier
                         .padding(6.dp)
-                        .clip(RoundedCornerShape(bottomStart = 16.dp, topStart = 16.dp))
                 )
                 Spacer(modifier = Modifier.width(4.dp))
 
@@ -835,6 +835,7 @@ fun UpgradeSafeCard(
             Box(
                 modifier = Modifier
                     .weight(1f)
+                    .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
                     .clickable { onLearnMoreClick() }
                     .padding(6.dp),
                 contentAlignment = Alignment.Center
@@ -846,7 +847,6 @@ fun UpgradeSafeCard(
                     color = MixinAppTheme.colors.textPrimary,
                     modifier = Modifier
                         .padding(6.dp)
-                        .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
                 )
 
                 Icon(
@@ -903,6 +903,7 @@ fun CreateSafeCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
                 .background(
                     color = MixinAppTheme.colors.accent,
                     shape = RoundedCornerShape(16.dp)

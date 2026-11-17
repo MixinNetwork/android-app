@@ -2,6 +2,7 @@ package one.mixin.android.ui.setting.ui.page
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -54,17 +55,20 @@ fun AllInvoicesPage(
     ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 10.dp)
+                .padding(horizontal = 10.dp, vertical = 10.dp)
                 .cardBackground(
                     MixinAppTheme.colors.background,
                     MixinAppTheme.colors.borderColor
                 )
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            Row ( modifier = Modifier
-                .padding(vertical = 10.dp)){
-            Text(stringResource(R.string.Invoices), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)}
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 10.dp)
+            ) {
+                Text(stringResource(R.string.Invoices), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
+            }
 
             InvoicesList(
                 invoices = orders.value,

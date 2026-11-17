@@ -165,7 +165,7 @@ private fun WalletMultiSelectScreen(
 
         Column(
             modifier = Modifier
-                .padding(top = 8.dp, start = 16.dp, end = 16.dp)
+                .padding(top = 8.dp, start = 10.dp, end = 10.dp)
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
         ) {
@@ -174,7 +174,7 @@ private fun WalletMultiSelectScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MixinAppTheme.colors.background, RoundedCornerShape(8.dp))
-                    .padding(8.dp),
+                    .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -195,8 +195,7 @@ private fun WalletMultiSelectScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MixinAppTheme.colors.background, RoundedCornerShape(8.dp))
-                        .padding(horizontal = 8.dp),
+                        .background(MixinAppTheme.colors.background, RoundedCornerShape(8.dp)),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {

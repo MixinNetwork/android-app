@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet.alert.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -32,13 +30,12 @@ fun AlertFrequencySelector(selectedFrequency: AlertFrequency, onFrequencyClick: 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp)
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onFrequencyClick.invoke() }
+            .clickable { onFrequencyClick.invoke() }
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 23.dp)
+                .padding(horizontal = 16.dp)
                 .padding(top = 19.dp, bottom = 22.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,

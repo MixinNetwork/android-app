@@ -542,23 +542,26 @@ fun LimitOrderContent(
                     }
                 } else {
                     if (limitOrders.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Column(
                             modifier = Modifier
-                                .padding(horizontal = 20.dp)
+                                .padding(horizontal = 10.dp)
                                 .fillMaxWidth()
                                 .wrapContentHeight()
                                 .clip(RoundedCornerShape(8.dp))
-                                .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                                .padding(vertical = 16.dp),
+                                .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor),
                         ) {
-                            Row(modifier = Modifier
-                                    .padding(horizontal = 16.dp)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
                                     .clickable {
                                         keyboardController?.hide()
                                         focusManager.clearFocus()
                                         onOrderList(walletId, true, AnalyticsTracker.SpotTradeType.ADVANCED)
-                                    }) {
+                                    }
+                                    .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
                                 Text(text = "${stringResource(id = R.string.open_orders)} (${limitOrders.size})", color = MixinAppTheme.colors.textPrimary)
                                 Spacer(modifier = Modifier.weight(1f))
                                 Icon(
@@ -567,7 +570,6 @@ fun LimitOrderContent(
                                     contentDescription = null,
                                 )
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
                             displayedLimitOrders.forEach { order ->
                                 OpenOrderItem(order = order, onClick = {
                                     keyboardController?.hide()
@@ -576,7 +578,6 @@ fun LimitOrderContent(
                                 })
                             }
                             if (limitOrders.size > MAX_DISPLAY_ORDER_COUNT) {
-                                Spacer(modifier = Modifier.height(8.dp))
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -584,24 +585,25 @@ fun LimitOrderContent(
                                             keyboardController?.hide()
                                             focusManager.clearFocus()
                                             onOrderList(walletId, true, AnalyticsTracker.SpotTradeType.ADVANCED)
-                                        },
+                                        }
+                                        .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 16.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
-                                        modifier = Modifier
-                                            .padding(vertical = 8.dp, horizontal = 16.dp),
                                         text = stringResource(R.string.view_all),
                                         color = MixinAppTheme.colors.accent,
                                     )
                                 }
+                            } else {
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                     } else {
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Column(
                             modifier = Modifier
-                                .padding(horizontal = 20.dp)
+                                .padding(horizontal = 10.dp)
                                 .padding(bottom = 20.dp)
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))

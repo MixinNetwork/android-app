@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -184,9 +183,9 @@ fun PerpetualContent(
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 10.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             if (openPositionsCount > 0) {
                 Column(
@@ -261,7 +260,7 @@ fun PerpetualContent(
                     }
                 }
             } else {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Column(
                     modifier =
@@ -269,17 +268,13 @@ fun PerpetualContent(
                             .fillMaxWidth()
                             .wrapContentHeight()
                             .clip(RoundedCornerShape(8.dp))
-                            .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                            .padding(
-                                top = 16.dp,
-                                bottom = if (openPositionsCount > openPositionsPreview.size) 16.dp else 12.dp,
-                            ),
+                            .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor),
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onShowAllOpenPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD_ARROW) }
-                            .padding(horizontal = 16.dp),
+                            .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -295,8 +290,7 @@ fun PerpetualContent(
                             modifier = Modifier.size(16.dp).offset(x = 4.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    openPositionsPreview.forEachIndexed { index, position ->
+                    openPositionsPreview.forEach { position ->
                         OpenPositionItem(
                             position = position,
                             onClick = {
@@ -308,27 +302,25 @@ fun PerpetualContent(
                                 }
                             }
                         )
-                        if (index != openPositionsPreview.lastIndex) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                        }
                     }
 
                     if (openPositionsCount > openPositionsPreview.size) {
-                        Spacer(modifier = Modifier.height(12.dp))
                         ViewAllAction(onClick = { onShowAllOpenPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD_MORE) })
+                    } else {
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }
 
             if (topMoversPreview.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Column(
                     Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(8.dp))
                         .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                        .padding(vertical = 16.dp)
+                        .padding(bottom = 16.dp)
                 ) {
                     TopMoversCard(
                         markets = topMoversPreview,
@@ -339,18 +331,14 @@ fun PerpetualContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Column(
                 Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(8.dp))
-                    .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                    .padding(
-                        top = 16.dp,
-                        bottom = if (markets.size > marketsPreview.size) 16.dp else 12.dp,
-                    )
+                    .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor),
             ) {
                 if (marketsPreview.isNotEmpty()) {
                     MarketPreviewSection(
@@ -392,17 +380,13 @@ fun PerpetualContent(
             }
 
             if (stocksMarketsPreview.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Column(
                     Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(8.dp))
-                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                        .padding(
-                            top = 16.dp,
-                            bottom = if (stocksMarkets.size > stocksMarketsPreview.size) 16.dp else 12.dp,
-                        )
+                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor),
                 ) {
                     MarketPreviewSection(
                         title = stringResource(R.string.perps_category_stocks),
@@ -421,17 +405,13 @@ fun PerpetualContent(
             }
 
             if (commoditiesMarketsPreview.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Column(
                     Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(8.dp))
-                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                        .padding(
-                            top = 16.dp,
-                            bottom = if (commoditiesMarkets.size > commoditiesMarketsPreview.size) 16.dp else 12.dp,
-                        )
+                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor),
                 ) {
                     MarketPreviewSection(
                         title = stringResource(R.string.perps_category_commodities),
@@ -449,7 +429,7 @@ fun PerpetualContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Closed position Section
             Column(
@@ -457,14 +437,13 @@ fun PerpetualContent(
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(8.dp))
-                    .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                    .padding(vertical = 16.dp)
+                    .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor),
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onShowAllClosedPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD_ARROW) }
-                        .padding(horizontal = 16.dp),
+                        .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -480,7 +459,6 @@ fun PerpetualContent(
                         modifier = Modifier.size(16.dp).offset(x = 4.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(12.dp))
 
                 if (closedPositions.isEmpty()) {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -501,9 +479,10 @@ fun PerpetualContent(
                             color = MixinAppTheme.colors.textAssist,
                         )
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
                 } else {
                     var previousDate: String? = null
-                    closedPositionsPreview.forEach { order ->
+                    closedPositionsPreview.forEachIndexed { index, order ->
                         val date = order.createdAtDateLabel(context)
                         if (date != previousDate) {
                             PerpsActivityDateHeader(
@@ -523,18 +502,22 @@ fun PerpetualContent(
                                 onClick = { onClosedPositionClick(order) },
                             )
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
+                        if (index != closedPositionsPreview.lastIndex) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                         previousDate = date
                     }
 
                     if (closedPositions.size > closedPositionsPreview.size) {
                         ViewAllAction(onClick = { onShowAllClosedPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD_MORE) })
+                    } else {
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
             }
 
             if (openPositionsCount > 0) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Column(
                     modifier = Modifier
@@ -631,7 +614,7 @@ private fun MarketPreviewSection(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onTitleClick() }
-            .padding(horizontal = 16.dp),
+            .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -647,7 +630,6 @@ private fun MarketPreviewSection(
             modifier = Modifier.size(16.dp).offset(x = 4.dp),
         )
     }
-    Spacer(modifier = Modifier.height(12.dp))
 
     markets.forEachIndexed { index, market ->
         PerpsMarketItem(
@@ -661,8 +643,9 @@ private fun MarketPreviewSection(
     }
 
     if (totalCount > markets.size) {
-        Spacer(modifier = Modifier.height(12.dp))
         ViewAllAction(onClick = onViewAllClick)
+    } else {
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }
 
@@ -679,8 +662,8 @@ private fun ViewAllAction(onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick)
-            .padding(horizontal = 16.dp),
+            .clickable(onClick = onClick)
+            .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 16.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {

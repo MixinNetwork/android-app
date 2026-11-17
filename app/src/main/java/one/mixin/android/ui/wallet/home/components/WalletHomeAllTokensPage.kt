@@ -61,7 +61,7 @@ fun WalletHomeAllTokensPage(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(horizontal = 20.dp)
+                        .padding(horizontal = 10.dp)
                         .cardBackground(backgroundColor, borderColor),
                 ) {
                     EmptyTokens()
@@ -131,7 +131,7 @@ private fun TokenCardSegment(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 10.dp)
             .tokenCardBorder(isFirst, isLast, borderColor)
             .padding(
                 top = if (isFirst) 20.dp else 0.dp,

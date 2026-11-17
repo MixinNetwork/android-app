@@ -47,7 +47,7 @@ fun OpenPositionItem(
     compact: Boolean = false,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = if (compact) 4.dp else 8.dp),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
 ) {
     val context = LocalContext.current
     val quoteColorPref = context.defaultSharedPreferences
@@ -100,7 +100,7 @@ fun OpenPositionItem(
                 .clip(CircleShape)
         )
 
-        Spacer(modifier = Modifier.width(if (compact) 14.dp else 12.dp))
+        Spacer(modifier = Modifier.width(14.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Row(

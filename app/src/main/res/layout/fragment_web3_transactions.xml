@@ -30,10 +30,9 @@
                 android:id="@+id/spam_ll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="10dp"
                 android:background="@drawable/bg_token_spam"
                 android:orientation="horizontal"
                 android:paddingStart="12dp"
@@ -63,11 +62,11 @@
                 android:id="@+id/top_ll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="10dp"
-                android:background="?attr/bg_market_card">
+                android:layout_marginEnd="10dp"
+                android:background="?attr/bg_market_card"
+                android:clipToOutline="true">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -155,11 +154,12 @@
                 android:id="@+id/market_rl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="2dp"
-                android:background="?attr/bg_market_card">
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:background="?attr/bg_market_card"
+                android:clipToOutline="true"
+                android:foreground="?android:attr/selectableItemBackground">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -255,20 +255,20 @@
                 layout="@layout/view_web3_sol_stake"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="10dp" />
+                android:layout_marginEnd="10dp" />
 
             <FrameLayout
                 android:id="@+id/bottom_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="20dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginBottom="10dp"
-                android:background="?attr/bg_market_card">
+                android:background="?attr/bg_market_card"
+                android:clipToOutline="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -279,9 +279,8 @@
                         android:id="@+id/transactions_title_ll"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
                         android:foreground="?android:attr/selectableItemBackground"
-                        android:paddingTop="10dp"
+                        android:paddingTop="20dp"
                         android:paddingBottom="10dp">
 
                         <ImageView

@@ -25,6 +25,7 @@ import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -38,7 +39,9 @@ internal fun SectionCard(
     contentUsesOwnPadding: Boolean = false,
     contentFlush: Boolean = false,
     showBottomSpacer: Boolean = true,
-    headerPadding: PaddingValues = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = if (contentFlush) 0.dp else 20.dp),
+    headerPadding: PaddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = if (contentFlush) 0.dp else 16.dp),
+    viewAllTopPadding: Dp = if (contentFlush) 0.dp else 16.dp,
+    bottomSpacerHeight: Dp = 16.dp,
     headerTrailing: (@Composable RowScope.() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
@@ -77,7 +80,7 @@ internal fun SectionCard(
     if (contentUsesOwnPadding) {
         content()
     } else {
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             content()
         }
     }
@@ -87,8 +90,8 @@ internal fun SectionCard(
                 .fillMaxWidth()
                 .clickable { onClick() }
                 .padding(
-                    top = if (contentFlush) 0.dp else 20.dp,
-                    bottom = 20.dp,
+                    top = viewAllTopPadding,
+                    bottom = 16.dp,
                 ),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -101,6 +104,6 @@ internal fun SectionCard(
             )
         }
     } else if (showBottomSpacer) {
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(bottomSpacerHeight))
     }
 }

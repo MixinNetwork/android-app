@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -37,15 +36,14 @@ fun AlertTypeSelector(selectedType: AlertType, onTypeClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp)
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+            .clickable {
                 onTypeClick.invoke()
             }
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 23.dp)
+                .padding(horizontal = 16.dp)
                 .padding(top = 19.dp, bottom = 22.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -70,6 +68,7 @@ fun Modifier.cardBackground(
     borderWidth: Dp = 0.8.dp,
     cornerRadius: Dp = 8.dp,
 ): Modifier = this
+    .clip(RoundedCornerShape(cornerRadius))
     .background(
         color = backgroundColor, RoundedCornerShape(cornerRadius)
     )

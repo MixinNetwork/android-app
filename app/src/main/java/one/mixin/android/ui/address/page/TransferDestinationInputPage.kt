@@ -202,7 +202,7 @@ fun TransferDestinationInputPage(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 10.dp)
                 .imePadding(),
         ) {
             TokenInfoHeader(token = token, web3Token = web3Token)
@@ -320,7 +320,7 @@ fun TransferDestinationInputPage(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             if (text.isBlank()) {
                 Column {
@@ -334,7 +334,7 @@ fun TransferDestinationInputPage(
                                 onShowAddressBook()
                             }
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                     if (showCashAccount) {
                         DestinationMenu(
@@ -346,7 +346,7 @@ fun TransferDestinationInputPage(
                             },
                             badge = cashAccountBadge,
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                     if (token != null) {
                         DestinationMenu(

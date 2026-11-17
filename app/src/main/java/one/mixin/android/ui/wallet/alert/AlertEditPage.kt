@@ -127,7 +127,7 @@ fun AlertEditPage(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 12.dp)
+                            .padding(horizontal = 10.dp)
                             .verticalScroll(rememberScrollState())
                             .imePadding(),
                         horizontalAlignment = Alignment.Start,
@@ -163,18 +163,15 @@ fun AlertEditPage(
                                     }
                                 }
                             }
-                            Spacer(modifier = Modifier.height(6.dp))
-
-                            Spacer(modifier = Modifier.height(2.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 8.dp)
                                     .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
                             ) {
                                 Column(
                                     modifier = Modifier
-                                        .padding(horizontal = 23.dp)
+                                        .padding(horizontal = 16.dp)
                                         .padding(top = 19.dp, bottom = 22.dp)
                                 ) {
                                     Text(
@@ -340,9 +337,8 @@ fun AlertEditPage(
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             if (inputError != null) {
-                                Spacer(modifier = Modifier.height(2.dp))
                                 Column(modifier = Modifier.padding(horizontal = 10.dp)) {
                                     Text(
                                         text = when (inputError) {
@@ -361,10 +357,9 @@ fun AlertEditPage(
                                         fontSize = 12.sp,
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(10.dp))
                             }
 
-                            Spacer(modifier = Modifier.height(4.dp))
                             PercentagesRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -387,7 +382,7 @@ fun AlertEditPage(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(14.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
 
                             AlertFrequencySelector(selectedAlertFrequency) {
                                 onShowFrequencySelector(selectedAlertFrequency) { newFrequency ->

@@ -63,7 +63,7 @@ fun InvoiceDetailPage(orderId: String, onPop: () -> Unit, onCancel: (MembershipO
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 10.dp)
             ) {
                 InvoiceHeaderSection(order, onCancel)
                 Spacer(modifier = Modifier.height(10.dp))

@@ -48,6 +48,11 @@ open class SnapshotHolder(
                     marginEnd = 16.dp
                 }
             }
+            binding.symbolIv.updateLayoutParams {
+                (this as MarginLayoutParams).apply {
+                    marginEnd = 16.dp
+                }
+            }
         }
         if (compact) {
             itemView.updateLayoutParams {

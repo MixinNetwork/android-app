@@ -50,7 +50,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
             }
 
             val itemBinding = ItemWeb3TransactionsBinding.inflate(LayoutInflater.from(context), this, false)
-            val holder = Web3TransactionHolder(itemBinding)
+            val holder = Web3TransactionHolder(itemBinding, compact = true)
             holder.onTokenClick = onTokenClick
             holder.bind(item)
             holder.itemView.setOnClickListener {

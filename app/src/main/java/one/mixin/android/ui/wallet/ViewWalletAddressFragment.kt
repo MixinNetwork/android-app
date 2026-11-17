@@ -121,7 +121,7 @@ fun ViewAddressScreen(walletId: String, learnMoreAction: () -> Unit, pop: () -> 
             Spacer(modifier = Modifier.height(10.dp))
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 10.dp)
                     .fillMaxWidth()
                     .cardBackground(
                         Color.Transparent, MixinAppTheme.colors.borderColor, cornerRadius = 8.dp
@@ -148,7 +148,7 @@ fun ViewAddressScreen(walletId: String, learnMoreAction: () -> Unit, pop: () -> 
             // Address list section
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 10.dp)
                     .fillMaxWidth()
                     .cardBackground(
                         Color.Transparent, MixinAppTheme.colors.borderColor, cornerRadius = 8.dp

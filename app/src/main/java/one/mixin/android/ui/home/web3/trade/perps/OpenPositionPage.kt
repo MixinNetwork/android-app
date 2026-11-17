@@ -353,7 +353,7 @@ fun OpenPositionPage(
                         modifier = Modifier
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
-                            .padding(horizontal = 16.dp)
+                            .padding(horizontal = 10.dp)
                     ) {
                 if (isLong == null) {
                     PerpsSideSelector(
@@ -509,7 +509,7 @@ fun OpenPositionPage(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 val showLeverageInput = {
                     val activity = context as? FragmentActivity
                     if (activity != null) {

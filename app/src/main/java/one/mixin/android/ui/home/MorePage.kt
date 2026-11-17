@@ -90,7 +90,7 @@ internal fun MorePage(
         val profileNameColor = MixinAppTheme.colors.textMinor.toArgb()
         LazyColumn(
             modifier = Modifier.fillMaxSize().homeNavigationScroll().background(MixinAppTheme.colors.background),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 16.dp + homeNavigationInset()),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 16.dp + homeNavigationInset()),
         ) {
             user?.let {
                 item {
@@ -112,19 +112,18 @@ internal fun MorePage(
                             Icon(painterResource(R.drawable.ic_more_arrow), null, tint = Color.Unspecified, modifier = Modifier.size(30.dp))
                         }
                     }
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(10.dp))
                 }
             }
             items(InternalBots.chunked(2)) { row ->
-                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     row.forEach { bot ->
                         MoreActionCard(bot, isDesktopLogin, bot.id !in clickedBotIds && bot.id in ExploreFragment.SHOW_DOT_BOT_IDS, Modifier.weight(1f).fillMaxHeight()) { onBot(bot) }
                     }
                 }
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
             }
             item {
-                Spacer(Modifier.height(8.dp))
                 Column(Modifier.moreCard()) {
                     MoreSectionHeader(stringResource(R.string.contacts_title), contacts.size, onContacts)
                     contacts.take(3).forEach { contact ->
@@ -152,7 +151,7 @@ internal fun MorePage(
                 }
             }
             item {
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
                 Column(Modifier.moreCard()) {
                     MoreSectionHeader(stringResource(R.string.bots_title), bots.size, onBots)
                     bots.take(5).forEach { app ->
@@ -186,7 +185,7 @@ private fun Modifier.moreCard() = fillMaxWidth().clip(RoundedCornerShape(8.dp))
 private fun MoreActionCard(bot: Bot, loggedIn: Boolean, showDot: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val desktop = bot.id == INTERNAL_LINK_DESKTOP_ID
     val icon = if (desktop && loggedIn) R.drawable.ic_more_desktop_logged else bot.icon
-    Row(modifier.moreCard().clickable(onClick = onClick).heightIn(min = 77.dp).padding(horizontal = 10.dp, vertical = 12.dp)) {
+    Row(modifier.moreCard().clickable(onClick = onClick).heightIn(min = 77.dp).padding(horizontal = 16.dp, vertical = 12.dp)) {
         if (bot.id == INTERNAL_REFERRAL_ID) {
             AndroidView(
                 factory = { context ->

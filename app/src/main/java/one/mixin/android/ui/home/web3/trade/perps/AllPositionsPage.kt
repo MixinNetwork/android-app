@@ -271,7 +271,7 @@ private fun OpenPositionsContent(
         if (!isEmpty) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
+                contentPadding = PaddingValues(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 88.dp),
             ) {
                 item {
                     TotalPositionValueCard(
@@ -282,7 +282,7 @@ private fun OpenPositionsContent(
                     )
                 }
                 item {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
                 openPositionItems(
                     positions = positions,
@@ -353,7 +353,7 @@ private fun ClosedPositionsContent(
         if (!isEmpty) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp),
             ) {
                 item {
                     TotalRealizedPnlCard(
@@ -362,7 +362,7 @@ private fun ClosedPositionsContent(
                     )
                 }
                 item {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
                 closedPositionItems(
                     positions = positions,

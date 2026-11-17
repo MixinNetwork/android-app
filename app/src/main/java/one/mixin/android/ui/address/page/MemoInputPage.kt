@@ -116,7 +116,7 @@ fun MemoInputPage(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 10.dp)
         ) {
             Column(modifier = Modifier.imePadding()) {
                 TokenInfoHeader(token = token, web3Token = web3Token)

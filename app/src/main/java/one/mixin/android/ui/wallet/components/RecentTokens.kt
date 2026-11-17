@@ -76,7 +76,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                    .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -98,7 +98,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                    .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -120,7 +120,7 @@ fun RecentToken(recent: TokenItem, tokenItemClick: (TokenItem) -> Unit) {
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp
-    val itemWidth = ((screenWidthDp - 72) / 3).dp
+    val itemWidth = ((screenWidthDp - 52) / 3).dp
     Row(
         modifier = Modifier
             .widthIn(max = itemWidth)

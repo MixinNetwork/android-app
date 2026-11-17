@@ -29,7 +29,7 @@ fun TradeLayout(
             Modifier
                 .wrapContentHeight()
                 .wrapContentWidth()
-                .padding(horizontal = 20.dp, vertical = margin),
+                .padding(horizontal = 10.dp, vertical = margin),
     ) {
         val (headerRef, bottomRef, centerRef, tailRef) = createRefs()
         Box(

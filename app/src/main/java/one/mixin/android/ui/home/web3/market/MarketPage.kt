@@ -126,7 +126,7 @@ fun MarketPage(
                             onActionClick = onBannerActionClick,
                             onBannerClose = onBannerClose,
                             bordered = true,
-                            horizontalPadding = 12.dp,
+                            horizontalPadding = 10.dp,
                         )
                     }
                     if (state.selectedTopTab == MarketTopTab.INDICATOR) {
@@ -496,7 +496,7 @@ private fun MarketRecommendations(
     val recommendationIds = recommendations.map(MarketListEntry::stableId)
     var selectedIds by remember(recommendationIds) { mutableStateOf(recommendationIds.toSet()) }
     Column(
-        modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 20.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 12.dp, bottom = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         recommendations.chunked(2).forEach { row ->
@@ -713,8 +713,8 @@ private fun IndicatorPage(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                        .padding(horizontal = 10.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 MarketOverviewCard(
                     indicator = indicator,
@@ -741,7 +741,7 @@ private fun MarketOverviewCard(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 20.dp),
+                    .padding(horizontal = 16.dp, vertical = 20.dp),
         ) {
             IndicatorMetric(
                 title = stringResource(R.string.Global_Market_Cap),
@@ -823,7 +823,7 @@ private fun BitcoinDominanceCard(indicator: GlobalMarket) {
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 20.dp),
+                    .padding(horizontal = 16.dp, vertical = 20.dp),
         ) {
             Text(
                 text = stringResource(R.string.Bitcoin_Dominance),

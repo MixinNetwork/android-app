@@ -136,7 +136,7 @@ fun PositionDetailPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 10.dp)
                     .cardBackground(
                         MixinAppTheme.colors.background,
                         MixinAppTheme.colors.borderColor
@@ -201,7 +201,7 @@ fun PositionDetailPage(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .padding(horizontal = 20.dp)
+                        .padding(horizontal = 16.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(MixinAppTheme.colors.backgroundWindow),
                     verticalAlignment = Alignment.CenterVertically
@@ -254,7 +254,7 @@ fun PositionDetailPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 10.dp)
                     .wrapContentHeight()
                     .cardBackground(
                         MixinAppTheme.colors.background,
@@ -452,7 +452,7 @@ fun PositionDetailPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 10.dp)
                     .cardBackground(
                         MixinAppTheme.colors.background,
                         MixinAppTheme.colors.borderColor
@@ -518,7 +518,7 @@ fun PositionDetailPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .wrapContentHeight()
-                            .padding(horizontal = 20.dp)
+                            .padding(horizontal = 16.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(MixinAppTheme.colors.backgroundWindow),
                         verticalAlignment = Alignment.CenterVertically
@@ -562,7 +562,7 @@ fun PositionDetailPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 10.dp)
                     .wrapContentHeight()
                     .cardBackground(
                         MixinAppTheme.colors.background,
@@ -726,7 +726,7 @@ fun OpenedOrderDetailPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 10.dp)
                     .cardBackground(
                         MixinAppTheme.colors.background,
                         MixinAppTheme.colors.borderColor
@@ -796,7 +796,7 @@ fun OpenedOrderDetailPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .wrapContentHeight()
-                            .padding(horizontal = 20.dp)
+                            .padding(horizontal = 16.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(MixinAppTheme.colors.backgroundWindow),
                         verticalAlignment = Alignment.CenterVertically
@@ -824,7 +824,7 @@ fun OpenedOrderDetailPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 10.dp)
                     .wrapContentHeight()
                     .cardBackground(
                         MixinAppTheme.colors.background,
