@@ -181,11 +181,13 @@ fun SwapRecommendedMarketCards(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(horizontal = 16.dp, vertical = 20.dp),
+            .padding(vertical = 20.dp),
     ) {
         LazyRow(
             state = tabListState,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -210,6 +212,7 @@ fun SwapRecommendedMarketCards(
                         color = if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
                         fontSize = 14.sp,
                         lineHeight = 17.sp,
+                        letterSpacing = 0.sp,
                         maxLines = 1,
                     )
                 }
@@ -217,7 +220,9 @@ fun SwapRecommendedMarketCards(
         }
         Spacer(modifier = Modifier.height(16.dp))
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             activeSection.markets.forEach { market ->
@@ -289,6 +294,7 @@ private fun SwapRecommendedMarketRow(
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 16.sp,
                     lineHeight = 20.sp,
+                    letterSpacing = 0.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -298,6 +304,7 @@ private fun SwapRecommendedMarketRow(
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 14.sp,
                     lineHeight = 18.sp,
+                    letterSpacing = 0.sp,
                     maxLines = 1,
                     textAlign = TextAlign.End,
                 )
@@ -312,6 +319,7 @@ private fun SwapRecommendedMarketRow(
                     color = MixinAppTheme.colors.textAssist,
                     fontSize = 14.sp,
                     lineHeight = 18.sp,
+                    letterSpacing = 0.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -321,6 +329,7 @@ private fun SwapRecommendedMarketRow(
                     color = changeColor,
                     fontSize = 14.sp,
                     lineHeight = 18.sp,
+                    letterSpacing = 0.sp,
                     maxLines = 1,
                     textAlign = TextAlign.End,
                 )
