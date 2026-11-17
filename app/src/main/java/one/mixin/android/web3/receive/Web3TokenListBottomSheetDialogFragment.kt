@@ -34,7 +34,6 @@ import one.mixin.android.Constants.ChainId.Robinhood
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
 import one.mixin.android.Constants.ChainId.XLayer
-import one.mixin.android.Constants.Web3EvmChainIds
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -288,6 +287,9 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                 if (shouldHandleRecentTokenClick(type, tokenItem.chainId)) {
                                     requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
                                     this@Web3TokenListBottomSheetDialogFragment.lifecycleScope.launch {
+                                        if (tokenItem.chainId == Constants.ChainId.Litecoin &&
+                                            bottomViewModel.getWeb3Address(walletId.orEmpty(), tokenItem.chainId) == null
+                                        ) return@launch
                                         var web3Token = defaultAssets.find { it.assetId == tokenItem.assetId }
                                         if (web3Token == null) {
                                             web3Token = bottomViewModel.findOrSyncAsset(tokenItem.assetId)?.let { tokenItem ->
@@ -299,7 +301,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                                     assetKey = tokenItem.assetKey ?: "",
                                                     symbol = tokenItem.symbol,
                                                     iconUrl = tokenItem.iconUrl,
-                                                    precision = 0,
+                                                    precision = tokenItem.precision,
                                                     kernelAssetId = "",
                                                     balance = "0",
                                                     priceUsd = tokenItem.priceUsd,
@@ -394,8 +396,12 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         if (query.isBlank() || TYPE_FROM_SEND == type) return localTokens
         binding.pb.isVisible = true
         val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
+        val hasLitecoinAddress = walletId?.let {
+            bottomViewModel.getWeb3Address(it, Constants.ChainId.Litecoin)
+        } != null
         val remoteAssets = fuzzyResults.filter {
-            it.chainId in Web3EvmChainIds || it.chainId == SOLANA_CHAIN_ID || it.chainId in Constants.Web3UtxoChainIds
+            isWeb3TransferSupported(it.chainId) &&
+                (it.chainId != Constants.ChainId.Litecoin || hasLitecoinAddress)
         }.map { item ->
             bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId).let { local ->
                 if (local != null && (local.level >= 10 || local.hidden == false)) {
@@ -409,7 +415,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         assetKey = item.assetKey ?: "",
                         symbol = item.symbol,
                         iconUrl = item.iconUrl,
-                        precision = 9,
+                        precision = item.precision,
                         kernelAssetId = "",
                         balance = item.balance,
                         priceUsd = item.priceUsd,

@@ -377,6 +377,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private fun filter(s: String) =
         lifecycleScope.launch {
             if (s.isBlank() && currentChain == null && !isStockMode) {
+                binding.pb.isVisible = false
                 val visibleTokens = defaultTokens(tokens)
                 adapter.tokens = visibleTokens.sortByKeywordAndBalance()
                 adapter.isSearch = false
@@ -475,7 +476,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         this
                     }
                 }?.map { ra ->
-                    (localTokens.find { swapToken -> swapToken.assetId == ra.assetId } ?: (
+                    (localTokens.find { swapToken -> swapToken.assetId == ra.assetId && swapToken.chain.chainId == ra.chain.chainId } ?: (
                             if (inMixin) {
                                 swapViewModel.findToken(ra.assetId)?.run {
                                     if (hidden == false) null
@@ -489,7 +490,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                             }
                             )
                             )?.let {
-                            return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash, level = it.level)
+                            return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash, level = it.level, isWeb3 = it.isWeb3)
                         }
                     return@map ra
                 }
@@ -498,12 +499,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 binding.pb.isVisible = false
             }
         )
-        val result = filterLocal + (remoteList?.let(::supportedTokens)?.filterNot { r ->
-            localTokens.any { l ->
-                l.chain.chainId == r.chain.chainId && l.assetId == r.assetId
-            }
-        } ?: emptyList())
-        return result
+        return mergeSwapTokenSearchResults(filterLocal, remoteList?.let(::supportedTokens).orEmpty())
     }
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {

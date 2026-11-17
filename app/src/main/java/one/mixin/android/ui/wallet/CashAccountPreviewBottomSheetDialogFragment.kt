@@ -50,6 +50,8 @@ import java.util.concurrent.ExecutionException
 
 @AndroidEntryPoint
 class CashAccountPreviewBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "CashAccountPreviewBottomSheetDialogFragment"
         private const val ARGS_TRANSFER = "args_transfer"

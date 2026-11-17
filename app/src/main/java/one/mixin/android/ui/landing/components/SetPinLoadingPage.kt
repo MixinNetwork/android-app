@@ -123,7 +123,7 @@ fun SetPinLoadingPage(
         },
         pop = null,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 36.dp)) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(horizontal = 36.dp)) {
             Spacer(modifier = Modifier.height(120.dp))
             Icon(painter = painterResource(R.drawable.ic_wallet_pin), tint = Color.Unspecified, contentDescription = null)
             Spacer(modifier = Modifier.height(24.dp))

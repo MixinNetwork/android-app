@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet.home
 
 import com.google.gson.Gson
+import one.mixin.android.R
 import one.mixin.android.api.response.CashAccount
 import one.mixin.android.api.response.WalletHomeBanner
 import one.mixin.android.util.GsonHelper
@@ -180,6 +181,89 @@ class WalletHomeCashAccountTest {
         assertEquals(listOf("asset-2"), cache?.toState()?.earnAccounts?.map { it.assetId })
         assertEquals(BigDecimal("1.25"), cache?.toState()?.earnAccounts?.single()?.balanceUsd)
         assertNull(cache?.toState()?.earnAccounts?.single()?.maxApyText)
+    }
+
+    @Test
+    fun walletHomeCacheIgnoresStaleImportKeyResourceIds() {
+        val json = """
+            {
+              "walletType":"CLASSIC",
+              "fiatTotal":"0.00",
+              "btcTotal":"0.00",
+              "fiatSymbol":"USD",
+              "totalTokenCount":0,
+              "totalTransactionCount":0,
+              "importKeyAction":{"kind":"MNEMONIC_PHRASE","buttonTextRes":1,"descriptionRes":2,"learnMoreUrlRes":3}
+            }
+        """.trimIndent()
+
+        val action = json.parseWalletHomeCache()?.toState()?.importKeyAction
+
+        assertEquals(R.string.import_mnemonic_phrase, action?.buttonTextRes)
+        assertEquals(R.string.Import_Mnemonic_Phrase_Desc, action?.descriptionRes)
+        assertEquals(R.string.import_mnemonic_phrase_url, action?.learnMoreUrlRes)
+        assertEquals("""{"kind":"MNEMONIC_PHRASE"}""", GsonHelper.customGson.toJson(action))
+    }
+
+    @Test
+    fun walletHomeCacheDropsInvalidImportKeyActions() {
+        val actions = listOf(
+            """{"a":"MNEMONIC_PHRASE","b":1,"c":2,"d":3}""",
+            """{}""",
+            """{"kind":null}""",
+            """{"kind":"UNKNOWN"}""",
+            """{"kind":1}""",
+            """{"kind":true}""",
+            """{"kind":[]}""",
+            """{"kind":{}}""",
+            """null""",
+            """[]""",
+            """"MNEMONIC_PHRASE"""",
+        )
+
+        for (action in actions) {
+            val json = """
+                {
+                  "walletType":"CLASSIC",
+                  "fiatTotal":"12.34",
+                  "btcTotal":"0.00",
+                  "fiatSymbol":"USD",
+                  "totalTokenCount":0,
+                  "totalTransactionCount":0,
+                  "importKeyAction":$action
+                }
+            """.trimIndent()
+
+            val cache = json.parseWalletHomeCache()
+
+            assertNotNull(action, cache)
+            assertNull(action, cache?.importKeyAction)
+            val state = cache?.toState()
+            assertNull(action, state?.importKeyAction)
+            assertEquals(action, "12.34", state?.fiatTotal)
+        }
+    }
+
+    @Test
+    fun walletHomeCacheRestoresPrivateKeyAction() {
+        val cache = WalletHomeCache(
+            walletType = WalletHomeType.CLASSIC,
+            fiatTotal = "0.00",
+            btcTotal = "0.00",
+            fiatSymbol = "USD",
+            totalTokenCount = 0,
+            totalTransactionCount = 0,
+            importKeyAction = WalletHomeImportKeyAction(WalletHomeImportKeyKind.PRIVATE_KEY),
+        )
+        val json = GsonHelper.customGson.toJson(cache)
+
+        val action = json.parseWalletHomeCache()?.toState()?.importKeyAction
+
+        assertEquals(WalletHomeImportKeyKind.PRIVATE_KEY, action?.kind)
+        assertEquals(R.string.import_private_key, action?.buttonTextRes)
+        assertEquals(R.string.Import_Private_Key_Desc, action?.descriptionRes)
+        assertEquals(R.string.import_private_key_url, action?.learnMoreUrlRes)
+        assertEquals("""{"kind":"PRIVATE_KEY"}""", GsonHelper.customGson.toJson(action))
     }
 
     @Test

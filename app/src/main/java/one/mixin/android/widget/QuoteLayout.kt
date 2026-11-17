@@ -3,8 +3,8 @@ package one.mixin.android.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.ViewGroup
+import one.mixin.android.extension.messageAreaWidth
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.realSize
 
 class QuoteLayout : ViewGroup {
     constructor(context: Context) : this(context, null)
@@ -17,9 +17,7 @@ class QuoteLayout : ViewGroup {
         defStyleAttr,
     )
 
-    private val minWidth by lazy {
-        (context.realSize().x * 0.5).toInt()
-    }
+    private val minWidth: Int by lazy { (context.messageAreaWidth() * 0.5).toInt() }
 
     private val offset by lazy {
         context.dpToPx(1.5f)

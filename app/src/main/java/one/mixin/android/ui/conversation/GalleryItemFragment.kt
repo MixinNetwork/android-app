@@ -14,10 +14,12 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentDraggableRecyclerViewBinding
 import one.mixin.android.event.DragReleaseEvent
+import one.mixin.android.extension.contentWidth
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.isWideScreen
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.messageAreaWidth
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.GalleryItemAdapter
@@ -73,16 +75,16 @@ class GalleryItemFragment : Fragment(R.layout.fragment_draggable_recycler_view),
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        COLUMN =
-            if (requireContext().isWideScreen()) {
-                5
-            } else {
-                3
-            }
+        val wideColumns = if (requireContext().isCompactWindow()) {
+            requireContext().isWideScreen()
+        } else {
+            requireContext().contentWidth() >= 600.dp
+        }
+        COLUMN = if (wideColumns) 5 else 3
         binding.apply {
             rv.layoutManager = GridLayoutManager(context, COLUMN)
             rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-            adapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
+            adapter.size = (requireContext().messageAreaWidth() - (COLUMN + 1) * padding) / COLUMN
             rv.adapter = adapter
             adapter.listener =
                 object : GalleryCallback {

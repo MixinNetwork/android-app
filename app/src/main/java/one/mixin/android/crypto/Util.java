@@ -104,9 +104,10 @@ public class Util {
                 .addHeader("Connection", "close")
                 .put(requestBody)
                 .build();
-        Response response = client.newCall(request).execute();
-        if (response.isSuccessful()) {
-            return requestBody.getTransmittedDigest();
-        } else throw new IOException(response.message());
+        try (Response response = client.newCall(request).execute()) {
+            if (response.isSuccessful()) {
+                return requestBody.getTransmittedDigest();
+            } else throw new IOException(response.message());
+        }
     }
 }

@@ -148,7 +148,7 @@ class TransferErrorContent : LinearLayout {
             balance.setContent(R.string.Balance, "${asset.balance.numberFormat12()} ${asset.symbol}", amountAs(asset.balance, asset))
             networkFee.isVisible = true
             networkFee.setContent(R.string.Network_Fee, "${fee.numberFormat12()} ${asset.symbol}", amountAs(fee.toPlainString(), asset))
-            sender.isVisible = true
+            sender.isVisible = senderAddress.isNotBlank()
             if (amount != BigDecimal.ZERO) {
                 total.isVisible = true
                 total.setContent(R.string.Total, "${(amount + fee).numberFormat12()} ${asset.symbol}", amountAs((amount + fee).toPlainString(), asset))

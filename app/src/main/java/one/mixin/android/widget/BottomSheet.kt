@@ -2,6 +2,8 @@
 
 package one.mixin.android.widget
 
+import one.mixin.android.extension.isCompactWindow
+import one.mixin.android.extension.screenHeight
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
@@ -9,9 +11,11 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Outline
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Gravity
@@ -22,6 +26,7 @@ import android.view.View.INVISIBLE
 import android.view.View.MeasureSpec.AT_MOST
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowInsets
@@ -34,6 +39,8 @@ import android.widget.TextView
 import androidx.activity.ComponentDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.Insets
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
@@ -42,6 +49,7 @@ import com.google.android.material.internal.ViewUtils.doOnApplyWindowInsets
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.displayMetrics
+import one.mixin.android.extension.enableWideColorGamutIfSupported
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getSystemWindowBottom
@@ -49,11 +57,17 @@ import one.mixin.android.extension.getSystemWindowLeft
 import one.mixin.android.extension.getSystemWindowRight
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isNotchScreen
+import one.mixin.android.extension.isPhoneLandscape
+import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.avoidBottomSheetFolds
+import one.mixin.android.extension.findFragmentActivityOrNull
+import kotlinx.coroutines.Job
 import one.mixin.android.widget.AndroidUtilities.dp
 import kotlin.math.abs
 import kotlin.math.max
@@ -63,7 +77,91 @@ class BottomSheet(
     context: Context,
     private val focusable: Boolean,
     private val softInputResize: Boolean,
+    private val centerOnExpandedScreen: Boolean = false,
 ) : ComponentDialog(context, R.style.TransparentDialog) {
+    private var foldJob: Job? = null
+    val isCentered: Boolean
+        get() = centerOnExpandedScreen && context.isExpandedSheetScreen()
+
+    private var cancelable = true
+    private var wasHeightConstrained = false
+    private var originalCutoutMode: Int? = null
+    private var landscapeWindow = false
+    private var hasUsedLandscapeWindow = false
+    private var originalSystemUiVisibility = 0
+    private var placeholder: View? = null
+    private var placeholderBackground: Drawable? = null
+
+    private fun updateLandscapeWindow() {
+        val landscape = context.isPhoneLandscape()
+        if (landscape == landscapeWindow) return
+        landscapeWindow = landscape
+        if (landscape) {
+            hasUsedLandscapeWindow = true
+            originalSystemUiVisibility = container.systemUiVisibility
+            container.systemUiVisibility = originalSystemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        } else {
+            container.systemUiVisibility = originalSystemUiVisibility
+        }
+        window?.let { window ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val params = window.attributes
+                if (originalCutoutMode == null) originalCutoutMode = params.layoutInDisplayCutoutMode
+                params.layoutInDisplayCutoutMode = if (landscape) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                    else WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                } else originalCutoutMode!!
+                window.attributes = params
+            }
+        }
+        placeholder?.background = if (landscape) null else placeholderBackground
+    }
+
+    internal fun landscapeCustomViewHeight(): Int {
+        val height = container.height.takeIf { it > 0 } ?: context.windowHeight()
+        val insets = landscapeInsets(height)
+        return (height - insets.bottom - if (placeholder == null) insets.top else 0).coerceAtLeast(0)
+    }
+
+    private fun landscapeInsets(height: Int): Insets {
+        val insets = lastInsets?.let {
+            WindowInsetsCompat.toWindowInsetsCompat(it, container).getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.ime(),
+            )
+        } ?: Insets.NONE
+        // adjustResize may already have removed the keyboard from the dialog's measured height.
+        val resizedHeight = (context.windowHeight() - height).coerceAtLeast(0)
+        return Insets.of(insets.left, insets.top, insets.right, (insets.bottom - resizedHeight).coerceAtLeast(0))
+    }
+
+    override fun setCancelable(flag: Boolean) {
+        cancelable = flag
+        super.setCancelable(flag)
+    }
+
+    override fun cancel() {
+        if ((isCentered || context.isPhoneLandscape()) && (!cancelable || !dismissClickOutside || bottomSheetListener?.canDismiss() == false)) return
+        super.cancel()
+    }
+
+    internal fun availableCustomViewHeight(): Int =
+        (container.height - centeredInsets().top - centeredInsets().bottom -
+            2 * context.resources.getDimensionPixelSize(R.dimen.centered_sheet_margin)).coerceAtLeast(0)
+
+    private fun centeredInsets(): Insets {
+        val insets = lastInsets?.let {
+            WindowInsetsCompat.toWindowInsetsCompat(it, container).getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.ime(),
+            )
+        } ?: Insets.NONE
+        return Insets.of(
+            max(container.paddingLeft, insets.left),
+            max(container.paddingTop, insets.top),
+            max(container.paddingRight, insets.right),
+            max(container.paddingBottom, insets.bottom),
+        )
+    }
+
     private var startAnimationRunnable: Runnable? = null
     private var curSheetAnimation: AnimatorSet? = null
     private var isDismissed = false
@@ -98,6 +196,10 @@ class BottomSheet(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        context.takeIf { it.isExpandedSheetScreen() }?.findFragmentActivityOrNull()?.let { activity ->
+            foldJob?.cancel()
+            foldJob = activity.avoidBottomSheetFolds(activity, container)
+        }
 
         findViewById<View>(com.google.android.material.R.id.container)?.apply {
             fitsSystemWindows = false
@@ -112,14 +214,21 @@ class BottomSheet(
         findViewById<View>(com.google.android.material.R.id.coordinator)?.fitsSystemWindows = false
     }
 
+    override fun onDetachedFromWindow() {
+        foldJob?.cancel()
+        foldJob = null
+        super.onDetachedFromWindow()
+    }
+
     private inner class ContainerView(context: Context) : FrameLayout(context) {
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouchEvent(ev: MotionEvent?): Boolean {
             if (ev != null && (ev.action == MotionEvent.ACTION_DOWN || ev.action == MotionEvent.ACTION_MOVE)) {
                 val startX = ev.x.toInt()
                 val startY = ev.y.toInt()
-                if (startY < sheetContainer.top || startX < sheetContainer.left || startX > sheetContainer.right) {
-                    if (dismissClickOutside) {
+                val safeBounds = isCentered || landscapeWindow
+                if (startY < sheetContainer.top || startX < sheetContainer.left || startX > sheetContainer.right || (safeBounds && startY > sheetContainer.bottom)) {
+                    if (dismissClickOutside && (!safeBounds || (cancelable && bottomSheetListener?.canDismiss() != false))) {
                         dismiss()
                     }
                     return true
@@ -134,29 +243,79 @@ class BottomSheet(
         ) {
             var width = MeasureSpec.getSize(widthMeasureSpec)
             var height = MeasureSpec.getSize(heightMeasureSpec)
+            updateLandscapeWindow()
+            if (hasUsedLandscapeWindow) {
+                placeholder?.let { view ->
+                    val insets = lastInsets?.let {
+                        WindowInsetsCompat.toWindowInsetsCompat(it, container).getInsets(systemBars() or WindowInsetsCompat.Type.displayCutout())
+                    } ?: Insets.NONE
+                    val placeholderHeight = insets.top + context.appCompatActionBarHeight()
+                    if (view.layoutParams.height != placeholderHeight) view.updateLayoutParams { this.height = placeholderHeight }
+                }
+            }
+            val centered = isCentered
+            sheetContainer.clipToOutline = centered
+            val constrainHeight = centered || landscapeWindow
+            if (wasHeightConstrained && !constrainHeight) {
+                customView?.layoutParams?.height = if (customViewHeight > 0) customViewHeight else WRAP_CONTENT
+            }
+            wasHeightConstrained = constrainHeight
+            if (landscapeWindow) {
+                setMeasuredDimension(width, height)
+                val insets = landscapeInsets(height)
+                val availableWidth = (width - insets.left - insets.right).coerceAtLeast(0)
+                val sheetWidth = max((availableWidth * 0.6f).toInt(), min(dp(480f), availableWidth))
+                val availableHeight = (height - insets.bottom - if (placeholder == null) insets.top else 0).coerceAtLeast(0)
+                customView?.layoutParams?.let { params ->
+                    params.height = if (customViewHeight > 0) min(customViewHeight, availableHeight) else WRAP_CONTENT
+                }
+                sheetContainer.measure(MeasureSpec.makeMeasureSpec(sheetWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(availableHeight, AT_MOST))
+                return
+            }
+            if (centered) {
+                setMeasuredDimension(width, height)
+                val insets = centeredInsets()
+                val margin = resources.getDimensionPixelSize(R.dimen.centered_sheet_margin)
+                val cardWidth = min(resources.getDimensionPixelSize(R.dimen.centered_sheet_max_width),
+                    (width - insets.left - insets.right - 2 * margin).coerceAtLeast(0))
+                val cardHeight = (height - insets.top - insets.bottom - 2 * margin).coerceAtLeast(0)
+                customView?.layoutParams?.let { params ->
+                    params.height = if (customViewHeight > 0) min(customViewHeight, cardHeight) else WRAP_CONTENT
+                }
+                sheetContainer.measure(MeasureSpec.makeMeasureSpec(cardWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(cardHeight, AT_MOST))
+                return
+            }
             val lastInsets = this@BottomSheet.lastInsets
             if (lastInsets != null) {
                 height -= lastInsets.getSystemWindowBottom()
                 width -= lastInsets.getSystemWindowLeft() + lastInsets.getSystemWindowRight()
             }
             setMeasuredDimension(width, height)
-            val isPortrait = width < height
-            val widthSpec =
-                when {
-                    context.isTablet() -> {
-                        MeasureSpec.makeMeasureSpec(
-                            (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
-                            MeasureSpec.EXACTLY,
-                        )
+            if (context.isExpandedSheetScreen()) {
+                val widthSpec = MeasureSpec.makeMeasureSpec(
+                    min((width - paddingLeft - paddingRight).coerceAtLeast(0), context.resources.getDimensionPixelSize(R.dimen.adaptive_sheet_max_width)),
+                    MeasureSpec.EXACTLY,
+                )
+                sheetContainer.measure(widthSpec, MeasureSpec.makeMeasureSpec((height - paddingTop - paddingBottom).coerceAtLeast(0), AT_MOST))
+            } else {
+                val isPortrait = width < height
+                val widthSpec =
+                    when {
+                        context.isTablet() -> {
+                            MeasureSpec.makeMeasureSpec(
+                                (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
+                                MeasureSpec.EXACTLY,
+                            )
+                        }
+                        else -> {
+                            MeasureSpec.makeMeasureSpec(
+                                if (isPortrait) width else max((width * 0.6f).toInt(), min(dp(480f), width)),
+                                MeasureSpec.EXACTLY,
+                            )
+                        }
                     }
-                    else -> {
-                        MeasureSpec.makeMeasureSpec(
-                            if (isPortrait) width else max((width * 0.6f).toInt(), min(dp(480f), width)),
-                            MeasureSpec.EXACTLY,
-                        )
-                    }
-                }
-            sheetContainer.measure(widthSpec, MeasureSpec.makeMeasureSpec(height, AT_MOST))
+                sheetContainer.measure(widthSpec, MeasureSpec.makeMeasureSpec(height, AT_MOST))
+            }
         }
 
         override fun onLayout(
@@ -166,8 +325,26 @@ class BottomSheet(
             right: Int,
             bottom: Int,
         ) {
-            val t = (bottom - top) - sheetContainer.measuredHeight
-            var l = (right - left - sheetContainer.measuredWidth) / 2
+            if (landscapeWindow) {
+                val insets = landscapeInsets(bottom - top)
+                val l = insets.left + (right - left - insets.left - insets.right - sheetContainer.measuredWidth) / 2
+                val t = bottom - top - insets.bottom - sheetContainer.measuredHeight
+                sheetContainer.layout(l, t, l + sheetContainer.measuredWidth, t + sheetContainer.measuredHeight)
+                return
+            }
+            if (isCentered) {
+                val insets = centeredInsets()
+                val l = insets.left + (right - left - insets.left - insets.right - sheetContainer.measuredWidth) / 2
+                val t = insets.top + (bottom - top - insets.top - insets.bottom - sheetContainer.measuredHeight) / 2
+                sheetContainer.layout(l, t, l + sheetContainer.measuredWidth, t + sheetContainer.measuredHeight)
+                return
+            }
+            val t = (bottom - top) - (if (context.isExpandedSheetScreen()) paddingBottom else 0) - sheetContainer.measuredHeight
+            var l = if (context.isExpandedSheetScreen()) {
+                paddingLeft + (right - left - paddingLeft - paddingRight - sheetContainer.measuredWidth) / 2
+            } else {
+                (right - left - sheetContainer.measuredWidth) / 2
+            }
             val lastInsets = this@BottomSheet.lastInsets
             if (lastInsets != null) {
                 l += lastInsets.getSystemWindowLeft()
@@ -215,6 +392,11 @@ class BottomSheet(
         super.onCreate(savedInstanceState)
         window?.setWindowAnimations(R.style.DialogNoAnimation)
         setContentView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        sheetContainer.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: Outline) {
+                outline.setRoundRect(0, 0, view.width, view.height, context.resources.getDimension(R.dimen.centered_sheet_corner_radius))
+            }
+        }
         sheetContainer.visibility = INVISIBLE
         container.addView(sheetContainer, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.BOTTOM))
         window?.let { window ->
@@ -237,6 +419,7 @@ class BottomSheet(
         }
 
         window?.let { window ->
+            window.enableWideColorGamutIfSupported()
             val params = window.attributes
             params.width = MATCH_PARENT
             params.height = MATCH_PARENT
@@ -266,7 +449,7 @@ class BottomSheet(
         )
         if (isShown) return
         backDrawable.alpha = 0
-        sheetContainer.translationY = sheetContainer.measuredHeight.toFloat()
+        sheetContainer.translationY = if (isCentered) 0f else sheetContainer.measuredHeight.toFloat()
         startAnimationRunnable =
             object : Runnable {
                 override fun run() {
@@ -285,10 +468,21 @@ class BottomSheet(
             return
         }
         sheetContainer.visibility = VISIBLE
+        if (isCentered) bottomSheetListener?.onOpenAnimationStart()
+        sheetContainer.alpha = 1f
+        sheetContainer.scaleX = 1f
+        sheetContainer.scaleY = 1f
         container.setLayerType(View.LAYER_TYPE_HARDWARE, null)
-        sheetContainer.translationY = sheetContainer.measuredHeight.toFloat()
+        sheetContainer.translationY = if (isCentered) 0f else sheetContainer.measuredHeight.toFloat()
         val animatorSet = AnimatorSet()
-        animatorSet.playTogether(
+        if (isCentered) {
+            animatorSet.playTogether(
+                ObjectAnimator.ofFloat(sheetContainer, "alpha", 0f, 1f),
+                ObjectAnimator.ofFloat(sheetContainer, "scaleX", 0.92f, 1f),
+                ObjectAnimator.ofFloat(sheetContainer, "scaleY", 0.92f, 1f),
+                ObjectAnimator.ofInt(backDrawable, "alpha", 153),
+            )
+        } else animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", 0f),
             ObjectAnimator.ofInt(backDrawable, "alpha", 153),
         )
@@ -332,11 +526,18 @@ class BottomSheet(
     ) {
         cancelSheetAnimation()
         val animatorSet = AnimatorSet()
-        animatorSet.playTogether(
+        if (isCentered) {
+            animatorSet.playTogether(
+                ObjectAnimator.ofFloat(sheetContainer, "alpha", 0f),
+                ObjectAnimator.ofFloat(sheetContainer, "scaleX", 0.92f),
+                ObjectAnimator.ofFloat(sheetContainer, "scaleY", 0.92f),
+                ObjectAnimator.ofInt(backDrawable, "alpha", 0),
+            )
+        } else animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", sheetContainer.measuredHeight.toFloat()),
             ObjectAnimator.ofInt(backDrawable, "alpha", 0),
         )
-        animatorSet.duration = 180
+        animatorSet.duration = if (isCentered) 150 else 180
         animatorSet.interpolator = AccelerateInterpolator()
         animatorSet.addListener(
             object : AnimatorListenerAdapter() {
@@ -371,7 +572,11 @@ class BottomSheet(
     }
 
     fun setCustomView(view: View) {
+        placeholder?.background = placeholderBackground
         customView = view
+        placeholder = view.findViewWithTag("landscape_sheet_placeholder")
+        placeholderBackground = placeholder?.background
+        placeholder?.background = if (context.isPhoneLandscape()) null else placeholderBackground
     }
 
     fun getCustomView() = customView
@@ -380,6 +585,11 @@ class BottomSheet(
         height: Int,
         endAction: (() -> Unit)? = null,
     ) {
+        if (isCentered) {
+            setCustomViewHeightSync(height)
+            endAction?.invoke()
+            return
+        }
         customViewHeight = height
         val params = customView?.layoutParams
         val duration =
@@ -442,12 +652,12 @@ class BottomSheet(
             bottomSheet = BottomSheet(context, focusable = false, softInputResize = true)
         }
 
-        constructor(context: Context, needFocus: Boolean, softInputResize: Boolean) {
-            bottomSheet = BottomSheet(context, needFocus, softInputResize)
+        constructor(context: Context, needFocus: Boolean, softInputResize: Boolean, centerOnExpandedScreen: Boolean = false) {
+            bottomSheet = BottomSheet(context, needFocus, softInputResize, centerOnExpandedScreen)
         }
 
         fun setCustomView(view: View): Builder {
-            bottomSheet.customView = view
+            bottomSheet.setCustomView(view)
             return this
         }
 
@@ -466,11 +676,13 @@ class BottomSheet(
 }
 
 fun BottomSheet.getMaxCustomViewHeight(): Int {
+    if (context.isPhoneLandscape()) return landscapeCustomViewHeight()
+    if (isCentered && availableCustomViewHeight() > 0) return availableCustomViewHeight()
     val isNotchScreen = this.window?.isNotchScreen() ?: false
     val totalHeight =
         if (isNotchScreen) {
             val bottom = this.lastInsets?.getSystemWindowBottom() ?: 0
-            context.realSize().y - bottom
+            (if (context.isExpandedSheetScreen()) context.windowHeight() else context.realSize().y) - bottom
         } else {
             val size = Point()
             val manager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -521,3 +733,11 @@ data class BottomSheetItem(
     val clickAction: () -> Unit,
     val icon: Drawable? = null,
 )
+
+internal fun Context.isExpandedSheetScreen(): Boolean {
+    val activity = findFragmentActivityOrNull() ?: return false
+    return !activity.isCompactWindow()
+}
+
+internal fun Context.bottomSheetHeight(): Int =
+    if (isExpandedSheetScreen()) windowHeight() else screenHeight()

@@ -16,13 +16,13 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WcBitcoinFeeEstimate
 import one.mixin.android.tip.wc.internal.WcBitcoinSignedTransfer
 import one.mixin.android.web3.js.Web3Signer
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Hash
 import timber.log.Timber
-import java.util.Base64
 import javax.inject.Inject
 
 @HiltViewModel
@@ -113,16 +113,17 @@ class WalletConnectBottomSheetViewModel
             if (signedTransactionData is WcBitcoinSignedTransfer) {
                 return sendBitcoinTransfer(signedTransactionData, sessionRequest)
             }
-            val signature: String
-            val rawTx = if (chain == Chain.Solana) {
-                signedTransactionData as VersionedTransactionCompat
-                signature = signedTransactionData.signatures.first()
-                Base64.getEncoder().encodeToString(signedTransactionData.serialize())
-            } else {
-                signedTransactionData as String
-                signature =  Hash.sha3(signedTransactionData)
-                signedTransactionData
+            if (sessionRequest.request.method == Method.SolanaSignTransaction.name) {
+                require(chain == Chain.Solana) { "Invalid chain for solana_signTransaction" }
+                require(signedTransactionData is VersionedTransactionCompat) { "Invalid Solana transaction" }
+                // solana_signTransaction returns this wallet's signature; the dApp owns submission.
+                WalletConnectV2.approveSolanaTransaction(signedTransactionData.signatureFor(account), sessionRequest)
+                return null
             }
+            require(chain != Chain.Solana) { "Unsupported Solana transaction method" }
+            signedTransactionData as String
+            val signature = Hash.sha3(signedTransactionData)
+            val rawTx = signedTransactionData
             try {
                 Timber.d("${WalletConnectV2.TAG} sendTransaction postRawTx start topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} chain=${chain.chainId} account=$account to=$to txId=$signature")
                 assetRepo.postRawTx(Web3RawTransactionRequest(chain.getWeb3ChainId(), rawTx, account, to))
@@ -132,11 +133,7 @@ class WalletConnectBottomSheetViewModel
                 throw e
             }
             Timber.d("${WalletConnectV2.TAG} sendTransaction postRawTx success topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} chain=${chain.chainId} txId=$signature")
-            if (chain == Chain.Solana) {
-                WalletConnectV2.approveSolanaTransaction(signature, sessionRequest)
-            } else {
-                WalletConnectV2.approveRequestInternal(signature, sessionRequest)
-            }
+            WalletConnectV2.approveRequestInternal(signature, sessionRequest)
             return null
         }
 

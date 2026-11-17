@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import com.google.gson.JsonParser
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -9,6 +10,80 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PerpsMarginAmountTest {
+    @Test
+    fun reductionPreviewIncludesPnlInMargin() {
+        assertEquals(BigDecimal("5.43"), estimatedPerpsCloseReturn("5.39", "0.06", "0.02"))
+        assertEquals(BigDecimal("5.45"), perpsCloseMarginAmount("5.39", "0.06"))
+        assertEquals(BigDecimal("2.725"), perpsReductionValue(perpsCloseMarginAmount("5.39", "0.06")?.toPlainString(), "0.5", "1")?.stripTrailingZeros())
+        assertEquals(BigDecimal("80"), perpsCloseMarginAmount("100", "-20"))
+        assertNull(perpsCloseMarginAmount("100", null))
+        assertEquals(BigDecimal("0.03"), perpsReductionValue("0.06", "0.5", "1")?.stripTrailingZeros())
+        assertEquals(BigDecimal("0.01"), perpsReductionValue("0.02", "0.5", "1")?.stripTrailingZeros())
+        assertEquals(BigDecimal("2.715"), perpsReductionValue(estimatedPerpsCloseReturn("5.39", "0.06", "0.02")?.toPlainString(), "0.5", "1")?.stripTrailingZeros())
+    }
+
+    @Test
+    fun closePnlDeductsFeesAndUsesClosedMarginForPercentage() {
+        val pnl = estimatedPerpsClosePnl("2", "0.5")!!
+        assertEquals(BigDecimal("1.5"), pnl)
+        assertEquals(BigDecimal("15"), estimatedPerpsClosePnlPercent(pnl, BigDecimal.TEN)?.stripTrailingZeros())
+        assertEquals(BigDecimal("-0.3"), estimatedPerpsClosePnl("0.2", "0.5"))
+        assertNull(estimatedPerpsClosePnl("2", null))
+        assertNull(estimatedPerpsClosePnlPercent(pnl, BigDecimal.ZERO))
+        assertNull(estimatedPerpsClosePnlPercent(null, BigDecimal.TEN))
+        val partialPnl = perpsReductionValue(pnl.toPlainString(), "0.5", "1")
+        val partialMargin = perpsReductionValue("10", "0.5", "1")
+        assertEquals(BigDecimal("0.75"), partialPnl?.stripTrailingZeros())
+        assertEquals(BigDecimal("15"), estimatedPerpsClosePnlPercent(partialPnl, partialMargin)?.stripTrailingZeros())
+        val first = PerpsPositionItem("p1", "market", "long", "1", "100", 10, margin = "10", unrealizedPnl = "2", estimatedCloseFee = "0.5")
+        val positions = listOf(first, first.copy(positionId = "p2", margin = "20", unrealizedPnl = "-1", estimatedCloseFee = "0.2"))
+        assertEquals(BigDecimal("1"), estimatedPerpsBatchCloseUnrealizedPnl(positions))
+        assertEquals(BigDecimal("31"), estimatedPerpsBatchCloseMargin(positions))
+        assertEquals(BigDecimal("2"), estimatedPerpsBatchCloseUnrealizedPnl(listOf(first.copy(estimatedCloseFee = null))))
+        assertNull(estimatedPerpsBatchCloseUnrealizedPnl(listOf(first.copy(unrealizedPnl = "invalid"))))
+        assertNull(estimatedPerpsBatchCloseMargin(listOf(first.copy(unrealizedPnl = null))))
+        assertNull(estimatedPerpsBatchCloseMargin(listOf(first.copy(margin = "invalid"))))
+    }
+
+    @Test
+    fun reductionFeesCanTurnGrossProfitIntoANetLossWithANegativePercentage() {
+        val pnl = perpsReductionValue(estimatedPerpsClosePnl("0.2", "0.5")?.toPlainString(), "0.5", "1")
+        val margin = perpsReductionValue("10", "0.5", "1")
+        assertEquals(BigDecimal("-0.15"), pnl?.stripTrailingZeros())
+        val percent = requireNotNull(estimatedPerpsClosePnlPercent(pnl, margin))
+        assertEquals("-3%", formatPerpsSignedPercent(percent))
+        assertNull(perpsReductionValue(estimatedPerpsClosePnl("0.2", null)?.toPlainString(), "0.5", "1"))
+    }
+
+    @Test
+    fun batchCloseSumsEachReturnAfterFeesAndKeepsUnknownTotalsUnknown() {
+        val first = PerpsPositionItem("p1", "market", "long", "1", "100", 10, margin = "10", unrealizedPnl = "2", estimatedCloseFee = "0.5")
+        val second = first.copy(positionId = "p2", unrealizedPnl = "-12", estimatedCloseFee = "1")
+        assertEquals(BigDecimal("11.5"), estimatedPerpsBatchCloseReturn(listOf(first, second)))
+        assertEquals(BigDecimal("1.5"), estimatedPerpsBatchCloseFee(listOf(first, second)))
+        val unknown = second.copy(estimatedCloseFee = "")
+        assertNull(estimatedPerpsBatchCloseReturn(listOf(first, unknown)))
+        assertNull(estimatedPerpsBatchCloseFee(listOf(first, unknown)))
+        assertEquals(BigDecimal("5.75"), perpsReductionValue(estimatedPerpsCloseReturn("10", "2", "0.5")?.toPlainString(), "0.5", "1")?.stripTrailingZeros())
+        assertEquals(BigDecimal("0.25"), perpsReductionValue("0.5", "0.5", "1")?.stripTrailingZeros())
+    }
+
+    @Test
+    fun closeReturnDeductsEstimatedFeeBeforeProfitSharing() {
+        assertEquals(BigDecimal("11.5"), estimatedPerpsCloseReturn("10", "2", "0.5"))
+        assertEquals(BigDecimal.ZERO, estimatedPerpsCloseReturn("10", "-12", "0.5"))
+        assertEquals(BigDecimal("12"), estimatedPerpsCloseReturn("10", "2", "0"))
+        for (fee in listOf(null, "")) {
+            assertEquals(BigDecimal("12"), estimatedPerpsCloseReturn("10", "2", fee))
+            assertEquals(BigDecimal.ZERO, estimatedPerpsCloseReturn("10", "-12", fee))
+        }
+        assertNull(estimatedPerpsCloseReturn("10", "2", "invalid"))
+        assertEquals(
+            BigDecimal("6"),
+            perpsReductionValue(estimatedPerpsCloseReturn("10", "2", null)?.toPlainString(), "0.5", "-1")?.stripTrailingZeros(),
+        )
+    }
+
     @Test
     fun fractionalPercentageLimitCanBeFilledAsDollars() {
         val maximum = BigDecimal("0.056")
@@ -47,7 +122,7 @@ class PerpsMarginAmountTest {
         assertEquals("$2.07", formatPerpsMarginLimit("6.98", BigDecimal("2.079999999"), false))
         assertEquals("$1.12", formatPerpsMarginLimit("10.93", BigDecimal("1.12139433"), false))
         assertEquals("1.12", maximumMarginReductionInput("10.93", BigDecimal("1.12139433"), false))
-        assertEquals("$0", formatPerpsMarginLimit("1", BigDecimal("0.00000001"), false))
+        assertEquals("$0.00000001", formatPerpsMarginLimit("1", BigDecimal("0.00000001"), false))
         assertEquals("0%", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, true))
         assertEquals("$0", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, false))
         assertEquals("0%", formatPerpsMarginLimit("0", BigDecimal.ZERO, true))

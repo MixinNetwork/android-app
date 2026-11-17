@@ -3,6 +3,7 @@ package one.mixin.android.ui.conversation.link
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
+import android.os.Bundle
 import android.net.Uri
 import android.view.Gravity
 import android.view.View
@@ -56,6 +57,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isValidStartParam
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.shouldOpenAppHome
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toPerpsTradeAction
 import one.mixin.android.extension.toast
@@ -119,6 +121,8 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.FoldAwareBottomSheetDialog
+import one.mixin.android.widget.isExpandedSheetScreen
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
@@ -176,6 +180,13 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     private var authOrPay = false
 
     override fun getTheme() = R.style.AppTheme_Dialog
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        if (requireContext().isExpandedSheetScreen()) {
+            FoldAwareBottomSheetDialog(requireContext(), theme)
+        } else {
+            super.onCreateDialog(savedInstanceState)
+        }
 
     private val oldLinkViewModel by viewModels<BottomSheetViewModel>()
 
@@ -249,7 +260,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 dismiss()
             } else {
                 lifecycleScope.launch(errorHandler) {
-                    val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+                    val isOpenApp = uri.shouldOpenAppHome()
                     if (isOpenApp) {
                         val localApp = oldLinkViewModel.findAppById(userId)
                         if (localApp != null) {
@@ -553,7 +564,9 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                             }
                             val avatar4List = avatarUserIds.take(4)
                             val iconUrl =
-                                if (notExistsUserIdList.isNotEmpty()) {
+                                if (!response.iconUrl.isNullOrBlank()) {
+                                    response.iconUrl
+                                } else if (notExistsUserIdList.isNotEmpty()) {
                                     oldLinkViewModel.refreshUsers(
                                         notExistsUserIdList,
                                         response.conversationId,

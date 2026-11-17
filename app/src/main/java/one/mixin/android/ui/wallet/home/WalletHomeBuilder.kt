@@ -11,6 +11,7 @@ object WalletHomeBuilder {
         hasEarnAccount: Boolean = false,
         hasTopMovers: Boolean,
         hasTransactions: Boolean,
+        hasCollectibles: Boolean = false,
         hasImportKeyAction: Boolean = false,
         hasPendingIndicator: Boolean = false,
         isWatchWallet: Boolean = false,
@@ -44,6 +45,7 @@ object WalletHomeBuilder {
         if (!hasPositions && showTopMovers) cards += WalletHomeCardType.TOP_MOVERS
 
         if (showReferral) cards += WalletHomeCardType.REFERRAL
+        if (walletType == WalletHomeType.PRIVACY && hasCollectibles) cards += WalletHomeCardType.COLLECTIBLES
         cards += WalletHomeCardType.SUPPORT
 
         return cards

@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -33,6 +34,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isGaslessPending
+import one.mixin.android.db.web3.vo.isGaslessSponsorPending
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.forEachWithIndex
@@ -52,6 +54,7 @@ import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.NetworkFeeInfoBottomSheetDialogFragment
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
@@ -111,6 +114,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             )
         )
     }
+
+    private var replacedTransactionHash: String? = null
+
+    private val transactionHash: String
+        get() = replacedTransactionHash ?: transaction.transactionHash
 
     private val transactionDetailState by lazy {
         mutableStateOf(
@@ -403,7 +411,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             }
             titleView.setWalletNameSubTitleStyle()
             spamLl.isVisible = transaction.isNotVerified()
-            transactionHashTv.text = transaction.transactionHash
+            transactionHashTv.text = transactionHash
             bindMainValue(transactionDetailState.value)
 
             when (currentStatus) {
@@ -491,6 +499,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             dateTv.text = transaction.transactionAt.fullDate()
             feeLl.isVisible = shouldShowFee(currentStatus)
             feeTv.text = "${transaction.displayFeeAmount()} ${transaction.displayFeeSymbol() ?: ""}"
+            val showFeeInfo = View.OnClickListener {
+                NetworkFeeInfoBottomSheetDialogFragment.newInstance(token.getChainDisplayName())
+                    .show(parentFragmentManager, NetworkFeeInfoBottomSheetDialogFragment.TAG)
+            }
+            feeTitleTv.setOnClickListener(showFeeInfo)
+            feeTipIv.setOnClickListener(showFeeInfo)
             statusLl.isVisible = false
             
             networkLl.isVisible = true
@@ -517,6 +531,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                             fetchDisplayToken(assetId)
                         },
                         approvals = transaction.approvals,
+                        onTokenClick = ::openChangedToken,
                     )
                 }
             } else if ((transaction.transactionType == TransactionType.UNKNOWN.value && transaction.hasDisplayAssetChanges()) || transaction.transactionType == TransactionType.SWAP.value || (transaction.transactionType == TransactionType.TRANSFER_OUT.value && transaction.senders.size > 1) || (transaction.transactionType == TransactionType.TRANSFER_IN.value && transaction.receivers.size > 1)) {
@@ -529,18 +544,37 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         fetchToken = { assetId ->
                             fetchDisplayToken(assetId)
                         },
+                        onTokenClick = ::openChangedToken,
                     )
                 }
             } else {
                 assetChangesLl.visibility = View.GONE
             }
             if (currentStatus == TransactionStatus.PENDING.value) {
+                refreshPendingTransaction()
                 lifecycleScope.launch {
                     updateFeeVisibility(currentStatus)
                     if (transaction.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
                         updateActions(currentStatus)
                     }
                 }
+            }
+        }
+    }
+
+    private fun refreshPendingTransaction() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transactionHash, transaction.chainId)
+                if (pendingRawTx?.isGaslessSponsorPending() == true) return@launch
+                val remote = web3ViewModel.refreshWeb3Transaction(transaction.address, transactionHash, transaction.chainId)
+                if (remote != null && remote.status != transactionDetailState.value.status) {
+                    updateTransactionStatus(remote.status)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e)
             }
         }
     }
@@ -560,7 +594,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     private suspend fun updateFeeVisibility(status: String) {
         val pendingRawTx: Web3RawTransaction? = if (status == TransactionStatus.PENDING.value) {
-            web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
+            web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transactionHash, transaction.chainId)
         } else {
             null
         }
@@ -577,7 +611,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     updateStatusBottomMargin()
                     return@apply
                 }
-                val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
+                val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transactionHash, transaction.chainId)
                 val shouldShowActions = pendingRawTx != null
 
                 if (!shouldShowActions) {
@@ -606,7 +640,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
                 if (actionRoute == PendingTransactionActionRoute.Utxo) {
                     val hasSignedChange: Boolean =
-                        web3ViewModel.hasUtxoSignedOutputsByTransactionHash(transaction.transactionHash, chainId)
+                        web3ViewModel.hasUtxoSignedOutputsByTransactionHash(transactionHash, chainId)
                     if (shouldHideUtxoPendingActions(chainId, notNullPendingRawTx.raw, hasSignedChange)) {
                         actions.isVisible = false
                         actions.speedUp.setOnClickListener(null)
@@ -642,7 +676,27 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.status.layoutParams = layoutParams
     }
 
+    private fun openChangedToken(clicked: Web3TokenItem) {
+        lifecycleScope.launch {
+            openWeb3AssetTransactions(
+                web3ViewModel = web3ViewModel,
+                walletId = wallet.id,
+                assetId = clicked.assetId,
+                knownToken = clicked,
+            )
+        }
+    }
+
     private fun tokenClick(transaction: Web3TransactionItem) {
+        val target = transaction.tokenNavigationTarget() ?: return
+        lifecycleScope.launch {
+            openWeb3AssetTransactions(
+                web3ViewModel = web3ViewModel,
+                walletId = wallet.id,
+                assetId = target.assetId,
+                knownToken = token.takeIf { it.assetId == target.assetId },
+            )
+        }
     }
 
     @SuppressLint("InflateParams")
@@ -661,7 +715,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         bottomBinding.apply {
             explorer.setOnClickListener {
                 val url =
-                    "${Constants.API.URL}external/explore/${token.chainId}/transactions/${transaction.transactionHash}"
+                    "${Constants.API.URL}external/explore/${token.chainId}/transactions/${transactionHash}"
                 context?.openUrl(url)
                 bottomSheet.dismiss()
             }
@@ -680,8 +734,14 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             jobManager = jobManager,
             refreshJob = refreshJob,
             onTransactionStatusUpdated = { hash, newStatus ->
-                if (hash == transaction.transactionHash) {
+                if (hash == transactionHash) {
                     updateTransactionStatus(newStatus)
+                }
+            },
+            onTransactionHashReplaced = { oldHash, newHash ->
+                if (oldHash == transactionHash) {
+                    replacedTransactionHash = newHash
+                    binding.transactionHashTv.text = newHash
                 }
             }
         )

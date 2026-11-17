@@ -7,6 +7,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import one.mixin.android.extension.isCompactWindow
+import one.mixin.android.extension.isPhoneLandscape
 import one.mixin.android.extension.supportsPie
 
 @SuppressLint("InlinedApi")
@@ -46,17 +48,19 @@ object SystemUIManager {
         imePadding: Boolean = false
     ) {
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
-            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val phoneLandscape = window.context.isPhoneLandscape()
+            val compact = window.context.isCompactWindow() && !phoneLandscape
+            val statusBarInsets = insets.getInsets(statusBarInsetType(compact))
             val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
             val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
             view.setPadding(
-                0,
+                if (compact) 0 else maxOf(statusBarInsets.left, navBarInsets.left),
                 if (onlyNav) 0 else statusBarInsets.top,
-                0,
+                if (compact) 0 else maxOf(statusBarInsets.right, navBarInsets.right),
                 if (onlyStatus) 0 else navBarInsets.bottom + if (imePadding) imeBottom else 0,
             )
             view.setBackgroundColor(color)
-            insets
+            if (phoneLandscape) insets.inset(view.paddingLeft, 0, view.paddingRight, 0) else insets
         }
     }
 
@@ -67,12 +71,29 @@ object SystemUIManager {
     ) {
         container.setBackgroundColor(color)
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
-            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val phoneLandscape = window.context.isPhoneLandscape()
+            val compact = window.context.isCompactWindow() && !phoneLandscape
+            val statusBarInsets = insets.getInsets(statusBarInsetType(compact))
             val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-            container.setPadding(0, statusBarInsets.top, 0, navBarInsets.bottom)
-            insets
+            container.setPadding(
+                if (compact) 0 else maxOf(statusBarInsets.left, navBarInsets.left),
+                statusBarInsets.top,
+                if (compact) 0 else maxOf(statusBarInsets.right, navBarInsets.right),
+                navBarInsets.bottom,
+            )
+            if (phoneLandscape) {
+                if (container !== window.decorView) window.decorView.setPadding(0, 0, 0, 0)
+                insets.inset(container.paddingLeft, 0, container.paddingRight, 0)
+            } else insets
         }
     }
+
+    private fun statusBarInsetType(compact: Boolean): Int =
+        if (compact) {
+            WindowInsetsCompat.Type.statusBars()
+        } else {
+            WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+        }
 
     fun fullScreen(window: Window) {
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->

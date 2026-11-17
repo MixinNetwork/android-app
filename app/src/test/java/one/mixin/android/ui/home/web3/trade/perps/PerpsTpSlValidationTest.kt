@@ -87,6 +87,7 @@ class PerpsTpSlValidationTest {
                 ),
                 isLong = isLong,
                 mode = PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS,
+                isProfit = false,
                 priceScale = 2,
             )
             assertNotNull(validatePercent("50"))
@@ -130,5 +131,13 @@ class PerpsTpSlValidationTest {
         ),
         isLong = isLong,
         isTakeProfit = isTakeProfit,
+        calculationBasis = resolveTpSlCalculationBasis(
+            entryPrice = "100",
+            currentPrice = currentPrice,
+            marginAmount = "100",
+            positionQuantity = null,
+            leverage = leverage,
+        ),
+        priceScale = 2,
     )
 }

@@ -17,6 +17,28 @@ internal sealed interface Web3TransactionHeaderIcon {
     data class Drawable(val resId: Int) : Web3TransactionHeaderIcon
 }
 
+internal data class Web3TransactionTokenTarget(
+    val assetId: String,
+    val iconUrl: String?,
+)
+
+internal fun Web3TransactionItem.tokenNavigationTarget(): Web3TransactionTokenTarget? {
+    if (status == TransactionStatus.NOT_FOUND.value || status == TransactionStatus.FAILED.value) return null
+    return when (transactionType) {
+        TransactionType.TRANSFER_IN.value -> {
+            if (receivers.size > 1) return null
+            val assetId = receiveAssetId ?: receivers.firstOrNull()?.assetId ?: return null
+            Web3TransactionTokenTarget(assetId, receiveAssetIconUrl)
+        }
+        TransactionType.TRANSFER_OUT.value -> {
+            if (senders.size > 1) return null
+            val assetId = sendAssetId ?: senders.firstOrNull()?.assetId ?: return null
+            Web3TransactionTokenTarget(assetId, sendAssetIconUrl)
+        }
+        else -> null
+    }
+}
+
 internal fun Web3TransactionItem.resolveHeaderIcon(): Web3TransactionHeaderIcon =
     when {
         status == TransactionStatus.NOT_FOUND.value ||

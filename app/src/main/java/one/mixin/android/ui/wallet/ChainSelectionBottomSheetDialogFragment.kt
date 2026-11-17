@@ -25,6 +25,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class ChainSelectionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "ChainSelectionBottomSheetDialogFragment"
         private const val WALLET_ID = "wallet_id"

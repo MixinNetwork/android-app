@@ -242,6 +242,7 @@ open class ErrorHandler {
         const val PERPS_POSITION_SIZE_TOO_SMALL = 10654
         const val PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT = 10655
         const val PERPS_INVALID_LEADER_POSITION = 10656
+        const val PERPS_ORDER_CONFLICT = 10657
 
         const val UNSUPPORTED_WATCH_ADDRESS = 10633
         const val INVALID_REFERRAL_CODE = 10730
@@ -372,6 +373,9 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.PERPS_INVALID_LEADER_POSITION -> {
             getString(R.string.error_perps_invalid_leader_position)
+        }
+        ErrorHandler.PERPS_ORDER_CONFLICT -> {
+            getString(R.string.error_perps_order_conflict)
         }
         ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
             getString(R.string.error_watch_address_not_supported)

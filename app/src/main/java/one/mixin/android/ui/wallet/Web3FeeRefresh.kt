@@ -4,6 +4,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import one.mixin.android.Constants
 import one.mixin.android.extension.numberFormat8
 import timber.log.Timber
 import java.math.BigDecimal
@@ -12,6 +13,7 @@ internal fun nativeWeb3FeeText(fee: BigDecimal?, symbol: String): String =
     fee?.let { "${it.numberFormat8()} $symbol" }.orEmpty()
 
 internal suspend fun refreshWeb3TransferFees(
+    chainId: String,
     retryDelayMillis: Long = 3000L,
     refreshNativeFee: suspend () -> Boolean,
     refreshGaslessFee: suspend () -> Boolean,
@@ -30,7 +32,7 @@ internal suspend fun refreshWeb3TransferFees(
     }
 
     var nativeReady = false
-    var gaslessReady = false
+    var gaslessReady = chainId in Constants.Web3UtxoChainIds
     while (!nativeReady || !gaslessReady) {
         if (!nativeReady) nativeReady = attempt(refreshNativeFee)
         if (!gaslessReady) gaslessReady = attempt(refreshGaslessFee)

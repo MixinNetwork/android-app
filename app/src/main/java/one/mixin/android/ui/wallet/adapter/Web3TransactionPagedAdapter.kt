@@ -22,9 +22,14 @@ class Web3TransactionPagedAdapter :
     }
 
     private var itemClickListener: OnItemClickListener? = null
+    private var tokenClickListener: ((Web3TransactionItem) -> Unit)? = null
 
     fun setOnItemClickListener(listener: OnItemClickListener) {
         this.itemClickListener = listener
+    }
+
+    fun setOnTokenClickListener(listener: (Web3TransactionItem) -> Unit) {
+        this.tokenClickListener = listener
     }
 
     override fun getHeaderId(pos: Int): Long {
@@ -54,6 +59,7 @@ class Web3TransactionPagedAdapter :
     ) {
         getItem(position)?.let { transaction ->
             Timber.e("onBindViewHolder: $position, ${transaction.transactionHash}")
+            holder.onTokenClick = tokenClickListener
             holder.bind(transaction)
             holder.itemView.setOnClickListener {
                 Timber.e("onBindViewHolder: $position, ${transaction.transactionHash} clicked")

@@ -2,6 +2,7 @@ package one.mixin.android.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.icu.text.BreakIterator
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -14,6 +15,7 @@ import one.mixin.android.databinding.ViewAvatarBinding
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TransactionItem
+import one.mixin.android.web3.details.tokenNavigationTarget
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.dpToPx
@@ -63,23 +65,11 @@ class AvatarView : ViewAnimator {
 
         fun checkEmoji(fullName: String?): String {
             if (fullName.isNullOrEmpty()) return ""
-            val name: String = fullName
-            if (name.length == 1) return name
-
-            val builder = StringBuilder()
-            var step = 0
-            for (element in name) {
-                if (!Character.isLetterOrDigit(element) && !Character.isSpaceChar(element) && !Character.isWhitespace(element)) {
-                    builder.append(element)
-                    step++
-                    if (step > 1) {
-                        break
-                    }
-                } else {
-                    break
-                }
-            }
-            return if (builder.isEmpty()) name[0].toString() else builder.toString()
+            val name = fullName.trim()
+            if (name.isEmpty()) return ""
+            val iterator = BreakIterator.getCharacterInstance()
+            iterator.setText(name)
+            return name.substring(0, iterator.next())
         }
     }
 
@@ -127,10 +117,7 @@ class AvatarView : ViewAnimator {
         id: String,
     ) {
         binding.avatarTv.text = checkEmoji(name)
-        try {
-            binding.avatarTv.setBackgroundColor(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar(avatarArray.size))))
-        } catch (e: NumberFormatException) {
-        }
+        binding.avatarTv.setBackgroundColor(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar(avatarArray.size))))
         displayedChild =
             if (!url.isNullOrEmpty()) {
                 avatarSimple.setBackgroundResource(0)
@@ -160,6 +147,11 @@ class AvatarView : ViewAnimator {
         avatarSimple.setImageResource(0)
         avatarSimple.setPadding(0)
         avatarSimple.clear()
+        val tokenIconUrl = transaction.tokenNavigationTarget()?.iconUrl
+        if (!tokenIconUrl.isNullOrBlank()) {
+            avatarSimple.loadImage(tokenIconUrl, R.drawable.ic_avatar_place_holder)
+            return
+        }
         if (transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {
             avatarSimple.setImageResource(R.drawable.ic_web3_transaction_contract)
         } else if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) {
@@ -208,11 +200,7 @@ class AvatarView : ViewAnimator {
     }
 
     private fun getAvatarPlaceHolderById(code: Int): Int {
-        try {
-            return avatarArray[code]
-        } catch (e: Exception) {
-        }
-        return R.drawable.default_avatar
+        return avatarArray.getOrElse(code) { avatarArray[0] }
     }
 
     private val avatarArray by lazy {

@@ -63,9 +63,13 @@ class LandingActivity : BaseActivity() {
         SystemUIManager.setSafePadding(window, color = colorFromAttribute(R.attr.bg_white), imePadding = true)
         checkVersion()
         setContentView(binding.root)
+        binding.configurePanel()
         val pin = intent.getStringExtra(ARGS_PIN)
         val from = intent.getIntExtra(ARGS_FROM, -1)
         val phoneNumber = intent.getStringExtra(ARGS_PHONE_NUM)
+        if (pin == null && from != FROM_CHANGE_PHONE_ACCOUNT && from != FROM_VERIFY_MOBILE_REMINDER) {
+            preventLandingDismiss()
+        }
         val fragment =
             if (pin != null) {
                 MobileFragment.newInstance(pin, FROM_CHANGE_PHONE_ACCOUNT)

@@ -162,7 +162,9 @@
 -keep class io.jsonwebtoken.impl.** { *; }
 -keep class io.jsonwebtoken.orgjson.** { *; }
 
--keep,allowoptimization,allowobfuscation,allowshrinking class com.reown.** { *; }
+# WalletConnect relay (foundation jar has no consumer rules) and Scarlet use reflection.
+-keep class com.reown.** { *; }
+-keep class com.tinder.** { *; }
 
 -dontwarn com.sun.jna.**
 -keep class com.sun.jna.** { *; }
@@ -183,5 +185,3 @@
 -dontwarn com.appsflyer.**
 -keep class com.appsflyer.** { *; }
 -keep class com.android.installreferrer.** { *; }
-
--keep,allowoptimization,allowobfuscation,allowshrinking class com.checkout.** { *; }

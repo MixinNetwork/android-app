@@ -14,8 +14,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
@@ -27,6 +27,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
@@ -117,25 +118,28 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
                     indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                         setCancelable(false)
                     }
-                viewModel.deauthApp(app.appId).autoDispose(stopScope).subscribe(
-                    {
-                        clearRelatedCookies(app)
-                        deauthCallback?.onSuccess(app.homeUri)
+                viewLifecycleOwner.launchUntilStop {
+                    try {
+                        viewModel.deauthApp(app.appId)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        ErrorHandler.handleError(e)
+                        return@launchUntilStop
+                    } finally {
+                        pb.dismiss()
+                    }
+                    clearRelatedCookies(app)
+                    deauthCallback?.onSuccess(app.homeUri)
 
-                        pb.dismiss()
-                        activity?.setResult(
-                            Activity.RESULT_OK,
-                            Intent().apply {
-                                putExtra(ARGS_SUCCESS, true)
-                            },
-                        )
-                        activity?.onBackPressedDispatcher?.onBackPressed()
-                    },
-                    {
-                        pb.dismiss()
-                        ErrorHandler.handleError(it)
-                    },
-                )
+                    activity?.setResult(
+                        Activity.RESULT_OK,
+                        Intent().apply {
+                            putExtra(ARGS_SUCCESS, true)
+                        },
+                    )
+                    activity?.onBackPressedDispatcher?.onBackPressed()
+                }
                 dialog.dismiss()
             }.create().apply {
                 setOnShowListener {

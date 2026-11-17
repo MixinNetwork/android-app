@@ -9,6 +9,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemMarketBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadSvgWithTint
 import one.mixin.android.extension.numberFormat2
@@ -21,11 +22,28 @@ import one.mixin.android.vo.market.MarketItem
 import java.math.BigDecimal
 
 class MarketHolder(val binding: ItemMarketBinding) : RecyclerView.ViewHolder(binding.root) {
-    private val horizontalPadding by lazy { binding.root.context.screenWidth() / 20 }
-    private val verticalPadding by lazy { 12.dp }
-
     init {
-        binding.container.setPadding(horizontalPadding - 4.dp, verticalPadding, horizontalPadding, verticalPadding)
+        if (binding.root.context.isCompactWindow() || binding.root.width > 0) {
+            applyRowPadding(binding.root.width)
+        }
+        binding.root.addOnLayoutChangeListener { _, left, _, right, _, oldLeft, _, oldRight, _ ->
+            if (right - left != oldRight - oldLeft) {
+                applyRowPadding(right - left)
+            }
+        }
+    }
+
+    private fun applyRowPadding(itemWidth: Int) {
+        val context = binding.root.context
+        val compact = context.isCompactWindow()
+        val horizontalPadding = if (compact) context.screenWidth() / 20 else itemWidth / 20
+        val startPadding = horizontalPadding - 4.dp
+        binding.container.setPadding(
+            if (compact) startPadding else startPadding.coerceAtLeast(0),
+            12.dp,
+            horizontalPadding,
+            12.dp,
+        )
         binding.price.updateLayoutParams<MarginLayoutParams> {
             marginEnd = horizontalPadding
         }

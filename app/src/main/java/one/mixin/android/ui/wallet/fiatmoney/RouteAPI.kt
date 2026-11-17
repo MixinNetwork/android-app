@@ -1,18 +1,12 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
-import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.MixinApplication
+import kotlinx.coroutines.CancellationException
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.MixinResponseException
+import one.mixin.android.api.ResponseError
+import one.mixin.android.api.BotPublicKey
 import one.mixin.android.api.response.UserSession
-import one.mixin.android.db.MixinDatabase
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putString
-import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.generateConversationId
 
 suspend fun <T, R> requestRouteAPI(
     invokeNetwork: suspend () -> MixinResponse<T>,
@@ -29,42 +23,46 @@ suspend fun <T, R> requestRouteAPI(
     endBlock: (() -> Unit)? = null,
     authErrorRetryCount: Int = 1,
     requestSession: suspend (List<String>) -> MixinResponse<List<UserSession>>,
+    publicKey: BotPublicKey = BotPublicKey.route,
 ): R? {
-    val response =
-        try {
-            invokeNetwork()
-        } catch (t: Throwable) {
-            if (exceptionBlock?.invoke(t) != true) {
-                defaultExceptionHandle.invoke(t)
+    var failure: Throwable? = null
+    try {
+        var retries = authErrorRetryCount
+        var force = false
+        while (true) {
+            var synchronized = false
+            val response = try {
+                publicKey.get(requestSession, force)
+                synchronized = true
+                invokeNetwork()
+            } catch (t: CancellationException) {
+                throw t
+            } catch (t: MixinResponseException) {
+                MixinResponse<T>(ResponseError(t.errorCode, t.errorCode, t.errorDescription))
+            } catch (t: Throwable) {
+                if (exceptionBlock?.invoke(t) != true) defaultExceptionHandle(t)
+                return null
             }
-            endBlock?.invoke()
+            if (synchronized) doAfterNetworkSuccess?.invoke()
+            if (response.isSuccess) return successBlock?.invoke(response)
+            if (synchronized && response.errorCode == ErrorHandler.AUTHENTICATION && retries > 0) {
+                retries--
+                force = true
+                continue
+            }
+            if (failureBlock?.invoke(response) != true) defaultErrorHandle(response)
             return null
         }
-
-    doAfterNetworkSuccess?.invoke()
-
-    return if (response.isSuccess) {
-        val r = successBlock?.invoke(response)
-        endBlock?.invoke()
-        r
-    } else {
-        if (response.errorCode == ErrorHandler.AUTHENTICATION && authErrorRetryCount > 0) {
-            return handleMixinResponse(
-                invokeNetwork = { requestSession(listOf(ROUTE_BOT_USER_ID)) },
-                successBlock = { resp ->
-                    val sessionData = requireNotNull(resp.data)[0]
-                    val identityNumber =
-                        requireNotNull(Session.getAccount()) { "Account is required for database access." }.identityNumber
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                    MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber).participantSessionDao().insertSuspend(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
-                    return@handleMixinResponse requestRouteAPI(invokeNetwork, successBlock, failureBlock, exceptionBlock, doAfterNetworkSuccess, defaultErrorHandle, defaultExceptionHandle, endBlock, authErrorRetryCount - 1, requestSession)
-                },
-            )
+    } catch (t: Throwable) {
+        failure = t
+        throw t
+    } finally {
+        try {
+            endBlock?.invoke()
+        } catch (t: Throwable) {
+            val original = failure
+            if (original == null) throw t
+            if (original !== t) original.addSuppressed(t)
         }
-        if (failureBlock?.invoke(response) != true) {
-            defaultErrorHandle(response)
-        }
-        endBlock?.invoke()
-        null
     }
 }

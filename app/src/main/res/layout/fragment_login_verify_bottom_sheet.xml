@@ -22,9 +22,9 @@
             android:id="@+id/support"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignWithParentIfMissing="true"
             android:layout_centerVertical="true"
             android:layout_gravity="end"
-            android:layout_marginEnd="16dp"
             android:layout_toStartOf="@id/more"
             android:src="@drawable/ic_support" />
 
@@ -35,6 +35,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_gravity="end"
+            android:layout_marginStart="16dp"
             android:src="@drawable/ic_more" />
     </RelativeLayout>
 

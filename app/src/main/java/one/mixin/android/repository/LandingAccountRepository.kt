@@ -1,6 +1,5 @@
 package one.mixin.android.repository
 
-import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -16,9 +15,6 @@ class LandingAccountRepository
     constructor(
         private val accountService: AccountService,
     ) {
-        fun verificationObserver(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
-            accountService.verificationObserver(request)
-
         suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
             accountService.verification(request)
 
@@ -34,12 +30,12 @@ class LandingAccountRepository
         ): MixinResponse<Account> =
             accountService.changePhone(id, request)
 
-        fun deactiveVerification(
+        suspend fun deactiveVerification(
             id: String,
             request: DeactivateVerificationRequest,
-        ): Observable<MixinResponse<VerificationResponse>> =
+        ): MixinResponse<VerificationResponse> =
             accountService.deactiveVerification(id, request)
 
-        fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
+        suspend fun update(request: AccountUpdateRequest): MixinResponse<Account> =
             accountService.update(request)
     }

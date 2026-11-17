@@ -2,9 +2,9 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
-import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -41,19 +41,11 @@ class SendAttachmentMessageJob(
         private const val serialVersionUID = 1L
     }
 
-    @Transient
-    private var disposable: Disposable? = null
-
     override fun cancel() {
         isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         MessageFlow.update(message.conversationId, message.messageId)
         attachmentProcess.remove(message.messageId)
-        disposable?.let {
-            if (!it.isDisposed) {
-                it.dispose()
-            }
-        }
         removeJob()
     }
 
@@ -111,37 +103,23 @@ class SendAttachmentMessageJob(
         }
         jobManager.saveJob(this)
 
-        disposable =
-            conversationApi.requestAttachment().map {
-                if (it.isSuccess && !isCancelled) {
-                    val result = it.data!!
-                    processAttachment(result)
+        val success =
+            try {
+                val response = runBlocking { conversationApi.requestAttachment() }
+                if (response.isSuccess && !isCancelled) {
+                    processAttachment(response.data!!)
                 } else {
                     false
                 }
-            }.subscribe(
-                {
-                    if (it) {
-                        messageDao.updateMediaStatus(MediaStatus.DONE.name, message.messageId)
-                        MessageFlow.update(message.conversationId, message.messageId)
-                        attachmentProcess.remove(message.messageId)
-                        removeJob()
-                    } else {
-                        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-                        MessageFlow.update(message.conversationId, message.messageId)
-                        attachmentProcess.remove(message.messageId)
-                        removeJob()
-                    }
-                },
-                {
-                    Timber.e("upload attachment error, ${it.getStackTraceString()}")
-                    reportException(it)
-                    messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
-                    MessageFlow.update(message.conversationId, message.messageId)
-                    attachmentProcess.remove(message.messageId)
-                    removeJob()
-                },
-            )
+            } catch (e: Exception) {
+                Timber.e("upload attachment error, ${e.getStackTraceString()}")
+                reportException(e)
+                false
+            }
+        messageDao.updateMediaStatus(if (success) MediaStatus.DONE.name else MediaStatus.CANCELED.name, message.messageId)
+        MessageFlow.update(message.conversationId, message.messageId)
+        attachmentProcess.remove(message.messageId)
+        removeJob()
     }
 
     private fun processAttachment(attachResponse: AttachmentResponse): Boolean {

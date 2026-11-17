@@ -7,8 +7,13 @@ import one.mixin.android.job.BlazeMessageService.Companion.startService
 import one.mixin.android.session.Session
 
 abstract class BlazeBaseActivity : BaseActivity() {
+    companion object {
+        private val resumedActivities = mutableSetOf<BlazeBaseActivity>()
+    }
+
     override fun onResume() {
         super.onResume()
+        resumedActivities.add(this)
         if (Session.checkToken() && MixinApplication.get().isOnline.get()) {
             startService(this, ACTION_ACTIVITY_RESUME)
         }
@@ -16,7 +21,8 @@ abstract class BlazeBaseActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        if (Session.checkToken() && MixinApplication.get().isOnline.get()) {
+        resumedActivities.remove(this)
+        if (resumedActivities.isEmpty() && Session.checkToken() && MixinApplication.get().isOnline.get()) {
             startService(this, ACTION_ACTIVITY_PAUSE)
         }
     }

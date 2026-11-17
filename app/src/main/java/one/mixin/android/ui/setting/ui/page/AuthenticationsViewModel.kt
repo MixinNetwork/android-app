@@ -1,11 +1,9 @@
 package one.mixin.android.ui.setting.ui.page
 
-import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -16,7 +14,6 @@ import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.util.ErrorHandler
 import javax.inject.Inject
 
-@SuppressLint("CheckResult")
 @HiltViewModel
 class AuthenticationsViewModel
     @Inject
@@ -34,21 +31,18 @@ class AuthenticationsViewModel
                 )
 
         init {
-            authorizationService
-                .authorizations().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    {
-                        viewModelScope.launch {
-                            authenticationsState.emit(it.toResult())
-                        }
-                    },
-                    {
-                        viewModelScope.launch {
-                            authenticationsState.emit(Result.failure(it))
-                        }
-                        ErrorHandler.handleError(it)
-                    },
-                )
+            viewModelScope.launch {
+                val result =
+                    try {
+                        authorizationService.authorizations().toResult()
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        ErrorHandler.handleError(e)
+                        Result.failure(e)
+                    }
+                authenticationsState.emit(result)
+            }
         }
 
         fun onDeAuthorize(appId: String) {

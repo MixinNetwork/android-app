@@ -15,7 +15,8 @@ internal object TipKeyGenerator {
     ): TipDerivedKey =
         when (chainId) {
             Constants.ChainId.BITCOIN_CHAIN_ID,
-            Constants.ChainId.PEARL_CHAIN_ID -> UtxoKeyGenerator.deriveFromTipSeed(seed, chainId, index)
+            Constants.ChainId.PEARL_CHAIN_ID,
+            Constants.ChainId.Litecoin -> UtxoKeyGenerator.deriveFromTipSeed(seed, chainId, index)
             Constants.ChainId.SOLANA_CHAIN_ID -> SolanaKeyGenerator.deriveFromTipSeed(seed, index)
             in Constants.Web3EvmChainIds -> EthKeyGenerator.deriveFromTipSeed(seed, index)
             else -> throw IllegalArgumentException("Not supported chainId")

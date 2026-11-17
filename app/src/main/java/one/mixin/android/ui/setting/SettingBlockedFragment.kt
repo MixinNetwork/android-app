@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentBlockedBinding
 import one.mixin.android.databinding.ItemBlockedFooterBinding
@@ -48,7 +49,8 @@ class SettingBlockedFragment : BaseFragment(R.layout.fragment_blocked) {
         binding.apply {
             blockedRv.adapter = adapter
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
-            viewModel.blockingUsers(stopScope).observe(
+            viewLifecycleOwner.launchUntilStop { viewModel.refreshBlockingUsers() }
+            viewModel.blockingUsers().observe(
                 viewLifecycleOwner,
             ) {
                 if (it != null && it.isNotEmpty()) {

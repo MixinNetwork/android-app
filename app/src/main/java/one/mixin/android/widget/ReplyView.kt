@@ -66,7 +66,14 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             TextViewCompat.setCompoundDrawablesRelative(binding.replyViewTv, it, null, null, null)
         }
 
+    var messageItemVersion = 0
+        private set
+
     var messageItem: MessageItem? = null
+        set(value) {
+            field = value
+            messageItemVersion++
+        }
 
     fun bind(messageItem: MessageItem) {
         this.messageItem = messageItem

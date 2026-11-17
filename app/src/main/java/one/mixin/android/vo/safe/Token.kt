@@ -82,9 +82,13 @@ data class Token(
     @ColumnInfo(name = "precision")
     @SerializedName("precision")
     val precision: Int,
+    @ColumnInfo(name = "primitive_asset_id")
+    @SerializedName("primitive_asset_id")
+    @SerialName("primitive_asset_id")
+    val primitiveAssetId: String? = null,
 ) : Parcelable
 
-data class TokenPriceAndChange(
+data class TokenSearchUpdate(
     @ColumnInfo(name = "asset_id")
     val assetId: String,
     @ColumnInfo(name = "price_btc")
@@ -95,6 +99,12 @@ data class TokenPriceAndChange(
     val changeUsd: String,
     @ColumnInfo(name = "change_btc")
     val changeBtc: String,
+    @ColumnInfo(name = "primitive_asset_id")
+    val primitiveAssetId: String?,
+)
+
+fun TokenItem.toSearchUpdate(localPrimitiveAssetId: String?) = TokenSearchUpdate(
+    assetId, priceBtc, priceUsd, changeUsd, changeBtc, primitiveAssetId ?: localPrimitiveAssetId,
 )
 
 fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
@@ -120,4 +130,5 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
         collectionHash,
         null,
         precision,
+        primitiveAssetId,
     )

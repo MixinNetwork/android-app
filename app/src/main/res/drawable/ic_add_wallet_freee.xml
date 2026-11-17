@@ -5,11 +5,11 @@
     android:viewportHeight="48">
   <path
       android:pathData="M24,0L24,0A24,24 0,0 1,48 24L48,24A24,24 0,0 1,24 48L24,48A24,24 0,0 1,0 24L0,24A24,24 0,0 1,24 0z"
-      android:fillColor="#50BD5C"
+      android:fillColor="@color/wallet_green"
       android:fillAlpha="0.1"/>
   <path
       android:pathData="M5.25,19.705L38.091,10.905A2,2 104.347,0 1,40.541 12.319L44.164,25.842A2,2 0,0 1,42.75 28.292L9.909,37.092A2,2 112.5,0 1,7.459 35.678L3.836,22.155A2,2 0,0 1,5.25 19.705z"
-      android:fillColor="#50BD5C"/>
+      android:fillColor="@color/wallet_green"/>
   <path
       android:pathData="M38.795,23.191L39.192,24.674L33.7,26.145L31.479,17.855L36.971,16.384L37.368,17.866L33.611,18.873L34.13,20.809L37.674,19.859L38.042,21.232L34.498,22.182L35.038,24.198L38.795,23.191Z"
       android:fillColor="#ffffff"/>

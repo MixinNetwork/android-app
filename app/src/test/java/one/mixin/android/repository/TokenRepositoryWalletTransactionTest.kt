@@ -155,6 +155,23 @@ class TokenRepositoryWalletTransactionTest {
     }
 
     @Test
+    fun replacementPreservesSyncedTransaction() = runBlocking<Unit> {
+        insertSigned()
+        val synced = assertNotNull(transaction("signed")).copy(
+            transactionHash = "broadcast",
+            status = "success",
+            blockNumber = 123,
+            fee = "0.02",
+        )
+        wallet.web3TransactionDao().insertList(listOf(synced))
+        repository.replaceGaslessPendingTransactionHash("wallet", "signed", "broadcast", chain, updatedAt)
+        assertNull(raw("signed"))
+        assertNull(transaction("signed"))
+        assertEquals("sender", assertNotNull(raw("broadcast")).account)
+        assertEquals(synced, transaction("broadcast"))
+    }
+
+    @Test
     fun replacementWithoutTransactionMovesOnlyRawRow() = runBlocking<Unit> {
         wallet.web3RawTransactionDao().insertSuspend(rawRecord("signed"))
         repository.replaceGaslessPendingTransactionHash("wallet", "signed", "broadcast", chain, updatedAt)
@@ -195,6 +212,39 @@ class TokenRepositoryWalletTransactionTest {
             assertEquals(status, assertNotNull(raw("signed")).state)
             assertEquals(status, assertNotNull(transaction("signed")).status)
             assertEquals(updatedAt, assertNotNull(raw("signed")).updatedAt)
+        }
+    }
+
+    @Test
+    fun statusUpdatesOnlyAffectMatchingTransactionAddress() = runBlocking<Unit> {
+        insertSigned()
+        wallet.web3AddressDao().insertSuspend(Web3Address("receiver-address", "receiver-wallet", chain, "receiver", null, createdAt))
+        val outgoing = assertNotNull(transaction("signed"))
+        val records = listOf(
+            outgoing,
+            outgoing.copy(address = "receiver", transactionType = "transfer_in"),
+            outgoing.copy(chainId = "other-chain"),
+            outgoing.copy(transactionHash = "other-hash"),
+        )
+        for (gasless in listOf(true, false)) {
+            wallet.web3TransactionDao().insert(*records.toTypedArray())
+            val status = if (gasless) "failed" else "success"
+            if (gasless) {
+                repository.updateGaslessPendingTransactionStatus("wallet", "signed", chain, status, updatedAt)
+            } else {
+                repository.insertRawTransactionAndUpdateTransactionStatus(rawRecord("signed").copy(state = status), "signed", status, chain, null)
+            }
+            assertEquals(status, assertNotNull(raw("signed")).state)
+            for (record in records) {
+                RoomDatabaseCompat.query(
+                    wallet,
+                    "SELECT status FROM transactions WHERE transaction_hash = ? AND chain_id = ? AND address = ?",
+                    arrayOf(record.transactionHash, record.chainId, record.address),
+                ).use {
+                    assertTrue(it.moveToFirst())
+                    assertEquals(if (record == outgoing) status else "pending", it.getString(0))
+                }
+            }
         }
     }
 
@@ -329,7 +379,6 @@ class TokenRepositoryWalletTransactionTest {
         walletOutputDao = wallet.walletOutputDao(),
         web3WalletDao = wallet.web3WalletDao(),
         jobManager = jobs,
-        safeBoxStoreManager = SafeBoxStoreManager(context),
         web3AddressDao = wallet.web3AddressDao(),
     )
 

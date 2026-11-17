@@ -274,7 +274,7 @@ fun String.checkUserOrApp(
     val userDao = db.userDao()
     val appDao = db.appDao()
     scope.launch {
-        val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+        val isOpenApp = uri.shouldOpenAppHome()
         if (isOpenApp) {
             val localApp = appDao.findAppById(userId)
             if (localApp != null) {
@@ -298,6 +298,9 @@ fun String.checkUserOrApp(
         }
     }
 }
+
+internal fun Uri.shouldOpenAppHome(): Boolean =
+    toString().isAppScheme() && (getQueryParameter("action") == "open" || !getQueryParameter("page").isNullOrBlank())
 
 internal fun App.homeUriWithSchemeParameters(uri: Uri): String =
     runCatching {
@@ -405,6 +408,7 @@ internal data class PerpsOpenPositionAction(
     val isLong: Boolean?,
     val leverage: Int?,
     val margin: String?,
+    val orderId: String? = null,
 )
 
 internal data class SpotTradeAction(
@@ -457,10 +461,15 @@ internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
         val margin = query.queryParameter("margin")?.toPerpsMarginOrNull()
         if (hasMargin && margin == null) return null
 
+        val hasOrderId = query.hasQueryParameter("order_id")
+        val orderId = query.queryParameter("order_id")
+        if (hasOrderId && (orderId == null || !orderId.isUUID())) return null
+
         PerpsOpenPositionAction(
             isLong = isLong,
             leverage = leverage,
             margin = margin,
+            orderId = orderId,
         )
     } else {
         null

@@ -52,6 +52,7 @@ import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.TipBody
+import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -63,7 +64,6 @@ import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.sumsub.ProfileResponse
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -111,6 +111,8 @@ internal constructor(
         tokenRepository.walletHomeAssetItemsNotHiddenLimit(limit)
 
     fun walletHomeTokenSummary() = tokenRepository.walletHomeTokenSummary()
+
+    fun collectibles() = tokenRepository.collectibles(SortOrder.Recent)
 
     suspend fun cashAccount(): MixinResponse<CashAccount> =
         withContext(Dispatchers.IO) {
@@ -350,8 +352,6 @@ internal constructor(
 
     suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
         tokenRepository.findSnapshotById(snapshotId)
-
-    suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
 
     suspend fun walletHomeBanners() = referralRepository.fetchWalletHomeBanners()
 

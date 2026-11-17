@@ -1,5 +1,6 @@
 package one.mixin.android.compose.theme
 
+import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -40,13 +41,13 @@ class AppColors(
     val backgroundGrayLight: Color,
     val backgroundGray: Color,
     val red: Color = Color(0xFFE55541),
-    val green: Color = Color(0xFF50BD5C),
+    val green: Color = Color(0xFF00B86B),
     val tipError: Color = Color(0xFFF67070),
-    val walletRed: Color = Color(0xFFF67070),
-    val walletGreen: Color = Color(0xFF50BD5C),
+    val walletRed: Color = Color(0xFFF55666),
+    val walletGreen: Color = Color(0xFF00B86B),
     val walletOrange: Color = Color(0xFFFFAA00),
-    val marketRed: Color = Color(0xFFE57874),
-    val marketGreen: Color = Color(0xFF50BD5C),
+    val marketRed: Color = Color(0xFFF55666),
+    val marketGreen: Color = Color(0xFF00B86B),
     val shadow: Color = Color(0x33AAAAAA),
     val unchecked: Color,
     val tipWarning: Color,
@@ -99,8 +100,10 @@ private fun lightColorPalette(isP3Supported: Boolean) =
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0xFFE5E8EE),
         marketBadgeBackground = Color(0xFFF6F7FA),
-        marketRed = marketRed(isP3Supported),
-        marketGreen = marketGreen(isP3Supported),
+        walletRed = quoteRed(isP3Supported),
+        walletGreen = quoteGreen(isP3Supported),
+        marketRed = quoteRed(isP3Supported),
+        marketGreen = quoteGreen(isP3Supported),
         bgGradientStart = Color(0xFFFFFFFF),
         bgGradientEnd = Color(0xFFE7EFFF),
         borderColor = Color(0xFFE5E8EE),
@@ -134,8 +137,10 @@ private fun darkColorPalette(isP3Supported: Boolean) =
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0x33FFFFFF),
         marketBadgeBackground = Color.White.copy(alpha = 0.12f),
-        marketRed = marketRed(isP3Supported),
-        marketGreen = marketGreen(isP3Supported),
+        walletRed = quoteRed(isP3Supported),
+        walletGreen = quoteGreen(isP3Supported),
+        marketRed = quoteRed(isP3Supported),
+        marketGreen = quoteGreen(isP3Supported),
         bgGradientStart = Color(0xFF2C3136),
         bgGradientEnd = Color(0xFF1C2029),
         borderColor = Color(0xFF6E7073),
@@ -148,30 +153,30 @@ private fun darkColorPalette(isP3Supported: Boolean) =
         borderGray = Color(0xFFD6D6D6),
     )
 
-private fun marketRed(isP3Supported: Boolean) =
+private fun quoteRed(isP3Supported: Boolean) =
     if (isP3Supported) {
         Color(
             colorSpace = ColorSpaces.DisplayP3,
-            red = 0.898f,
-            green = 0.471f,
-            blue = 0.455f,
+            red = 0.961f,
+            green = 0.337f,
+            blue = 0.400f,
             alpha = 1f,
         )
     } else {
-        Color(0xFFE57874)
+        Color(0xFFF55666)
     }
 
-private fun marketGreen(isP3Supported: Boolean) =
+private fun quoteGreen(isP3Supported: Boolean) =
     if (isP3Supported) {
         Color(
             colorSpace = ColorSpaces.DisplayP3,
-            red = 0.314f,
-            green = 0.741f,
-            blue = 0.361f,
+            red = 0f,
+            green = 0.722f,
+            blue = 0.420f,
             alpha = 1f,
         )
     } else {
-        Color(0xFF50BD5C)
+        Color(0xFF00B86B)
     }
 
 private val LocalColors = compositionLocalOf { lightColorPalette(false) }
@@ -185,7 +190,11 @@ fun MixinAppTheme(
     },
     content: @Composable () -> Unit,
 ) {
-    val isP3Supported = LocalContext.current.isScreenWideColorGamut()
+    // Same device uses Display P3. sRGB is only the fallback when the screen cannot show it.
+    // Wide color gamut is set on the window before the first draw, so this does not switch it again.
+    val isP3Supported = !LocalInspectionMode.current &&
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+        LocalContext.current.isScreenWideColorGamut()
     val colors =
         remember(darkTheme, isP3Supported) {
             if (darkTheme) {

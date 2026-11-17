@@ -241,6 +241,7 @@ class HedwigImp(
                             .setOwnerId(ownerId)
                             .setCategory(conversationData.category)
                             .setName(conversationData.name)
+                            .setIconUrl(conversationData.iconUrl)
                             .setAnnouncement(conversationData.announcement)
                             .setMuteUntil(conversationData.muteUntil)
                             .setExpireIn(conversationData.expireIn).build(),

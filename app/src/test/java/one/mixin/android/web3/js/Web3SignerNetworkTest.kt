@@ -14,4 +14,16 @@ class Web3SignerNetworkTest {
     fun xLayerHexReferenceResolvesForPersistedChainState() {
         assertEquals(Chain.XLayer, findChainByHexReference("0xc4"))
     }
+
+    @Test
+    fun evmRequestAfterSolanaReturnsToLastEvmChain() {
+        // A dapp on Arbitrum makes a Solana request, then signs EVM typed data
+        // for Arbitrum again: it must not land on Ethereum.
+        assertEquals(Chain.Arbitrum, evmChainAfter(Chain.Solana, Chain.Arbitrum))
+        // An EVM chain stays as it is.
+        assertEquals(Chain.Base, evmChainAfter(Chain.Base, Chain.Arbitrum))
+        // Without an EVM chain to return to, Ethereum is the default.
+        assertEquals(Chain.Ethereum, evmChainAfter(Chain.Solana, null))
+        assertEquals(Chain.Ethereum, evmChainAfter(Chain.Solana, Chain.Solana))
+    }
 }

@@ -10,26 +10,26 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.widget.RelativeLayout
 import androidx.fragment.app.viewModels
-import com.uber.autodispose.autoDispose
+import androidx.lifecycle.Lifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.isActive
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.crypto.PrivacyPreference
 import one.mixin.android.databinding.FragmentSetupNameBinding
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.logs.LogViewerBottomSheet
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import timber.log.Timber
 import javax.inject.Inject
@@ -95,37 +95,45 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
             setSubmitting(true)
 
             val accountUpdateRequest = AccountUpdateRequest(name)
-            mobileViewModel.update(accountUpdateRequest)
-                .autoDispose(stopScope).subscribe(
-                    { r: MixinResponse<Account> ->
-                        if (!r.isSuccess) {
-                            setSubmitting(false, canRetry = true)
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                            return@subscribe
-                        }
-                        setSubmitting(false)
-                        r.data?.let { data ->
-                            Session.storeAccount(data)
-                            mobileViewModel.insertUser(data.toUser())
-                        }
+            val viewLifecycle = viewLifecycleOwner.lifecycle
+            viewLifecycleOwner.launchUntilStop {
+                try {
+                    handleMixinResponse(
+                        invokeNetwork = { mobileViewModel.update(accountUpdateRequest) },
+                        successBlock = { r ->
+                            setSubmitting(false)
+                            r.data?.let { data ->
+                                Session.storeAccount(data)
+                                mobileViewModel.insertUser(data.toUser())
+                            }
 
-                        nameEt.hideKeyboard()
-                        val context = requireContext()
-                        if (!PrivacyPreference.getIsLoaded(requireContext(), false) ||
-                            !PrivacyPreference.getIsSyncSession(context, false)
-                        ) {
-                            InitializeActivity.showLoading(context, false, source = InitializeActivity.SOURCE_SIGN_UP)
-                        } else {
-                            startActivity(Intent(context, MainActivity::class.java))
-                        }
-                        activity?.finish()
-                    },
-                    { t: Throwable ->
+                            nameEt.hideKeyboard()
+                            val context = requireContext()
+                            if (!PrivacyPreference.getIsLoaded(requireContext(), false) ||
+                                !PrivacyPreference.getIsSyncSession(context, false)
+                            ) {
+                                InitializeActivity.showLoading(context, false, source = InitializeActivity.SOURCE_SIGN_UP)
+                            } else {
+                                startActivity(Intent(context, MainActivity::class.java))
+                            }
+                            activity?.finish()
+                        },
+                        failureBlock = {
+                            setSubmitting(false, canRetry = true)
+                            false
+                        },
+                        exceptionBlock = { t ->
+                            setSubmitting(false, canRetry = true)
+                            reportException("SetupNameFragment update", t)
+                            false
+                        },
+                    )
+                } finally {
+                    if (!isActive && viewLifecycle.currentState != Lifecycle.State.DESTROYED) {
                         setSubmitting(false, canRetry = true)
-                        ErrorHandler.handleError(t)
-                        reportException("SetupNameFragment update", t)
-                    },
-                )
+                    }
+                }
+            }
         }
     }
 

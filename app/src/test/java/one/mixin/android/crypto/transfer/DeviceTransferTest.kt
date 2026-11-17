@@ -1,6 +1,5 @@
 package one.mixin.android.crypto.transfer
 
-import androidx.collection.arrayMapOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -10,7 +9,9 @@ import one.mixin.android.ui.transfer.TransferCipher
 import one.mixin.android.ui.transfer.TransferProtocol
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.WithdrawalMemoPossibility
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -24,6 +25,7 @@ import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.util.Random
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
@@ -37,6 +39,9 @@ import kotlin.test.assertEquals
 
 class DeviceTransferTest {
     private val secureRandom: SecureRandom by lazy { SecureRandom() }
+
+    @get:Rule
+    val temporaryFolder = TemporaryFolder()
 
     @Test
     fun testAsset() {
@@ -169,7 +174,7 @@ class DeviceTransferTest {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    @Test
+    @Test(timeout = 120_000)
     fun testProtocol(): Unit =
         runBlocking {
             val secretBytes = TransferCipher.generateKey()
@@ -186,27 +191,30 @@ class DeviceTransferTest {
                 }
             val server = TransferProtocol(json, secretBytes, true)
             val client = TransferProtocol(json, secretBytes)
-            client.setCachePath(File("."))
-            val md5 = arrayMapOf<String, String>()
+            client.setCachePath(temporaryFolder.root)
+            val md5 = ConcurrentHashMap<String, String>()
             launch(Dispatchers.IO) {
-                repeat(100) {
-                    val uuid = UUID.randomUUID().toString()
-                    val fileName = "$uuid.data"
-                    val sourceFile = File(fileName)
-                    val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
-                    generateRandomFile(fileName, fileSize)
-                    server.write(outputStream, sourceFile, uuid)
-                    md5[uuid] = getFileMd5(sourceFile)
-                    sourceFile.delete()
+                outputStream.use {
+                    repeat(100) {
+                        val uuid = UUID.randomUUID().toString()
+                        val sourceFile = temporaryFolder.newFile("$uuid.data")
+                        val fileSize = (5242880 + Random().nextInt(5242880)).toLong()
+                        generateRandomFile(sourceFile.absolutePath, fileSize)
+                        md5[uuid] = requireNotNull(getFileMd5(sourceFile))
+                        server.write(outputStream, sourceFile, uuid)
+                        sourceFile.delete()
+                    }
                 }
             }
             launch(Dispatchers.IO) {
-                repeat(100) {
-                    val result = client.read(inputStream)
-                    assert(result is File)
-                    val file = result as File
-                    assertEquals(md5[file.name], getFileMd5(file))
-                    file.delete()
+                inputStream.use {
+                    repeat(100) {
+                        val result = client.read(inputStream)
+                        assert(result is File)
+                        val file = result as File
+                        assertEquals(md5[file.name], getFileMd5(file))
+                        file.delete()
+                    }
                 }
             }
         }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.room3.Room
 import androidx.room3.RoomDatabase
+import androidx.room3.migration.Migration
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.JsonParser
 import java.io.File
@@ -36,6 +37,18 @@ class Room3DatabaseCompatibilityTest {
     }
 
     @Test
+    fun primitiveAssetMigrationPreservesExistingTokens() {
+        verifyLegacyDatabase(
+            MixinDatabase::class.java,
+            "INSERT INTO tokens(asset_id, kernel_asset_id, symbol, name, icon_url, price_btc, price_usd, chain_id, change_usd, change_btc, confirmations, asset_key, dust, precision) VALUES('asset', 'kernel', 'BTC', 'Bitcoin', '', '1', '100', 'asset', '0', '0', 1, '', '0', 8)",
+            "SELECT asset_id || ':' || COALESCE(primitive_asset_id, 'missing') FROM tokens",
+            "asset:missing",
+            schemaVersion = 72,
+            migrations = arrayOf(MixinDatabaseMigrations.MIGRATION_72_73),
+        )
+    }
+
+    @Test
     fun walletDatabasePreservesLegacyRawTransaction() {
         verifyLegacyDatabase(
             WalletDatabase::class.java,
@@ -52,6 +65,50 @@ class Room3DatabaseCompatibilityTest {
             "INSERT INTO favorites(market_id, is_favored, created_at) VALUES('market', 1, '2026-09-08T00:00:00Z')",
             "SELECT market_id || ':' || is_favored FROM favorites",
             "market:1",
+        )
+    }
+
+    @Test
+    fun perpsOrderMigrationClearsLegacyOrdersForResync() {
+        verifyLegacyDatabase(
+            PerpsDatabase::class.java,
+            """
+                INSERT INTO perps_orders (
+                    order_id, position_id, market_id, side, order_type, status, leverage,
+                    quantity, pay_amount, fee_amount, entry_price, close_price, realized_pnl,
+                    roe, created_at, updated_at
+                ) VALUES (
+                    'order', 'position', 'market', 'long', 'close', 'filled', 10,
+                    '1', '10', '2', '100', '110', '10', '0.1',
+                    '2026-09-28T00:00:00Z', '2026-09-28T00:00:00Z'
+                )
+            """.trimIndent(),
+            "SELECT COUNT(*) FROM perps_orders",
+            "0",
+            schemaVersion = 9,
+            migrations = arrayOf(PerpsDatabase.MIGRATION_9_10, PerpsDatabase.MIGRATION_10_11, PerpsDatabase.MIGRATION_11_12),
+        )
+    }
+
+    @Test
+    fun perpsCloseFeeMigrationPreservesPositionsWithUnknownFee() {
+        verifyLegacyDatabase(
+            PerpsDatabase::class.java,
+            """
+                INSERT INTO positions (
+                    position_id, market_id, side, quantity, entry_price, margin, leverage, state,
+                    mark_price, unrealized_pnl, roe, settle_asset_id, open_pay_amount, open_pay_asset_id,
+                    bot_id, wallet_id, created_at, updated_at
+                ) VALUES (
+                    'position', 'market', 'long', '1', '100', '10', 10, 'open',
+                    '102', '2', '0.2', 'asset', '10', 'asset', 'bot', 'wallet',
+                    '2026-10-09T00:00:00Z', '2026-10-09T00:00:00Z'
+                )
+            """.trimIndent(),
+            "SELECT margin || ':' || unrealized_pnl || ':' || estimated_close_fee FROM positions",
+            "10:2:",
+            schemaVersion = 10,
+            migrations = arrayOf(PerpsDatabase.MIGRATION_10_11, PerpsDatabase.MIGRATION_11_12),
         )
     }
 
@@ -92,14 +149,19 @@ class Room3DatabaseCompatibilityTest {
         selectSql: String,
         expectedValue: String,
         schemaName: String = databaseClass.name,
+        schemaVersion: Int? = null,
+        migrations: Array<Migration> = emptyArray(),
     ) {
         val schemaDirectory = listOf(File("schemas/googlePlay/$schemaName"), File("app/schemas/googlePlay/$schemaName"))
             .firstOrNull(File::isDirectory)
         requireNotNull(schemaDirectory) { "Missing exported schema for $schemaName in ${File(".").absolutePath}" }
-        val schemaFile = requireNotNull(schemaDirectory.listFiles()?.filter { it.extension == "json" }?.maxByOrNull { it.nameWithoutExtension.toInt() })
+        val latestSchemaFile = requireNotNull(schemaDirectory.listFiles()?.filter { it.extension == "json" }?.maxByOrNull { it.nameWithoutExtension.toInt() })
+        val latestSchema = JsonParser.parseString(latestSchemaFile.readText()).asJsonObject.getAsJsonObject("database")
+        val schemaFile = schemaVersion?.let { File(schemaDirectory, "$it.json") } ?: latestSchemaFile
         val schema = JsonParser.parseString(schemaFile.readText()).asJsonObject.getAsJsonObject("database")
         val version = schema.get("version").asInt
-        val identityHash = schema.get("identityHash").asString
+        val targetVersion = latestSchema.get("version").asInt
+        val identityHash = latestSchema.get("identityHash").asString
         val file = File(temporaryFolder.root, "${databaseClass.simpleName}.db")
         SQLiteDatabase.openOrCreateDatabase(file, null).use { legacy ->
             schema.getAsJsonArray("entities").forEach { entityElement ->
@@ -122,13 +184,14 @@ class Room3DatabaseCompatibilityTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         repeat(2) {
             val database = Room.databaseBuilder(context, databaseClass, file.absolutePath)
-                .setDriver(ReportingAndroidSQLiteDriver(databaseClass.simpleName, version))
+                .setDriver(ReportingAndroidSQLiteDriver(databaseClass.simpleName, targetVersion))
+                .addMigrations(*migrations)
                 .allowMainThreadQueries()
                 .build()
             try {
                 assertScalar(database, selectSql, expectedValue)
                 assertScalar(database, "SELECT identity_hash FROM room_master_table WHERE id = 42", identityHash)
-                assertScalar(database, "PRAGMA user_version", version.toString())
+                assertScalar(database, "PRAGMA user_version", targetVersion.toString())
                 assertScalar(database, "PRAGMA integrity_check", "ok")
                 RoomDatabaseCompat.query(database, "PRAGMA foreign_key_check").use { assertFalse(it.moveToFirst()) }
             } finally {

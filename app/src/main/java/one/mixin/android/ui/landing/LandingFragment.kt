@@ -83,20 +83,21 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         binding.featurePager.adapter = LandingFeatureAdapter(features)
         binding.featurePager.offscreenPageLimit = features.size
         
-        val screenHeightPx = binding.root.resources.displayMetrics.heightPixels
-        val screenHeightDp = resources.configuration.screenHeightDp
-        val targetHeightDp = 156f
-        val targetHeightPx = targetHeightDp * resources.displayMetrics.density
-        val calculatedPercent = targetHeightPx / screenHeightPx
-        val basePercent = if (screenHeightDp <= 700 ) 0.35f else 0.48f
-        val finalPercent = basePercent + calculatedPercent
-        
-        (binding.featurePager.layoutParams as ConstraintLayout.LayoutParams).apply {
-            matchConstraintPercentHeight = finalPercent
-            height = 0
+        binding.root.addOnLayoutChangeListener { _, _, top, _, bottom, _, _, _, _ ->
+            val height = bottom - top
+            if (height > 0) {
+                val heightDp = height / resources.displayMetrics.density
+                val basePercent = if (heightDp <= 700) 0.35f else 0.48f
+                val percent = basePercent + 156f / heightDp
+                val params = binding.featurePager.layoutParams as ConstraintLayout.LayoutParams
+                if (params.matchConstraintPercentHeight != percent) {
+                    params.matchConstraintPercentHeight = percent
+                    params.height = 0
+                    binding.featurePager.layoutParams = params
+                }
+            }
         }
-        binding.featurePager.requestLayout()
-        
+
         binding.featurePager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageScrollStateChanged(state: Int) {
                 if (state == ViewPager2.SCROLL_STATE_DRAGGING) {

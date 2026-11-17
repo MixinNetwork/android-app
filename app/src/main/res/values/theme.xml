@@ -15,6 +15,7 @@
     <attr name="text_checked" format="color|reference" />
 
     <attr name="icon_default" format="color|reference" />
+    <attr name="icon_more" format="color|reference" />
     <attr name="icon_light" format="color|reference" />
     <attr name="icon_dark" format="color|reference" />
     <attr name="icon_white" format="color|reference" />

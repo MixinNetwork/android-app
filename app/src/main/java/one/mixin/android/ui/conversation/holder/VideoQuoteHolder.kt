@@ -10,7 +10,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadVideo
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.messageAreaWidth
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
@@ -25,9 +25,8 @@ class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) :
     BaseViewHolder(binding.root),
     Terminable {
         private val dp16 = itemView.context.dpToPx(16f)
-        private val minWidth by lazy {
-            (itemView.context.realSize().x * 0.5).toInt()
-        }
+        private val minWidth: Int
+            get() = (itemView.context.messageAreaWidth() * 0.5).toInt()
 
         init {
             val radius = itemView.context.dpToPx(4f).toFloat()

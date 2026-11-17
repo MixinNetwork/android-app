@@ -12,6 +12,7 @@ import org.bitcoinj.core.Transaction
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.script.ScriptBuilder
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
@@ -19,6 +20,75 @@ import java.math.BigInteger
 import java.nio.ByteBuffer
 
 class UtxoTransactionSignerTest {
+    @Test
+    fun litecoinP2wpkhSignatureIsDeterministicAndCryptographicallyValid() {
+        val privateKey = "4ab54480cbbaa53d5d3ba43a3e85d221df085490e88346ad11579e17000db7bb".hexStringToByteArray()
+        val sender = UtxoTransactionSigner.address(privateKey, Constants.ChainId.Litecoin)
+        val output = utxoOutput(sender, Constants.ChainId.Litecoin)
+        val unsigned = BtcTransactionBuilder.buildSendTransaction(
+            chainId = Constants.ChainId.Litecoin,
+            fromAddress = sender,
+            toAddress = "ltc1qwlezpr3890hcp6vva9twqh27mr6edadreqvhnn",
+            amountBtc = "0.001",
+            localUtxos = listOf(output),
+            feeRate = BigDecimal.TEN,
+        )
+
+        val first = UtxoTransactionSigner.sign(unsigned.rawHex, privateKey, Constants.ChainId.Litecoin, listOf(output))
+        val second = UtxoTransactionSigner.sign(unsigned.rawHex, privateKey, Constants.ChainId.Litecoin, listOf(output))
+        val transaction = Transaction.read(ByteBuffer.wrap(first.signedHex.hexStringToByteArray()))
+        val signatureWithHashType = transaction.inputs.single().witness.getPush(0)
+        val signingKey = ECKey.fromPrivate(privateKey, true)
+        val signature = org.bitcoinj.crypto.TransactionSignature.decodeFromBitcoin(signatureWithHashType, true, true)
+        val signatureHash = transaction.hashForWitnessSignature(
+            0,
+            ScriptBuilder.createP2PKHOutputScript(signingKey),
+            Coin.parseCoin(output.amount),
+            Transaction.SigHash.ALL,
+            false,
+        )
+        // Independently decoded and verified with a standalone BIP143/secp256k1 implementation.
+        val expectedSignedHex =
+            "01000000000101efcdab8967452301efcdab8967452301efcdab8967452301efcdab89674523010200000000fdffffff" +
+                "02a08601000000000016001477f2208e272bef80e98ce956e05d5ed8f596f5a35e8e04000000000016001496cd3178" +
+                "f3de0f307bcee1aeaa4d5987862dd30a02483045022100ddbd4f5eb46f1792153b669bb3ab95e50a1b774ce71773135" +
+                "aed5ae3d97c4e2a0220150070e0e22ce39fc546591da7581bd0e8a4730d70a0860e404f462d8254c41c012102e49c" +
+                "9b9b5d0f127235dc26a0c252814c52fb333d651a946773f59d72c2da990400000000"
+
+        assertEquals(expectedSignedHex, first.signedHex)
+        assertEquals(first.signedHex, second.signedHex)
+        assertEquals("32933cec30bd37ac80d1b3284e6f826837ae91af4aa1a37b539f3f14213f8c63", transaction.txId.toString())
+        assertEquals(141, transaction.vsize)
+        assertEquals(BigDecimal("0.0000141"), BtcTransactionBuilder.fee(first.signedHex, listOf(output)))
+        assertEquals(2, transaction.inputs.single().witness.pushCount)
+        assertTrue(signingKey.verify(signatureHash, signature))
+        assertEquals(listOf(output.outputId), first.consumedOutputIds)
+        assertEquals(sender, first.fromAddress)
+    }
+
+    @Test
+    fun litecoinSignerRejectsUtxosOutsideSelectedChainAndAddress() {
+        val privateKey = "4ab54480cbbaa53d5d3ba43a3e85d221df085490e88346ad11579e17000db7bb".hexStringToByteArray()
+        val sender = UtxoTransactionSigner.address(privateKey, Constants.ChainId.Litecoin)
+        val output = utxoOutput(sender, Constants.ChainId.Litecoin)
+        val unsigned = BtcTransactionBuilder.buildSendTransaction(
+            chainId = Constants.ChainId.Litecoin,
+            fromAddress = sender,
+            toAddress = sender,
+            amountBtc = "0.001",
+            localUtxos = listOf(output),
+            feeRate = BigDecimal.TEN,
+        )
+
+        assertThrows(IllegalArgumentException::class.java) {
+            UtxoTransactionSigner.sign(unsigned.rawHex, privateKey, Constants.ChainId.Litecoin, listOf(output.copy(assetId = Constants.ChainId.BITCOIN_CHAIN_ID)))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            UtxoTransactionSigner.sign(unsigned.rawHex, privateKey, Constants.ChainId.Litecoin, listOf(output.copy(address = "ltc1qwlezpr3890hcp6vva9twqh27mr6edadreqvhnn")))
+        }
+        assertTrue(firstWitnessIsEmpty(unsigned.rawHex))
+    }
+
     @Test
     fun bip340SigningMatchesOfficialVectorZero() {
         val privateKey = "0000000000000000000000000000000000000000000000000000000000000003".hexStringToByteArray()
@@ -141,4 +211,7 @@ class UtxoTransactionSignerTest {
         createdAt = "",
         updatedAt = "",
     )
+
+    private fun firstWitnessIsEmpty(rawHex: String): Boolean =
+        Transaction.read(ByteBuffer.wrap(rawHex.hexStringToByteArray())).inputs.single().witness.pushCount == 0
 }

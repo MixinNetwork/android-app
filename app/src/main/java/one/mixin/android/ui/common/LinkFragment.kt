@@ -5,6 +5,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.widget.TextView
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
@@ -13,6 +14,7 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.pending.PendingMessageDao
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.ui.setting.diagnosis.DiagnosisActivity
 import one.mixin.android.vo.LinkState
@@ -30,14 +32,20 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
     lateinit var pendingMessageDaoProvider: Provider<PendingMessageDao>
 
     private lateinit var processedCount: LiveData<Int>
-
+    private var barRequested = false
     private var barShown = false
+    protected open val showConnectionStatus: Boolean get() = true
 
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        barRequested = false
+        barShown = false
+        view.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            presentBar()
+        }
         processedCount =
             floodMessageDaoProvider.get().getFloodMessageCount()
                 .combineWith(pendingMessageDaoProvider.get().getPendingMessageCount()) { a, b ->
@@ -86,28 +94,44 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
     abstract fun getContentView(): View
 
     private val _contentView get() = getContentView()
-    private val stateLayout: View by lazy {
-        _contentView.findViewById(R.id.state_layout)
+    private val stateLayout: View get() {
+        return _contentView.findViewById(R.id.state_layout)
     }
-    private val progressBar: View by lazy {
-        _contentView.findViewById(R.id.progressBar)
+    private val progressBar: View get() {
+        return _contentView.findViewById(R.id.progressBar)
     }
-    private val stateTv: TextView by lazy {
-        _contentView.findViewById(R.id.state_tv)
+    private val stateTv: TextView get() {
+        return _contentView.findViewById(R.id.state_tv)
     }
 
     private fun showBar() {
-        if (!barShown) {
-            stateLayout.animateHeight(0, requireContext().dpToPx(26f))
-            barShown = true
-        }
+        barRequested = true
+        presentBar()
     }
 
     private fun hiddenBar() {
-        if (barShown) {
-            stateLayout.animateHeight(requireContext().dpToPx(26f), 0)
-            barShown = false
+        barRequested = false
+        presentBar()
+    }
+
+    private fun presentBar() {
+        val show = barRequested && showConnectionStatus
+        val context = stateLayout.context
+        if (!context.isCompactWindow()) {
+            barShown = show
+            if (show) {
+                val height = context.dpToPx(26f)
+                if (stateLayout.layoutParams.height != height) {
+                    stateLayout.updateLayoutParams { this.height = height }
+                }
+            }
+            stateLayout.isVisible = show
+            return
         }
+        if (show == barShown) return
+        val height = context.dpToPx(26f)
+        stateLayout.animateHeight(if (show) 0 else height, if (show) height else 0)
+        barShown = show
     }
 
     private fun setConnecting() {

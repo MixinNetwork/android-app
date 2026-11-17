@@ -195,3 +195,32 @@ private fun formatPerpsPercentDecimal(value: BigDecimal): String {
     if (scaled.compareTo(BigDecimal.ZERO) == 0) return "0.0"
     return scaled.stripTrailingZeros().toPlainString()
 }
+
+internal fun formatPerpsReductionSize(
+    currentQuantity: BigDecimal,
+    reductionQuantity: BigDecimal?,
+    markPrice: BigDecimal?,
+    tokenSymbol: String,
+): String {
+    val current = currentQuantity.abs()
+    val currentText = "${formatPerpsQuantity(current)} $tokenSymbol".trim()
+    if (reductionQuantity == null || reductionQuantity <= BigDecimal.ZERO || reductionQuantity > current) return currentText
+    val remaining = current.subtract(reductionQuantity)
+    val remainingText = "${formatPerpsQuantity(remaining)} $tokenSymbol".trim()
+    val value = when {
+        remaining.signum() == 0 -> "${PERPS_USD_SYMBOL}0"
+        markPrice != null && markPrice > BigDecimal.ZERO -> formatPerpsUsdDecimal(remaining.multiply(markPrice))
+        else -> "--"
+    }
+    return "$currentText → $remainingText ($value)"
+}
+
+internal fun liquidationDistancePercent(liquidationPrice: String?, markPrice: String?): String? {
+    val liquidation = liquidationPrice?.toBigDecimalOrNull() ?: return null
+    val mark = markPrice?.toBigDecimalOrNull() ?: return null
+    if (liquidation <= BigDecimal.ZERO || mark <= BigDecimal.ZERO) return null
+    return liquidation.subtract(mark).abs()
+        .multiply(BigDecimal(100))
+        .divide(mark, 2, RoundingMode.HALF_UP)
+        .toPlainString() + "%"
+}

@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -61,6 +64,7 @@ fun PageScaffold(
     onTopBarLongClick: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     backIcon: Int = R.drawable.ic_back,
+    titleContent: @Composable (() -> Unit)? = null,
     body: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
@@ -69,11 +73,17 @@ fun PageScaffold(
             MixinTopAppBar(
                 title = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = title,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        if (titleContent != null) {
+                            titleContent()
+                        } else {
+                            BasicText(
+                                text = title,
+                                style = LocalTextStyle.current.copy(color = MixinAppTheme.colors.textPrimary),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 18.sp, stepSize = 0.5.sp),
+                            )
+                        }
                         subtitle?.invoke()
                     }
                 },

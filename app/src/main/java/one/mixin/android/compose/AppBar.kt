@@ -2,11 +2,9 @@ package one.mixin.android.compose
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,47 +76,46 @@ fun MixinTopAppBar(
         modifier = modifier.then(longClickModifier),
     ) {
         CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-            Box(
-                Modifier
+            Layout(
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(AppBarDefaults.ContentPadding)
                     .height(56.dp),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                if (navigationIcon != null) {
+                content = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        CompositionLocalProvider(
-                            LocalContentAlpha provides ContentAlpha.high,
-                            content = navigationIcon,
-                        )
+                        CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.high) {
+                            navigationIcon?.invoke()
+                        }
                     }
-                }
-
-                Row(
-                    Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    ProvideTextStyle(
-                        value = TextStyle(fontSize = 18.sp),
-                    ) {
-                        CompositionLocalProvider(
-                            LocalContentAlpha provides ContentAlpha.high,
-                            content = title,
-                        )
+                    Box(contentAlignment = Alignment.Center) {
+                        ProvideTextStyle(value = TextStyle(fontSize = 18.sp)) {
+                            CompositionLocalProvider(
+                                LocalContentAlpha provides ContentAlpha.high,
+                                content = title,
+                            )
+                        }
                     }
-                }
-                CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-                    Row(
-                        Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically,
-                        content = actions,
+                    Row(verticalAlignment = Alignment.CenterVertically, content = actions)
+                },
+            ) { measurables, constraints ->
+                val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
+                val navigation = measurables[0].measure(looseConstraints)
+                val actionButtons = measurables[2].measure(
+                    looseConstraints.copy(maxWidth = (constraints.maxWidth - navigation.width).coerceAtLeast(0)),
+                )
+                val availableWidth = (constraints.maxWidth - navigation.width - actionButtons.width).coerceAtLeast(0)
+                val centeredWidth = (constraints.maxWidth - maxOf(navigation.width, actionButtons.width) * 2).coerceAtLeast(0)
+                // Keep fill-width titles centered on the bar; only use the asymmetric space when the title does not fit.
+                val titleMaxWidth = if (measurables[1].maxIntrinsicWidth(constraints.maxHeight) <= centeredWidth) centeredWidth else availableWidth
+                val titlePlaceable = measurables[1].measure(looseConstraints.copy(maxWidth = titleMaxWidth))
+                layout(constraints.maxWidth, constraints.maxHeight) {
+                    navigation.placeRelative(0, (constraints.maxHeight - navigation.height) / 2)
+                    actionButtons.placeRelative(constraints.maxWidth - actionButtons.width, (constraints.maxHeight - actionButtons.height) / 2)
+                    val titleX = ((constraints.maxWidth - titlePlaceable.width) / 2).coerceIn(
+                        navigation.width,
+                        constraints.maxWidth - actionButtons.width - titlePlaceable.width,
                     )
+                    titlePlaceable.placeRelative(titleX, (constraints.maxHeight - titlePlaceable.height) / 2)
                 }
             }
         }

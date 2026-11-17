@@ -34,6 +34,7 @@
         <item name="text_checked">@color/textPrimary</item>
 
         <item name="icon_default">@color/colorIcon</item>
+        <item name="icon_more">@color/more_icon</item>
         <item name="icon_white">@color/colorIconWhite</item>
         <item name="icon_black">@color/colorIcon</item>
         <item name="icon_google_black">@color/colorIconGoogleBlack</item>

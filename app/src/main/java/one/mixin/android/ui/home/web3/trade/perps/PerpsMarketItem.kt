@@ -38,15 +38,15 @@ fun PerpsMarketItem(
     val isPositive = changePercent >= BigDecimal.ZERO
     val changeColor = if (isPositive) {
         if (quoteColorReversed) {
-            MixinAppTheme.colors.walletRed
+            MixinAppTheme.colors.marketRed
         } else {
-            MixinAppTheme.colors.walletGreen
+            MixinAppTheme.colors.marketGreen
         }
     } else {
         if (quoteColorReversed) {
-            MixinAppTheme.colors.walletGreen
+            MixinAppTheme.colors.marketGreen
         } else {
-            MixinAppTheme.colors.walletRed
+            MixinAppTheme.colors.marketRed
         }
     }
     val changeText = formatPerpsSignedPercent(changePercent)

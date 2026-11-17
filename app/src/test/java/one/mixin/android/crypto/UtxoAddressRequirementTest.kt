@@ -52,9 +52,20 @@ class UtxoAddressRequirementTest {
     fun completeUtxoAddressSetDoesNotRequireUpdate() {
         assertFalse(
             CryptoWalletHelper.hasMissingUtxoAddress(
-                chainIds = setOf(btc, pearl),
+                chainIds = setOf(btc, pearl, Constants.ChainId.Litecoin),
             )
         )
+    }
+
+    @Test
+    fun missingLitecoinRequiresUnlockLikePearl() {
+        assertTrue(CryptoWalletHelper.hasMissingUtxoAddress(setOf(btc, pearl)))
+        assertEquals(CryptoWalletHelper.MissingUtxoAddress.LITECOIN, CryptoWalletHelper.missingUtxoAddress(setOf(btc, pearl)))
+    }
+
+    @Test
+    fun completeAddressSetDoesNotShowUnlockPrompt() {
+        assertEquals(null, CryptoWalletHelper.missingUtxoAddress(setOf(btc, pearl, Constants.ChainId.Litecoin)))
     }
 
     @Test
@@ -65,5 +76,13 @@ class UtxoAddressRequirementTest {
                 listOf(null, "m/86'/808276'/0'/0/9"),
             )
         )
+    }
+
+    @Test
+    fun litecoinPathCanRestoreImportedWalletIndexExactly() {
+        assertEquals(7, CryptoWalletHelper.extractIndexFromPath("m/84'/2'/0'/0/7"))
+        assertEquals(null, CryptoWalletHelper.extractIndexFromPath("m/84'/2'/1'/0/7"))
+        assertEquals(null, CryptoWalletHelper.extractIndexFromPath("m/84'/2'/0'/1/7"))
+        assertEquals(null, CryptoWalletHelper.extractIndexFromPath("m/84'/2'/0'/0/-1"))
     }
 }

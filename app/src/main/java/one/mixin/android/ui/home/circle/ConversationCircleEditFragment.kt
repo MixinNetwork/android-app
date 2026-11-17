@@ -287,26 +287,30 @@ class ConversationCircleEditFragment : BaseFragment() {
                     addAll(removeSet.map { CircleConversationRequest(it.conversationId, it.userId, CircleConversationAction.REMOVE.name) })
                 }
 
-            handleMixinResponse(
-                invokeNetwork = {
-                    chatViewModel.updateCircleConversations(circle.circleId, request)
-                },
-                successBlock = {
-                    if (it.isSuccess) {
-                        chatViewModel.saveCircle(circle.circleId, it.data, removeSet)
-                    }
-                    dialog.dismiss()
-                    parentFragmentManager.popBackStackImmediate()
-                },
-                exceptionBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-                failureBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-            )
+            try {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        chatViewModel.updateCircleConversations(circle.circleId, request)
+                    },
+                    successBlock = {
+                        if (it.isSuccess) {
+                            chatViewModel.saveCircle(circle.circleId, it.data, removeSet)
+                        }
+                        dialog.dismiss()
+                        parentFragmentManager.popBackStackImmediate()
+                    },
+                    exceptionBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                    failureBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                )
+            } finally {
+                dialog.dismiss()
+            }
         }
 
     private val mWatcher: TextWatcher =

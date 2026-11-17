@@ -17,7 +17,6 @@
 package com.google.net.cronet.okhttptransport;
 
 import androidx.annotation.NonNull;
-import com.google.net.cronet.okhttptransport.RequestResponseConverter.CronetRequestAndOkHttpResponse;
 import okhttp3.*;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.UrlRequest;
@@ -101,7 +100,8 @@ public final class MixinCronetInterceptor implements Interceptor, AutoCloseable 
       return chain.proceed(request);
     }
 
-    CronetRequestAndOkHttpResponse requestAndOkHttpResponse =
+    // cronet-okhttp 0.1.2 ships without InnerClasses metadata, so the nested type can't be named.
+    var requestAndOkHttpResponse =
         converter.convert(request, chain.readTimeoutMillis(), chain.writeTimeoutMillis());
 
     activeCalls.put(chain.call(), requestAndOkHttpResponse.getRequest());

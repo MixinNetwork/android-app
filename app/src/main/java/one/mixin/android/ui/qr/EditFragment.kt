@@ -33,7 +33,8 @@ import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.windowHeight
+import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -312,8 +313,8 @@ class EditFragment : VisionFragment() {
                 pixelWidthHeightRatio: Float,
             ) {
                 val ratio = width / height.toFloat()
-                val screenWidth = requireContext().realSize().x
-                val screenHeight = requireContext().realSize().y
+                val screenWidth = requireContext().windowWidth()
+                val screenHeight = requireContext().windowHeight()
                 val matrix = Matrix()
                 if (screenWidth / ratio < screenHeight) {
                     matrix.postScale(screenHeight * ratio / screenWidth, 1f, screenWidth / 2f, screenHeight / 2f)

@@ -40,7 +40,9 @@ import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
+import one.mixin.android.ui.wallet.openWalletHomeBannerAction
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.rxpermission.RxPermissions
 
 @AndroidEntryPoint
@@ -99,6 +101,13 @@ class MarketFragment : Web3Fragment() {
                         onFavorite = viewModel::toggleFavorite,
                         onAddRecommendations = viewModel::addRecommendations,
                         onEntryClick = { entry -> openMarket(entry, state.selectedTopTab) },
+                        onBannerClick = { banner ->
+                            openBanner(banner.actionUrl, banner.trackingKey, banner.placement, AnalyticsTracker.AdBannerSource.BACKGROUND)
+                        },
+                        onBannerActionClick = { banner, action ->
+                            openBanner(action.action, banner.trackingKey, banner.placement, AnalyticsTracker.AdBannerSource.BUTTON)
+                        },
+                        onBannerClose = viewModel::closeBanner,
                     )
                 }
             }
@@ -133,6 +142,14 @@ class MarketFragment : Web3Fragment() {
         viewModel.loadIndicator()
         if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
             viewModel.refreshNow()
+        }
+    }
+
+    private fun openBanner(url: String?, trackingKey: String, placement: String, source: String) {
+        if (url.isNullOrBlank()) return
+        AnalyticsTracker.trackAdBanner(trackingKey, placement, source)
+        openWalletHomeBannerAction(url, TradeSource.MARKET_BANNER, AnalyticsTracker.PerpsSource.MARKET_BANNER) {
+            MainActivity.showWallet(requireContext(), buy = true, buySource = TradeSource.MARKET_BANNER)
         }
     }
 

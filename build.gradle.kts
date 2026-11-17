@@ -1,14 +1,13 @@
 buildscript {
     val jetifierVersion = "1.0.0-beta10"
     val hiltGradlePluginVersion = "2.60.1"
-    val googleServicesPluginVersion = "4.5.0"
+    val googleServicesPluginVersion = "4.6.0"
     val firebaseCrashlyticsPluginVersion = "3.0.8"
 
     repositories {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://maven.sumsub.com/repository/maven-public/") }
     }
     dependencies {
         classpath("com.android.tools.build.jetifier:jetifier-processor:$jetifierVersion")
@@ -19,7 +18,7 @@ buildscript {
 }
 
 plugins {
-    id("com.bugsnag.gradle") version "1.2.0" apply false
+    id("com.bugsnag.gradle") version "1.2.1" apply false
     id("com.android.application") apply false
     id("com.android.library") apply false
     id("org.jetbrains.kotlin.plugin.parcelize") apply false
@@ -36,10 +35,10 @@ plugins {
 
 extra.set("androidNdkVersion", "28.2.13676358")
 extra.set("jetifierVersion", "1.0.0-beta10")
-extra.set("kotlinVersion", "2.4.20")
+extra.set("kotlinVersion", "2.4.21")
 extra.set("tinkVersion", "0.0.13")
 extra.set("securityCryptoVersion", "1.1.0")
-extra.set("webkitVersion", "1.17.0")
+extra.set("webkitVersion", "1.18.0")
 extra.set("mixinJwtVersion", "2b1c61aa2f")
 extra.set("alphabetIndexVersion", "1.0.95")
 extra.set("web3jVersion", "4.12.3-android")
@@ -49,9 +48,9 @@ extra.set("fragmentVersion", "1.9.1")
 extra.set("activityVersion", "1.13.0")
 extra.set("lifecycleVersion", "2.11.0")
 extra.set("appcompatVersion", "1.8.0")
-extra.set("pagingVersion", "3.5.1")
+extra.set("pagingVersion", "3.5.3")
 extra.set("coilVersion", "3.6.3")
-extra.set("collectionVersion", "1.6.0")
+extra.set("collectionVersion", "1.7.0")
 extra.set("roomVersion", "3.0.2")
 extra.set("sqliteVersion", "2.7.0")
 extra.set("navigationVersion", "2.10.2")
@@ -61,7 +60,7 @@ extra.set("constraintLayoutComposeVersion", "1.1.2")
 extra.set("supportLibVersion", "1.0.0")
 extra.set("recyclerViewVersion", "1.4.0")
 extra.set("browserVersion", "1.10.0")
-extra.set("biometricVersion", "1.4.0-alpha07")
+extra.set("biometricVersion", "1.4.0-beta01")
 extra.set("mdcVersion", "1.14.0")
 extra.set("exifinterfaceVersion", "1.4.2")
 extra.set("preferenceVersion", "1.2.1")
@@ -75,13 +74,13 @@ extra.set("espressoVersion", "3.7.0")
 extra.set("cameraxVersion", "1.6.1")
 extra.set("glideVersion", "5.0.9")
 extra.set("timberVersion", "5.0.1")
-extra.set("okhttpVersion", "5.5.0")
+extra.set("okhttpVersion", "5.5.1")
 extra.set("rxJavaVersion", "2.2.21")
 extra.set("rxAndroidVersion", "2.1.1")
 extra.set("rxbindingVersion", "3.1.0")
 extra.set("retrofitVersion", "3.0.0")
 extra.set("coroutineAdapterVersion", "0.9.2")
-extra.set("libphonenumberVersion", "9.0.40")
+extra.set("libphonenumberVersion", "9.0.43")
 extra.set("coroutinesVersion", "1.11.0")
 extra.set("mlkitBarcodeVersion", "17.3.0")
 extra.set("zxingVersion", "3.5.4")
@@ -103,8 +102,8 @@ extra.set("prism4jVersion", "2.0.0")
 extra.set("swirlVersion", "1.3.0")
 extra.set("indicatorseekbarVersion", "2.1.2")
 extra.set("emojiVersion", "1.7.0")
-extra.set("cronetOkhttpVersion", "0.1.1")
-extra.set("diffUtilsVersion", "4.16")
+extra.set("cronetOkhttpVersion", "0.1.2")
+extra.set("diffUtilsVersion", "4.18")
 extra.set("argon2ktVersion", "0.0.2")
 extra.set("keccakVersion", "1.1.3")
 extra.set("streetMapVersion", "6.1.20")
@@ -113,41 +112,34 @@ extra.set("testCoreVersion", "1.7.0")
 extra.set("mockitoVersion", "5.24.0")
 extra.set("androidxJunitVersion", "1.3.0")
 extra.set("robolectricVersion", "4.17")
-extra.set("gsonVersion", "2.14.0")
-extra.set("serializationVersion", "1.11.0")
+extra.set("gsonVersion", "2.15.0")
+extra.set("serializationVersion", "1.13.0")
 extra.set("autodisposeVersion", "1.4.1")
 extra.set("bitcoinPaymentUriVersion", "1.0.3")
 extra.set("startupVersion", "1.2.0")
 extra.set("dnsVersion", "2.1.9")
 extra.set("balloonVersion", "1.7.6")
-extra.set("markdownVersion", "0.7.14")
+extra.set("markdownVersion", "0.7.18")
 extra.set("bcVersion", "1.70")
 extra.set("jsonVersion", "20251224")
 extra.set("composeVersion", "1.12.0")
 extra.set("accompanistVersion", "0.36.0")
-extra.set("sol4kVersion", "0.8.2")
+extra.set("sol4kVersion", "0.9.0")
 extra.set("protobufVersion", "3.11.0")
 extra.set("kotsonVersion", "2.5.0")
 extra.set("lottieComposeVersion", "6.7.1")
 extra.set("composeBomVersion", "2026.09.00")
 extra.set("reownBomVersion", "1.6.17")
-extra.set("playServicesMapsVersion", "20.0.0")
+extra.set("playServicesMapsVersion", "20.1.0")
 extra.set("playServicesLocationVersion", "21.4.0")
 extra.set("firebaseBomVersion", "34.19.0")
-extra.set("webpDecoderVersion", "2.7.4.16.0")
+extra.set("webpDecoderVersion", "2.8.5.0.9")
 extra.set("tweetnaclVersion", "0.1.6")
 extra.set("sol4kUtilitiesVersion", "0.1.0")
 extra.set("desugarJdkLibsVersion", "2.1.5")
-extra.set("bugsnagVersion", "6.26.1")
+extra.set("bugsnagVersion", "6.28.1")
 extra.set("lightweightChartsVersion", "4.0.0")
-extra.set("sumsubVersion", "1.44.1")
-extra.set("checkoutFramesVersion", "4.2.3")
-extra.set("checkoutSecureVersion", "3.2.6")
-extra.set("checkoutRiskVersion", "1.0.6")
-extra.set("playWalletVersion", "20.0.0")
-extra.set("playPayVersion", "16.5.0")
-extra.set("datastoreVersion", "1.2.1")
-extra.set("appsFlyerVersion", "7.0.1")
+extra.set("appsFlyerVersion", "7.0.4")
 extra.set("installReferrerVersion", "2.2")
 extra.set("billingVersion", "8.3.0")
 
@@ -156,19 +148,11 @@ allprojects {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://maven.sumsub.com/repository/maven-public/") }
         maven {
             url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
             name = "OSS-Sonatype"
         }
         maven { url = uri("https://artifacts.consensys.net/public/maven/maven/") }
         maven { url = uri("https://maven.fpregistry.io/releases") }
-        maven {
-            url = uri("https://maven.pkg.github.com/checkout/checkout-3ds-sdk-android")
-            credentials {
-                username = project.findProperty("GITHUB_ID") as String? ?: System.getenv("GITHUB_ID") ?: ""
-                password = project.findProperty("GITHUB_PACKAGES_TOKEN") as String? ?: System.getenv("GITHUB_PACKAGES_TOKEN") ?: ""
-            }
-        }
     }
 }

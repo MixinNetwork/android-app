@@ -15,6 +15,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,16 +30,27 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Membership
 import one.mixin.android.vo.Plan
+import org.threeten.bp.Duration
 import org.threeten.bp.Instant
+
+private val RENEW_REMINDER_DURATION = Duration.ofDays(14)
 
 @Composable
 fun MembershipPlanCard(
     membership: Membership,
-    onViewPlanClick: () -> Unit
+    onViewPlanClick: () -> Unit,
+    onRenewPlanClick: () -> Unit,
 ) {
-    val isExpired = membership.expiredAt.let {
-        Instant.now().isAfter(Instant.parse(it))
+    val expiredAt = remember(membership.expiredAt) {
+        runCatching { Instant.parse(membership.expiredAt) }.getOrNull()
     }
+    val now = Instant.now()
+    val isExpired = expiredAt != null && now.isAfter(expiredAt)
+    val isExpiringSoon = expiredAt != null && !isExpired && membership.plan != Plan.None &&
+        Duration.between(now, expiredAt) <= RENEW_REMINDER_DURATION
+    val showRenew = isExpired || isExpiringSoon
+    val showViewPlan = !isExpired
+    val highlightExpiry = expiredAt != null && Duration.between(now, expiredAt) <= Duration.ofDays(145)
 
     Column(
         modifier = Modifier
@@ -84,36 +96,60 @@ fun MembershipPlanCard(
         if (membership.expiredAt != "0000-00-00T00:00:00.0000Z") {
             Text(
                 text = stringResource(
-                    R.string.expires_on,
+                    if (isExpired) R.string.expired_on else R.string.expires_on,
                     membership.expiredAt.substringBefore("T")
                 ),
-                color = if (isExpired) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.textMinor,
+                color = if (highlightExpiry) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.textMinor,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(44.dp),
-            onClick = onViewPlanClick,
-            colors = ButtonDefaults.outlinedButtonColors(
-                backgroundColor = MixinAppTheme.colors.accent
-            ),
-            shape = RoundedCornerShape(12.dp),
-            elevation = ButtonDefaults.elevation(
-                pressedElevation = 0.dp,
-                defaultElevation = 0.dp,
-                hoveredElevation = 0.dp,
-                focusedElevation = 0.dp,
-            ),
-        ) {
-            Text(
-                text = if (isExpired) stringResource(R.string.Renew_Plan) else
-                    stringResource(R.string.View_Plan),
-                color = Color.White,
+        if (showRenew) {
+            PlanCardButton(
+                text = stringResource(R.string.Renew_Plan),
+                primary = true,
+                onClick = onRenewPlanClick,
             )
         }
+        if (showRenew && showViewPlan) {
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+        if (showViewPlan) {
+            PlanCardButton(
+                text = stringResource(R.string.View_Plan),
+                primary = !showRenew,
+                onClick = onViewPlanClick,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PlanCardButton(
+    text: String,
+    primary: Boolean,
+    onClick: () -> Unit,
+) {
+    Button(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp),
+        onClick = onClick,
+        colors = ButtonDefaults.outlinedButtonColors(
+            backgroundColor = if (primary) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundWindow
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = ButtonDefaults.elevation(
+            pressedElevation = 0.dp,
+            defaultElevation = 0.dp,
+            hoveredElevation = 0.dp,
+            focusedElevation = 0.dp,
+        ),
+    ) {
+        Text(
+            text = text,
+            color = if (primary) Color.White else MixinAppTheme.colors.accent,
+        )
     }
 }

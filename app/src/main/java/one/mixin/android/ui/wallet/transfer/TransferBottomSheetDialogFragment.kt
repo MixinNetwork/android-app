@@ -96,6 +96,8 @@ import java.util.concurrent.ExecutionException
 
 @AndroidEntryPoint
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
         const val ARGS_TRANSFER = "args_transfer"

@@ -94,6 +94,7 @@ data class Web3TokenItem(
             chainId == Constants.ChainId.Arc -> "Arc"
             chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "Bitcoin"
             chainId == Constants.ChainId.PEARL_CHAIN_ID -> "Pearl"
+            chainId == Constants.ChainId.Litecoin -> "Litecoin"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
             else -> chainId
         }
@@ -206,6 +207,7 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> Chain.Bitcoin
         chainId == Constants.ChainId.PEARL_CHAIN_ID -> Chain.Bitcoin
+        chainId == Constants.ChainId.Litecoin -> Chain.Bitcoin
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
 }
@@ -234,6 +236,7 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.Arc -> "USDC"
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "BTC"
         chainId == Constants.ChainId.PEARL_CHAIN_ID -> "PRL"
+        chainId == Constants.ChainId.Litecoin -> "LTC"
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "SOL"
         else -> throw IllegalArgumentException("Not support: $chainId")
     }

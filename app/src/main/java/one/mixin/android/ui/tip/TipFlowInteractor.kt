@@ -43,6 +43,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.TipConstants.tipNodeApi2Path
 import one.mixin.android.tip.exception.DifferentIdentityException
@@ -56,6 +57,7 @@ import one.mixin.android.ui.common.removeMissingWalletForLogin
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.INITIAL_CLASSIC_WALLET_INDEX
 import one.mixin.android.ui.wallet.buildClassicWalletRequest
+import one.mixin.android.ui.wallet.backfillLitecoinAddress
 import one.mixin.android.ui.wallet.buildClassicUtxoAddressRequests
 import one.mixin.android.ui.wallet.ensureInitialClassicWallet
 import one.mixin.android.ui.wallet.validateWalletAddressUpdateResponse
@@ -89,6 +91,7 @@ internal fun resolveClassicUtxoBackfillPlan(
     val requiredChainIds = buildSet {
         add(BITCOIN_CHAIN_ID)
         add(PEARL_CHAIN_ID)
+        add(Constants.ChainId.Litecoin)
     }
     return ClassicUtxoBackfillPlan(
         derivationIndex = derivationIndex,
@@ -428,7 +431,7 @@ class TipFlowInteractor @Inject internal constructor(
         val walletId = web3Repository.getClassicWalletId() ?: return false
         val existingAddresses = web3Repository.getAddresses(walletId)
         val existingChainIds = existingAddresses.mapTo(mutableSetOf()) { it.chainId }
-        if (Constants.ChainId.BITCOIN_CHAIN_ID in existingChainIds && PEARL_CHAIN_ID in existingChainIds) {
+        if (!CryptoWalletHelper.hasMissingUtxoAddress(existingChainIds)) {
             return true
         }
         val backfillPlan = resolveClassicUtxoBackfillPlan(
@@ -439,8 +442,12 @@ class TipFlowInteractor @Inject internal constructor(
             return true
         }
         val spendKey = tip.getSpendKeyFromPin(context, pin)
+        val litecoinUpdated = web3Repository.backfillLitecoinAddress(walletId) { index ->
+            tipPrivToPrivateKey(spendKey, Constants.ChainId.Litecoin, index)
+        }
         val missingAddresses = buildClassicUtxoAddressRequests(spendKey, backfillPlan.derivationIndex)
-            .filter { it.chainId in backfillPlan.missingChainIds }
+            .filter { it.chainId in backfillPlan.missingChainIds && it.chainId != Constants.ChainId.Litecoin }
+        if (missingAddresses.isEmpty()) return litecoinUpdated
         return requestRouteAPI(
             invokeNetwork = {
                 web3Repository.updateWallet(

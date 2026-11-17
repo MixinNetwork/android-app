@@ -9,11 +9,12 @@ import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.response.web3.EIP7702SignRequest
-import one.mixin.android.api.response.web3.shouldSign
+import one.mixin.android.api.response.web3.EthGaslessTxPayload
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.isNativeEvmAsset
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.putString
@@ -31,6 +32,7 @@ import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.hashEip712Message
+import one.mixin.android.web3.eip712SigningChain
 import org.bitcoinj.base.Coin
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.core.TransactionInput
@@ -73,6 +75,16 @@ internal fun findChainByHexReference(hex: String?): Chain? =
         Chain.Solana,
     ).firstOrNull { it.hexReference == hex }
 
+// The EVM chain a dapp is on after a Solana request: Solana is not an EVM
+// chain, so return to the last EVM chain the dapp used instead of Ethereum,
+// which would fail typed data signed for that chain.
+internal fun evmChainAfter(current: Chain, lastEvm: Chain?): Chain =
+    when {
+        evmChainList.contains(current) -> current
+        lastEvm != null && evmChainList.contains(lastEvm) -> lastEvm
+        else -> Chain.Ethereum
+    }
+
 object Web3Signer {
     sealed class JsSignerNetwork(val name: String) {
         data object Ethereum : JsSignerNetwork("ethereum")
@@ -80,10 +92,10 @@ object Web3Signer {
         data object Solana : JsSignerNetwork("solana")
 
         data object Pearl : JsSignerNetwork("pearl")
+        data object Litecoin : JsSignerNetwork("litecoin")
     }
 
     private const val TAG = "Web3Signer"
-    private const val GASLESS_EIP7702_AUTHORIZED_ADDRESS = "0xe6cae83bde06e4c305530e199d7217f42808555b"
     private val walletSelectionMutex = Mutex()
 
     private val sp by lazy {
@@ -96,11 +108,13 @@ object Web3Signer {
         const val SOLANA_ADDRESS = "signer_solana_address"
         const val BTC_ADDRESS = "signer_btc_address"
         const val PEARL_ADDRESS = "signer_pearl_address"
+        const val LITECOIN_ADDRESS = "signer_litecoin_address"
         const val PATH = "signer_path"
         const val CURRENT_WALLET_CATEGORY = "signer_current_wallet_category"
         const val CLASSIC_WALLET_ID = "signer_classic_wallet_id"
         const val SELECTED_WEB3_WALLET_ID = "selected_web3_wallet_id"
         const val CURRENT_CHAIN = "signer_current_chain"
+        const val LAST_EVM_CHAIN = "signer_last_evm_chain"
     }
 
     var address: String = ""
@@ -113,6 +127,8 @@ object Web3Signer {
         private set
     var pearlAddress: String = ""
         private set
+    var litecoinAddress: String = ""
+        private set
     var path: String = ""
         private set
     var currentWalletId: String = ""
@@ -123,6 +139,9 @@ object Web3Signer {
         private set
     var currentChain: Chain = Chain.Ethereum
         private set
+
+    // Kept while currentChain is Solana, so useEvm() can return to it.
+    private var lastEvmChain: Chain = Chain.Ethereum
 
     // now only ETH and SOL
     var currentNetwork = JsSignerNetwork.Ethereum.name
@@ -138,6 +157,7 @@ object Web3Signer {
         solanaAddress = sp.getString(Keys.SOLANA_ADDRESS, "") ?: ""
         btcAddress = sp.getString(Keys.BTC_ADDRESS, "") ?: ""
         pearlAddress = sp.getString(Keys.PEARL_ADDRESS, "") ?: ""
+        litecoinAddress = sp.getString(Keys.LITECOIN_ADDRESS, "") ?: ""
         path = sp.getString(Keys.PATH, "") ?: ""
         currentWalletId = sp.getString(Keys.SELECTED_WEB3_WALLET_ID, "") ?: ""
         currentWalletCategory = sp.getString(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
@@ -145,6 +165,7 @@ object Web3Signer {
         classicWalletId = sp.getString(Keys.CLASSIC_WALLET_ID, "") ?: ""
         currentChain = findChainByHexReference(sp.getString(Keys.CURRENT_CHAIN, Chain.Ethereum.hexReference))
             ?: Chain.Ethereum
+        lastEvmChain = evmChainAfter(currentChain, findChainByHexReference(sp.getString(Keys.LAST_EVM_CHAIN, null)))
         currentNetwork = if (currentChain == Chain.Solana) JsSignerNetwork.Solana.name else JsSignerNetwork.Ethereum.name
     }
 
@@ -154,11 +175,14 @@ object Web3Signer {
         sp.putString(Keys.SOLANA_ADDRESS, solanaAddress)
         sp.putString(Keys.BTC_ADDRESS, btcAddress)
         sp.putString(Keys.PEARL_ADDRESS, pearlAddress)
+        sp.putString(Keys.LITECOIN_ADDRESS, litecoinAddress)
         sp.putString(Keys.PATH, path)
         sp.putString(Keys.SELECTED_WEB3_WALLET_ID, currentWalletId)
         sp.putString(Keys.CURRENT_WALLET_CATEGORY, currentWalletCategory)
         sp.putString(Keys.CLASSIC_WALLET_ID, classicWalletId)
         sp.putString(Keys.CURRENT_CHAIN, currentChain.hexReference)
+        if (evmChainList.contains(currentChain)) lastEvmChain = currentChain
+        sp.putString(Keys.LAST_EVM_CHAIN, lastEvmChain.hexReference)
     }
 
     fun updateAddress(
@@ -168,6 +192,7 @@ object Web3Signer {
         when (network) {
             JsSignerNetwork.Solana.name -> solanaAddress = address
             JsSignerNetwork.Pearl.name -> pearlAddress = address
+            JsSignerNetwork.Litecoin.name -> litecoinAddress = address
             else -> evmAddress = address
         }
         persist()
@@ -178,15 +203,14 @@ object Web3Signer {
             SOLANA_CHAIN_ID -> solanaAddress
             BITCOIN_CHAIN_ID -> btcAddress
             Constants.ChainId.PEARL_CHAIN_ID -> pearlAddress
+            Constants.ChainId.Litecoin -> litecoinAddress
             in Constants.Web3EvmChainIds -> evmAddress
             else -> null
         }
 
     fun useEvm() {
         address = evmAddress
-        if (!evmChainList.contains(currentChain)) {
-            currentChain = Chain.Ethereum
-        }
+        currentChain = evmChainAfter(currentChain, lastEvmChain)
         currentNetwork = JsSignerNetwork.Ethereum.name
         persist()
     }
@@ -264,12 +288,14 @@ object Web3Signer {
                     ?: ""
             btcAddress = addresses.firstOrNull {it.chainId == BITCOIN_CHAIN_ID}?.destination ?:""
             pearlAddress = addresses.firstOrNull { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }?.destination ?: ""
+            litecoinAddress = addresses.firstOrNull { it.chainId == Constants.ChainId.Litecoin }?.destination ?: ""
             address = evmAddress
         } else {
             evmAddress = ""
             solanaAddress = ""
             btcAddress = ""
             pearlAddress = ""
+            litecoinAddress = ""
             address = ""
             path = ""
         }
@@ -426,7 +452,7 @@ object Web3Signer {
         message: String,
         type: Int,
     ): String {
-        return if (currentChain == Chain.Solana) {
+        return if (currentChain == Chain.Solana && type != JsSignMessage.TYPE_TYPED_MESSAGE) {
             signSolanaMessage(priv, message)
         } else {
             signEthMessage(priv, message, type)
@@ -444,6 +470,7 @@ object Web3Signer {
                 JsSignMessage.TYPE_GASLESS_TRANSFER ->
                     Sign.signMessage(Numeric.hexStringToByteArray(message), keyPair, false)
                 JsSignMessage.TYPE_TYPED_MESSAGE -> {
+                    eip712SigningChain(message, currentChain, MixinApplication.appContext.getString(R.string.eip712_invalid_chain_id))
                     Sign.signMessage(hashEip712Message(message), keyPair, false)
                 }
                 else -> Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message), keyPair)
@@ -515,7 +542,7 @@ object Web3Signer {
     ): VersionedTransactionCompat {
         val holder = Keypair.fromSecretKey(priv)
         // use latest blockhash should not break other signatures
-        if (tx.onlyOneSigner() &&
+        if (!tx.isV1 && tx.onlyOneSigner() &&
             (tx.message.recentBlockhash.isBlank() ||
                     tx.message.recentBlockhash == holder.publicKey.toBase58())) { // inner transfer use address as temp blockhash
             tx.message.recentBlockhash = getBlockhash()
@@ -540,23 +567,47 @@ object Web3Signer {
         return GsonHelper.customGson.toJson(signInOutput).toHex()
     }
 
-    fun signEip7702Auth(
+    fun signEvmGaslessTransfer(
         priv: ByteArray,
-        eip7702Auth: EIP7702SignRequest?,
-    ): String? {
-        return eip7702Auth
-            ?.takeIf { it.shouldSign }
-            ?.let { auth ->
-                val message = requireNotNull(auth.message) { "Missing EIP-7702 auth message" }
-                if (!auth.address.equals(GASLESS_EIP7702_AUTHORIZED_ADDRESS, ignoreCase = true)) {
-                    throw IllegalArgumentException("Unsupported EIP-7702 auth target")
-                }
-                signEthMessage(
-                    priv = priv,
-                    message = message,
-                    type = JsSignMessage.TYPE_GASLESS_TRANSFER,
-                )
+        payload: EthGaslessTxPayload,
+        fromAddress: String,
+        token: Web3TokenItem,
+        amount: String,
+        recipient: String,
+        feeToken: Web3TokenItem?,
+        feeAmount: String,
+    ): Pair<String, String?> {
+        val (userOperationDigest, authorizationDigest) = try {
+            val chain = requireNotNull(evmChainList.firstOrNull { it.assetId == token.chainId })
+            requireNotNull(feeToken)
+            require(feeToken.chainId == token.chainId)
+            fun units(value: String, asset: Web3TokenItem): BigInteger {
+                val precision = if (asset.isNativeEvmAsset()) 18 else asset.precision
+                require(precision in 0..255)
+                val units = value.toBigDecimal().movePointRight(precision).stripTrailingZeros()
+                require(units.scale() <= 0)
+                return units.toBigIntegerExact()
             }
+            GaslessEvmValidator.validate(
+                payload,
+                fromAddress,
+                chain.chainReference.toBigInteger(),
+                token.assetKey.takeUnless { token.isNativeEvmAsset() },
+                units(amount, token),
+                recipient,
+                feeToken.assetKey.takeUnless { feeToken.isNativeEvmAsset() },
+                units(feeAmount, feeToken),
+            )
+        } catch (e: IllegalArgumentException) {
+            throw IllegalArgumentException(MixinApplication.appContext.getString(R.string.invalid_gasless_transaction), e)
+        } catch (e: ArithmeticException) {
+            throw IllegalArgumentException(MixinApplication.appContext.getString(R.string.invalid_gasless_transaction), e)
+        }
+        val userOpSignature = signEthMessage(priv, userOperationDigest, JsSignMessage.TYPE_GASLESS_TRANSFER)
+        val authorizationSignature = authorizationDigest?.let {
+            signEthMessage(priv, it, JsSignMessage.TYPE_GASLESS_TRANSFER)
+        }
+        return userOpSignature to authorizationSignature
     }
 
     private fun throwError(

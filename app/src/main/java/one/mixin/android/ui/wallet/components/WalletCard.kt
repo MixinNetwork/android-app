@@ -349,6 +349,8 @@ fun WalletCard(
                                 listOf(R.drawable.ic_chain_sol)
                             } else if (address.any { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
                                 listOf(R.drawable.ic_chain_btc)
+                            } else if (address.any { it.chainId == Constants.ChainId.Litecoin }) {
+                                listOf(R.drawable.ic_chain_lite)
                             } else if (address.any { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }) {
                                 listOf(R.drawable.ic_chain_pearl)
                             } else {

@@ -72,6 +72,20 @@ class Web3TransactionDetailStateTest {
             level = 0,
         )
         val zero = AssetChange(assetId = "asset", amount = "0")
+        assertEquals("usdt", transaction.copy(
+            status = TransactionStatus.SUCCESS.value,
+            receiveAssetId = "usdt",
+            receiveAssetIconUrl = "https://example/usdt.png",
+        ).tokenNavigationTarget()?.assetId)
+        assertEquals(null, transaction.tokenNavigationTarget())
+        assertEquals(null, transaction.copy(
+            status = TransactionStatus.SUCCESS.value,
+            transactionType = TransactionType.TRANSFER_OUT.value,
+            senders = listOf(
+                AssetChange(assetId = "a", amount = "1"),
+                AssetChange(assetId = "b", amount = "2"),
+            ),
+        ).tokenNavigationTarget())
         assertFalse(transaction.hasDisplayAssetChanges())
         assertTrue(transaction.copy(receivers = listOf(zero)).hasDisplayAssetChanges())
         assertFalse(transaction.copy(senders = listOf(zero)).hasDisplayAssetChanges())

@@ -6,6 +6,7 @@ import one.mixin.android.Constants
 private val chainNetworks by lazy {
     mapOf(
         Constants.ChainId.PEARL_CHAIN_ID to "Pearl",
+        Constants.ChainId.Litecoin to "Litecoin",
         Constants.ChainId.ETHEREUM_CHAIN_ID to "ERC-20",
         Constants.ChainId.BinanceBeaconChain to "BEP-2",
         Constants.ChainId.BinanceSmartChain to "BEP-20",
@@ -68,6 +69,7 @@ fun getChainNetwork(
 private val chainNames by lazy {
     mapOf(
         Constants.ChainId.PEARL_CHAIN_ID to "Pearl",
+        Constants.ChainId.Litecoin to "Litecoin",
         Constants.ChainId.ETHEREUM_CHAIN_ID to "Ethereum (ERC-20)",
         Constants.ChainId.BinanceBeaconChain to "BNB Beacon Chain (BEP-2)",
         Constants.ChainId.BitShares to "BitShares",

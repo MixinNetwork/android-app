@@ -153,6 +153,14 @@ class NameTextView : LinearLayoutCompat {
         this.textView.setCompoundDrawables(null, null, null, null)
     }
 
+    fun setGroupName(text: String?) {
+        setTextOnly(text)
+        val icon = AppCompatResources.getDrawable(context, R.drawable.ic_group_badge)?.apply {
+            setBounds(0, 0, badgeSize, badgeSize)
+        }
+        textView.setCompoundDrawablesRelative(null, null, icon, null)
+    }
+
     fun setVerifiedName(text: String, isVerified: Boolean) {
         setTextOnly(text)
         if (!isVerified) return
@@ -167,19 +175,18 @@ class NameTextView : LinearLayoutCompat {
         this.textView.text = user.fullName
         if (user.isProsperity()) {
             iconView.isVisible = true
-            iconView.setImageDrawable(
-                RLottieDrawable(
-                    R.raw.prosperity,
-                    "prosperity",
-                    badgeSize,
-                    badgeSize,
-                ).apply {
-                    setAllowDecodeSingleFrame(true)
-                    setAutoRepeat(1)
-                    setAutoRepeatCount(Int.MAX_VALUE)
-                    start()
-                },
-            )
+            val drawable = iconView.drawable as? RLottieDrawable ?: RLottieDrawable(
+                R.raw.prosperity,
+                "prosperity",
+                badgeSize,
+                badgeSize,
+            ).apply {
+                setAllowDecodeSingleFrame(true)
+                setAutoRepeat(1)
+                setAutoRepeatCount(Int.MAX_VALUE)
+            }
+            iconView.setImageDrawable(drawable)
+            drawable.start()
         } else {
             val badge = getBadge(user)
             if (badge != null) {
@@ -391,10 +398,7 @@ class NameTextView : LinearLayoutCompat {
 
     fun setName(item: ConversationMinimal) {
         if (item.isGroupConversation()) {
-            this.textView.text = item.groupName
-            iconView.isVisible = false
-            iconView.stopAnimation()
-            this.textView.setCompoundDrawables(null, null, null, null)
+            setGroupName(item.groupName)
         } else {
             this.textView.text = item.name
             if (item.isProsperity()) {
@@ -937,7 +941,9 @@ class NameTextView : LinearLayoutCompat {
     }
 
     private fun getBadge(item: ConversationItem): Drawable? {
-        val resources = if (item.isMembership()) {
+        val resources = if (item.isGroupConversation()) {
+            R.drawable.ic_group_badge
+        } else if (item.isMembership()) {
             item.membership.membershipIcon()
         } else if (item.isVerified()) {
             R.drawable.ic_user_verified

@@ -18,10 +18,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
-import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
@@ -188,12 +189,16 @@ class PositionDetailFragment : BaseFragment() {
                                 },
                                 onShare = {
                                     lifecycleScope.launch {
+                                        val active = cachedPosition.value ?: viewModel.getPositionFromDb(closeOrder.positionId)
+                                        if (active?.state in listOf(PerpsPosition.STATE_OPEN, PerpsPosition.STATE_OPENING, PerpsPosition.STATE_ADDING)) {
+                                            sharePosition(requireNotNull(active))
+                                            return@launch
+                                        }
                                         val closed = viewModel.getCloseOrderFromDb(closeOrder.positionId)
                                         if (closed != null && closed.orderType == PerpsOrder.TYPE_CLOSE) {
                                             sharePosition(closed, closed.leverage)
                                             return@launch
                                         }
-                                        val active = cachedPosition.value ?: viewModel.getPositionFromDb(closeOrder.positionId)
                                         if (active != null) {
                                             sharePosition(active)
                                         }
@@ -201,6 +206,12 @@ class PositionDetailFragment : BaseFragment() {
                                 },
                                 onFeeTipClick = {
                                     showTradingFeeGuide()
+                                },
+                                onMarginTipClick = {
+                                    PerpsInfoBottomSheetDialogFragment.newInstance(
+                                        R.string.Margin,
+                                        R.string.perps_margin_description,
+                                    ).show(parentFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
                                 },
                                 onSupport = {
                                     context?.openUrl(
@@ -218,9 +229,8 @@ class PositionDetailFragment : BaseFragment() {
     }
 
     private fun showCloseDialog(position: PerpsPositionItem) {
-        val perpsPosition = position.toPosition()
         AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.SINGLE)
-        PerpsCloseBottomSheetDialogFragment.newInstance(perpsPosition)
+        PerpsReduceBottomSheetDialogFragment.newInstance(position)
             .setOnDone {
                 openMarket(
                     position.marketId,
@@ -228,7 +238,7 @@ class PositionDetailFragment : BaseFragment() {
                     position.tokenSymbol.orEmpty(),
                 )
             }
-            .showNow(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+            .showNow(parentFragmentManager, PerpsReduceBottomSheetDialogFragment.TAG)
     }
 
     private fun openTradeAgain(order: PerpsOrderItem) {

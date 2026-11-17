@@ -11,8 +11,6 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
-import android.content.Intent.CATEGORY_BROWSABLE
-import android.content.Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -115,6 +113,7 @@ import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isSupportBotPage
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
@@ -247,6 +246,7 @@ class WebFragment : BaseFragment() {
         requireArguments().getString(CONVERSATION_ID)
     }
     private var app: App? = null
+    private var supportPage = false
     private val appCard: AppCardData? by lazy {
         requireArguments().getParcelableCompat(ARGS_APP_CARD, AppCardData::class.java)
     }
@@ -446,6 +446,10 @@ class WebFragment : BaseFragment() {
         )
 
         app = requireArguments().getParcelableCompat(ARGS_APP, App::class.java)
+        supportPage = isSupportBotPage(app?.appId, url)
+        if (supportPage) {
+            showSupportHeader()
+        }
 
         initView()
 
@@ -658,7 +662,7 @@ class WebFragment : BaseFragment() {
                     _binding?.apply {
                         customViewContainer.isVisible = false
                         webLl.isVisible = true
-                        webControl.isVisible = true
+                        webControl.isVisible = !webClose.isVisible && !supportPage
                         customViewContainer.removeView(customView)
                     }
 
@@ -924,6 +928,16 @@ class WebFragment : BaseFragment() {
         }
     }
 
+    private fun showSupportHeader() {
+        binding.containerView.setBackgroundResource(R.drawable.bg_upper_round)
+        binding.titleVa.background = null
+        binding.titleVa.displayedChild = 2
+        binding.webControl.isVisible = false
+        binding.webClose.isVisible = false
+        binding.supportTitle.setSubTitle(getString(R.string.mixin_support), getString(R.string.real_people_real_support))
+        binding.supportTitle.rightIv.setOnClickListener { requireActivity().finish() }
+    }
+
     private fun loadWebView() {
         _binding?.let { binding ->
             binding.pb.isVisible = false
@@ -946,7 +960,7 @@ class WebFragment : BaseFragment() {
                     marginStart = requireContext().dpToPx(10f)
                 }
             }
-            binding.titleVa.isGone = immersive
+            binding.titleVa.isGone = immersive && !supportPage
 
             webAppInterface =
                 WebAppInterface(
@@ -1123,6 +1137,7 @@ class WebFragment : BaseFragment() {
         chainId: String,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
         if (!WalletConnect.isEnabled()) return
         val isValid = chainId.isUUID()
@@ -1153,7 +1168,7 @@ class WebFragment : BaseFragment() {
                             ""
                         }
                     lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction('$address')") {}
+                        webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(address)})") {}
                     }
                 },
             )
@@ -1164,6 +1179,7 @@ class WebFragment : BaseFragment() {
         ids: Array<String>,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
@@ -1202,11 +1218,12 @@ class WebFragment : BaseFragment() {
                 } else {
                     "[]"
                 }
-            webView.evaluateJavascript("$callbackFunction('$result')") {}
+            webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(result)})") {}
         }
     }
 
     private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
 
         if (appId != app?.appId) {
@@ -1234,11 +1251,12 @@ class WebFragment : BaseFragment() {
                 return@launch
             }
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
-            webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
+            webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(ts.toString())}, ${JSONObject.quote(signature)})") {}
         }
     }
 
     private fun verifyPin(callbackFunction: String) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
@@ -1269,6 +1287,7 @@ class WebFragment : BaseFragment() {
         message: String,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
         if (!WalletConnect.isEnabled()) return
 
@@ -1290,7 +1309,7 @@ class WebFragment : BaseFragment() {
                         val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), it, chainId))
                         val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
                         lifecycleScope.launch {
-                            webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                            webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(sig)})") {}
                         }
                     }
                 },
@@ -1813,7 +1832,7 @@ class WebFragment : BaseFragment() {
         dark: Boolean,
         color: Int,
     ) {
-        if (viewDestroyed()) return
+        if (viewDestroyed() || supportPage) return
 
         requireActivity().window?.let {
             it.decorView.findViewById<ViewGroup>(R.id.container).setBackgroundColor(color)
@@ -1821,6 +1840,7 @@ class WebFragment : BaseFragment() {
         }
         titleColor = color
         binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
+        binding.supportTitleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
         binding.titleVa.setBackgroundColor(color)
         binding.webControl.mode = dark
     }
@@ -1967,19 +1987,11 @@ class WebFragment : BaseFragment() {
             } else {
                 try {
                     val context = view.context
-                    // https://developer.android.com/training/package-visibility/use-cases#let-non-browser-apps-handle-urls
-                    val intent =
-                        Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
-                            action = ACTION_VIEW
-                            addCategory(CATEGORY_BROWSABLE)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                flags = FLAG_ACTIVITY_REQUIRE_NON_BROWSER
-                            }
-                        }
-                    if (context !is Activity) {
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
+                    val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
                     try {
+                        if (!intent.prepareForExternalWebLaunch(context)) {
+                            throw ActivityNotFoundException()
+                        }
                         context.startActivity(intent)
                         if (request.isForMainFrame) {
                             closeWebContainer()
@@ -2044,6 +2056,7 @@ class WebFragment : BaseFragment() {
             try {
                 val method = DAppMethod.fromValue(obj.getString("name"))
                 val network = obj.getString("network")
+                if (!isValidJavaScriptCallback(network)) return
                 if (network == Web3Signer.JsSignerNetwork.Solana.name) {
                     Web3Signer.useSolana()
                 } else {
@@ -2130,7 +2143,7 @@ class WebFragment : BaseFragment() {
                 DAppMethod.SIGNRAWTRANSACTION -> {
                     val o = obj.getJSONObject("object")
                     val raw = o.getString("raw")
-                    signRawTransaction(id, raw)
+                    signRawTransaction(id, raw, o.optBoolean("broadcast", false))
                 }
 
                 DAppMethod.SINGIN -> {
@@ -2172,8 +2185,9 @@ class WebFragment : BaseFragment() {
         private fun signRawTransaction(
             callbackId: Long,
             raw: String,
+            broadcast: Boolean,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web, broadcast = broadcast))
         }
 
         private fun signMessage(

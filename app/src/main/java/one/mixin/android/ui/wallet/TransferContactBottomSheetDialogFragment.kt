@@ -29,6 +29,8 @@ import one.mixin.android.widget.SearchView
 
 @AndroidEntryPoint
 class TransferContactBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), FriendsListener {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "TransferContactBottomSheetDialogFragment"
         fun newInstance() = TransferContactBottomSheetDialogFragment()

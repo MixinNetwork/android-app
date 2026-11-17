@@ -24,10 +24,12 @@ import one.mixin.android.databinding.FragmentStickerManagementBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.contentWidth
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.isWideScreen
+import one.mixin.android.extension.messageAreaWidth
 import one.mixin.android.extension.loadSticker
-import one.mixin.android.extension.realSize
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
@@ -87,12 +89,12 @@ class StickerManagementFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        COLUMN =
-            if (requireContext().isWideScreen()) {
-                5
-            } else {
-                3
-            }
+        val wideColumns = if (requireContext().isCompactWindow()) {
+            requireContext().isWideScreen()
+        } else {
+            requireContext().contentWidth() >= 600.dp
+        }
+        COLUMN = if (wideColumns) 5 else 3
         binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressed() }
         binding.titleView.rightTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         binding.titleView.rightAnimator.setOnClickListener {
@@ -109,7 +111,7 @@ class StickerManagementFragment : BaseFragment() {
         }
         binding.stickerRv.layoutManager = GridLayoutManager(context, COLUMN)
         binding.stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
+        stickerAdapter.size = (requireContext().messageAreaWidth() - (COLUMN + 1) * padding) / COLUMN
         binding.stickerRv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(
             object : StickerListener {

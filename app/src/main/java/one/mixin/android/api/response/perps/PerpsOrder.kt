@@ -37,7 +37,10 @@ data class PerpsOrder(
     val quantity: String,
     @SerializedName("pay_amount")
     @ColumnInfo(name = "pay_amount")
-    val payAmount: String = "0",
+    val payAmount: String,
+    @SerializedName("margin_amount")
+    @ColumnInfo(name = "margin_amount")
+    val marginAmount: String,
     @SerializedName("fee_amount")
     @ColumnInfo(name = "fee_amount", defaultValue = "'0'")
     val feeAmount: String = "0",
@@ -53,6 +56,15 @@ data class PerpsOrder(
     @SerializedName("roe")
     @ColumnInfo(name = "roe")
     val roe: String,
+    @SerializedName("net_realized_pnl")
+    @ColumnInfo(name = "net_realized_pnl", defaultValue = "''")
+    val netRealizedPnl: String = "",
+    @SerializedName("net_roe")
+    @ColumnInfo(name = "net_roe", defaultValue = "''")
+    val netRoe: String = "",
+    @SerializedName("profit_share_amount")
+    @ColumnInfo(name = "profit_share_amount", defaultValue = "''")
+    val profitShareAmount: String = "",
     @SerializedName("close_reason")
     @ColumnInfo(name = "close_reason")
     val closeReason: String?,

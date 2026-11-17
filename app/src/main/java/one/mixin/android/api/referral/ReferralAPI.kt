@@ -1,48 +1,29 @@
 package one.mixin.android.api.referral
 
-import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
 import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
-import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.MixinResponseException
+import one.mixin.android.api.ResponseError
+import one.mixin.android.api.BotPublicKey
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.UserSession
-import one.mixin.android.db.MixinDatabase
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putString
-import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.generateConversationId
 import retrofit2.Response
-
-private suspend fun persistReferralBotSession(sessionData: UserSession) {
-    val account = Session.getAccount() ?: return
-    val accountId = Session.getAccountId() ?: return
-
-    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_REFERRAL_BOT_PK, sessionData.publicKey)
-    MixinDatabase.getDatabase(MixinApplication.appContext, account.identityNumber)
-        .participantSessionDao()
-        .insertSuspend(
-            ParticipantSession(
-                conversationId = generateConversationId(sessionData.userId, accountId),
-                userId = sessionData.userId,
-                sessionId = sessionData.sessionId,
-                publicKey = sessionData.publicKey,
-            ),
-        )
-}
 
 private suspend fun <R> retryReferralRequestAfterRefreshingSession(
     requestSession: suspend (List<String>) -> MixinResponse<List<UserSession>>,
     retryRequest: suspend () -> R?,
 ): R? {
     return handleMixinResponse(
-        invokeNetwork = { requestSession(listOf(REFERRAL_BOT_USER_ID)) },
-        successBlock = { response ->
-            val sessionData = requireNotNull(response.data).first()
-            persistReferralBotSession(sessionData)
-            retryRequest()
+        invokeNetwork = {
+            try {
+                requireNotNull(BotPublicKey.forBot(REFERRAL_BOT_USER_ID)).get(requestSession, force = true)
+                MixinResponse<Unit>()
+            } catch (e: MixinResponseException) {
+                MixinResponse<Unit>(ResponseError(e.errorCode, e.errorCode, e.errorDescription))
+            }
         },
+        successBlock = { retryRequest() },
     )
 }
 

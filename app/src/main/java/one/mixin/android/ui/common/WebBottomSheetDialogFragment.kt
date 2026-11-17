@@ -5,18 +5,17 @@ import android.app.Activity
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
-import android.content.Intent.CATEGORY_BROWSABLE
-import android.content.Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER
 import android.net.Uri
 import android.graphics.Rect
-import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.ViewTreeObserver
 import android.webkit.CookieManager
 import android.webkit.GeolocationPermissions
+import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -30,6 +29,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.uber.autodispose.autoDispose
 import one.mixin.android.BuildConfig
@@ -39,6 +39,7 @@ import one.mixin.android.databinding.FragmentWebBottomSheetBinding
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.isCustomerServiceUrl
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isMixinUrl
@@ -48,12 +49,16 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toUri
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_AUDIO
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.web.WebFragment
+import one.mixin.android.ui.web.prepareForExternalWebLaunch
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.convertWcLink
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
@@ -67,6 +72,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_URL = "args_url"
         private const val ARGS_TITLE = "args_title"
         private const val ARGS_SUBTITLE = "args_subtitle"
+        private const val DISABLE_EME_SCRIPT =
+            "Navigator.prototype.requestMediaKeySystemAccess = function() { " +
+                "return Promise.reject(new DOMException('Unsupported keySystem or supportedConfigurations.', 'NotSupportedError')); };"
 
         fun newInstance(
             url: String,
@@ -159,6 +167,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (WebViewFeature.isFeatureSupported(WebViewFeature.PAYMENT_REQUEST)) {
                 WebSettingsCompat.setPaymentRequestEnabled(settings, true)
             }
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+                // Probing EME support makes WebView query the DRM HAL on the main thread, which can hang and cause ANRs
+                WebViewCompat.addDocumentStartJavaScript(this, DISABLE_EME_SCRIPT, setOf("*"))
+            }
             webChromeClient =
                 object : WebChromeClient() {
                     override fun onPermissionRequest(request: PermissionRequest?) {
@@ -181,6 +193,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
             webViewClient = BottomSheetWebViewClient()
+            if (isCustomerServiceUrl(this@WebBottomSheetDialogFragment.url)) {
+                addJavascriptInterface(SupportWebAppInterface(context), "MixinContext")
+            }
             setDownloadListener { url, _, _, _, _ ->
                 runCatching {
                     startActivity(
@@ -223,6 +238,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return rect.height()
     }
 
+    class SupportWebAppInterface(private val context: Context) {
+        @JavascriptInterface
+        fun getContext(): String? {
+            val conversationId = Session.getAccountId()?.let { generateConversationId(it, Constants.TEAM_MIXIN_USER_ID) }
+            return WebFragment.WebAppInterface(context, conversationId, false).getContext()
+        }
+    }
+
     override fun onDestroyView() {
         if (contentView.viewTreeObserver.isAlive) {
             contentView.viewTreeObserver.removeOnGlobalLayoutListener(keyboardLayoutListener)
@@ -230,6 +253,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         bottomSheet = null
         binding.webView.apply {
             stopLoading()
+            removeJavascriptInterface("MixinContext")
             webChromeClient = null
             webViewClient = WebViewClient()
             loadUrl("about:blank")
@@ -520,18 +544,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ): Boolean {
         return try {
             val context = view?.context ?: context ?: return false
-            val intent =
-                Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
-                    action = ACTION_VIEW
-                    addCategory(CATEGORY_BROWSABLE)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        addFlags(FLAG_ACTIVITY_REQUIRE_NON_BROWSER)
-                    }
-                    if (context !is Activity) {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                }
+            val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
             try {
+                if (!intent.prepareForExternalWebLaunch(context)) {
+                    throw ActivityNotFoundException()
+                }
                 context.startActivity(intent)
                 if (request.isForMainFrame) {
                     dismiss()

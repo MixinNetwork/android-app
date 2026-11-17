@@ -5,15 +5,18 @@ package one.mixin.android.ui.conversation.preview
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
+import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import androidx.core.os.bundleOf
+import android.widget.FrameLayout
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
@@ -27,6 +30,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPreviewBinding
 import one.mixin.android.databinding.FragmentPreviewVideoBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -35,8 +39,10 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.observeTabletopFold
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelinePlayView
+import one.mixin.android.widget.isExpandedSheetScreen
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -177,6 +183,9 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
     ): View? {
         if (isVideo) {
             _videoBinding = FragmentPreviewVideoBinding.inflate(layoutInflater, null, false)
+            if (requireContext().isExpandedSheetScreen()) {
+                videoBinding.root.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> resizeVideo() }
+            }
         } else {
             _binding = FragmentPreviewBinding.inflate(layoutInflater, null, false)
         }
@@ -234,6 +243,43 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
         }
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        if (isVideo && requireContext().isExpandedSheetScreen()) {
+            viewLifecycleOwner.observeTabletopFold(requireActivity(), view, 160.dp) { fold ->
+                tabletopFold = fold
+                val params = videoBinding.time.layoutParams as FrameLayout.LayoutParams
+                val topMargin = fold?.bottom ?: 0
+                if (params.topMargin != topMargin) {
+                    params.topMargin = topMargin
+                    videoBinding.time.layoutParams = params
+                }
+                resizeVideo()
+            }
+        }
+    }
+
+    private var tabletopFold: Rect? = null
+    private var videoRatio = 0f
+
+    private fun resizeVideo() {
+        val binding = _videoBinding ?: return
+        if (videoRatio <= 0f || binding.root.width <= 0 || binding.root.height <= 0) return
+        val availableHeight = tabletopFold?.top ?: binding.root.height
+        val width = minOf(binding.root.width, (availableHeight * videoRatio).toInt())
+        val height = (width / videoRatio).toInt()
+        val params = binding.dialogVideoTexture.layoutParams as FrameLayout.LayoutParams
+        val topMargin = if (tabletopFold == null) 0 else (availableHeight - height) / 2
+        val gravity = if (tabletopFold == null) Gravity.CENTER else Gravity.TOP or Gravity.CENTER_HORIZONTAL
+        if (params.width != width || params.height != height || params.topMargin != topMargin || params.gravity != gravity) {
+            params.topMargin = topMargin
+            params.gravity = gravity
+            params.width = width
+            params.height = height
+            binding.dialogVideoTexture.layoutParams = params
+        }
+    }
+
     private val videoListener =
         object : MixinPlayer.VideoPlayerListenerWrapper() {
             override fun onVideoSizeChanged(
@@ -242,18 +288,23 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
                 unappliedRotationDegrees: Int,
                 pixelWidthHeightRatio: Float,
             ) {
-                val ratio = width / height.toFloat()
-                val lp = videoBinding.dialogVideoTexture.layoutParams
-                val screenWidth = requireContext().screenWidth()
-                val screenHeight = requireContext().screenHeight()
-                if (screenWidth / ratio > screenHeight) {
-                    lp.height = screenHeight
-                    lp.width = (screenHeight * ratio).toInt()
-                } else {
-                    lp.width = screenWidth
-                    lp.height = (screenWidth / ratio).toInt()
+                if (!requireContext().isExpandedSheetScreen()) {
+                    val ratio = width / height.toFloat()
+                    val lp = videoBinding.dialogVideoTexture.layoutParams
+                    val screenWidth = requireContext().screenWidth()
+                    val screenHeight = requireContext().screenHeight()
+                    if (screenWidth / ratio > screenHeight) {
+                        lp.height = screenHeight
+                        lp.width = (screenHeight * ratio).toInt()
+                    } else {
+                        lp.width = screenWidth
+                        lp.height = (screenWidth / ratio).toInt()
+                    }
+                    videoBinding.dialogVideoTexture.layoutParams = lp
+                } else if (width > 0 && height > 0) {
+                    videoRatio = width * pixelWidthHeightRatio / height
+                    resizeVideo()
                 }
-                videoBinding.dialogVideoTexture.layoutParams = lp
             }
         }
 

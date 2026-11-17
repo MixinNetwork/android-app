@@ -36,7 +36,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.internal.Chain
@@ -68,9 +67,9 @@ import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.WalletErrorCode
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import one.mixin.android.web3.send.UtxoTransactionSigner
+import one.mixin.android.web3.eip712SigningChain
+import one.mixin.android.widget.bottomSheetHeight
 import org.json.JSONObject
-import org.sol4k.Base58
-import org.sol4k.Constants.SIGNATURE_LENGTH
 import org.sol4k.exception.RpcException
 import org.sol4kt.SignInInput
 import org.sol4kt.VersionedTransactionCompat
@@ -84,6 +83,8 @@ import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
 class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "BrowserWalletBottomSheetDialogFragment"
 
@@ -170,7 +171,13 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         TipGas(currentChain.chainId, gasLimit, maxFeePerGas, maxPriorityFeePerGas)
     }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: Web3Signer.currentChain
+        token?.getChainFromName() ?: typedDataChain ?: Web3Signer.currentChain
+    }
+    // Typed data is signed for its domain's chain, which the page shows;
+    // null for other messages, or typed data that names no supported chain.
+    private val typedDataChain by lazy {
+        if (signMessage.type != JsSignMessage.TYPE_TYPED_MESSAGE) return@lazy null
+        runCatching { eip712SigningChain(requireNotNull(signMessage.data), Web3Signer.currentChain, "") }.getOrNull()
     }
     private val utxoChainId: String
         get() = signMessage.utxoChainId?.takeIf { it in Constants.Web3UtxoChainIds }
@@ -205,6 +212,17 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             toast(message)
             dismiss()
             return
+        }
+        if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE) {
+            try {
+                eip712SigningChain(requireNotNull(signMessage.data), Web3Signer.currentChain, getString(R.string.eip712_invalid_chain_id))
+            } catch (e: Exception) {
+                val message = getString(R.string.eip712_invalid_chain_id)
+                settleError(WalletErrorCode.INTERNAL_ERROR, message)
+                toast(message)
+                dismiss()
+                return
+            }
         }
         if (address.isBlank()) {
             lifecycleScope.launch {
@@ -270,7 +288,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(error: String) {
@@ -464,11 +482,11 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         return@signSolanaTransaction blockhash
                     }
                     step = Step.Sending
-                    val sig = tx.signatures.first { s -> s != Base58.encode(ByteArray(SIGNATURE_LENGTH)) }
+                    val sig = tx.signatureFor(Web3Signer.solanaAddress)
                     val rawTx = tx.serialize().base64Encode()
-                    if (tx.allSignerSigned()) {
+                    if (tx.allSignerSigned() && (signMessage.solanaTxSource != SolanaTxSource.Web || signMessage.broadcast)) {
                         viewModel.postRawTx(rawTx, Constants.ChainId.Solana, Web3Signer.solanaAddress, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
-                        onTxhash?.invoke(sig, rawTx)
+                        onTxhash?.invoke(tx.signatures.first(), rawTx)
                     }
                     settleSuccess(sig)
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
@@ -504,6 +522,10 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private suspend fun updateTxPriorityFee(tx: VersionedTransactionCompat, solanaTxSource: SolanaTxSource): VersionedTransactionCompat {
+        // The provider attaches our signature to the original message for every version.
+        if (solanaTxSource == SolanaTxSource.Web) return tx
+        // External V1 callers assemble the signature with their original message bytes.
+        if (tx.isV1 && !solanaTxSource.isInnerTx()) return tx
         if (solanaTxSource.isConnectDapp() && tx.calcPriorityFee() != BigDecimal.ZERO) {
             return tx
         }

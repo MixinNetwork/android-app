@@ -39,6 +39,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.clearPendingImportMnemonic
@@ -48,6 +49,7 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.enableWideColorGamutIfSupported
 import one.mixin.android.extension.getStackTraceInfo
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
@@ -94,6 +96,7 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.system.exitProcess
+import one.mixin.android.ui.conversation.ConversationEmbedding
 
 open class MixinApplication :
     Application(),
@@ -138,6 +141,8 @@ open class MixinApplication :
         var conversationId: String? = null
 
         fun get(): MixinApplication = appContext as MixinApplication
+
+        private const val CLOSE_SCOPE_TIMEOUT_MILLIS = 3_000L
     }
 
     private var activityReferences: Int = 0
@@ -162,6 +167,7 @@ open class MixinApplication :
 
     override fun onCreate() {
         super.onCreate()
+        ConversationEmbedding.initialize(this)
         initMnemonicCode()
         applicationScope = getAppScope()
         init()
@@ -338,6 +344,7 @@ open class MixinApplication :
 
         if (force || isOnline.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
+            val userId = Session.getAccountId()
             val identityNumber = Session.getAccount()?.identityNumber
             stopRealtimeServices()
             clearLocalAuthState()
@@ -345,7 +352,19 @@ open class MixinApplication :
             releaseRuntimeState()
             applicationScope.launch {
                 clearData(sessionId, identityNumber)
-                resolveCurrentUserScopeManager(this@MixinApplication).exit("closeAndClear")
+                withContext(Dispatchers.Main) {
+                    LandingActivity.show(this@MixinApplication)
+                    // CLEAR_TASK misses backgrounded, singleInstance and intoExisting activities, so finish them explicitly.
+                    createdActivities.filter { it !is LandingActivity }.forEach { it.finish() }
+                    // Close databases only after every other activity is destroyed, so old view models stop querying first.
+                    val destroyed = withTimeoutOrNull(CLOSE_SCOPE_TIMEOUT_MILLIS) {
+                        while (createdActivities.any { it !is LandingActivity }) delay(50)
+                        true
+                    }
+                    if (destroyed == null) Timber.w("closeAndClear: activities still alive after timeout")
+                }
+                // Closes only the scope of the account being logged out; a re-login that already entered its own scope is kept.
+                resolveCurrentUserScopeManager(this@MixinApplication).exitIfCurrent(userId)
                 withContext(Dispatchers.Main) {
                     val entryPoint =
                         EntryPointAccessors.fromApplication(
@@ -353,7 +372,6 @@ open class MixinApplication :
                             AppEntryPoint::class.java,
                         )
                     entryPoint.inject(this@MixinApplication)
-                    LandingActivity.show(this@MixinApplication)
                 }
             }
         }
@@ -431,10 +449,17 @@ open class MixinApplication :
         MutableContextWrapper(this@MixinApplication)
     }
 
+    override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+        activity.window.enableWideColorGamutIfSupported()
+    }
+
+    private val createdActivities = mutableSetOf<Activity>()
+
     override fun onActivityCreated(
         activity: Activity,
         savedInstanceState: Bundle?,
     ) {
+        createdActivities.add(activity)
     }
 
     override fun onActivityStarted(activity: Activity) {
@@ -454,7 +479,10 @@ open class MixinApplication :
         }
     }
 
+    private val resumedActivities = linkedSetOf<Activity>()
+
     override fun onActivityResumed(activity: Activity) {
+        resumedActivities.add(activity)
         contextWrapper.baseContext = activity
         topActivity = activity
         activityInForeground = true
@@ -462,7 +490,12 @@ open class MixinApplication :
     }
 
     override fun onActivityPaused(activity: Activity) {
-        activityInForeground = false
+        resumedActivities.remove(activity)
+        activityInForeground = resumedActivities.isNotEmpty()
+        resumedActivities.lastOrNull()?.let {
+            topActivity = it
+            contextWrapper.baseContext = it
+        }
         applicationScope.launch {
             delay(200)
             if (!activityInForeground) {
@@ -498,6 +531,7 @@ open class MixinApplication :
     }
 
     override fun onActivityDestroyed(activity: Activity) {
+        createdActivities.remove(activity)
         if (activity == currentActivity) currentActivity = null
         if (activity == topActivity) topActivity = null
     }

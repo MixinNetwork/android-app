@@ -61,7 +61,6 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
@@ -74,9 +73,12 @@ import one.mixin.android.ui.wallet.components.WalletCategoryFilter
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletInfoCard
 import one.mixin.android.vo.WalletCategory
+import one.mixin.android.widget.bottomSheetHeight
 
 @AndroidEntryPoint
 class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     private val viewModel by viewModels<WalletViewModel>()
     private var onWalletClickListener: ((WalletItem?) -> Unit)? = null
@@ -149,7 +151,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() - requireContext().appCompatActionBarHeight()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop() - requireContext().appCompatActionBarHeight()
     }
 
     fun setOnWalletClickListener(listener: (WalletItem?) -> Unit) {

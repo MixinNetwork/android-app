@@ -1,7 +1,6 @@
 package one.mixin.android.repository
 
 import com.google.gson.Gson
-import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.PIN_ERROR_MAX
@@ -74,9 +73,6 @@ class AccountRepository
         private val emergencyService: EmergencyService,
         private val pinCipher: PinCipher,
     ) {
-        fun verificationObserver(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
-            accountService.verificationObserver(request)
-
         suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
             accountService.verification(request)
 
@@ -95,22 +91,18 @@ class AccountRepository
         ): MixinResponse<Account> =
             accountService.changePhone(id, request)
 
-        fun deactiveVerification(
+        suspend fun deactiveVerification(
             id: String,
             request: DeactivateVerificationRequest,
-        ): Observable<MixinResponse<VerificationResponse>> =
+        ): MixinResponse<VerificationResponse> =
             accountService.deactiveVerification(id, request)
 
-        fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
+        suspend fun update(request: AccountUpdateRequest): MixinResponse<Account> =
             accountService.update(request)
 
         suspend fun insertUserSuspend(user: User) = userDao.insertSuspend(user)
 
-        fun deviceCheck() = accountService.deviceCheck()
-
-        fun join(conversationId: String): Observable<MixinResponse<ConversationResponse>> {
-            return conversationService.join(conversationId)
-        }
+        suspend fun join(conversationId: String): MixinResponse<ConversationResponse> = conversationService.join(conversationId)
 
         suspend fun getScheme(id: String) = accountService.getScheme(id)
 
@@ -154,8 +146,6 @@ class AccountRepository
                 }
             return result
         }
-
-        fun search(query: String): Observable<MixinResponse<User>> = userService.search(query)
 
         suspend fun logout(sessionId: String, pinBase64: String) = accountService.logout(LogoutRequest(sessionId, pinBase64))
 
@@ -214,7 +204,7 @@ class AccountRepository
                 )
             }
 
-        fun deAuthorize(deauthorRequest: DeauthorRequest) = authService.deAuthorize(deauthorRequest)
+        suspend fun deAuthorize(deauthorRequest: DeauthorRequest) = authService.deAuthorize(deauthorRequest)
 
         suspend fun getAuthorizationByAppId(appId: String) = authService.getAuthorizationByAppId(appId)
 
@@ -287,12 +277,12 @@ class AccountRepository
             stickerRelationshipDao.insert(StickerRelationship(albumId, sticker.stickerId))
         }
 
-        fun trendingGifs(
+        suspend fun trendingGifs(
             limit: Int,
             offset: Int,
         ) = giphyService.trendingGifs(limit, offset)
 
-        fun searchGifs(
+        suspend fun searchGifs(
             query: String,
             limit: Int,
             offset: Int,

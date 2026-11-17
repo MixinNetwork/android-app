@@ -16,12 +16,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentAuthenticationsBinding
 import one.mixin.android.databinding.ItemAuthBinding
@@ -29,9 +29,9 @@ import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import java.util.concurrent.CountDownLatch
@@ -150,36 +150,41 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                 },
             )
 
-            viewModel.authorizations().autoDispose(stopScope).subscribe(
-                { list ->
-                    if (list.isSuccess) {
-                        this@AuthenticationsFragment.list =
-                            list.data?.map {
-                                it.app
-                            }?.run {
-                                MutableList(this.size) {
-                                    this[it]
+            viewLifecycleOwner.launchUntilStop {
+                try {
+                    handleMixinResponse(
+                        invokeNetwork = { viewModel.authorizations() },
+                        successBlock = { list ->
+                            this@AuthenticationsFragment.list =
+                                list.data?.map {
+                                    it.app
+                                }?.run {
+                                    MutableList(this.size) {
+                                        this[it]
+                                    }
                                 }
+                            if (this@AuthenticationsFragment.list?.isNotEmpty() == true) {
+                                authVa.displayedChild = 0
+                            } else {
+                                authVa.displayedChild = 1
                             }
-                        if (this@AuthenticationsFragment.list?.isNotEmpty() == true) {
-                            authVa.displayedChild = 0
-                        } else {
-                            authVa.displayedChild = 1
-                        }
-                        dataChange()
+                            dataChange()
 
-                        authResponseList = list.data?.toMutableList()
-                    } else {
-                        authVa.displayedChild = 1
-                    }
+                            authResponseList = list.data?.toMutableList()
+                        },
+                        failureBlock = {
+                            authVa.displayedChild = 1
+                            true
+                        },
+                        exceptionBlock = {
+                            authVa.displayedChild = 1
+                            false
+                        },
+                    )
+                } finally {
                     progress.visibility = View.GONE
-                },
-                {
-                    progress.visibility = View.GONE
-                    authVa.displayedChild = 1
-                    ErrorHandler.handleError(it)
-                },
-            )
+                }
+            }
             authRv.adapter = adapter
         }
     }

@@ -8,6 +8,15 @@ import kotlin.test.assertSame
 
 class PerpsMarginInputTest {
     @Test
+    fun maximumBelowOneCentKeepsItsPrecision() {
+        val maximum = java.math.BigDecimal("0.005")
+        assertEquals("0.005", maximumMarginReductionInput("10", maximum, false))
+        assertEquals("$0.005", formatPerpsMarginLimit("10", maximum, false))
+        assertEquals(maximum, reduceMarginAmount("10", "0.005", false))
+        assertEquals("1.23", maximumMarginReductionInput("10", java.math.BigDecimal("1.239"), false))
+    }
+
+    @Test
     fun externalAmountChangesMoveCursorToEndAndManualEditsKeepSelection() {
         val editing = TextFieldValue("25", TextRange(1), TextRange(0, 2))
         assertSame(editing, syncPerpsMarginInput(editing, "25"))

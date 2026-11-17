@@ -23,9 +23,12 @@ import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getOldBackupPath
+import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.session.Session
 import one.mixin.android.util.database.databaseFile
+import one.mixin.android.util.database.ftsDatabaseFile
 import one.mixin.android.util.database.legacyDatabaseFile
+import one.mixin.android.util.database.legacyFtsDatabaseFile
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -265,17 +268,16 @@ suspend fun restore(
 ) = withContext(Dispatchers.IO) {
     val target =
         internalFindBackup(context, coroutineContext)
-            ?: return@withContext callback(Result.NOT_FOUND)
+            ?: return@withContext withContext(Dispatchers.Main) {
+                callback(Result.NOT_FOUND)
+            }
     val file = resolveRestoreDatabaseFile(context)
     try {
         file.parentFile?.mkdirs()
-        if (file.exists()) {
-            file.delete()
-        }
-        File("${file.absolutePath}-wal").delete()
-        File("${file.absolutePath}-shm").delete()
-        File("${file.absolutePath}-journal").delete()
+        deleteDatabaseFiles(file)
+        deleteFtsDatabaseFiles(context)
         target.copyTo(file)
+        PropertyHelper.deleteKeyValue(MigratedFts4Job.FTS_NEED_MIGRATED_LAST_ROW_ID)
 
         // Reset BACKUP_LAST_TIME so that the user who restores the backup does not need to backup after login
         PropertyHelper.updateKeyValue(
@@ -288,7 +290,9 @@ suspend fun restore(
         }
     } catch (e: Exception) {
         Timber.e(e)
-        callback(Result.FAILURE)
+        withContext(Dispatchers.Main) {
+            callback(Result.FAILURE)
+        }
     }
 }
 
@@ -328,15 +332,12 @@ suspend fun restoreApi29(
             return@withContext
         }
         file.parentFile?.mkdirs()
-        if (file.exists()) {
-            file.delete()
-        }
-        File("${file.absolutePath}-wal").delete()
-        File("${file.absolutePath}-shm").delete()
-        File("${file.absolutePath}-journal").delete()
+        deleteDatabaseFiles(file)
+        deleteFtsDatabaseFiles(context)
         file.outputStream().use { output ->
             inputStream.copyTo(output)
         }
+        PropertyHelper.deleteKeyValue(MigratedFts4Job.FTS_NEED_MIGRATED_LAST_ROW_ID)
         val backupMediaDirectory = backupDirectory.findFile("Media")
         val mediaPath = context.getMediaPath()
         if (mediaPath != null && backupMediaDirectory != null && backupMediaDirectory.exists() && backupMediaDirectory.isDirectory) {
@@ -532,6 +533,21 @@ private fun resolveRestoreDatabaseFile(context: Context): File =
     Session.getAccount()?.identityNumber?.let { identityNumber ->
         databaseFile(context, identityNumber)
     } ?: legacyDatabaseFile(context)
+
+// Backups do not include fts.db, so the index is rebuilt from the restored messages
+private fun deleteFtsDatabaseFiles(context: Context) {
+    Session.getAccount()?.identityNumber?.let { identityNumber ->
+        deleteDatabaseFiles(ftsDatabaseFile(context, identityNumber))
+    }
+    deleteDatabaseFiles(legacyFtsDatabaseFile(context))
+}
+
+private fun deleteDatabaseFiles(file: File) {
+    file.delete()
+    File("${file.absolutePath}-wal").delete()
+    File("${file.absolutePath}-shm").delete()
+    File("${file.absolutePath}-journal").delete()
+}
 
 private fun copyFileToDirectory(
     file: File,

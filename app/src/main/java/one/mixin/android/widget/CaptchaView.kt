@@ -36,6 +36,7 @@ import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.translationY
 import one.mixin.android.util.reportException
 import timber.log.Timber
@@ -64,6 +65,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         private const val WEB_VIEW_TIME_OUT = 35000L
 
         private const val DIALOG_HORIZONTAL_MARGIN_DP = 20
+        private const val CAPTCHA_DIALOG_MAX_WIDTH_DP = 400
         private const val CAPTCHA_CONTENT_MAX_HEIGHT_DP = 560
         private const val CAPTCHA_DIALOG_DIM_AMOUNT = 0.6f
 
@@ -381,10 +383,17 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
             addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
             setDimAmount(CAPTCHA_DIALOG_DIM_AMOUNT)
             setLayout(
-                context.screenWidth() - DIALOG_HORIZONTAL_MARGIN_DP.dp * 2,
+                captchaDialogWidth(),
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             )
         }
+    }
+
+    private fun captchaDialogWidth(): Int {
+        val margin = DIALOG_HORIZONTAL_MARGIN_DP.dp * 2
+        if (!context.isExpandedSheetScreen()) return context.screenWidth() - margin
+        // Large screens and split panes: follow the window and cap the card so the captcha widget lays out correctly.
+        return minOf(context.windowWidth() - margin, CAPTCHA_DIALOG_MAX_WIDTH_DP.dp)
     }
 
     fun isVisible() = captchaDialog?.isShowing == true

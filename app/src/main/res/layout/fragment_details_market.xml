@@ -380,30 +380,6 @@
                         android:textSize="14sp"
                         tools:ignore="RelativeOverlap" />
 
-                    <TextView
-                        android:id="@+id/rise_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignTop="@id/balance"
-                        android:layout_alignBottom="@id/balance"
-                        android:layout_alignParentEnd="true"
-                        android:layout_marginStart="@dimen/margin16"
-                        android:layout_marginEnd="20dp"
-                        android:text="24H"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/balance_change"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignTop="@id/value"
-                        android:layout_alignParentEnd="true"
-                        android:layout_marginStart="@dimen/margin16"
-                        android:layout_marginEnd="20dp"
-                        android:textColor="@color/wallet_green"
-                        android:textSize="14sp" />
-
                 </RelativeLayout>
             </FrameLayout>
 

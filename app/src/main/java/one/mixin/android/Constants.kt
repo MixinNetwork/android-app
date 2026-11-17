@@ -1,10 +1,6 @@
 package one.mixin.android
 
 import android.graphics.Color
-import com.checkout.base.model.CardScheme
-import com.checkout.base.model.Environment
-import com.checkout.risk.RiskEnvironment
-import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.Constants.ChainId.Arc
 import one.mixin.android.Constants.ChainId.Arbitrum
@@ -47,6 +43,8 @@ object Constants {
         const val MARKETPLACE = "https://rune.fan/items/"
         const val SPACE = "https://mixin.space/tx/"
         const val CUSTOMER_SERVICE = "https://mixin.one/support"
+        const val TRADE_PRO = "mixin://apps/af82d6d4-aec8-419a-8f7d-edfecf7a7725?action=open&page=perps-pro"
+        const val SAFE_RENEW_PLAN = "mixin://apps/b5418449-9ed6-4979-a690-82690949c542?action=open&modal=plan&plan=renew"
     }
 
     object Tip {
@@ -95,7 +93,7 @@ object Constants {
         const val PREF_APP_ENTER_BACKGROUND = "pref_app_enter_background"
         const val PREF_DEVICE_SDK = "pref_device_sdk"
         const val PREF_TEXT_SIZE = "pref_text_size"
-        const val PREF_ATTACHMENT = "pref_attachment"
+        const val PREF_GLASS_BOTTOM_NAV = "pref_glass_bottom_nav"
         const val PREF_CLEANUP_THUMB = "pref_cleanup_thumb"
         const val PREF_CLEANUP_QUOTE_CONTENT = "pref_cleanup_quote_content"
         const val PREF_TRANSFER_SCENE = "pref_transfer_scene"
@@ -103,7 +101,6 @@ object Constants {
         const val PREF_LOGIN_OR_SIGN_UP = "pref_login_or_sign_up"
         const val PREF_NOTIFY_ENABLE_BIOMETRIC = "pref_notify_enable_biometric"
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
-        const val PREF_EXPLORE_SELECT = "pref_explore_select"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
         const val PREF_SWAP_LAST_PAIR = "pref_swap_last_pair"
         const val PREF_LIMIT_SWAP_LAST_PAIR = "pref_limit_swap_last_pair"
@@ -132,7 +129,7 @@ object Constants {
 
         const val PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED = "pref_trade_limit_order_badge_dismissed"
         const val PREF_TRADE_PERPETUAL_BADGE_DISMISSED = "pref_trade_perpetual_badge_dismissed"
-        const val PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED = "pref_trade_perpetual_order_badge_dismissed"
+        const val PREF_TRADE_PRO_BADGE_DISMISSED = "pref_trade_pro_badge_dismissed"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS = "pref_perps_accepted_asset_ids"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS_ORDERED = "pref_perps_accepted_asset_ids_ordered"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS_V2 = "pref_perps_accepted_asset_ids_v2"
@@ -229,7 +226,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 72
+        const val CURRENT_VERSION = 73
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -254,6 +251,7 @@ object Constants {
     object CIRCLE {
         const val CIRCLE_ID = "circle_id"
         const val CIRCLE_NAME = "circle_name"
+        const val CONVERSATION_FILTER = "conversation_filter"
     }
 
     object Download {
@@ -280,7 +278,7 @@ object Constants {
 
     val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer, Robinhood, Arc)
     val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer, Robinhood, Arc)
-    val Web3UtxoChainIds = listOf(BITCOIN_CHAIN_ID, ChainId.PEARL_CHAIN_ID)
+    val Web3UtxoChainIds = listOf(BITCOIN_CHAIN_ID, ChainId.PEARL_CHAIN_ID, ChainId.Litecoin)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
@@ -555,25 +553,6 @@ object Constants {
     const val TEAM_BOT_NAME = ""
 
     object RouteConfig {
-        const val PAN_ONLY = "pan_only"
-        const val CRYPTOGRAM_3DS = "cryptogram_3ds"
-
-        val SUPPORTED_METHODS =
-            listOf(
-                "PAN_ONLY",
-                "CRYPTOGRAM_3DS",
-            )
-
-        val SUPPORTED_NETWORKS =
-            listOf(
-                "VISA",
-                "MASTERCARD",
-                "AMEX",
-                "JCB",
-            )
-
-        val SUPPORTED_CARD_SCHEME = listOf(CardScheme.VISA, CardScheme.MASTERCARD, CardScheme.AMERICAN_EXPRESS, CardScheme.JCB)
-
         const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
         const val REFERRAL_BOT_USER_ID = "b35af74d-cca6-400c-a62b-5a7e659de91e"
         const val SAFE_BOT_USER_ID = "b5418449-9ed6-4979-a690-82690949c542"
@@ -581,16 +560,5 @@ object Constants {
         const val ROUTE_BOT_URL = "https://api.route.mixin.one"
 
         const val REFERRAL_API_URL = "https://api.reward.mixin.one"
-        const val GOOGLE_PAY = "googlepay"
-
-        const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION
-
-        const val PAYMENTS_GATEWAY = "checkoutltd"
-
-        val CHECKOUT_ENVIRONMENT: Environment = Environment.PRODUCTION
-
-        val RISK_ENVIRONMENT = RiskEnvironment.PRODUCTION
-
-        val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
     }
 }

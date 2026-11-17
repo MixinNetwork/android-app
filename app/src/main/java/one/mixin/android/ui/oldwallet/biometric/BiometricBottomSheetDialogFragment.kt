@@ -29,6 +29,8 @@ import one.mixin.android.widget.RoundTitleView
 import javax.inject.Inject
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     private var biometricDialog: BiometricDialog? = null
 
     @Inject

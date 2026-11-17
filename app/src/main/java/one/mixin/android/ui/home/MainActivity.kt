@@ -9,19 +9,41 @@ import android.app.ActivityManager
 import android.app.Dialog
 import android.app.NotificationManager
 import android.content.Context
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.content.IntentSender
+import android.content.res.Configuration
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.view.ViewConfiguration
 import android.os.PowerManager
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.getSystemService
+import androidx.core.view.isVisible
+import androidx.core.view.marginBottom
+import androidx.core.view.updatePadding
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.window.WindowSdkExtensions
+import androidx.window.embedding.ActivityEmbeddingController
+import androidx.window.embedding.ActivityStack
+import androidx.window.embedding.SplitController
 import one.mixin.android.db.readVersion
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -47,6 +69,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
@@ -92,8 +115,11 @@ import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isGlassBottomNavigationEnabled
 import one.mixin.android.extension.isLightningUrl
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isPlayStoreInstalled
+import one.mixin.android.extension.isSharedDeviceId
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putBoolean
@@ -101,6 +127,7 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
@@ -188,6 +215,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.SERVER
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
+import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.database.databaseFile
@@ -208,6 +236,7 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Provider
+import one.mixin.android.ui.conversation.ConversationEmbedding
 
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callback {
@@ -237,8 +266,19 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     @Inject
     lateinit var web3RepositoryProvider: Provider<Web3Repository>
 
-    private var lastBottomNavItemId: Int = R.id.nav_chat
+    // Compose reads this, so the rail follows restores, reverts, and tab changes.
+    private val currentSectionId = mutableIntStateOf(R.id.nav_chat)
+    private val walletBadgeVisible = mutableStateOf(false)
+    private val moreBadgeVisible = mutableStateOf(false)
+
+    private var lastBottomNavItemId: Int
+        get() = currentSectionId.intValue
+        set(value) {
+            currentSectionId.intValue = value
+        }
     private var isRestoringBottomNavSelection: Boolean = false
+
+    private val homeFilterViewModel: HomeFilterViewModel by viewModels()
 
     @Inject
     lateinit var participantDaoProvider: Provider<ParticipantDao>
@@ -283,6 +323,49 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private lateinit var binding: ActivityMainBinding
 
+    private var isBottomNavigationGlassEnabled: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            if (::binding.isInitialized) updateBottomNavigationStyle()
+        }
+
+    var homeContentInset by mutableIntStateOf(0)
+        private set
+
+    override fun onResume() {
+        super.onResume()
+        if (!::binding.isInitialized) return
+        isBottomNavigationGlassEnabled = isGlassBottomNavigationEnabled()
+    }
+
+    private fun updateBottomNavigationStyle() {
+        val nightMode = isNightMode()
+        val glassBackground = if (nightMode) R.drawable.bg_bottom_navigation_glass_night else R.drawable.bg_bottom_navigation_glass
+        binding.bottomNav.apply {
+            itemIconTintList = null
+            isItemActiveIndicatorEnabled = false
+            itemBackgroundResource = if (nightMode) R.drawable.bg_bottom_navigation_item_night else R.drawable.bg_bottom_navigation_item
+            setBackgroundResource(if (isBottomNavigationGlassEnabled) glassBackground else R.drawable.bg_bottom_navigation)
+        }
+        binding.bottomNavBackdrop.setBackgroundResource(glassBackground)
+        binding.bottomNavBackdrop.source = binding.rootView
+        updateBottomNavigationLayout()
+        supportsS({
+            binding.bottomNavBackdrop.blurEffect =
+                if (isBottomNavigationGlassEnabled) {
+                    val radius = resources.getDimension(R.dimen.home_navigation_glass_blur_radius)
+                    val saturation = ColorMatrix().apply { setSaturation(1.15f) }
+                    RenderEffect.createColorFilterEffect(
+                        ColorMatrixColorFilter(saturation),
+                        RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP),
+                    )
+                } else {
+                    null
+                }
+        })
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val restoreState = if (Session.checkToken()) savedInstanceState else null
         super.onCreate(restoreState)
@@ -293,6 +376,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
         if (deviceId == null) {
+            deviceId = this.getStringDeviceId()
+            defaultSharedPreferences.putString(DEVICE_ID, deviceId)
+        } else if (isSharedDeviceId(deviceId)) {
+            // Replace the shared id without signing out
             deviceId = this.getStringDeviceId()
             defaultSharedPreferences.putString(DEVICE_ID, deviceId)
         } else if (deviceId != this.getStringDeviceId()) {
@@ -599,6 +686,15 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         val notificationManager = getSystemService<NotificationManager>() ?: return
         if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && notificationManager.areBubblesAllowedCompat()).not()) {
             notificationManager.cancelAll()
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (::binding.isInitialized) {
+            setBottomNavigationCollapsed(false, animate = false)
+            updateRailVisibility()
+            updateBottomNavigationStyle()
         }
     }
 
@@ -954,6 +1050,13 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private var alertDialog: Dialog? = null
 
     fun handlerCode(intent: Intent) {
+        if (intent.getBooleanExtra(EXTRA_EMBEDDING_RELAYOUT, false)) return
+        intent.getBundleExtra(ConversationEmbedding.EXTRA_CONVERSATION)?.let { extras ->
+            clearCodeAfterConsume(intent, ConversationEmbedding.EXTRA_CONVERSATION)
+            binding.bottomNav.selectedItemId = R.id.nav_chat
+            ConversationEmbedding.conversationIntent(this, extras)?.let(::startActivity)
+            return
+        }
         if (intent.hasExtra(SCAN)) {
             val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
@@ -973,7 +1076,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
             binding.bottomNav.selectedItemId = R.id.nav_wallet
             if (intent.getBooleanExtra(BUY, false)) {
-                WalletActivity.showBuy(this, false, null, null)
+                WalletActivity.showBuy(
+                    this, false, null, null,
+                    source = intent.getStringExtra(CalculateFragment.ARGS_BUY_SOURCE) ?: AnalyticsTracker.TradeSource.WALLET_HOME,
+                )
+                clearCodeAfterConsume(intent, CalculateFragment.ARGS_BUY_SOURCE)
                 clearCodeAfterConsume(intent, BUY)
             }
             clearCodeAfterConsume(intent, WALLET_DESTINATION)
@@ -1061,6 +1168,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                                     ownerId,
                                     data.category,
                                     data.name,
+                                    data.iconUrl,
                                     data.announcement,
                                     data.muteUntil,
                                     data.createdAt,
@@ -1181,10 +1289,16 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     private fun initBottomNav() {
+        updateBottomNavigationStyle()
         binding.apply {
             bottomNav.setOnApplyWindowInsetsListener(null)
-            bottomNav.setPadding(0,0,0,0)
-            bottomNav.itemIconTintList = null
+            bottomNav.setPadding(0, 0, 0, 0)
+            // The backdrop re-records the root view's children by reference, so their content updates
+            // without invalidating it every frame. Only layout changes (fragment switches) need a re-record.
+            rootView.viewTreeObserver.addOnGlobalLayoutListener {
+                if (bottomNavBackdrop.isVisible) bottomNavBackdrop.invalidate()
+            }
+            supportFragmentManager.addOnBackStackChangedListener { updateBottomNavigationLayout() }
             bottomNav.menu.findItem(lastBottomNavItemId).isChecked = true
 
             bottomNav.setOnItemSelectedListener {
@@ -1192,10 +1306,15 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     isRestoringBottomNavSelection = false
                     return@setOnItemSelectedListener true
                 }
+                setBottomNavigationCollapsed(false)
                 handleNavigationItemSelected(it.itemId)
                 return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_more, R.id.nav_market)
             }
+            ConversationEmbedding.updateHomeSection(homeSectionFor(lastBottomNavItemId))
+            observeEmbeddedSplits()
         }
+
+        updateRailVisibility()
 
         lifecycleScope.launch {
             binding.bottomNav.getOrCreateBadge(R.id.nav_wallet).apply {
@@ -1206,12 +1325,37 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
     }
 
+    private fun setupHomeRail() {
+        binding.homeRail.setContent {
+            HomeRail(
+                viewModel = homeFilterViewModel,
+                compactLandscape = homeRailModeState.value == HomeRailMode.CompactLandscape,
+                sectionId = currentSectionId.intValue,
+                showWalletBadge = walletBadgeVisible.value,
+                showMoreBadge = moreBadgeVisible.value,
+                onFilterSelected = { filter ->
+                    homeFilterViewModel.select(filter)
+                    binding.bottomNav.selectedItemId = R.id.nav_chat
+                },
+                onSectionSelected = { itemId ->
+                    binding.bottomNav.selectedItemId = itemId
+                },
+            )
+        }
+    }
+
     private fun updateNavMoreBadge() {
         val dismissed = defaultSharedPreferences.getBoolean(Account.PREF_NAV_MORE_BADGE_DISMISSED, false)
         binding.bottomNav.getOrCreateBadge(R.id.nav_more).apply {
             isVisible = !dismissed
             backgroundColor = this@MainActivity.colorFromAttribute(R.attr.badge_red)
         }
+        syncRailBadges()
+    }
+
+    private fun syncRailBadges() {
+        walletBadgeVisible.value = binding.bottomNav.getBadge(R.id.nav_wallet)?.isVisible == true
+        moreBadgeVisible.value = binding.bottomNav.getBadge(R.id.nav_more)?.isVisible == true
     }
 
     private fun switchToDestination(destination: NavigationController.Destination) {
@@ -1252,6 +1396,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 AnalyticsTracker.trackHomeTabSwitch(AnalyticsTracker.HomeTabMethod.CHATS)
                 switchToDestination(NavigationController.ConversationList)
                 lastBottomNavItemId = itemId
+                syncHomeSection(itemId)
             }
 
             R.id.nav_wallet -> {
@@ -1268,6 +1413,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                         }
                         switchToDestination(NavigationController.Wallet)
                         lastBottomNavItemId = itemId
+                        syncHomeSection(itemId)
                     }
                 } else {
                     val id = requireNotNull(defaultSharedPreferences.getString(DEVICE_ID, null)) { "required deviceId can not be null" }
@@ -1280,6 +1426,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 AnalyticsTracker.trackMoreTabSwitch(AnalyticsTracker.MoreTabMethod.MARKETS)
                 switchToDestination(NavigationController.Market)
                 lastBottomNavItemId = itemId
+                syncHomeSection(itemId)
                 findFragmentByTagTyped<MarketFragment>(NavigationController.Market.tag)?.updateUI()
 
                 findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
@@ -1294,6 +1441,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 }
                 switchToDestination(NavigationController.Explore)
                 lastBottomNavItemId = itemId
+                syncHomeSection(itemId)
                 findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideCircles()
             }
 
@@ -1320,6 +1468,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             return@withContext when {
                 MissingUtxoAddress.PEARL in missingUtxoAddresses -> MissingUtxoAddress.PEARL
                 MissingUtxoAddress.BITCOIN in missingUtxoAddresses -> MissingUtxoAddress.BITCOIN
+                MissingUtxoAddress.LITECOIN in missingUtxoAddresses -> MissingUtxoAddress.LITECOIN
                 else -> null
             }
         }
@@ -1329,7 +1478,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         val fragment = supportFragmentManager.findFragmentByTag(WalletMissingBtcAddressFragment.TAG)
         if (fragment != null) return
         val newFragment = WalletMissingBtcAddressFragment
-            .newInstance(showPearlTitle = missingUtxoAddress == MissingUtxoAddress.PEARL)
+            .newInstance(
+                showPearlTitle = missingUtxoAddress == MissingUtxoAddress.PEARL,
+                showLitecoinTitle = missingUtxoAddress == MissingUtxoAddress.LITECOIN,
+            )
         supportFragmentManager
             .beginTransaction()
             .setReorderingAllowed(true)
@@ -1351,10 +1503,141 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         binding.bottomNav.selectedItemId = R.id.nav_wallet
         switchToDestination(NavigationController.Wallet)
         lastBottomNavItemId = R.id.nav_wallet
+        syncHomeSection(R.id.nav_wallet)
     }
 
     private inline fun <reified T : Fragment> findFragmentByTagTyped(tag: String): T? =
         supportFragmentManager.findFragmentByTag(tag) as? T
+
+    private var embeddedSecondaries: List<ActivityStack> = emptyList()
+    private var homeRailComposed = false
+    private val homeRailModeState = mutableStateOf(HomeRailMode.None)
+
+    override fun onWindowLayoutModeChanged() {
+        updateRailVisibility()
+    }
+    private var homeSearchOpen = false
+
+    // Search covers the whole window on large screens, so the rail steps aside while it is open.
+    fun setHomeSearchOpen(open: Boolean) {
+        homeSearchOpen = open
+        updateRailVisibility()
+    }
+
+    private fun updateRailVisibility() {
+        if (!::binding.isInitialized) return
+        homeRailModeState.value = homeRailMode()
+        val showRail = homeRailModeState.value != HomeRailMode.None
+        binding.homeRail.isVisible = showRail && !homeSearchOpen
+        binding.bottomNav.isVisible = !showRail
+        updateBottomNavigationLayout()
+        if (showRail) {
+            if (!homeRailComposed) {
+                homeRailComposed = true
+                setupHomeRail()
+            }
+        } else if (homeRailComposed) {
+            binding.homeRail.disposeComposition()
+            homeRailComposed = false
+        }
+    }
+
+    private fun updateBottomNavigationLayout() {
+        // Pages pushed onto the tabs are not inset-aware, so they keep the content above the navigation.
+        val overlayContent = supportFragmentManager.backStackEntryCount == 0
+        binding.bottomNavBackdrop.isVisible = isBottomNavigationGlassEnabled && overlayContent && binding.bottomNav.isVisible
+        bottomNavExpandedHeight = binding.bottomNav.homeNavigationExpandedHeight()
+        applyBottomNavigationCollapse(bottomNavCollapseProgress)
+        if (!overlayContent || !binding.bottomNav.isVisible) setBottomNavigationCollapsed(false, animate = false)
+        val bottomInset = if (binding.bottomNav.isVisible) {
+            bottomNavExpandedHeight + binding.bottomNav.marginBottom + resources.getDimensionPixelSize(R.dimen.padding8)
+        } else {
+            0
+        }
+        homeContentInset = if (overlayContent) bottomInset else 0
+        binding.rootView.updatePadding(bottom = if (overlayContent) 0 else bottomInset)
+    }
+
+    private var bottomNavCollapsed = false
+    private var bottomNavCollapseProgress = 0f
+    private var bottomNavExpandedHeight = 0
+    private var bottomNavCollapseAnimator: ValueAnimator? = null
+    private var homeScrollDistance = 0
+
+    fun onHomeContentScrolled(dy: Int) {
+        if (dy == 0) return
+        if ((dy > 0) != (homeScrollDistance > 0)) homeScrollDistance = 0
+        homeScrollDistance += dy
+        if (abs(homeScrollDistance) >= ViewConfiguration.get(this).scaledTouchSlop) {
+            setBottomNavigationCollapsed(homeScrollDistance > 0)
+        }
+    }
+
+    fun setBottomNavigationCollapsed(collapsed: Boolean, animate: Boolean = true) {
+        if (!::binding.isInitialized) return
+        val target = collapsed && binding.bottomNav.isVisible && supportFragmentManager.backStackEntryCount == 0
+        if (target == bottomNavCollapsed) return
+        bottomNavCollapsed = target
+        homeScrollDistance = 0
+        bottomNavCollapseAnimator?.cancel()
+        val end = if (target) 1f else 0f
+        if (!animate) {
+            applyBottomNavigationCollapse(end)
+            return
+        }
+        bottomNavCollapseAnimator = ValueAnimator.ofFloat(bottomNavCollapseProgress, end).apply {
+            duration = 250
+            interpolator = FastOutSlowInInterpolator()
+            addUpdateListener { applyBottomNavigationCollapse(it.animatedValue as Float) }
+            start()
+        }
+    }
+
+    private fun applyBottomNavigationCollapse(progress: Float) {
+        bottomNavCollapseProgress = progress
+        binding.bottomNav.applyHomeNavigationCollapse(progress, bottomNavExpandedHeight)
+    }
+
+    private fun observeEmbeddedSplits() {
+        if (SplitController.getInstance(this).splitSupportStatus != SplitController.SplitSupportStatus.SPLIT_AVAILABLE) return
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                SplitController.getInstance(this@MainActivity).splitInfoList(this@MainActivity).collect { infos ->
+                    embeddedSecondaries = infos.map { it.secondaryActivityStack }
+                    updateRailVisibility()
+                }
+            }
+        }
+    }
+
+    private fun homeSectionFor(itemId: Int): ConversationEmbedding.HomeSection = when (itemId) {
+        R.id.nav_wallet -> ConversationEmbedding.HomeSection.WALLET
+        R.id.nav_market -> ConversationEmbedding.HomeSection.MARKET
+        R.id.nav_more -> ConversationEmbedding.HomeSection.MORE
+        else -> ConversationEmbedding.HomeSection.CHAT
+    }
+
+    private fun syncHomeSection(itemId: Int) {
+        val section = homeSectionFor(itemId)
+        val changed = ConversationEmbedding.homeSection != section
+        ConversationEmbedding.updateHomeSection(section)
+        if (changed) closeEmbeddedSecondaries()
+    }
+
+    private fun closeEmbeddedSecondaries() {
+        val embedding = ActivityEmbeddingController.getInstance(this)
+        if (!embedding.isActivityEmbedded(this)) return
+        if (WindowSdkExtensions.getInstance().extensionVersion >= 5) {
+            val stacks = embeddedSecondaries.toSet()
+            if (stacks.isNotEmpty()) embedding.finishActivityStacks(stacks)
+        } else {
+            startActivity(
+                Intent(this, MainActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                    .putExtra(EXTRA_EMBEDDING_RELAYOUT, true),
+            )
+        }
+    }
 
     fun showUpdate(releaseUrl: String?) {
         if (isPlayStoreInstalled()) {
@@ -1489,15 +1772,18 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         private const val WALLET_DESTINATION = "wallet_destination"
         const val WALLET_CONNECT = "wallet_connect"
         private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
+        private const val EXTRA_EMBEDDING_RELAYOUT = "embedding_relayout"
 
         fun showWallet(
             context: Context,
             buy: Boolean = false,
             walletDestination: WalletDestination? = null,
+            buySource: String = AnalyticsTracker.TradeSource.WALLET_HOME,
         ) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
                 putExtra(BUY, buy)
+                if (buy) putExtra(CalculateFragment.ARGS_BUY_SOURCE, buySource)
                 walletDestination?.let {
                     val json = walletDestinationToJson(it)
                     context.defaultSharedPreferences.putString(Account.PREF_USED_WALLET, json)

@@ -28,6 +28,12 @@ class PendingTransactionActionRouteTest {
     }
 
     @Test
+    fun litecoinUsesUtxoPendingActions() {
+        assertEquals(PendingTransactionActionRoute.Utxo, pendingTransactionActionRoute(Constants.ChainId.Litecoin))
+        assertTrue(shouldHideUtxoPendingActions(Constants.ChainId.Litecoin, nonRbfBitcoinTransaction(), false))
+    }
+
+    @Test
     fun bitcoinUsesUtxoPendingActions() {
         assertEquals(
             PendingTransactionActionRoute.Utxo,

@@ -32,6 +32,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class BotSignAppBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "BotSignAppBottomSheetDialogFragment"
 

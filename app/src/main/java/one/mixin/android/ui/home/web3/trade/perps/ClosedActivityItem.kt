@@ -31,6 +31,8 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
+import one.mixin.android.api.response.perps.realizedPnlForDisplay
+import one.mixin.android.api.response.perps.roeForDisplay
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -62,14 +64,14 @@ fun ClosedActivityItem(
     val leverageDimmed = isFailed || order.status == PerpsOrder.STATUS_PROCESSING
     val leverageColor = if (leverageDimmed) MixinAppTheme.colors.textAssist else sideColor
     val leverageBackgroundColor = leverageColor.copy(alpha = 0.1f)
-    val pnl = order.realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val pnl = order.realizedPnlForDisplay()
     val isProfit = pnl >= BigDecimal.ZERO
     val pnlColor = if (isProfit) {
         if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     } else {
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
-    val pnlPercent = order.roe.toBigDecimalOrNull()?.multiply(BigDecimal(100))
+    val pnlPercent = order.roeForDisplay()?.multiply(BigDecimal(100))
     val titleRes = when {
         isFailed && isLong -> R.string.Closed_Long_Failed
         isFailed -> R.string.Closed_Short_Failed

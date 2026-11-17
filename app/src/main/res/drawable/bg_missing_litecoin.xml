@@ -1,0 +1,18 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/bg_missing_pearl" />
+    <item
+        android:width="100dp"
+        android:height="100dp"
+        android:top="110dp"
+        android:gravity="top|center_horizontal">
+        <shape android:shape="oval">
+            <solid android:color="#345D9D" />
+        </shape>
+    </item>
+    <item
+        android:width="100dp"
+        android:height="100dp"
+        android:top="110dp"
+        android:gravity="top|center_horizontal"
+        android:drawable="@drawable/ic_chain_lite" />
+</layer-list>

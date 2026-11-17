@@ -69,15 +69,15 @@ class MnemonicTest {
             requireNotNull(ethPrivateKey) { "Failed to generate Ethereum private key for index $index" }
             val generatedEthAddress = EthKeyGenerator.privateKeyToAddress(ethPrivateKey)
             assertEquals(
+                "Ethereum address at index $index should match",
                 expectedEthereumAddresses[index],
-                generatedEthAddress,
-                "Ethereum address at index $index should match"
+                generatedEthAddress
             )
             if (index == 0) {
                 assertEquals(
+                    "ETH private key at index $index should match",
                     "0x33fa40f84e854b941c2b0436dd4a256e1df1cb41b9c1c0ccc8446408c19b8bf9",
-                    Numeric.toHexString(ethPrivateKey),
-                    "ETH private key at index $index should match"
+                    Numeric.toHexString(ethPrivateKey)
                 )
             }
 
@@ -87,18 +87,18 @@ class MnemonicTest {
             val kp = Keypair.fromSecretKey(solanaPrivateKey)
             if (index == 0) {
                 assertEquals(
+                    "Solana private key at index $index should match",
                     "37NfN7eam3KCwdC6jAc7nFeuDNYCV1K2AgNWmT4Xo6ogQPMnJ1ZoWA7AKN6jzEoQi3FNTEkkXiwu7VjqXdu8FGUs",
-                    kp.secret.encodeToBase58String(),
-                    "Solana private key at index $index should match"
+                    kp.secret.encodeToBase58String()
                 )
             }
             val keyPair =
                 KeyPair.newKeyPairFromSeed(solanaPrivateKey.toByteString(), checkOnCurve = true)
             val generatedSolanaAddress = Base58.encode(keyPair.publicKey.toByteArray())
             assertEquals(
+                "Solana address at index $index should match",
                 expectedSolanaAddresses[index],
-                generatedSolanaAddress,
-                "Solana address at index $index should match"
+                generatedSolanaAddress
             )
         }
     }

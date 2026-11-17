@@ -6,11 +6,13 @@ import android.annotation.SuppressLint
 import android.os.CancellationSignal
 import androidx.paging.PagingSource
 import kotlinx.coroutines.withContext
+import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.datasource.RoomDatabaseCompat
 import one.mixin.android.fts.FtsDataSource
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.rawSearch
+import one.mixin.android.ui.home.ConversationFilter
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationItem
@@ -27,6 +29,20 @@ class DataProvider {
     companion object {
         fun observeConversations(database: MixinDatabase): PagingSource<Int, ConversationItem> =
             DataProviderGenerated.observeConversations(database)
+
+        fun observeConversationsByCategory(
+            filter: ConversationFilter,
+            database: MixinDatabase,
+        ): PagingSource<Int, ConversationItem> {
+            val predicate = when (filter) {
+                ConversationFilter.Contacts -> ConversationDao.FILTER_CONTACTS
+                ConversationFilter.Groups -> ConversationDao.FILTER_GROUPS
+                ConversationFilter.Bots -> ConversationDao.FILTER_BOTS
+                ConversationFilter.Strangers -> ConversationDao.FILTER_STRANGERS
+                else -> error("Expected a conversation category filter")
+            }
+            return DataProviderGenerated.observeConversationsByCategory(predicate, database)
+        }
 
         fun observeConversationsByCircleId(
             circleId: String,

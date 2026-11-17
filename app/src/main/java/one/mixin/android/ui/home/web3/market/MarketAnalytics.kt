@@ -14,6 +14,7 @@ internal fun MarketTopTab.analyticsValue(): String =
 internal fun MarketSubTab?.analyticsValue(): String =
     when (this) {
         MarketSubTab.TRENDING -> AnalyticsTracker.MarketsTab.TRENDING
+        MarketSubTab.STOCKS -> AnalyticsTracker.MarketsTab.STOCK
         MarketSubTab.TOP_GAINERS -> AnalyticsTracker.MarketsTab.TOP_GAINERS
         MarketSubTab.TOP_LOSERS -> AnalyticsTracker.MarketsTab.TOP_LOSERS
         MarketSubTab.ALL -> AnalyticsTracker.MarketsTab.ALL

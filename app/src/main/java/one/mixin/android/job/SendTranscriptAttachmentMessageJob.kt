@@ -2,9 +2,9 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
-import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -49,16 +49,8 @@ class SendTranscriptAttachmentMessageJob(
         private const val serialVersionUID = 1L
     }
 
-    @Transient
-    private var disposable: Disposable? = null
-
     override fun cancel() {
         isCancelled = true
-        disposable?.let {
-            if (!it.isDisposed) {
-                it.dispose()
-            }
-        }
         removeJob()
         transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
@@ -99,32 +91,20 @@ class SendTranscriptAttachmentMessageJob(
             }
         }
         transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.PENDING.name)
-        disposable =
-            conversationApi.requestAttachment().map {
-                val file = File(requireNotNull(Uri.parse(transcriptMessage.absolutePath()).path))
-                if (it.isSuccess && !isCancelled) {
-                    val result = it.data!!
-                    processAttachment(transcriptMessage, file, result)
-                } else {
-                    false
-                }
-            }.subscribe(
-                {
-                    if (it) {
-                        sendMessage()
-                        removeJob()
-                    } else {
-                        removeJob()
-                        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
-                    }
-                },
-                {
-                    Timber.e("upload attachment error, ${it.getStackTraceString()}")
-                    reportException(it)
-                    removeJob()
-                    transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
-                },
-            )
+        try {
+            val response = runBlocking { conversationApi.requestAttachment() }
+            val file = File(requireNotNull(Uri.parse(transcriptMessage.absolutePath()).path))
+            if (response.isSuccess && !isCancelled && processAttachment(transcriptMessage, file, response.data!!)) {
+                sendMessage()
+                removeJob()
+                return
+            }
+        } catch (e: Exception) {
+            Timber.e("upload attachment error, ${e.getStackTraceString()}")
+            reportException(e)
+        }
+        removeJob()
+        transcriptMessageDao.updateMediaStatus(transcriptMessage.transcriptId, transcriptMessage.messageId, MediaStatus.CANCELED.name)
     }
 
     private fun processAttachment(
