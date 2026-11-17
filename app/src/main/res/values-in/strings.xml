@@ -851,6 +851,10 @@
     <string name="transfer_token">Transfer %1$s</string>
     <string name="transfer_token_description">Transfer dari dompet Anda yang lain</string>
     <string name="wallet_changed_try_again">Dompet saat ini telah berubah. Silakan coba lagi.</string>
+    <string name="Network_Fee">Biaya Jaringan</string>
+    <string name="network_fee_description">Biaya jaringan adalah biaya transaksi yang dibayarkan kepada penambang atau validator untuk memproses dan mengonfirmasi transaksi di blockchain.</string>
+    <string name="network_fee_charged_by">Biaya jaringan dikenakan oleh jaringan %1$s.</string>
+    <string name="network_fee_independent_of_amount">Biaya jaringan tidak bergantung pada jumlah transfer.</string>
     <string name="mixin_support">Dukungan Mixin</string>
     <string name="real_people_real_support">Orang Sungguhan. Dukungan Nyata.</string>
 </resources>

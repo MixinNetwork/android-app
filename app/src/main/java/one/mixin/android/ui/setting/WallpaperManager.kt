@@ -38,7 +38,7 @@ object WallpaperManager {
             -1 ->
                 context.getWallpaperFile().run {
                     if (exists()) {
-                        Drawable.createFromPath(context.getWallpaperFile().path)
+                        Drawable.createFromPath(path)
                     } else {
                         null
                     }

@@ -2733,4 +2733,7 @@
     <string name="transfer_token">劃轉 %1$s</string>
     <string name="transfer_token_description">從你的其他錢包劃轉</string>
     <string name="wallet_changed_try_again">目前錢包已變更，請重試。</string>
+    <string name="network_fee_description">網路費是區塊鏈處理交易時產生的手續費，用於支付礦工或驗證節點處理和確認交易的費用。</string>
+    <string name="network_fee_charged_by">網路費由 %1$s 網路收取</string>
+    <string name="network_fee_independent_of_amount">網路費與轉帳金額無關</string>
 </resources>

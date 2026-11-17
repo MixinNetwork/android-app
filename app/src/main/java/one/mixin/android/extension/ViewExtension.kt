@@ -383,7 +383,7 @@ fun View.capture(context: Context): Result<String> {
     }
 }
 
-private val springSystem = SpringSystem.create()
+private val springSystem by lazy { SpringSystem.create() }
 private val sprintConfig = SpringConfig.fromOrigamiTensionAndFriction(80.0, 4.0)
 
 fun View.bounce() {

@@ -1294,6 +1294,10 @@
     <string name="transfer_token">Transferir %1$s</string>
     <string name="transfer_token_description">Transferir desde otra de tus billeteras</string>
     <string name="wallet_changed_try_again">La billetera actual ha cambiado. Inténtalo de nuevo.</string>
+    <string name="Network_Fee">Comisión de red</string>
+    <string name="network_fee_description">Las comisiones de red son tarifas de transacción que se pagan a mineros o validadores por procesar y confirmar transacciones en la blockchain.</string>
+    <string name="network_fee_charged_by">La red %1$s cobra las comisiones de red.</string>
+    <string name="network_fee_independent_of_amount">Las comisiones de red no dependen del importe de la transferencia.</string>
     <string name="mixin_support">Soporte de Mixin</string>
     <string name="real_people_real_support">Personas reales. Soporte real.</string>
 </resources>

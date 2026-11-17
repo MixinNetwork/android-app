@@ -916,6 +916,10 @@
     <string name="transfer_token">Pindah %1$s</string>
     <string name="transfer_token_description">Pindah dari dompet anda yang lain</string>
     <string name="wallet_changed_try_again">Dompet semasa telah berubah. Sila cuba lagi.</string>
+    <string name="Network_Fee">Yuran Rangkaian</string>
+    <string name="network_fee_description">Yuran rangkaian ialah yuran transaksi yang dibayar kepada pelombong atau pengesah untuk memproses dan mengesahkan transaksi di rantaian blok.</string>
+    <string name="network_fee_charged_by">Yuran rangkaian dikenakan oleh rangkaian %1$s.</string>
+    <string name="network_fee_independent_of_amount">Yuran rangkaian tidak bergantung pada jumlah pemindahan.</string>
     <string name="mixin_support">Sokongan Mixin</string>
     <string name="real_people_real_support">Orang Sebenar. Sokongan Sebenar.</string>
 </resources>

@@ -2768,4 +2768,7 @@
     <string name="transfer_token">Transfer %1$s</string>
     <string name="transfer_token_description">Transfer from another of your wallets</string>
     <string name="wallet_changed_try_again">The current wallet has changed. Please try again.</string>
+    <string name="network_fee_description">Network fees are transaction fees paid to miners or validators for processing and confirming transactions on the blockchain.</string>
+    <string name="network_fee_charged_by">Network fees are charged by the %1$s network.</string>
+    <string name="network_fee_independent_of_amount">Network fees are independent of the transfer amount.</string>
 </resources>
