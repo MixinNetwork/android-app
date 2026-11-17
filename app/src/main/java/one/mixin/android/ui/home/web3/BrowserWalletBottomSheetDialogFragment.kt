@@ -67,7 +67,7 @@ import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.WalletErrorCode
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import one.mixin.android.web3.send.UtxoTransactionSigner
-import one.mixin.android.web3.validateEip712ChainId
+import one.mixin.android.web3.eip712SigningChain
 import one.mixin.android.widget.bottomSheetHeight
 import org.json.JSONObject
 import org.sol4k.exception.RpcException
@@ -171,7 +171,13 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         TipGas(currentChain.chainId, gasLimit, maxFeePerGas, maxPriorityFeePerGas)
     }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: Web3Signer.currentChain
+        token?.getChainFromName() ?: typedDataChain ?: Web3Signer.currentChain
+    }
+    // Typed data is signed for its domain's chain, which the page shows;
+    // null for other messages, or typed data that names no supported chain.
+    private val typedDataChain by lazy {
+        if (signMessage.type != JsSignMessage.TYPE_TYPED_MESSAGE) return@lazy null
+        runCatching { eip712SigningChain(requireNotNull(signMessage.data), Web3Signer.currentChain, "") }.getOrNull()
     }
     private val utxoChainId: String
         get() = signMessage.utxoChainId?.takeIf { it in Constants.Web3UtxoChainIds }
@@ -209,7 +215,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         }
         if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE) {
             try {
-                validateEip712ChainId(requireNotNull(signMessage.data), Web3Signer.currentChain.chainReference, getString(R.string.eip712_invalid_chain_id))
+                eip712SigningChain(requireNotNull(signMessage.data), Web3Signer.currentChain, getString(R.string.eip712_invalid_chain_id))
             } catch (e: Exception) {
                 val message = getString(R.string.eip712_invalid_chain_id)
                 settleError(WalletErrorCode.INTERNAL_ERROR, message)

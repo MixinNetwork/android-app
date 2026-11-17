@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="perps_realized_pnl_tip">未平倉的合約不計入統計</string>
+    <string name="Network_Fee">網絡費用</string>
+    <string name="network_fee_description">網絡費是區塊鏈處理交易時產生的手續費，用於支付礦工或驗證節點處理和確認交易的費用。</string>
+    <string name="network_fee_charged_by">網絡費由 %1$s 網絡收取</string>
+    <string name="network_fee_independent_of_amount">網絡費與轉賬金額無關</string>
+    <string name="mixin_support">Mixin 客服</string>
+    <string name="real_people_real_support">真人客服，隨時為您服務。</string>
 </resources>
