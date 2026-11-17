@@ -34,10 +34,8 @@ import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashDecoder
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.reportException
-import one.mixin.android.vo.StorageUsage
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
-import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -45,11 +43,14 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.io.InputStreamReader
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.Scanner
 
 private fun isAvailable(): Boolean {
     val state = Environment.getExternalStorageState()
@@ -284,77 +285,52 @@ fun Context.getTranscriptDirPath(legacy: Boolean = false): File {
     return File("$root${File.separator}Transcripts${File.separator}")
 }
 
-fun Context.getConversationImagePath(conversationId: String): File? {
-    if (conversationId.isBlank()) return null
+fun Context.getStorageTypePath(type: String): File? {
     val root = getMediaPath() ?: return null
-    return File("$root${File.separator}Images${File.separator}$conversationId")
-}
-
-fun Context.getConversationDocumentPath(conversationId: String): File? {
-    if (conversationId.isBlank()) return null
-    val root = getMediaPath() ?: return null
-    return File("$root${File.separator}Files${File.separator}$conversationId")
-}
-
-fun Context.getConversationVideoPath(conversationId: String): File? {
-    if (conversationId.isBlank()) return null
-    val root = getMediaPath() ?: return null
-    return File("$root${File.separator}Videos${File.separator}$conversationId")
-}
-
-fun Context.getConversationAudioPath(conversationId: String): File? {
-    if (conversationId.isBlank()) return null
-    val root = getMediaPath() ?: return null
-    return File("$root${File.separator}Audios${File.separator}$conversationId")
-}
-
-fun Context.getConversationMediaSize(conversationId: String): Long {
-    var mediaSize = 0L
-    getConversationImagePath(conversationId)?.apply {
-        if (exists()) {
-            mediaSize += getDirSize() ?: 0
-        }
-    }
-    getConversationVideoPath(conversationId)?.apply {
-        if (exists()) {
-            mediaSize += getDirSize() ?: 0
-        }
-    }
-    getConversationAudioPath(conversationId)?.apply {
-        if (exists()) {
-            mediaSize += getDirSize() ?: 0
-        }
-    }
-    getConversationDocumentPath(conversationId)?.apply {
-        if (exists()) {
-            mediaSize += getDirSize() ?: 0
-        }
-    }
-    return mediaSize
-}
-
-fun Context.getStorageUsageByConversationAndType(
-    conversationId: String,
-    type: String,
-): StorageUsage? {
-    val dir =
+    val name =
         when (type) {
-            IMAGE -> getConversationImagePath(conversationId)
-            VIDEO -> getConversationVideoPath(conversationId)
-            AUDIO -> getConversationAudioPath(conversationId)
-            DATA -> getConversationDocumentPath(conversationId)
-            else -> null
-        } ?: return null
-    return dir.run {
-        if (exists()) {
-            val mediaSize = dirSize() ?: return@run null
-            val count = list()?.size ?: return@run null
-            if (mediaSize == 0L || count == 0) return@run null
-            StorageUsage(conversationId, type, count, mediaSize)
-        } else {
-            null
+            IMAGE -> "Images"
+            VIDEO -> "Videos"
+            AUDIO -> "Audios"
+            DATA -> "Files"
+            else -> return null
         }
-    }
+    return File(root, name)
+}
+
+class FileStats(val count: Int, val size: Long)
+
+// Single in-process walk with one stat per file; avoids spawning du for every directory.
+fun File.fileStats(): FileStats {
+    if (!isDirectory) return FileStats(0, 0L)
+    var count = 0
+    var size = 0L
+    Files.walkFileTree(
+        toPath(),
+        object : SimpleFileVisitor<Path>() {
+            override fun visitFile(
+                file: Path,
+                attrs: BasicFileAttributes,
+            ): FileVisitResult {
+                if (attrs.isRegularFile) {
+                    count++
+                    size += attrs.size()
+                }
+                return FileVisitResult.CONTINUE
+            }
+
+            override fun visitFileFailed(
+                file: Path,
+                exc: IOException,
+            ): FileVisitResult = FileVisitResult.CONTINUE
+
+            override fun postVisitDirectory(
+                dir: Path,
+                exc: IOException?,
+            ): FileVisitResult = FileVisitResult.CONTINUE
+        },
+    )
+    return FileStats(count, size)
 }
 
 fun Context.getPublicPicturePath(): File {
@@ -467,6 +443,11 @@ fun File.createGifTemp(noMedia: Boolean = true): File {
 fun File.createPngTemp(noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
     return newTempFile("IMAGE_$time", ".png", noMedia)
+}
+
+fun File.createWebpTemp(noMedia: Boolean = true): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss_SSS", Locale.US).format(Date())
+    return newTempFile("IMAGE_$time", ".webp", noMedia)
 }
 
 fun File.createWebpTemp(
@@ -779,32 +760,6 @@ fun File.blurThumbnail(size: Size): Bitmap? {
         }
     } while (true)
     return blurThumbnail(size.width / scale, size.height / scale)
-}
-
-fun File.dirSize(): Long? {
-    return if (isDirectory) {
-        getDirSize()
-    } else if (isFile) {
-        length()
-    } else {
-        null
-    }
-}
-
-private fun File.getDirSize(): Long? {
-    try {
-        val du =
-            Runtime.getRuntime().exec(
-                "/system/bin/du -s $canonicalPath",
-                arrayOf(),
-                Environment.getRootDirectory(),
-            )
-        val br = BufferedReader(InputStreamReader(du.inputStream))
-        return Scanner(br.readLine()).nextLong()
-    } catch (e: Exception) {
-        Timber.e(e.message)
-    }
-    return null
 }
 
 fun File.encodeBlurHash(): String? {

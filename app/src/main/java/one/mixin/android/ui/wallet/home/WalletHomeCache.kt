@@ -121,6 +121,14 @@ internal fun String?.parseWalletHomeCache(): WalletHomeCache? =
                 }
             }
         }
+        root.get("importKeyAction")?.let { action ->
+            val kind = if (action.isJsonObject) action.asJsonObject.get("kind") else null
+            if (kind == null || !kind.isJsonPrimitive || !kind.asJsonPrimitive.isString ||
+                WalletHomeImportKeyKind.entries.none { it.name == kind.asString }
+            ) {
+                root.remove("importKeyAction")
+            }
+        }
         GsonHelper.customGson.fromJson(root, WalletHomeCache::class.java)
     }.getOrNull()
 

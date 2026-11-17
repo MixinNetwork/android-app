@@ -90,6 +90,13 @@ class MixinMemberInvoicesFragment : BaseFragment() {
                                 MixinMemberUpgradeBottomSheetDialogFragment.TAG
                             )
                     },
+                    onRenewPlanClick = {
+                        MixinMemberRenewBottomSheetDialogFragment.newInstance()
+                            .showNow(
+                                parentFragmentManager,
+                                MixinMemberRenewBottomSheetDialogFragment.TAG
+                            )
+                    },
                     onOrderClick = { order ->
                         navTo(
                             MixinMemberOrderDetailFragment.newInstance(order),

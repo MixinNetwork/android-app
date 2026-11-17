@@ -39,13 +39,13 @@ object WalletHomeBuilder {
         if (walletType == WalletHomeType.PRIVACY && hasPositions) cards += WalletHomeCardType.POSITIONS
 
         cards += WalletHomeCardType.TOKENS
-        if (walletType == WalletHomeType.PRIVACY && hasCollectibles) cards += WalletHomeCardType.COLLECTIBLES
 
         if (hasTransactions) cards += WalletHomeCardType.TRANSACTIONS
 
         if (!hasPositions && showTopMovers) cards += WalletHomeCardType.TOP_MOVERS
 
         if (showReferral) cards += WalletHomeCardType.REFERRAL
+        if (walletType == WalletHomeType.PRIVACY && hasCollectibles) cards += WalletHomeCardType.COLLECTIBLES
         cards += WalletHomeCardType.SUPPORT
 
         return cards

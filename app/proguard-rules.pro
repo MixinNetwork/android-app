@@ -185,5 +185,3 @@
 -dontwarn com.appsflyer.**
 -keep class com.appsflyer.** { *; }
 -keep class com.android.installreferrer.** { *; }
-
--keep,allowoptimization,allowobfuscation,allowshrinking class com.checkout.** { *; }

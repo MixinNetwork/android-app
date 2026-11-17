@@ -87,6 +87,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.PerpsTradeCompletedEvent
 import one.mixin.android.api.request.perps.AdjustMarginRequest
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPosition
@@ -305,6 +307,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             ).show(parentFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                         } else {
                             AnalyticsTracker.trackPerpsReduceMarginEnd()
+                            RxBus.publish(PerpsTradeCompletedEvent)
                             toast(R.string.perps_margin_submitted)
                             viewModel.refreshSinglePosition(currentPosition.positionId, currentPosition.walletId)
                             viewModel.refreshOrders(currentPosition.walletId)

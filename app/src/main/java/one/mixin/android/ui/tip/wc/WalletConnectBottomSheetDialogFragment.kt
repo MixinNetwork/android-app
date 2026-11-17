@@ -19,7 +19,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.GsonBuilder
 import com.reown.walletkit.client.Wallet
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +48,7 @@ import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.tip.wc.WCError
 import one.mixin.android.tip.wc.WCErrorEvent
+import one.mixin.android.tip.wc.WCSessionDeleteEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectTIP
@@ -55,6 +59,7 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WcBitcoinSendTransfer
+import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.tip.wc.internal.WalletConnectException
@@ -83,6 +88,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.eip712SigningChain
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
@@ -129,6 +135,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private val viewModel by viewModels<WalletConnectBottomSheetViewModel>()
 
     private val solanaErrorHandler = SolanaErrorHandler()
+    private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     private var processCompleted = false
 
@@ -230,6 +237,16 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 }
             }
         }
+        RxBus.listen(WCSessionDeleteEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                if (version == WalletConnect.Version.V2 && requestType == RequestType.SessionRequest && event.topic == topic && step == Step.Sign) {
+                    Timber.d("$TAG session deleted, dismiss topic=$topic")
+                    (parentFragmentManager.findFragmentByTag(PinInputBottomSheetDialogFragment.TAG) as? PinInputBottomSheetDialogFragment)?.dismissAllowingStateLoss()
+                    dismiss()
+                }
+            }
     }
 
     override fun getBottomSheetHeight(view: View): Int {
@@ -350,6 +367,10 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             this@WalletConnectBottomSheetDialogFragment.signData = signData
 
             val message = signData.signMessage
+            // Typed data is signed for its domain's chain, not the request's: show that one.
+            if (message is WCEthereumSignMessage && message.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
+                runCatching { eip712SigningChain(message.data, null, "") }.getOrNull()?.let { chain = it }
+            }
             preflightMessage = when (message) {
                 is WCEthereumTransaction -> JsSignMessage(signData.requestId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = message)
                 is VersionedTransactionCompat -> JsSignMessage(

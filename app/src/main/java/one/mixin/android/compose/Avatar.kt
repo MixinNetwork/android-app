@@ -3,18 +3,23 @@ package one.mixin.android.compose
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Text
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.integerArrayResource
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.CodeType
@@ -31,7 +36,7 @@ fun UserAvatarImage(
     AvatarImage(
         name = user.fullName ?: "",
         imageUrl = user.avatarUrl,
-        identityNumber = user.identityNumber,
+        colorKey = user.userId,
         size = size,
     )
 }
@@ -44,7 +49,7 @@ fun AppAvatarImage(
     AvatarImage(
         name = app.name,
         imageUrl = app.iconUrl,
-        identityNumber = app.appNumber,
+        colorKey = app.appId,
         size = size,
     )
 }
@@ -53,7 +58,7 @@ fun AppAvatarImage(
 private fun AvatarImage(
     name: String,
     imageUrl: String?,
-    identityNumber: String,
+    colorKey: String,
     size: Dp,
 ) {
     if (!imageUrl.isNullOrEmpty()) {
@@ -67,8 +72,9 @@ private fun AvatarImage(
         )
     } else {
         val avatarArray = integerArrayResource(id = R.array.avatar_colors)
-        val code = identityNumber.getColorCode(CodeType.Avatar(avatarArray.size))
-        val color = avatarArray.getOrNull(code) ?: 0x000000
+        val code = colorKey.getColorCode(CodeType.Avatar(avatarArray.size))
+        val color = avatarArray.getOrElse(code) { avatarArray[0] }
+        val fontSize = with(LocalDensity.current) { (size * (22f / 48f)).toSp() }
         Box(
             modifier =
                 Modifier
@@ -77,10 +83,22 @@ private fun AvatarImage(
                     .background(Color(color)),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
+            BasicText(
                 text = AvatarView.checkEmoji(name),
-                color = Color.White,
-                fontSize = 22.sp,
+                modifier = Modifier.sizeIn(maxWidth = size * 0.8f, maxHeight = size * 0.8f),
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = fontSize,
+                    textAlign = TextAlign.Center,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false),
+                ),
+                maxLines = 1,
+                softWrap = false,
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = fontSize * 0.1f,
+                    maxFontSize = fontSize,
+                    stepSize = fontSize * 0.05f,
+                ),
             )
         }
     }
@@ -93,7 +111,7 @@ fun AvatarImagePreview() {
         AvatarImage(
             name = "Test",
             imageUrl = null,
-            identityNumber = "1234124",
+            colorKey = "1234124",
             size = 100.dp,
         )
     }

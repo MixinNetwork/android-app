@@ -27,6 +27,7 @@
         android:layout_marginEnd="@dimen/margin20"
         android:layout_toEndOf="@id/avatar"
         android:textColor="?attr/text_primary"
+        app:badgeSize="20dp"
         app:ellipsize="end"
         app:textSize="16sp" />
 

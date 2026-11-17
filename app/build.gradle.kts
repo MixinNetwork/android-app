@@ -15,10 +15,10 @@ plugins {
 apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
-val versionMajor = 6
-val versionMinor = 3
-val versionPatch = 6
-val versionBuild = 1
+val versionMajor = 7
+val versionMinor = 1
+val versionPatch = 0
+val versionBuild = 3
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
 val jetifierVersion = rootProject.extra["jetifierVersion"] as String
@@ -125,13 +125,6 @@ val tweetnaclVersion = rootProject.extra["tweetnaclVersion"] as String
 val sol4kUtilitiesVersion = rootProject.extra["sol4kUtilitiesVersion"] as String
 val desugarJdkLibsVersion = rootProject.extra["desugarJdkLibsVersion"] as String
 val bugsnagVersion = rootProject.extra["bugsnagVersion"] as String
-val sumsubVersion = rootProject.extra["sumsubVersion"] as String
-val checkoutFramesVersion = rootProject.extra["checkoutFramesVersion"] as String
-val checkoutSecureVersion = rootProject.extra["checkoutSecureVersion"] as String
-val checkoutRiskVersion = rootProject.extra["checkoutRiskVersion"] as String
-val playWalletVersion = rootProject.extra["playWalletVersion"] as String
-val playPayVersion = rootProject.extra["playPayVersion"] as String
-val datastoreVersion = rootProject.extra["datastoreVersion"] as String
 val appsFlyerVersion = rootProject.extra["appsFlyerVersion"] as String
 val installReferrerVersion = rootProject.extra["installReferrerVersion"] as String
 val billingVersion = rootProject.extra["billingVersion"] as String
@@ -344,6 +337,13 @@ androidComponents {
             finalizedBy("bugsnagUpload${variantName}ProguardMapping", "bugsnagCreate${variantName}Build")
         }
     }
+}
+
+// The BugSnag plugin extracts its embedded bugsnag-cli to a temp file at configuration time and the
+// configuration cache stores that path. Once the OS cleans the temp dir, cached builds fail with
+// "A problem occurred starting process '.../bugsnag-cli…'", so force a fresh configuration for these tasks.
+tasks.matching { it.name.startsWith("bugsnag") }.configureEach {
+    notCompatibleWithConfigurationCache("bugsnag-cli is extracted to a temp file at configuration time")
 }
 
 room3 {
@@ -606,20 +606,6 @@ dependencies {
             strictly(protobufVersion)
         }
     }
-
-    // SumSub
-    implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion")
-    // checkout
-    implementation("com.github.checkout:frames-android:$checkoutFramesVersion")
-    implementation("com.checkout:checkout-sdk-3ds-android:$checkoutSecureVersion")
-    implementation("com.github.checkout:checkout-risk-sdk-android:$checkoutRiskVersion")
-
-    // google play
-    implementation("com.google.android.gms:play-services-wallet:$playWalletVersion")
-    implementation("com.google.android.gms:play-services-pay:$playPayVersion")
-
-    // Jetpack Datastore - Proto Datastore
-    implementation("androidx.datastore:datastore:$datastoreVersion")
 
     // AppsFlyer
     implementation("com.appsflyer:af-android-sdk:$appsFlyerVersion") {

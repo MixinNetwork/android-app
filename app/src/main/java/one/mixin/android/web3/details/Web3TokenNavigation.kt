@@ -1,8 +1,11 @@
 package one.mixin.android.web3.details
 
 import android.os.Bundle
+import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -62,16 +65,9 @@ private fun Fragment.navigateToWeb3Asset(
     address: String?,
 ): Boolean {
     val nav = runCatching { findNavController() }.getOrNull() ?: return false
-    if (nav.currentDestination?.id == R.id.web3_transactions_fragment &&
-        nav.currentBackStackEntry?.tokenArgument()?.assetId == token.assetId
-    ) {
-        return true
-    }
-    val previous = nav.previousBackStackEntry
-    if (previous?.destination?.id == R.id.web3_transactions_fragment &&
-        previous.tokenArgument()?.assetId == token.assetId
-    ) {
-        activity?.onBackPressedDispatcher?.onBackPressed()
+    val existingToken = nav.findBackStackEntry(R.id.web3_transactions_fragment)?.tokenArgument()
+    if (existingToken?.assetId == token.assetId && existingToken.walletId == token.walletId) {
+        nav.popBackStack(R.id.web3_transactions_fragment, false)
         return true
     }
     val action = when (nav.currentDestination?.id) {
@@ -84,8 +80,39 @@ private fun Fragment.navigateToWeb3Asset(
         putParcelable(Web3TransactionsFragment.ARGS_TOKEN, token)
         if (!address.isNullOrEmpty()) putString(Web3TransactionsFragment.ARGS_ADDRESS, address)
     }
-    return runCatching { nav.navigate(action, args) }.isSuccess
+    return runCatching { nav.navigateReplacingExisting(action, args, R.id.web3_transactions_fragment) }.isSuccess
 }
+
+internal fun NavController.navigateToWeb3Transaction(
+    @IdRes resId: Int,
+    args: Bundle,
+) {
+    navigateReplacingExisting(resId, args, R.id.web3_transaction_fragment)
+}
+
+// Keep at most one entry of destinationId in the back stack: pop the existing one (and everything above it) before navigating.
+private fun NavController.navigateReplacingExisting(
+    @IdRes resId: Int,
+    args: Bundle,
+    @IdRes destinationId: Int,
+) {
+    if (findBackStackEntry(destinationId) == null) {
+        navigate(resId, args)
+        return
+    }
+    val actionOptions = currentDestination?.getAction(resId)?.navOptions
+    val options = NavOptions.Builder()
+        .setEnterAnim(actionOptions?.enterAnim ?: -1)
+        .setExitAnim(actionOptions?.exitAnim ?: -1)
+        .setPopEnterAnim(actionOptions?.popEnterAnim ?: -1)
+        .setPopExitAnim(actionOptions?.popExitAnim ?: -1)
+        .setPopUpTo(destinationId, true)
+        .build()
+    navigate(resId, args, options)
+}
+
+private fun NavController.findBackStackEntry(@IdRes destinationId: Int): NavBackStackEntry? =
+    runCatching { getBackStackEntry(destinationId) }.getOrNull()
 
 private fun NavBackStackEntry.tokenArgument(): Web3TokenItem? =
     arguments?.getParcelableCompat(Web3TransactionsFragment.ARGS_TOKEN, Web3TokenItem::class.java)

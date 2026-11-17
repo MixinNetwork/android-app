@@ -6,10 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.Event
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDispose
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +24,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.RxBus
+import one.mixin.android.event.PerpsTradeCompletedEvent
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -105,6 +111,10 @@ class PerpsMarketListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
     ) {
         super.onViewCreated(view, savedInstanceState)
         observeMarkets()
+        RxBus.listen(PerpsTradeCompletedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(scope(Event.ON_DESTROY))
+            .subscribe { dismiss() }
     }
 
     @Composable
@@ -257,7 +267,6 @@ class PerpsMarketListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
                     source = AnalyticsTracker.PerpsSource.MORE_EXPLORE,
                 )
             }
-            dismiss()
         }
     }
 }

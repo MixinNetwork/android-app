@@ -5,15 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -37,12 +40,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -69,6 +75,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.ui.components.Tooltip
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.widget.components.MixinButton
@@ -541,6 +548,8 @@ private fun TotalRealizedPnlCard(
     totalPnl: BigDecimal,
     quoteColorReversed: Boolean,
 ) {
+    var showTooltip by remember { mutableStateOf(false) }
+    val density = LocalDensity.current
     val gainColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     val pnlColor = when {
@@ -559,11 +568,33 @@ private fun TotalRealizedPnlCard(
             )
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Text(
-            text = stringResource(R.string.Total_Realized_PnL),
-            fontSize = 13.sp,
-            color = MixinAppTheme.colors.textAssist,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.Total_Realized_PnL),
+                fontSize = 13.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Box {
+                Icon(
+                    painter = painterResource(R.drawable.ic_tip),
+                    contentDescription = stringResource(R.string.Total_Realized_PnL),
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .clickable(role = Role.Button) { showTooltip = true },
+                )
+                if (showTooltip) {
+                    Tooltip(
+                        text = stringResource(R.string.perps_realized_pnl_tip),
+                        onDismissRequest = { showTooltip = false },
+                        offset = with(density) { IntOffset((-24).dp.roundToPx(), 4.dp.roundToPx()) },
+                        arrowOffsetX = 24.dp,
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = formatPerpsSignedUsdDecimal(totalPnl),

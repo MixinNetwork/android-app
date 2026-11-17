@@ -541,10 +541,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                             )
                     }
                 }
+                val showFeeInfo = {
+                    NetworkFeeInfoBottomSheetDialogFragment.newInstance(token?.chainName ?: web3Token?.getChainDisplayName().orEmpty())
+                        .show(parentFragmentManager, NetworkFeeInfoBottomSheetDialogFragment.TAG)
+                }
+                binding.feeTipIv.setOnClickListener { showFeeInfo() }
                 when(transferType) {
                     TransferType.USER, TransferType.BIOMETRIC_ITEM -> {
                         if (assetBiometricItem is WithdrawBiometricItem) {
                             binding.titleTextView.setText(R.string.Network_Fee)
+                            binding.titleTextView.setOnClickListener { showFeeInfo() }
+                            binding.feeTipIv.isVisible = true
                         } else {
                             binding.infoLinearLayout.setOnClickListener {
                                 noteDialog()
@@ -562,6 +569,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     }
                     else -> {
                         binding.titleTextView.setText(R.string.Network_Fee)
+                        binding.titleTextView.setOnClickListener { showFeeInfo() }
+                        binding.feeTipIv.isVisible = true
                     }
                 }
                 if (isCashAccountTransfer) {
@@ -818,6 +827,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             getString(R.string.cash_account_apy, it)
         }
         binding.titleTextView.setText(R.string.cash_balance)
+        binding.titleTextView.setOnClickListener(null)
+        binding.feeTipIv.isVisible = false
         binding.feeTv.isVisible = apyText != null
         binding.feeTv.text = apyText
         binding.feeTv.setBackgroundResource(R.drawable.bg_round_wallet_green_tv)
@@ -2569,12 +2580,16 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
         val ethPayload = GsonHelper.customGson.fromJson(payload, EthGaslessTxPayload::class.java)
             ?: throw IllegalStateException("Failed to parse gasless EVM payload")
-        val userOpSignature = Web3Signer.signEthMessage(
+        val (userOpSignature, eip7702AuthSignature) = Web3Signer.signEvmGaslessTransfer(
             priv = privateKey,
-            message = ethPayload.signing.userOperation.message,
-            type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+            payload = ethPayload,
+            fromAddress = fromAddress,
+            token = token,
+            amount = amount,
+            recipient = toAddress,
+            feeToken = if (feeAssetId == token.assetId) token else web3ViewModel.web3TokenItemById(token.walletId, feeAssetId),
+            feeAmount = feeAmount,
         )
-        val eip7702AuthSignature = Web3Signer.signEip7702Auth(privateKey, ethPayload.signing.eip7702Auth)
         val response = web3ViewModel.submitGaslessTx(
             SubmitGaslessTxRequest(
                 chainId = chainId,

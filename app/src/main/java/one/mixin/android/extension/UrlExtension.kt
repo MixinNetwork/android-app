@@ -408,6 +408,7 @@ internal data class PerpsOpenPositionAction(
     val isLong: Boolean?,
     val leverage: Int?,
     val margin: String?,
+    val orderId: String? = null,
 )
 
 internal data class SpotTradeAction(
@@ -460,10 +461,15 @@ internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
         val margin = query.queryParameter("margin")?.toPerpsMarginOrNull()
         if (hasMargin && margin == null) return null
 
+        val hasOrderId = query.hasQueryParameter("order_id")
+        val orderId = query.queryParameter("order_id")
+        if (hasOrderId && (orderId == null || !orderId.isUUID())) return null
+
         PerpsOpenPositionAction(
             isLong = isLong,
             leverage = leverage,
             margin = margin,
+            orderId = orderId,
         )
     } else {
         null

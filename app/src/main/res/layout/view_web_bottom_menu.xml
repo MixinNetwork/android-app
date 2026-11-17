@@ -39,6 +39,7 @@
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toEndOf="@id/avatar"
             app:layout_constraintTop_toTopOf="@id/avatar"
+            app:badgeSize="20dp"
             app:lines="1"
             app:textSize="16sp" />
 

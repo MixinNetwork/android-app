@@ -26,6 +26,7 @@ internal val MarketTopTab.bannerPlacement: String?
 enum class MarketSubTab {
     FAVORITE,
     TRENDING,
+    STOCKS,
     TOP_GAINERS,
     TOP_LOSERS,
     ALL,
@@ -118,6 +119,7 @@ fun defaultMarketSortState(
         topTab == MarketTopTab.PERPETUAL &&
             subTab in
                 setOf(
+                    MarketSubTab.STOCKS,
                     MarketSubTab.MEME,
                     MarketSubTab.INDICES,
                     MarketSubTab.COMMODITIES,
@@ -227,6 +229,7 @@ fun marketSubTabs(topTab: MarketTopTab): List<MarketSubTab> =
             listOf(
                 MarketSubTab.FAVORITE,
                 MarketSubTab.TRENDING,
+                MarketSubTab.STOCKS,
                 MarketSubTab.TOP_GAINERS,
                 MarketSubTab.TOP_LOSERS,
                 MarketSubTab.ALL,
@@ -235,6 +238,7 @@ fun marketSubTabs(topTab: MarketTopTab): List<MarketSubTab> =
             listOf(
                 MarketSubTab.FAVORITE,
                 MarketSubTab.TRENDING,
+                MarketSubTab.STOCKS,
                 MarketSubTab.TOP_GAINERS,
                 MarketSubTab.TOP_LOSERS,
                 MarketSubTab.MEME,
@@ -273,6 +277,7 @@ internal fun marketPageRefreshSources(
                     )
                 MarketSubTab.TOP_GAINERS -> setOf(MarketPageDataSource.SPOT_TOP_GAINER)
                 MarketSubTab.TOP_LOSERS -> setOf(MarketPageDataSource.SPOT_TOP_LOSER)
+                MarketSubTab.STOCKS -> setOf(MarketPageDataSource.SPOT_STOCK)
                 MarketSubTab.ALL ->
                     setOf(
                         MarketPageDataSource.SPOT_ALL,
@@ -313,6 +318,7 @@ object MarketPageMapper {
     ): List<PerpsMarket> =
         when (subTab) {
             MarketSubTab.TRENDING -> markets.sortedByScoreAndVolumeDescending()
+            MarketSubTab.STOCKS -> perpetualStockMarkets(markets)
             MarketSubTab.TOP_GAINERS -> markets.sortedByDescending { it.changePercentValue() ?: BigDecimal.ZERO }
             MarketSubTab.TOP_LOSERS -> markets.sortedBy { it.changePercentValue() ?: BigDecimal.ZERO }
             MarketSubTab.INDICES -> markets.filterByCategory(PerpsMarketCategoryKey.INDICES).sortedByVolumeDescending()
