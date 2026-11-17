@@ -22,9 +22,9 @@ class AppCardDataTest {
         )
 
         assertTrue(card.shareDataErrorReasons().isEmpty())
-        assertEquals(listOf("titleLength=0"), card.copy(description = "text").shareDataErrorReasons())
-        assertEquals(listOf("descriptionLength=0"), card.copy(title = "title").shareDataErrorReasons())
-        assertEquals(listOf("titleLength=0", "descriptionLength=0"), card.copy(action = "https://example.com").shareDataErrorReasons())
+        assertTrue(card.copy(description = "text").shareDataErrorReasons().isEmpty())
+        assertTrue(card.copy(title = "title").shareDataErrorReasons().isEmpty())
+        assertTrue(card.copy(action = "https://example.com").shareDataErrorReasons().isEmpty())
         val invalidCover = Cover(1, 1, "image/jpeg", null, null)
         assertEquals(listOf("coverSize=1x1"), card.copy(cover = invalidCover).shareDataErrorReasons())
     }
@@ -125,5 +125,22 @@ class AppCardDataTest {
 
         assertTrue(coverUrlOnly.hasMediaCover)
         assertFalse(nestedCover.hasMediaCover)
+    }
+
+    @Test
+    fun `shareDataErrorReasons allows empty title and description`() {
+        val appCardData = AppCardData(
+            appId = "app-id",
+            iconUrl = null,
+            coverUrl = null,
+            cover = null,
+            title = "",
+            description = null,
+            action = null,
+            updatedAt = null,
+            shareable = true,
+        )
+
+        assertTrue(appCardData.shareDataErrorReasons().isEmpty())
     }
 }

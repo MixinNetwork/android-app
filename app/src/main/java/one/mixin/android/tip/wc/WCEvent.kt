@@ -33,5 +33,7 @@ sealed class WCEvent(
 
 class WCErrorEvent(val error: WCError)
 
+class WCSessionDeleteEvent(val topic: String)
+
 @Parcelize
 data class WCError(val throwable: Throwable) : Parcelable

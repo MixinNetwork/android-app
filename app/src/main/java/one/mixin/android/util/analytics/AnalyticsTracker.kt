@@ -975,6 +975,18 @@ object AnalyticsTracker {
         }
     }
 
+    fun trackTradeMoreMenu(tab: String) {
+        logEvent("trade_more_menu") {
+            putString("tab", tab)
+        }
+    }
+
+    fun trackTradeProClick() {
+        logEvent("trade_pro_click") {
+            putString("source", "trade_more_menu")
+        }
+    }
+
     fun trackTradeTypeSelect(type: String) {
         logEvent("trade_type_select") {
             putString("type", type)

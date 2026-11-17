@@ -17,11 +17,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
@@ -170,34 +166,24 @@ class SettingStorageFragment : BaseFragment(R.layout.fragment_storage) {
     }
 
     private fun clear() {
+        val selected = selectSet.toList()
+        if (selected.isEmpty()) return
+        val conversationId = selected.first().conversationId
         dialog.show()
-        Observable.just(selectSet)
-            .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())
-            .map {
-                for (item in selectSet) {
-                    when (item.type) {
-                        IMAGE, VIDEO, AUDIO, DATA, TRANSCRIPT -> {
-                            viewModel.clear(item.conversationId, item.type)
-                        }
-                        else -> {
-                            Timber.e("Unknown type")
-                        }
-                    }
-                }
+        lifecycleScope.launch {
+            runCatching {
+                viewModel.clear(conversationId, selected.map { it.type })
+            }.onSuccess {
+                if (viewDestroyed()) return@launch
+                adapter.clearData(conversationId, selected.sumOf { it.mediaSize })
+                dialog.dismiss()
+            }.onFailure {
+                Timber.e(it)
+                if (viewDestroyed()) return@launch
+                dialog.dismiss()
+                toast(getString(R.string.error_unknown_with_message, selected.toString()))
             }
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(stopScope)
-            .subscribe(
-                {
-                    adapter.clearData(selectSet.first().conversationId, selectSet.sumOf { it.mediaSize })
-                    dialog.dismiss()
-                },
-                {
-                    Timber.e(it)
-                    dialog.dismiss()
-                    toast(getString(R.string.error_unknown_with_message, selectSet.toString()))
-                },
-            )
+        }
     }
 
     private val menuView: RecyclerView by lazy {
