@@ -64,7 +64,6 @@ import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.TokenItem
-import one.mixin.android.vo.sumsub.ProfileResponse
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -353,8 +352,6 @@ internal constructor(
 
     suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
         tokenRepository.findSnapshotById(snapshotId)
-
-    suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
 
     suspend fun walletHomeBanners() = referralRepository.fetchWalletHomeBanners()
 

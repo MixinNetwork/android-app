@@ -5,6 +5,7 @@ import androidx.paging.PagingSource
 import androidx.room3.Dao
 import androidx.room3.Query
 import androidx.room3.RoomWarnings
+import one.mixin.android.db.contants.TRANSCRIPTS
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
@@ -34,7 +35,7 @@ interface ConversationDao : BaseDao<Conversation> {
             mu.full_name AS senderFullName,
             pu.full_name AS participantFullName, pu.user_id AS participantUserId,
             (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
-            mm.mentions AS mentions, ou.membership AS membership
+            mm.mentions AS mentions, ou.membership AS membership, c.expire_in AS expireIn
             FROM conversations c
             INNER JOIN users ou ON ou.user_id = c.owner_id
             LEFT JOIN messages m ON c.last_message_id = m.id
@@ -133,7 +134,8 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query(
         """
-        SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified 
+        SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified,
+        (SELECT sum(m.media_size) FROM messages m WHERE m.conversation_id = c.conversation_id AND m.category IN ($TRANSCRIPTS)) AS transcript_size
         FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id WHERE c.category IS NOT NULL 
         """,
     )

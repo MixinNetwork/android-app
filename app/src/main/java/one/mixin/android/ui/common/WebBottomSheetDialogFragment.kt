@@ -8,11 +8,8 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
-import android.content.Intent.CATEGORY_BROWSABLE
-import android.content.Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER
 import android.net.Uri
 import android.graphics.Rect
-import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.ViewTreeObserver
@@ -32,6 +29,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.uber.autodispose.autoDispose
 import one.mixin.android.BuildConfig
@@ -58,6 +56,7 @@ import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.ui.web.WebViewBridgeBinding
+import one.mixin.android.ui.web.prepareForExternalWebLaunch
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId
@@ -74,6 +73,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_URL = "args_url"
         private const val ARGS_TITLE = "args_title"
         private const val ARGS_SUBTITLE = "args_subtitle"
+        private const val DISABLE_EME_SCRIPT =
+            "Navigator.prototype.requestMediaKeySystemAccess = function() { " +
+                "return Promise.reject(new DOMException('Unsupported keySystem or supportedConfigurations.', 'NotSupportedError')); };"
 
         fun newInstance(
             url: String,
@@ -165,6 +167,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             settings.userAgentString = settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME + " GOOGLE_PAY_SUPPORTED"
             if (WebViewFeature.isFeatureSupported(WebViewFeature.PAYMENT_REQUEST)) {
                 WebSettingsCompat.setPaymentRequestEnabled(settings, true)
+            }
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+                // Probing EME support makes WebView query the DRM HAL on the main thread, which can hang and cause ANRs
+                WebViewCompat.addDocumentStartJavaScript(this, DISABLE_EME_SCRIPT, setOf("*"))
             }
             webChromeClient =
                 object : WebChromeClient() {
@@ -539,18 +545,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ): Boolean {
         return try {
             val context = view?.context ?: context ?: return false
-            val intent =
-                Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
-                    action = ACTION_VIEW
-                    addCategory(CATEGORY_BROWSABLE)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        addFlags(FLAG_ACTIVITY_REQUIRE_NON_BROWSER)
-                    }
-                    if (context !is Activity) {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                }
+            val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
             try {
+                if (!intent.prepareForExternalWebLaunch(context)) {
+                    throw ActivityNotFoundException()
+                }
                 context.startActivity(intent)
                 if (request.isForMainFrame) {
                     dismiss()

@@ -415,8 +415,13 @@
     </style>
 
     <style name="BottomItemTextAppearance" parent="@android:style/TextAppearance.Medium">
-        <item name="android:textSize">12sp</item>
+        <item name="android:textSize">10sp</item>
         <item name="android:textColor">?attr/text_primary</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
+    </style>
+
+    <style name="BottomItemTextAppearance.Active">
+        <item name="android:textFontWeight" tools:ignore="NewApi">600</item>
     </style>
 
     <style name="AppTheme.DatePicker" parent="@style/ThemeOverlay.MaterialComponents.MaterialCalendar">

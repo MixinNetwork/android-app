@@ -103,13 +103,7 @@ class ExploreFragment : BaseFragment() {
                     onBack = { requireActivity().onBackPressedDispatcher.onBackPressed() },
                     onEdit = { navTo(MySharedAppsFragment.newInstance(), MySharedAppsFragment.TAG) },
                     onFavoriteClick = { clickAction(it) },
-                    onBotClick = { app ->
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            botManagerViewModel.findUserByAppId(app.appId)?.let {
-                                showUserBottom(parentFragmentManager, it, botEntrySource = AnalyticsTracker.BotSource.MORE_EXPLORE_DIALOG)
-                            }
-                        }
-                    },
+                    onBotClick = ::showBotProfile,
                 )
             } else {
                 val users by contacts.observeAsState(emptyList())
@@ -118,7 +112,7 @@ class ExploreFragment : BaseFragment() {
                     user = user,
                     contacts = users,
                     favorites = favoriteApps,
-                    botCount = (favoriteApps + apps).distinctBy { it.appId }.size,
+                    apps = apps,
                     isDesktopLogin = isDesktopLogin,
                     clickedBotIds = clickedBotIds,
                     onProfile = { navTo(ProfileFragment(), ProfileFragment.TAG) },
@@ -132,6 +126,7 @@ class ExploreFragment : BaseFragment() {
                     onContact = { showUserBottom(parentFragmentManager, it) },
                     onBots = { navTo(newInstance(bots = true), "ExploreBotsFragment") },
                     onBot = { clickAction(it) },
+                    onBotProfile = ::showBotProfile,
                 )
             }
         }
@@ -169,6 +164,14 @@ class ExploreFragment : BaseFragment() {
         }
         RxBus.listen(SessionEvent::class.java).observeOn(AndroidSchedulers.mainThread()).autoDispose(viewLifecycleOwner.scope(androidx.lifecycle.Lifecycle.Event.ON_DESTROY)).subscribe {
             isDesktopLogin = Session.getExtensionSessionId() != null
+        }
+    }
+
+    private fun showBotProfile(app: ExploreApp) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            botManagerViewModel.findUserByAppId(app.appId)?.let {
+                showUserBottom(parentFragmentManager, it, botEntrySource = AnalyticsTracker.BotSource.MORE_EXPLORE_DIALOG)
+            }
         }
     }
 

@@ -166,6 +166,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
+import one.mixin.android.ui.common.DisappearingFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -290,6 +291,7 @@ import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
 import one.mixin.android.widget.linktext.AutoLinkMode
+import one.mixin.android.widget.picker.DEFAULT_NEW_CHAT_EXPIRE_IN
 import timber.log.Timber
 import java.io.File
 import java.util.UUID
@@ -403,7 +405,7 @@ class ConversationFragment() :
             lifecycleScope.launch {
                 val (_, data) = messageFetcher.initMessages(conversationId, null, true)
                 messageAdapter.refreshData(data)
-                messageLayoutManager.scrollWithOffset(messageAdapter.itemCount - 1, messageRvOffset)
+                messageLayoutManager.scrollToPositionWithOffset(messageAdapter.itemCount - 1, messageRvOffset)
             }
         }
     }
@@ -712,6 +714,14 @@ class ConversationFragment() :
 
             override fun onUrlClick(url: String) {
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+            }
+
+            override fun onDisappearingMessagesClick() {
+                activity?.addFragment(
+                    this@ConversationFragment,
+                    DisappearingFragment.newInstance(conversationId, recipient?.userId),
+                    DisappearingFragment.TAG,
+                )
             }
 
             override fun onInscriptionClick(
@@ -1458,7 +1468,7 @@ class ConversationFragment() :
             }
 
             fun scroll() {
-                val targetPosition = messageAdapter.itemCount
+                val targetPosition = messageAdapter.itemCount - 1
                 findFirstVisibleItemPosition().let { firstPosition ->
                     if (abs(targetPosition - firstPosition) > MessageFetcher.PAGE_SIZE) {
                         scrollToPositionWithOffset(targetPosition - MessageFetcher.PAGE_SIZE / 2, 0)
@@ -1513,7 +1523,13 @@ class ConversationFragment() :
     }
 
     private fun initView() {
-        binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
+        viewLifecycleOwner.lifecycleScope.launch {
+            val context = requireContext()
+            val wallpaper = withContext(Dispatchers.IO) {
+                WallpaperManager.getWallpaper(context)
+            }
+            binding.inputLayout.backgroundImage = wallpaper
+        }
         binding.chatControl.callback = chatControlCallback
         binding.chatControl.activity = requireActivity()
         binding.chatControl.inputLayout = binding.inputLayout
@@ -2014,6 +2030,15 @@ class ConversationFragment() :
                     keyword = keyword,
                 )
             binding.messageRv.adapter = messageAdapter
+            chatViewModel.observeConversation(conversationId).observe(viewLifecycleOwner) { conversation ->
+                val expireIn = if (conversation == null && !isGroup) {
+                    DEFAULT_NEW_CHAT_EXPIRE_IN
+                } else {
+                    conversation?.expireIn ?: 0L
+                }
+                binding.actionBar.setExpireIconVisible(expireIn > 0L)
+                messageAdapter.expireIn = expireIn
+            }
             binding.messageRv.addItemDecoration(decoration)
             binding.messageRv.itemAnimator = null
             binding.messageRv.layoutManager = messageLayoutManager
@@ -3263,7 +3288,7 @@ class ConversationFragment() :
                 }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                     (view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                 }.apply {
-                    snackBar?.config(binding.barLayout.context)
+                    config(binding.barLayout.context)
                 }
         snackBar?.show()
     }

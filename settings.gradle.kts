@@ -1,9 +1,9 @@
 pluginManagement {
-    val androidGradlePluginVersion = "9.4.1"
+    val androidGradlePluginVersion = "9.5.1"
     val kotlinVersion = "2.4.21"
     val downloadPluginVersion = "5.5.0"
     val secretsGradlePluginVersion = "2.0.1"
-    val kspVersion = "2.3.12"
+    val kspVersion = "2.3.13"
     val firebasePerfPluginVersion = "2.0.2"
     val foojayResolverVersion = "1.0.0"
 

@@ -4,11 +4,13 @@
         <exclude domain="sharedpref" path="appsflyer-data"/>
         <exclude domain="sharedpref" path="keystore_*" />
         <exclude domain="sharedpref" path="encrypted_*" />
+        <exclude domain="sharedpref" path="device_identity.xml" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="sharedpref" path="appsflyer-data"/>
         <exclude domain="sharedpref" path="keystore_*" />
         <exclude domain="sharedpref" path="encrypted_*" />
+        <exclude domain="sharedpref" path="device_identity.xml" />
     </device-transfer>
 </data-extraction-rules>
 

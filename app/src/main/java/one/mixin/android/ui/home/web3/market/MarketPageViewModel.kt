@@ -526,6 +526,7 @@ class MarketPageViewModel
                                     }
                                 MarketSubTab.TOP_GAINERS -> topGainerMarkets
                                 MarketSubTab.TOP_LOSERS -> topLoserMarkets
+                                MarketSubTab.STOCKS -> stockMarkets
                                 MarketSubTab.ALL -> allMarkets
                                 else -> trendingMarkets
                             }
@@ -542,8 +543,13 @@ class MarketPageViewModel
                                 markets = source.withFavoriteState(),
                                 fallbackMarkets = fallbackMarkets.withFavoriteState(),
                             )
-                            .filterNot { it.coinId in stockCoinIds }
-                            .map { MarketListEntry.Spot(it, SpotMarketType.CRYPTO) }
+                            .filter { subTab == MarketSubTab.STOCKS || it.coinId !in stockCoinIds }
+                            .map {
+                                MarketListEntry.Spot(
+                                    it,
+                                    if (subTab == MarketSubTab.STOCKS) SpotMarketType.STOCK else SpotMarketType.CRYPTO,
+                                )
+                            }
                     }
 
                     MarketTopTab.PERPETUAL -> {
@@ -669,6 +675,7 @@ class MarketPageViewModel
                         }
                         MarketSubTab.TOP_GAINERS -> MarketPageDataSource.SPOT_TOP_GAINER
                         MarketSubTab.TOP_LOSERS -> MarketPageDataSource.SPOT_TOP_LOSER
+                        MarketSubTab.STOCKS -> MarketPageDataSource.SPOT_STOCK
                         MarketSubTab.ALL -> MarketPageDataSource.SPOT_ALL
                         else -> MarketPageDataSource.SPOT_TRENDING
                     }

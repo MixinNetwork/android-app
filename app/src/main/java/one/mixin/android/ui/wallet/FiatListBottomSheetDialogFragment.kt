@@ -22,7 +22,6 @@ import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.CurrencyAdapter
 import one.mixin.android.ui.setting.OnCurrencyListener
 import one.mixin.android.ui.setting.getCurrencyData
-import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
@@ -34,6 +33,7 @@ class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "FiatListBottomSheetDialogFragment"
         const val ARGS_CURRENCIES = "args_currencies"
+        const val ARGS_CURRENCY = "args_currency"
 
         fun newInstance(
             currency: Currency,

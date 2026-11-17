@@ -10,7 +10,6 @@ import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.vo.Chain
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Ticker
-import one.mixin.android.vo.safe.PendingDeposit
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -34,20 +33,6 @@ interface AssetService {
     suspend fun getAssetPrecisionById(
         @Path("id") id: String,
     ): MixinResponse<AssetPrecision>
-
-    @GET("assets/{id}/snapshots")
-    suspend fun getSnapshotsByAssetId(
-        @Path("id") id: String,
-        @Query("offset") offset: String? = null,
-        @Query("limit") limit: Int = LIMIT,
-    ): MixinResponse<List<Snapshot>>
-
-    @GET("snapshots")
-    suspend fun getAllSnapshots(
-        @Query("offset") offset: String? = null,
-        @Query("limit") limit: Int = LIMIT,
-        @Query("opponent") opponent: String? = null,
-    ): MixinResponse<List<Snapshot>>
 
     @GET("snapshots")
     suspend fun getSnapshots(
@@ -79,13 +64,6 @@ interface AssetService {
         @Path("id") id: String,
     ): MixinResponse<Snapshot>
 
-    @GET("external/transactions")
-    suspend fun pendingDeposits(
-        @Query("asset") asset: String,
-        @Query("destination") key: String? = null,
-        @Query("tag") tag: String? = null,
-    ): MixinResponse<List<PendingDeposit>>
-
     @GET("network/assets/search/{query}")
     suspend fun queryAssets(
         @Path("query") query: String,
@@ -101,9 +79,6 @@ interface AssetService {
         @Query("asset") assetId: String,
         @Query("offset") offset: String? = null,
     ): MixinResponse<Ticker>
-
-    @GET("network/chains")
-    suspend fun getChains(): MixinResponse<List<Chain>>
 
     @GET("network/chains/{id}")
     suspend fun getChainById(

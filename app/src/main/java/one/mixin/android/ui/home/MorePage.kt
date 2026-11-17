@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -73,7 +73,7 @@ internal fun MorePage(
     user: User?,
     contacts: List<User>,
     favorites: List<ExploreApp>,
-    botCount: Int,
+    apps: List<ExploreApp>,
     isDesktopLogin: Boolean,
     clickedBotIds: Set<String>,
     onProfile: () -> Unit,
@@ -82,12 +82,15 @@ internal fun MorePage(
     onContact: (User) -> Unit,
     onBots: () -> Unit,
     onBot: (BotInterface) -> Unit,
+    onBotProfile: (ExploreApp) -> Unit,
 ) {
+    val bots = (favorites + apps).distinctBy { it.appId }
+    val favoriteIds = favorites.map { it.appId }.toSet()
     MixinAppTheme {
         val profileNameColor = MixinAppTheme.colors.textMinor.toArgb()
         LazyColumn(
-            modifier = Modifier.fillMaxSize().background(MixinAppTheme.colors.background),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 16.dp),
+            modifier = Modifier.fillMaxSize().homeNavigationScroll().background(MixinAppTheme.colors.background),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 16.dp + homeNavigationInset()),
         ) {
             user?.let {
                 item {
@@ -98,7 +101,7 @@ internal fun MorePage(
                         UserAvatarImage(it, 42.dp)
                         Spacer(Modifier.width(9.dp))
                         Column(Modifier.weight(1f)) {
-                            AndroidView(factory = { context -> NameTextView(context) }, update = { view -> view.setName(it); view.setTextColor(profileNameColor) })
+                            AndroidView(factory = { context -> NameTextView(context).apply { textView.textSize = 16f } }, update = { view -> view.setName(it); view.setTextColor(profileNameColor) })
                             Spacer(Modifier.height(4.dp))
                             Text(stringResource(R.string.contact_mixin_id, it.identityNumber), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp, lineHeight = 14.sp, letterSpacing = 0.sp)
                         }
@@ -120,31 +123,54 @@ internal fun MorePage(
                 }
                 Spacer(Modifier.height(12.dp))
             }
-            if (contacts.isNotEmpty()) {
-                item {
-                    Spacer(Modifier.height(8.dp))
-                    Column(Modifier.moreCard()) {
-                        MoreSectionHeader(stringResource(R.string.contacts_title), contacts.size, onContacts)
-                        contacts.take(3).forEach { contact ->
-                            Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable { onContact(contact) }.padding(horizontal = 16.dp, vertical = 8.dp).height(50.dp), verticalAlignment = Alignment.CenterVertically) {
-                                UserAvatarImage(contact, 42.dp)
-                                Spacer(Modifier.width(14.dp))
-                                Column(Modifier.weight(1f)) {
-                                    AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(contact) })
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(contact.identityNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
-                                }
+            item {
+                Spacer(Modifier.height(8.dp))
+                Column(Modifier.moreCard()) {
+                    MoreSectionHeader(stringResource(R.string.contacts_title), contacts.size, onContacts)
+                    contacts.take(3).forEach { contact ->
+                        Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable { onContact(contact) }.padding(horizontal = 16.dp, vertical = 8.dp).height(50.dp), verticalAlignment = Alignment.CenterVertically) {
+                            UserAvatarImage(contact, 42.dp)
+                            Spacer(Modifier.width(14.dp))
+                            Column(Modifier.weight(1f)) {
+                                AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(contact) })
+                                Spacer(Modifier.height(4.dp))
+                                Text(contact.identityNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
                             }
                         }
                     }
+                    if (contacts.size > 3) {
+                        Text(
+                            stringResource(R.string.view_all),
+                            color = MixinAppTheme.colors.accent,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                                .clickable(onClick = onContacts)
+                                .padding(top = 18.dp, bottom = 20.dp),
+                        )
+                    }
                 }
             }
-            if (botCount > 0) {
-                item {
-                    Spacer(Modifier.height(12.dp))
-                    Column(Modifier.moreCard()) {
-                        MoreSectionHeader(stringResource(R.string.bots_title), botCount, onBots)
-                        favorites.forEach { app -> BotRow(app, true, 42.dp) { onBot(app) } }
+            item {
+                Spacer(Modifier.height(12.dp))
+                Column(Modifier.moreCard()) {
+                    MoreSectionHeader(stringResource(R.string.bots_title), bots.size, onBots)
+                    bots.take(5).forEach { app ->
+                        val isFavorite = app.appId in favoriteIds
+                        BotRow(app, external = true, avatarSize = 42.dp, showLink = isFavorite) {
+                            if (isFavorite) onBot(app) else onBotProfile(app)
+                        }
+                    }
+                    if (bots.size > 5) {
+                        Text(
+                            stringResource(R.string.view_all),
+                            color = MixinAppTheme.colors.accent,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                                .clickable(onClick = onBots)
+                                .padding(top = 18.dp, bottom = 20.dp),
+                        )
                     }
                 }
             }
@@ -221,8 +247,8 @@ private fun MoreArrow() {
 }
 
 @Composable
-private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 50.dp, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable(onClick = onClick).padding(vertical = 8.dp).height(50.dp).padding(start = if (external) 16.dp else 20.dp, end = if (external) 8.dp else 40.dp), verticalAlignment = Alignment.CenterVertically) {
+private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 50.dp, showLink: Boolean = external, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable(onClick = onClick).padding(vertical = 8.dp).height(50.dp).padding(start = if (external) 16.dp else 20.dp, end = if (external) 8.dp else 40.dp), verticalAlignment = Alignment.CenterVertically) {
         CoilImage(app.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(avatarSize).clip(CircleShape))
         Spacer(Modifier.width(if (external) 14.dp else 16.dp))
         Column(Modifier.weight(1f)) {
@@ -230,7 +256,7 @@ private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 
             Spacer(Modifier.height(4.dp))
             Text(app.appNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        if (external) Icon(painterResource(R.drawable.ic_more_link), null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
+        if (showLink) Icon(painterResource(R.drawable.ic_more_link), null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
     }
 }
 
@@ -253,7 +279,7 @@ internal fun BotsPage(favorites: List<ExploreApp>, apps: List<ExploreApp>, onBac
                     item { ContactSectionHeader(stringResource(R.string.Favorite)) }
                     items(filteredFavorites, key = { "favorite:${it.appId}" }) { app -> BotRow(app) { onFavoriteClick(app) } }
                     item {
-                        Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable(onClick = onEdit).padding(vertical = 8.dp).height(50.dp).padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable(onClick = onEdit).padding(vertical = 8.dp).height(50.dp).padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(painterResource(R.drawable.ic_favorite_edit), null, tint = Color.Unspecified, modifier = Modifier.size(50.dp))
                             Spacer(Modifier.width(16.dp))
                             Column {

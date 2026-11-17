@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.home
 
+import com.google.gson.Gson
 import one.mixin.android.api.response.EarnAccountSummary
 import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.vo.WithdrawalMemoPossibility
@@ -225,19 +226,21 @@ class WalletHomeEarnAccountTest {
     }
 
     @Test
-    fun homeBalanceExcludesTotalEarnings() {
+    fun homeBalanceIncludesRedeemableEarningsButExcludesTotalAndYesterdayEarnings() {
         val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             totalPrincipal = "100",
             totalEarnings = "20",
+            yesterdayEarnings = "2",
+            redeemableEarnings = "5",
         )
 
         val account = listOf(product).toWalletHomeEarnAccounts(
             assetItems = mapOf("asset-1" to tokenItem("asset-1", "2")),
         ).single()
 
-        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("200")))
+        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("210")))
         assertEquals(0, account.earningsUsd.compareTo(BigDecimal("40")))
     }
 
@@ -304,6 +307,29 @@ class WalletHomeEarnAccountTest {
         }
     }
 
+    @Test
+    fun homeBalanceReadsRedeemableEarningsFromApiWithoutPrincipal() {
+        val account = Gson().fromJson(
+            """{"total_principal":"0","total_earnings":"10","yesterday_earnings":"2","redeemable_earnings":"4"}""",
+            EarnAccountSummary::class.java,
+        )
+
+        assertEquals(0, earnAccountUsdBalance(account, BigDecimal("2")).compareTo(BigDecimal("8")))
+        assertEquals("2", account.yesterdayEarnings)
+    }
+
+    @Test
+    fun homeBalanceToleratesMissingAndInvalidRedeemableEarnings() {
+        for (field in listOf("", ",\"redeemable_earnings\":null", ",\"redeemable_earnings\":\"bad\"")) {
+            val account = Gson().fromJson(
+                """{"total_principal":"100","total_earnings":"20"$field}""",
+                EarnAccountSummary::class.java,
+            )
+
+            assertEquals(0, earnAccountUsdBalance(account, BigDecimal("2")).compareTo(BigDecimal("200")))
+        }
+    }
+
     private fun earnProduct(
         productionId: String = "production-1",
         assetId: String = "asset-1",
@@ -313,6 +339,7 @@ class WalletHomeEarnAccountTest {
         totalPrincipal: String = "0",
         totalEarnings: String = "0",
         yesterdayEarnings: String = "0",
+        redeemableEarnings: String = "0",
     ) = EarnProduct(
         productionId = productionId,
         assetId = assetId,
@@ -323,6 +350,7 @@ class WalletHomeEarnAccountTest {
             totalPrincipal = totalPrincipal,
             totalEarnings = totalEarnings,
             yesterdayEarnings = yesterdayEarnings,
+            redeemableEarnings = redeemableEarnings,
         ),
     )
 

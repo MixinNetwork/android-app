@@ -34,6 +34,11 @@ class MarketPageModelsTest {
                 ),
                 Triple(
                     MarketTopTab.CRYPTO,
+                    MarketSubTab.STOCKS,
+                    setOf(MarketPageDataSource.SPOT_STOCK),
+                ),
+                Triple(
+                    MarketTopTab.CRYPTO,
                     MarketSubTab.TOP_GAINERS,
                     setOf(MarketPageDataSource.SPOT_TOP_GAINER),
                 ),
@@ -51,6 +56,11 @@ class MarketPageModelsTest {
                     MarketTopTab.PERPETUAL,
                     MarketSubTab.FAVORITE,
                     setOf(MarketPageDataSource.PERPETUAL_FAVORITE, MarketPageDataSource.PERPETUAL_FEATURED),
+                ),
+                Triple(
+                    MarketTopTab.PERPETUAL,
+                    MarketSubTab.STOCKS,
+                    setOf(MarketPageDataSource.PERPETUAL_ALL),
                 ),
                 Triple(
                     MarketTopTab.PERPETUAL,
@@ -108,11 +118,20 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun spotAndPerpetualStocksFollowTrending() {
+        listOf(MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL).forEach { topTab ->
+            val tabs = marketSubTabs(topTab)
+            assertEquals(MarketSubTab.STOCKS, tabs[tabs.indexOf(MarketSubTab.TRENDING) + 1])
+        }
+    }
+
+    @Test
     fun perpetualSubTabsDoNotIncludeAll() {
         assertEquals(
             listOf(
                 MarketSubTab.FAVORITE,
                 MarketSubTab.TRENDING,
+                MarketSubTab.STOCKS,
                 MarketSubTab.TOP_GAINERS,
                 MarketSubTab.TOP_LOSERS,
                 MarketSubTab.MEME,
@@ -316,6 +335,10 @@ class MarketPageModelsTest {
             listOf("stocks", "stock"),
             MarketPageMapper.perpetualStockMarkets(markets).map { it.marketId },
         )
+        assertEquals(
+            listOf("stocks", "stock"),
+            MarketPageMapper.perpetualMarkets(markets, MarketSubTab.STOCKS).map { it.marketId },
+        )
     }
 
     @Test
@@ -490,6 +513,7 @@ class MarketPageModelsTest {
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.MEME),
         )
         listOf(
+            MarketSubTab.STOCKS,
             MarketSubTab.INDICES,
             MarketSubTab.COMMODITIES,
             MarketSubTab.FOREX,

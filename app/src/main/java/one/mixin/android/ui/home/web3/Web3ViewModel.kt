@@ -655,6 +655,9 @@ class Web3ViewModel @Inject constructor(
 
     suspend fun transaction(hash: String, chainId: String) = tokenRepository.transaction(hash, chainId)
 
+    suspend fun refreshWeb3Transaction(address: String, hash: String, chainId: String) =
+        tokenRepository.refreshWeb3Transaction(address, hash, chainId)
+
     suspend fun replaceGaslessPendingTransactionHash(
         walletId: String,
         sponsorTxId: String,
