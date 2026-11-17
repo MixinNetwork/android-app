@@ -453,6 +453,7 @@ object Constants {
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = (1000 * 60 * 60 * 24).toLong()
     const val INTERVAL_48_HOURS: Long = (1000 * 60 * 60 * 48).toLong()
+    const val INTERVAL_1_HOUR: Long = (1000 * 60 * 60).toLong()
     const val INTERVAL_10_MINS: Long = (1000 * 60 * 10).toLong()
     const val INTERVAL_30_MINS: Long = (1000 * 60 * 30).toLong()
     const val INTERVAL_1_MIN: Long = (1000 * 60).toLong()
