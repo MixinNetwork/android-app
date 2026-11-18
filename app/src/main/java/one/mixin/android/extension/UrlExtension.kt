@@ -39,6 +39,7 @@ import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.TAB_PERPETUAL
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.home.web3.trade.perps.PerpsSharePayload
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -664,6 +665,10 @@ fun Uri.handleSchemeSend(
     afterShareData: (() -> Unit)? = null,
     onError: ((String) -> Unit)? = null,
 ) {
+    if (getQueryParameter("category") == PerpsSharePayload.CATEGORY) {
+        LinkBottomSheetDialogFragment.newInstance(toString()).show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        return
+    }
     val text = this.getQueryParameter("text")
     val userId = this.getQueryParameter("user")
     if (text != null) {

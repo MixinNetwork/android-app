@@ -84,6 +84,8 @@ class UrlInterpreterActivity : BaseActivity() {
             return
         }
 
+        if (savedInstanceState != null && supportFragmentManager.fragments.isNotEmpty()) return
+
         if (data.toString().startsWith("https://", true)) {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)

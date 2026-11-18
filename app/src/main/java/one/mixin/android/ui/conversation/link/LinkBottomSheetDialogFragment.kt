@@ -99,6 +99,8 @@ import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.home.web3.trade.perps.PerpsConfirmBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpsLinkPreview
+import one.mixin.android.ui.home.web3.trade.perps.PerpsPositionShareBottomFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpsSharePayload
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -919,6 +921,24 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         } else if (url.startsWith(Scheme.SEND, true) || url.startsWith(Scheme.MIXIN_SEND, true) || url.startsWith(Scheme.HTTPS_SEND)) {
             val uri = Uri.parse(url)
             lifecycleScope.launch(errorHandler) {
+                if (uri.getQueryParameter("category") == PerpsSharePayload.CATEGORY) {
+                    val payload = PerpsSharePayload.decode(uri.getQueryParameter("data"))
+                    if (payload == null) {
+                        showError(R.string.Data_error)
+                        return@launch
+                    }
+                    val market = linkViewModel.getPerpsMarket(payload.marketId)
+                    if (market == null || !market.marketId.equals(payload.marketId, ignoreCase = true)) {
+                        showError(R.string.Data_error)
+                        return@launch
+                    }
+                    lifecycle.withResumed {
+                        PerpsPositionShareBottomFragment.newInstance(payload, market)
+                            .showNow(parentFragmentManager, PerpsPositionShareBottomFragment.TAG)
+                        dismiss()
+                    }
+                    return@launch
+                }
                 val userId = uri.getQueryParameter("user")
                 if (!userId.isNullOrBlank()){
                     val user = oldLinkViewModel.refreshUser(userId)

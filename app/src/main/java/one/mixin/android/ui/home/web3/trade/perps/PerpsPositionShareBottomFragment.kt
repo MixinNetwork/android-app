@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.media.MediaScannerConnection
+import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -22,10 +23,10 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withResumed
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.ViewPager2
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
@@ -34,6 +35,7 @@ import one.mixin.android.R
 import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.buildReferralShareUrl
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
@@ -62,6 +64,7 @@ import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ActionButtonData
@@ -85,6 +88,12 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_CLOSE_ORDER = "args_close_order"
         private const val ARGS_CLOSE_LEVERAGE = "args_close_leverage"
+        private const val ARGS_SHARE_PAYLOAD = "args_share_payload"
+        private const val ARGS_MARKET_ID = "args_market_id"
+        private const val ARGS_MARKET_ICON_URL = "args_market_icon_url"
+        private const val ARGS_MARKET_TOKEN_SYMBOL = "args_market_token_symbol"
+        private const val ARGS_MARKET_DISPLAY_SYMBOL = "args_market_display_symbol"
+        private const val STATE_DISPLAY_ROE = "state_display_roe"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
         private const val POSTER_SIDE = 335
         private const val POSTER_MIN_SLOT = 200
@@ -97,6 +106,14 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
             putParcelable(ARGS_CLOSE_ORDER, order)
             putInt(ARGS_CLOSE_LEVERAGE, leverage)
         }
+
+        fun newInstance(payload: PerpsSharePayload, market: PerpsMarket) = PerpsPositionShareBottomFragment().withArgs {
+            putParcelable(ARGS_SHARE_PAYLOAD, payload)
+            putString(ARGS_MARKET_ID, market.marketId)
+            putString(ARGS_MARKET_ICON_URL, market.iconUrl)
+            putString(ARGS_MARKET_TOKEN_SYMBOL, market.tokenSymbol)
+            putString(ARGS_MARKET_DISPLAY_SYMBOL, market.displaySymbol)
+        }
     }
 
     @Inject
@@ -106,6 +123,9 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     lateinit var shareCoverRepository: ShareCoverRepository
 
     private val binding by viewBinding(FragmentPerpsPositionShareBottomBinding::inflate)
+    private val sharePayload: PerpsSharePayload? by lazy {
+        arguments?.getParcelableCompat(ARGS_SHARE_PAYLOAD, PerpsSharePayload::class.java)
+    }
     private val position: PerpsPositionItem? by lazy {
         arguments?.getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)
     }
@@ -124,7 +144,6 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     private var referralShareInfo: ReferralShareInfo? = null
     private var isLoading = false
     private var currentDisplayMetric = ShareDisplayMetric.PNL
-    private var currentPosterStyle = SharePosterStyle.CLASSIC
     private var posterSlot = 0
     private lateinit var shareData: ShareCardData
     private lateinit var posterAdapter: PosterAdapter
@@ -135,16 +154,32 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     override fun ComposeContent() {
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sharePayload?.let { payload ->
+            val defaultRoe = payload.displayMetric == "roe"
+            val showRoe = savedInstanceState?.getBoolean(STATE_DISPLAY_ROE, defaultRoe) ?: defaultRoe
+            currentDisplayMetric = if (showRoe) ShareDisplayMetric.ROE else ShareDisplayMetric.PNL
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (sharePayload != null) {
+            outState.putBoolean(STATE_DISPLAY_ROE, currentDisplayMetric == ShareDisplayMetric.ROE)
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: android.os.Bundle?,
+        savedInstanceState: Bundle?,
     ): View = binding.root.apply {
         roundTopOrBottom(11.dp.toFloat(), top = true, bottom = false)
     }
 
     @SuppressLint("RestrictedApi")
-    override fun onViewCreated(view: View, savedInstanceState: android.os.Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         if (!bindContent()) {
@@ -183,7 +218,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
             }
         }
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             showLoading(true)
             try {
                 referralShareInfo = withContext(Dispatchers.IO) {
@@ -192,7 +227,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
                 bindFooter()
                 applyFadeInAnimation(binding.content)
             } finally {
-                showLoading(false)
+                if (isActive) showLoading(false)
             }
         }
     }
@@ -211,6 +246,28 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     private fun bindContent(): Boolean {
+        val payload = sharePayload
+        if (payload != null) {
+            val args = requireArguments()
+            val marketId = args.getString(ARGS_MARKET_ID) ?: return false
+            // Restore the metric from fragment state instead of the radio buttons' checked states.
+            binding.radioGroup.isSaveFromParentEnabled = false
+            bindCardData(
+                marketId = marketId,
+                iconUrl = args.getString(ARGS_MARKET_ICON_URL),
+                side = payload.side,
+                leverage = payload.leverage,
+                pnlAmount = payload.pnlAmount,
+                pnlPercent = payload.pnlPercent,
+                tokenSymbol = args.getString(ARGS_MARKET_TOKEN_SYMBOL).orEmpty(),
+                displaySymbol = args.getString(ARGS_MARKET_DISPLAY_SYMBOL).orEmpty(),
+                entryPrice = payload.entryPrice,
+                latestLabel = getString(R.string.perps_current_price),
+                latestPrice = payload.markPrice,
+            )
+            return true
+        }
+
         val open = position
         if (open != null) {
             val pnlAmount = open.unrealizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
@@ -339,11 +396,6 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         bindCard()
     }
 
-    private fun updatePosterStyle(style: SharePosterStyle) {
-        if (currentPosterStyle == style) return
-        currentPosterStyle = style
-    }
-
     private fun syncDisplayMetricToggle() {
         val checkedId = when (currentDisplayMetric) {
             ShareDisplayMetric.ROE -> R.id.roe_toggle
@@ -396,13 +448,9 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
                 page.scaleX = scale
                 page.scaleY = scale
             }
-            registerOnPageChangeCallback(
-                object : ViewPager2.OnPageChangeCallback() {
-                    override fun onPageSelected(position: Int) {
-                        updatePosterStyle(SharePosterStyle.values()[position])
-                    }
-                },
-            )
+            if (sharePayload?.posterStyle == "minimal") {
+                setCurrentItem(SharePosterStyle.MINIMAL.ordinal, false)
+            }
             doOnPreDraw { updatePosterSlot() }
         }
         binding.root.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
@@ -413,6 +461,14 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     override fun onResume() {
         super.onResume()
         binding.posterPager.post { updatePosterSlot() }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        val host = activity as? UrlInterpreterActivity ?: return
+        if (isRemoving && parentFragmentManager.fragments.isEmpty()) {
+            host.finish()
+        }
     }
 
     // The poster keeps its 1:1 design size and is scaled into a square slot that fits the sheet.
@@ -657,8 +713,8 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
             itemBinding.topCard.setBackgroundResource(cardBackground(useProfitStyle))
             itemBinding.assetIcon.loadImage(data.iconUrl, R.drawable.ic_avatar_place_holder)
             itemBinding.pnlTv.text = when (currentDisplayMetric) {
-                ShareDisplayMetric.ROE -> formatSignedAmount(data.pnlAmount)
-                ShareDisplayMetric.PNL -> formatSignedPercent(data.pnlPercent)
+                ShareDisplayMetric.ROE -> formatSignedPercent(data.pnlPercent)
+                ShareDisplayMetric.PNL -> formatSignedAmount(data.pnlAmount)
             }
             itemBinding.pnlLabelTv.text = getString(currentDisplayMetric.labelRes)
 
