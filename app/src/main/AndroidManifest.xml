@@ -107,7 +107,6 @@
                 <data android:host="address" />
                 <data android:host="snapshots" />
                 <data android:host="conversations" />
-                <data android:host="device-transfer" />
                 <data android:host="tip"/>
                 <data android:host="buy"/>
                 <data android:host="wc" />

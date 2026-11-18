@@ -70,6 +70,7 @@ import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
+import java.security.SecureRandom
 import java.util.concurrent.Executors
 import javax.inject.Inject
 import kotlin.random.Random
@@ -95,7 +96,8 @@ class TransferServer
         val status: TransferStatusLiveData,
         private val serializationJson: Json,
     ) {
-        val protocol by lazy { TransferProtocol(serializationJson, secretBytes, true) }
+        private lateinit var protocol: TransferProtocol
+        private val secureRandom = SecureRandom()
 
         private var serverSocket: ServerSocket? = null
         private var socket: Socket? = null
@@ -122,9 +124,7 @@ class TransferServer
                 }
             }
 
-        private val secretBytes by lazy {
-            TransferCipher.generateKey()
-        }
+        private var secretBytes: ByteArray = TransferCipher.generateKey()
 
         suspend fun restartServer(createdSuccessCallback: (TransferCommand) -> Unit) =
             withContext(SINGLE_SOCKET_THREAD) {
@@ -161,10 +161,12 @@ class TransferServer
         ) = withContext(SINGLE_SOCKET_THREAD) {
             try {
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
+                secretBytes = TransferCipher.generateKey()
+                protocol = TransferProtocol(serializationJson, secretBytes, true)
                 val serverSocket = createSocket(port = Random.nextInt(1024, 1124))
                 this@TransferServer.serverSocket = serverSocket
                 status.value = TransferStatus.CREATED
-                code = Random.nextInt(10000)
+                code = secureRandom.nextInt(1_000_000)
                 this@TransferServer.conversationIds = conversationIds
                 this@TransferServer.monthsAgo = monthsAgo
                 createdSuccessCallback(
@@ -237,7 +239,10 @@ class TransferServer
                     when (val result = protocol.read(inputStream)) {
                         is TransferCommand -> {
                             if (result.action == TransferCommandAction.CONNECT.value) {
-                                if (result.code == code && result.userId == Session.getAccountId()) {
+                                if (status.value == TransferStatus.WAITING_FOR_VERIFICATION &&
+                                    result.code == code &&
+                                    result.userId == Session.getAccountId()
+                                ) {
                                     Timber.e("Verification passed, start transmission")
                                     status.value = TransferStatus.VERIFICATION_COMPLETED
                                     launch {
@@ -322,7 +327,14 @@ class TransferServer
             primaryId: String?,
             assistanceId: String?,
         ) {
-            writeCommand(outputStream, TransferCommand(TransferCommandAction.START.value, total = totalCount(type, primaryId, assistanceId)))
+            writeCommand(
+                outputStream,
+                TransferCommand(
+                    TransferCommandAction.START.value,
+                    total = totalCount(type, primaryId, assistanceId),
+                    userId = Session.getAccountId(),
+                ),
+            )
             RxBus.publish(DeviceTransferProgressEvent(0f))
             Timber.e("Started total: $total")
         }

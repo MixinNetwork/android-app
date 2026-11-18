@@ -44,6 +44,7 @@ import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.Session
+import one.mixin.android.ui.transfer.TransferSessionManager
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
@@ -163,6 +164,9 @@ open class Injector {
 
     @Inject
     lateinit var currentUserScopeManager: CurrentUserScopeManager
+
+    @Inject
+    lateinit var transferSessionManager: TransferSessionManager
 
     @ApplicationScope
     @Transient
