@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.toPosition
 import com.google.gson.Gson
+import com.google.gson.JsonNull
 import one.mixin.android.db.PerpsDatabase
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -97,6 +98,20 @@ class PerpsPositionDaoTest {
         assertEquals("0.25", dao.getOpenPositions("wallet").single().fundingAmount)
         json.remove("funding_amount")
         assertEquals(null, gson.fromJson(json, PerpsPosition::class.java).fundingAmount)
+    }
+
+    @Test
+    fun missingAndNullCopyTradingFieldsAreStoredAsEmptyStrings() = runBlocking {
+        val gson = Gson()
+        val json = gson.toJsonTree(position()).asJsonObject
+        json.remove("leader_position_id")
+        json.add("max_decrease_margin", JsonNull.INSTANCE)
+        val parsed = gson.fromJson(json, PerpsPosition::class.java)
+        val dao = database.perpsPositionDao()
+        dao.upsertSuspend(parsed)
+        val stored = requireNotNull(dao.getPosition(parsed.positionId))
+        assertEquals("", stored.leaderPositionId)
+        assertEquals("", stored.maxDecreaseMargin)
     }
 
     private fun position() = PerpsPosition(
