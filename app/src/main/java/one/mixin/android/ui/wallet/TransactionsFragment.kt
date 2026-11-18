@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
@@ -221,6 +222,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             transactionsRv.listener = this@TransactionsFragment
             bottomCard.post {
+                if (this@TransactionsFragment.view !== view) return@post
                 bottomCard.isVisible = true
                 updateBottomEmptyHeight()
                 transactionsRv.list = snapshotItems
@@ -268,8 +270,8 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 transactionsRv.isVisible = list.isNotEmpty()
                 bottomRl.isVisible = list.isEmpty()
                 if (snapshotItems != list) {
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        snapshotItems = list.map {
+                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                        val items = list.map {
                             if (!it.withdrawal?.receiver.isNullOrBlank()) {
                                 val receiver = it.withdrawal.receiver
                                 val index: Int = receiver.indexOf(":")
@@ -284,7 +286,8 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                             it
                         }
                         withContext(Dispatchers.Main) {
-                            transactionsRv.list = snapshotItems
+                            snapshotItems = items
+                            transactionsRv.list = items
                         }
                     }
                 }
@@ -313,8 +316,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     private var earnProductionId: String? = null
 
     private fun refreshEarnDetails() {
-        if (!isAdded) return
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val details = runCatching {
                 val response = walletViewModel.earnAccounts()
                 if (!response.isSuccess) return@runCatching null
@@ -322,7 +324,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     .orEmpty()
                     .toWalletEarnDetails(asset.assetId, asset.priceUsd)
             }.getOrNull()
-            if (viewDestroyed()) return@launch
+            if (!isActive) return@launch
 
             binding.earnCard.isVisible = details != null
             if (details != null) {
@@ -351,8 +353,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     private fun updateBottomEmptyHeight() {
-        if (!isAdded) return
+        val currentView = view ?: return
         binding.bottomCard.post {
+            if (view !== currentView) return@post
             val earnCardHeight = if (binding.earnCard.isVisible) binding.earnCard.height + 12.dp else 0
             val remainingHeight = requireContext().windowHeight() -
                 requireContext().statusBarHeight() -
@@ -400,12 +403,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                                 walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
                                 return@let
                             }
-                            lifecycleScope.launch {
-                                snapshots.map { it.assetId }.distinct().forEach {
-                                    walletViewModel.findOrSyncAsset(it)
-                                }
-                                walletViewModel.insertPendingDeposit(snapshots)
+                            snapshots.map { it.assetId }.distinct().forEach {
+                                walletViewModel.findOrSyncAsset(it)
                             }
+                            walletViewModel.insertPendingDeposit(snapshots)
                         }
                     }
                 },
