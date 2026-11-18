@@ -157,7 +157,6 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             radio.isVisible = true
             radioAll.isChecked = true
-            radio.scrollToCenterCheckedRadio(radioGroup)
             radioAll.isVisible = true
             radioEth.isVisible = true
             radioTron.isVisible = true
@@ -165,6 +164,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             radioBsc.isVisible = true
             radioPolygon.isVisible = true
             radioArc.isVisible = true
+            radio.scrollToCenterCheckedRadio(radioGroup, smooth = false)
             radioGroup.setOnCheckedChangeListener { _, id ->
                 currentChain = when (id) {
                     R.id.radio_eth -> {

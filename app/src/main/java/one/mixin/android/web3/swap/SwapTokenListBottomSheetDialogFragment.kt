@@ -60,6 +60,8 @@ import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val ARGS_KEY = "args_key"
         const val ARGS_UNIQUE = "args_unique"
@@ -172,7 +174,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             adapter.chain = currentChain
             adapter.keyword = searchEt.et.text?.toString()
             adapter.isSearch = false
-            radio.scrollToCenterCheckedRadio(radioGroup)
+            radio.scrollToCenterCheckedRadio(radioGroup, smooth = false)
             radioGroup.setOnCheckedChangeListener { _, id ->
                 when (id) {
                     R.id.radio_stock -> {
