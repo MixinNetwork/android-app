@@ -1,8 +1,5 @@
 package one.mixin.android.ui.home.web3.trade
 
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -10,65 +7,47 @@ import org.junit.Test
 import one.mixin.android.ui.home.web3.market.MarketPriceChangePeriod
 import one.mixin.android.ui.home.web3.market.formatMarketPercent
 import one.mixin.android.vo.market.Market
-import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
 import java.math.BigDecimal
 
 class SwapRecommendedMarketCardsTest {
     @Test
-    fun trendingAndStockPreserveApiOrderAndApplyDisplayLimit() =
-        runBlocking {
-            val cached = (1..10).map { market("coin-$it", it.toString()) }
+    fun trendingAndStockPreserveApiOrderWithoutEightItemCap() {
+        val trending = (1..12).map { market("coin-$it", it.toString()) }
+        val stocks = (1..10).map { market("stock-$it", it.toString()) }
 
-            listOf(MarketCategory.TRENDING, MarketCategory.STOCK).forEach { category ->
-                val result =
-                    recommendedMarketsFromDatabase(
-                        markets = flowOf(cached),
-                        limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-                    ).first()
+        val sections =
+            buildSwapRecommendedMarketSections(
+                trendingMarkets = trending,
+                stockMarkets = stocks,
+                topGainerMarkets = emptyList(),
+                topLoserMarkets = emptyList(),
+            )
 
-                assertEquals(
-                    cached.take(SWAP_RECOMMENDED_MARKET_LIMIT).map(MarketItem::coinId),
-                    result.map(MarketItem::coinId),
-                )
-            }
-        }
+        assertEquals(trending.map(MarketItem::coinId), sections[0].markets.map(MarketItem::coinId))
+        assertEquals(stocks.map(MarketItem::coinId), sections[1].markets.map(MarketItem::coinId))
+    }
 
     @Test
-    fun databaseRefreshUpdatesRecommendedMarkets() =
-        runBlocking {
-            val result =
-                recommendedMarketsFromDatabase(
-                    markets = flowOf(emptyList(), listOf(market("3", "3"), market("1", "1"), market("2", "2"))),
-                    limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-                ).first { it.isNotEmpty() }
+    fun gainersAndLosersKeepAllItemsSortedBySelectedPeriod() {
+        val gainers = (1..12).map { market("gainer-$it", change24H = it.toString(), change7D = (20 - it).toString()) }
+        val losers = (1..12).map { market("loser-$it", change24H = (-it).toString(), change7D = (-20 + it).toString()) }
 
-            assertEquals(listOf("3", "1", "2"), result.map(MarketItem::coinId))
-        }
+        val sections7d =
+            buildSwapRecommendedMarketSections(
+                trendingMarkets = emptyList(),
+                stockMarkets = emptyList(),
+                topGainerMarkets = gainers,
+                topLoserMarkets = losers,
+                priceChangePeriod = MarketPriceChangePeriod.SEVEN_DAYS,
+            )
 
-    @Test
-    fun gainersAndLosersPreserveApiOrder() =
-        runBlocking {
-            val markets = listOf(market("middle", "2"), market("highest", "5"), market("lowest", "-4"))
-
-            val gainers =
-                recommendedMarketsFromDatabase(
-                    markets = flowOf(markets),
-                    limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-                ).first()
-            val losers =
-                recommendedMarketsFromDatabase(
-                    markets = flowOf(markets),
-                    limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-                ).first()
-
-            assertEquals(listOf("middle", "highest", "lowest"), gainers.map(MarketItem::coinId))
-            assertEquals(listOf("middle", "highest", "lowest"), losers.map(MarketItem::coinId))
-        }
-
-    @Test
-    fun recommendedMarketLimitMatchesIOS() {
-        assertEquals(8, SWAP_RECOMMENDED_MARKET_LIMIT)
+        assertEquals(12, sections7d[0].markets.size)
+        assertEquals(12, sections7d[1].markets.size)
+        assertEquals("gainer-1", sections7d[0].markets.first().coinId)
+        assertEquals("gainer-12", sections7d[0].markets.last().coinId)
+        assertEquals("loser-1", sections7d[1].markets.first().coinId)
+        assertEquals("loser-12", sections7d[1].markets.last().coinId)
     }
 
     @Test
@@ -175,7 +154,6 @@ class SwapRecommendedMarketCardsTest {
                 topLoserMarkets = listOf(sol, stockBtc, xrp),
                 allMarkets = listOf(btc, eth, stockBtc),
                 priceChangePeriod = MarketPriceChangePeriod.SEVEN_DAYS,
-                limit = SWAP_RECOMMENDED_MARKET_LIMIT,
             )
 
         assertEquals(
@@ -200,7 +178,6 @@ class SwapRecommendedMarketCardsTest {
                 topLoserMarkets = listOf(xrp, sol),
                 allMarkets = emptyList(),
                 priceChangePeriod = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
-                limit = 1,
             )
 
         assertEquals(
@@ -210,8 +187,8 @@ class SwapRecommendedMarketCardsTest {
             ),
             sections24h.map { it.category },
         )
-        assertEquals(listOf("eth"), sections24h[0].markets.map(MarketItem::coinId))
-        assertEquals(listOf("sol"), sections24h[1].markets.map(MarketItem::coinId))
+        assertEquals(listOf("eth", "btc"), sections24h[0].markets.map(MarketItem::coinId))
+        assertEquals(listOf("sol", "xrp"), sections24h[1].markets.map(MarketItem::coinId))
     }
 
     @Test

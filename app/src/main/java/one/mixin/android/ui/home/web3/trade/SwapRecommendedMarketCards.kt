@@ -14,8 +14,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,7 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -57,8 +65,9 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
-internal const val SWAP_RECOMMENDED_MARKET_LIMIT = 8
 private val RecommendedMarketIconSize = 42.dp
+private val RecommendedMarketCardCornerRadius = 8.dp
+private val RecommendedMarketCardBorderWidth = 0.8.dp
 
 enum class SwapRecommendedMarketType {
     Stocks,
@@ -81,6 +90,15 @@ internal data class SwapRecommendedMarketSection(
     val markets: List<MarketItem>,
 )
 
+internal class SwapRecommendedMarketState(
+    val sections: List<SwapRecommendedMarketSection>,
+    val activeSection: SwapRecommendedMarketSection,
+    val tabListState: LazyListState,
+    val fiatSymbol: String,
+    val fiatRate: Double,
+    val onCategorySelected: (SwapRecommendedCategory) -> Unit,
+)
+
 /**
  * Builds categorized recommended market sections aligned with [one.mixin.android.ui.home.web3.market.MarketPageViewModel].
  */
@@ -91,9 +109,7 @@ internal fun buildSwapRecommendedMarketSections(
     topLoserMarkets: List<MarketItem>,
     allMarkets: List<MarketItem> = emptyList(),
     priceChangePeriod: MarketPriceChangePeriod = MarketPriceChangePeriod.SEVEN_DAYS,
-    limit: Int = SWAP_RECOMMENDED_MARKET_LIMIT,
 ): List<SwapRecommendedMarketSection> {
-    val safeLimit = limit.coerceAtLeast(0)
     val stockCoinIds: Set<String> = stockMarkets.mapTo(mutableSetOf()) { market -> market.coinId }
 
     val spotTrending = MarketPageMapper
@@ -111,21 +127,154 @@ internal fun buildSwapRecommendedMarketSections(
     return listOf(
         SwapRecommendedMarketSection(
             category = SwapRecommendedCategory.TRENDING,
-            markets = spotTrending.take(safeLimit),
+            markets = spotTrending,
         ),
         SwapRecommendedMarketSection(
             category = SwapRecommendedCategory.STOCKS,
-            markets = stockMarkets.take(safeLimit),
+            markets = stockMarkets,
         ),
         SwapRecommendedMarketSection(
             category = SwapRecommendedCategory.TOP_GAINERS,
-            markets = spotGainers.take(safeLimit),
+            markets = spotGainers,
         ),
         SwapRecommendedMarketSection(
             category = SwapRecommendedCategory.TOP_LOSERS,
-            markets = spotLosers.take(safeLimit),
+            markets = spotLosers,
         ),
     ).filter { section -> section.markets.isNotEmpty() }
+}
+
+@Composable
+internal fun rememberSwapRecommendedMarketState(
+    stockMarkets: List<MarketItem>,
+    trendingMarkets: List<MarketItem>,
+    topGainerMarkets: List<MarketItem>,
+    topLoserMarkets: List<MarketItem>,
+    allMarkets: List<MarketItem> = emptyList(),
+    priceChangePeriod: MarketPriceChangePeriod = MarketPriceChangePeriod.SEVEN_DAYS,
+): SwapRecommendedMarketState? {
+    val sections =
+        remember(
+            trendingMarkets,
+            stockMarkets,
+            topGainerMarkets,
+            topLoserMarkets,
+            allMarkets,
+            priceChangePeriod,
+        ) {
+            buildSwapRecommendedMarketSections(
+                trendingMarkets = trendingMarkets,
+                stockMarkets = stockMarkets,
+                topGainerMarkets = topGainerMarkets,
+                topLoserMarkets = topLoserMarkets,
+                allMarkets = allMarkets,
+                priceChangePeriod = priceChangePeriod,
+            )
+        }
+
+    if (sections.isEmpty()) return null
+
+    var selectedCategory by rememberSaveable { mutableStateOf(sections.first().category) }
+    val activeSection = sections.firstOrNull { it.category == selectedCategory } ?: sections.first()
+    val tabListState = rememberLazyListState()
+    val selectedIndex = sections.indexOf(activeSection)
+    LaunchedEffect(activeSection.category, selectedIndex) {
+        tabListState.animateScrollToCenteredItem(selectedIndex)
+    }
+    return SwapRecommendedMarketState(
+        sections = sections,
+        activeSection = activeSection,
+        tabListState = tabListState,
+        fiatSymbol = Fiats.getSymbol(),
+        fiatRate = Fiats.getRate(),
+        onCategorySelected = { selectedCategory = it },
+    )
+}
+
+internal fun LazyListScope.swapRecommendedMarketCardItems(
+    state: SwapRecommendedMarketState?,
+    priceChangePeriod: MarketPriceChangePeriod,
+    quoteColorReversed: Boolean,
+    onMarketClick: (MarketItem) -> Unit,
+) {
+    if (state == null) return
+    val activeSection = state.activeSection
+
+    item(key = "recommended_markets_header") {
+        val backgroundColor = MixinAppTheme.colors.background
+        val borderColor = MixinAppTheme.colors.borderColor
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = RecommendedMarketCardCornerRadius,
+                            topEnd = RecommendedMarketCardCornerRadius,
+                        ),
+                    )
+                    .background(backgroundColor)
+                    .recommendedCardBorder(RecommendedCardEdge.TOP, borderColor)
+                    .padding(top = 20.dp, bottom = 16.dp),
+            ) {
+                SwapRecommendedCategoryTabs(
+                    sections = state.sections,
+                    activeCategory = activeSection.category,
+                    tabListState = state.tabListState,
+                    onCategorySelected = state.onCategorySelected,
+                )
+            }
+        }
+    }
+
+    itemsIndexed(
+        items = activeSection.markets,
+        key = { index, market -> "recommended_market_${activeSection.category.name}_${market.coinId}_$index" },
+    ) { index, market ->
+        val backgroundColor = MixinAppTheme.colors.background
+        val borderColor = MixinAppTheme.colors.borderColor
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .background(backgroundColor)
+                .recommendedCardBorder(RecommendedCardEdge.MIDDLE, borderColor)
+                .padding(start = 16.dp, end = 16.dp, top = if (index > 0) 20.dp else 0.dp),
+        ) {
+            SwapRecommendedMarketRow(
+                market = market,
+                fiatSymbol = state.fiatSymbol,
+                fiatRate = state.fiatRate,
+                quoteColorReversed = quoteColorReversed,
+                priceChangePeriod = priceChangePeriod,
+                onClick = { onMarketClick(market) },
+            )
+        }
+    }
+
+    item(key = "recommended_markets_footer") {
+        val backgroundColor = MixinAppTheme.colors.background
+        val borderColor = MixinAppTheme.colors.borderColor
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .clip(
+                        RoundedCornerShape(
+                            bottomStart = RecommendedMarketCardCornerRadius,
+                            bottomEnd = RecommendedMarketCardCornerRadius,
+                        ),
+                    )
+                    .background(backgroundColor)
+                    .recommendedCardBorder(RecommendedCardEdge.BOTTOM, borderColor)
+                    .height(20.dp),
+            )
+            Spacer(modifier = Modifier.height(40.dp))
+        }
+    }
 }
 
 @Composable
@@ -144,80 +293,29 @@ fun SwapRecommendedMarketCards(
         LocalContext.current.defaultSharedPreferences
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false),
 ) {
-    val sections =
-        remember(
-            trendingMarkets,
-            stockMarkets,
-            topGainerMarkets,
-            topLoserMarkets,
-            allMarkets,
-            priceChangePeriod,
-        ) {
-            buildSwapRecommendedMarketSections(
-                trendingMarkets = trendingMarkets,
-                stockMarkets = stockMarkets,
-                topGainerMarkets = topGainerMarkets,
-                topLoserMarkets = topLoserMarkets,
-                allMarkets = allMarkets,
-                priceChangePeriod = priceChangePeriod,
-                limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-            )
-        }
-
-    if (sections.isEmpty()) return
-
-    var selectedCategory by rememberSaveable { mutableStateOf(sections.first().category) }
-    val activeSection = sections.firstOrNull { it.category == selectedCategory } ?: sections.first()
-    val tabListState = rememberLazyListState()
-    val selectedIndex = sections.indexOf(activeSection)
-    LaunchedEffect(activeSection.category, selectedIndex) {
-        tabListState.animateScrollToCenteredItem(selectedIndex)
-    }
-    val fiatSymbol = Fiats.getSymbol()
-    val fiatRate = Fiats.getRate()
+    val state =
+        rememberSwapRecommendedMarketState(
+            stockMarkets = stockMarkets,
+            trendingMarkets = trendingMarkets,
+            topGainerMarkets = topGainerMarkets,
+            topLoserMarkets = topLoserMarkets,
+            allMarkets = allMarkets,
+            priceChangePeriod = priceChangePeriod,
+        ) ?: return
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(RecommendedMarketCardCornerRadius))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
             .padding(vertical = 20.dp),
     ) {
-        LazyRow(
-            state = tabListState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            items(sections, key = { it.category }) { section ->
-                val isSelected = section.category == activeSection.category
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            if (isSelected) {
-                                MixinAppTheme.colors.accent.copy(alpha = 0.1f)
-                            } else {
-                                Color.Transparent
-                            },
-                        )
-                        .clickable { selectedCategory = section.category }
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = stringResource(section.category.titleRes),
-                        color = if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
-                        fontSize = 14.sp,
-                        lineHeight = 17.sp,
-                        letterSpacing = 0.sp,
-                        maxLines = 1,
-                    )
-                }
-            }
-        }
+        SwapRecommendedCategoryTabs(
+            sections = state.sections,
+            activeCategory = state.activeSection.category,
+            tabListState = state.tabListState,
+            onCategorySelected = state.onCategorySelected,
+        )
         Spacer(modifier = Modifier.height(16.dp))
         Column(
             modifier = Modifier
@@ -225,11 +323,11 @@ fun SwapRecommendedMarketCards(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            activeSection.markets.forEach { market ->
+            state.activeSection.markets.forEach { market ->
                 SwapRecommendedMarketRow(
                     market = market,
-                    fiatSymbol = fiatSymbol,
-                    fiatRate = fiatRate,
+                    fiatSymbol = state.fiatSymbol,
+                    fiatRate = state.fiatRate,
                     quoteColorReversed = quoteColorReversed,
                     priceChangePeriod = priceChangePeriod,
                     onClick = { onMarketClick(market) },
@@ -238,6 +336,128 @@ fun SwapRecommendedMarketCards(
         }
     }
 }
+
+@Composable
+private fun SwapRecommendedCategoryTabs(
+    sections: List<SwapRecommendedMarketSection>,
+    activeCategory: SwapRecommendedCategory,
+    tabListState: LazyListState,
+    onCategorySelected: (SwapRecommendedCategory) -> Unit,
+) {
+    LazyRow(
+        state = tabListState,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        items(sections, key = { it.category }) { section ->
+            val isSelected = section.category == activeCategory
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        if (isSelected) {
+                            MixinAppTheme.colors.accent.copy(alpha = 0.1f)
+                        } else {
+                            Color.Transparent
+                        },
+                    )
+                    .clickable { onCategorySelected(section.category) }
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = stringResource(section.category.titleRes),
+                    color = if (isSelected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
+                    fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    letterSpacing = 0.sp,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+private enum class RecommendedCardEdge {
+    TOP,
+    MIDDLE,
+    BOTTOM,
+}
+
+private fun Modifier.recommendedCardBorder(
+    edge: RecommendedCardEdge,
+    borderColor: Color,
+): Modifier =
+    drawBehind {
+        val strokePx = RecommendedMarketCardBorderWidth.toPx()
+        val halfStroke = strokePx / 2f
+        val leftX = halfStroke
+        val rightX = size.width - halfStroke
+        if (edge == RecommendedCardEdge.MIDDLE) {
+            drawLine(
+                color = borderColor,
+                start = Offset(leftX, 0f),
+                end = Offset(leftX, size.height),
+                strokeWidth = strokePx,
+            )
+            drawLine(
+                color = borderColor,
+                start = Offset(rightX, 0f),
+                end = Offset(rightX, size.height),
+                strokeWidth = strokePx,
+            )
+            return@drawBehind
+        }
+        val cornerPx = (RecommendedMarketCardCornerRadius.toPx() - halfStroke).coerceAtLeast(0f)
+        val path =
+            Path().apply {
+                when (edge) {
+                    RecommendedCardEdge.TOP -> {
+                        moveTo(leftX, size.height)
+                        lineTo(leftX, halfStroke + cornerPx)
+                        arcTo(
+                            rect = Rect(leftX, halfStroke, leftX + cornerPx * 2f, halfStroke + cornerPx * 2f),
+                            startAngleDegrees = 180f,
+                            sweepAngleDegrees = 90f,
+                            forceMoveTo = false,
+                        )
+                        lineTo(rightX - cornerPx, halfStroke)
+                        arcTo(
+                            rect = Rect(rightX - cornerPx * 2f, halfStroke, rightX, halfStroke + cornerPx * 2f),
+                            startAngleDegrees = 270f,
+                            sweepAngleDegrees = 90f,
+                            forceMoveTo = false,
+                        )
+                        lineTo(rightX, size.height)
+                    }
+
+                    RecommendedCardEdge.BOTTOM -> {
+                        moveTo(leftX, 0f)
+                        lineTo(leftX, size.height - halfStroke - cornerPx)
+                        arcTo(
+                            rect = Rect(leftX, size.height - halfStroke - cornerPx * 2f, leftX + cornerPx * 2f, size.height - halfStroke),
+                            startAngleDegrees = 180f,
+                            sweepAngleDegrees = -90f,
+                            forceMoveTo = false,
+                        )
+                        lineTo(rightX - cornerPx, size.height - halfStroke)
+                        arcTo(
+                            rect = Rect(rightX - cornerPx * 2f, size.height - halfStroke - cornerPx * 2f, rightX, size.height - halfStroke),
+                            startAngleDegrees = 90f,
+                            sweepAngleDegrees = -90f,
+                            forceMoveTo = false,
+                        )
+                        lineTo(rightX, 0f)
+                    }
+
+                    RecommendedCardEdge.MIDDLE -> Unit
+                }
+            }
+        drawPath(path = path, color = borderColor, style = Stroke(width = strokePx))
+    }
 
 @Composable
 private fun SwapRecommendedMarketRow(

@@ -21,10 +21,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
@@ -255,10 +255,10 @@ fun SwapContent(
         KeyboardAwareBox(
             modifier = Modifier.fillMaxHeight(),
             content = { availableHeight ->
-            val scrollState = rememberScrollState()
+            val listState = rememberLazyListState()
             LaunchedEffect(scrollToTopSignal) {
                 if (scrollToTopSignal > 0L) {
-                    scrollState.scrollTo(0)
+                    listState.scrollToItem(0)
                 }
             }
             Column(
@@ -283,134 +283,141 @@ fun SwapContent(
                     isSendFocused = isSendFocused,
                     isKeyboardVisible = availableHeight != null,
                 )
+                val recommendedMarketState =
+                    if (showRecommendedCards) {
+                        rememberSwapRecommendedMarketState(
+                            stockMarkets = stockMarkets,
+                            trendingMarkets = trendingMarkets,
+                            topGainerMarkets = topGainerMarkets,
+                            topLoserMarkets = topLoserMarkets,
+                            allMarkets = allMarkets,
+                            priceChangePeriod = priceChangePeriod,
+                        )
+                    } else {
+                        null
+                    }
                 LaunchedEffect(availableHeight, inputText) {
                     if (shouldResetSwapSendFocusState(inputText, availableHeight != null)) {
                         isSendFocused = false
                     }
                 }
-                Column(
+                LazyColumn(
+                    state = listState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
-                        .verticalScroll(scrollState)
+                        .weight(1f),
                 ) {
-                    TradeLayout(
-                        centerCompose = {
-                            Box(
-                                modifier = Modifier
-                                    .width(32.dp)
-                                    .height(32.dp)
-                                    .clip(CircleShape)
-                                    .background(MixinAppTheme.colors.accent)
-                                    .clickable {
-                                        AnalyticsTracker.trackSpotTokensSwitch()
-                                        isLoading = true
-                                        isReverse = !isReverse
-                                        invalidFlag = !invalidFlag
-                                        fromToken?.let { f ->
-                                            toToken?.let { t ->
-                                                val tokenPair = if (isReverse) listOf(t, f) else listOf(
-                                                    f, t
-                                                )
-                                                val serializedPair = GsonHelper.customGson.toJson(tokenPair)
-                                                context.defaultSharedPreferences.putString(
-                                                    if (inMixin) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR, serializedPair
-                                                )
+                    item(key = "trade_layout") {
+                        TradeLayout(
+                            centerCompose = {
+                                Box(
+                                    modifier = Modifier
+                                        .width(32.dp)
+                                        .height(32.dp)
+                                        .clip(CircleShape)
+                                        .background(MixinAppTheme.colors.accent)
+                                        .clickable {
+                                            AnalyticsTracker.trackSpotTokensSwitch()
+                                            isLoading = true
+                                            isReverse = !isReverse
+                                            invalidFlag = !invalidFlag
+                                            fromToken?.let { f ->
+                                                toToken?.let { t ->
+                                                    val tokenPair = if (isReverse) listOf(t, f) else listOf(
+                                                        f, t
+                                                    )
+                                                    val serializedPair = GsonHelper.customGson.toJson(tokenPair)
+                                                    context.defaultSharedPreferences.putString(
+                                                        if (inMixin) PREF_SWAP_LAST_PAIR else PREF_WEB3_SWAP_LAST_PAIR, serializedPair
+                                                    )
+                                                }
                                             }
+                                            quoteResult?.let {
+                                                val nextFromMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
+                                                inputText = limitTradeInputDecimalPlaces(it.outAmount, nextFromMaxDecimalPlaces)
+                                                quoteResult = null
+                                            }
+                                            context.clickVibrate()
                                         }
-                                        quoteResult?.let {
-                                            val nextFromMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
-                                            inputText = limitTradeInputDecimalPlaces(it.outAmount, nextFromMaxDecimalPlaces)
-                                            quoteResult = null
-                                        }
-                                        context.clickVibrate()
-                                    }
-                                    .rotate(rotation),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_switch),
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                )
-                            }
-                        },
-                        headerCompose = {
-                            InputArea(
-                                modifier = Modifier,
-                                token = fromToken,
-                                text = inputText,
-                                title = stringResource(id = R.string.swap_send),
-                                readOnly = false,
-                                autoFocus = autoFocus,
-                                selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
-                                onInputChanged = { inputText = it },
-                                onDeposit = onDeposit,
-                                displayBalanceOverride = if (from.isNativeSolAsset()) fromBalance else null,
-                                maxDecimalPlaces = fromMaxDecimalPlaces,
-                                onFocusChanged = { isSendFocused = it },
-                                onMax = {
-                                    AnalyticsTracker.trackSpotSendAmountBalance()
-                                    val balance = availableFromBalanceValue
-                                    if (balance > BigDecimal.ZERO) {
-                                        inputText = limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
-                                    } else {
-                                        inputText = ""
-                                    }
-                                },
-                            )
-                        },
-                        bottomCompose = {
-                            Column {
-                                InputArea(
-                                    modifier = Modifier,
-                                    token = toToken,
-                                    text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
-                                    title = stringResource(id = R.string.swap_receive),
-                                    readOnly = true,
-                                    selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
-                                    onDeposit = null,
-                                )
-                                if (!showRecommendedCards) {
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    QuoteInfoBox(
-                                        availableHeight = availableHeight,
-                                        quoteError = quoteError,
-                                        quoteResult = quoteResult,
-                                        fromToken = fromToken,
-                                        toToken = toToken,
-                                        isLoading = isLoading,
-                                        inputText = inputText,
-                                        isNativeSolBalanceError = isNativeSolBalanceError,
-                                        quoteMin = quoteMin,
-                                        quoteMax = quoteMax,
-                                        onInputTextChange = {
-                                            inputText = limitTradeInputDecimalPlaces(it, fromMaxDecimalPlaces)
-                                        },
-                                        onInvalidFlagChange = { invalidFlag = !invalidFlag },
-                                        onSwitchToLimitOrder = onSwitchToLimitOrder,
+                                        .rotate(rotation),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_switch),
+                                        contentDescription = null,
+                                        tint = Color.White,
                                     )
                                 }
-                            }
+                            },
+                            headerCompose = {
+                                InputArea(
+                                    modifier = Modifier,
+                                    token = fromToken,
+                                    text = inputText,
+                                    title = stringResource(id = R.string.swap_send),
+                                    readOnly = false,
+                                    autoFocus = autoFocus,
+                                    selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
+                                    onInputChanged = { inputText = it },
+                                    onDeposit = onDeposit,
+                                    displayBalanceOverride = if (from.isNativeSolAsset()) fromBalance else null,
+                                    maxDecimalPlaces = fromMaxDecimalPlaces,
+                                    onFocusChanged = { isSendFocused = it },
+                                    onMax = {
+                                        AnalyticsTracker.trackSpotSendAmountBalance()
+                                        val balance = availableFromBalanceValue
+                                        if (balance > BigDecimal.ZERO) {
+                                            inputText = limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
+                                        } else {
+                                            inputText = ""
+                                        }
+                                    },
+                                )
+                            },
+                            bottomCompose = {
+                                Column {
+                                    InputArea(
+                                        modifier = Modifier,
+                                        token = toToken,
+                                        text = toToken?.toStringAmount(quoteResult?.outAmount ?: "0") ?: "",
+                                        title = stringResource(id = R.string.swap_receive),
+                                        readOnly = true,
+                                        selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
+                                        onDeposit = null,
+                                    )
+                                    if (!showRecommendedCards) {
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        QuoteInfoBox(
+                                            availableHeight = availableHeight,
+                                            quoteError = quoteError,
+                                            quoteResult = quoteResult,
+                                            fromToken = fromToken,
+                                            toToken = toToken,
+                                            isLoading = isLoading,
+                                            inputText = inputText,
+                                            isNativeSolBalanceError = isNativeSolBalanceError,
+                                            quoteMin = quoteMin,
+                                            quoteMax = quoteMax,
+                                            onInputTextChange = {
+                                                inputText = limitTradeInputDecimalPlaces(it, fromMaxDecimalPlaces)
+                                            },
+                                            onInvalidFlagChange = { invalidFlag = !invalidFlag },
+                                            onSwitchToLimitOrder = onSwitchToLimitOrder,
+                                        )
+                                    }
+                                }
 
-                        },
-                        margin = 6.dp,
-                    )
+                            },
+                            margin = 6.dp,
+                        )
+                    }
                     if (showRecommendedCards) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        SwapRecommendedMarketCards(
-                            stockMarkets = stockMarkets,
-                            trendingMarkets = trendingMarkets,
-                            topGainerMarkets = topGainerMarkets,
-                            topLoserMarkets = topLoserMarkets,
-                            onMarketClick = onRecommendedMarketClick,
-                            onViewAllClick = { type -> onRecommendedMarketViewAllClick(type, isReverse) },
-                            modifier = Modifier.padding(horizontal = 20.dp),
-                            allMarkets = allMarkets,
+                        swapRecommendedMarketCardItems(
+                            state = recommendedMarketState,
                             priceChangePeriod = priceChangePeriod,
                             quoteColorReversed = quoteColorReversed,
+                            onMarketClick = onRecommendedMarketClick,
                         )
-                        Spacer(modifier = Modifier.height(40.dp))
                     }
                 }
                 if (!showRecommendedCards) {

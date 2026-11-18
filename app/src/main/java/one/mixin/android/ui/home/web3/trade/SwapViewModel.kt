@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -55,11 +54,6 @@ internal class TradeQuoteMixinErrorException(
     val min: String?,
     val max: String?,
 ) : Exception()
-
-internal fun recommendedMarketsFromDatabase(
-    markets: Flow<List<MarketItem>>,
-    limit: Int,
-): Flow<List<MarketItem>> = markets.map { items -> items.take(limit) }
 
 @HiltViewModel
 class SwapViewModel
