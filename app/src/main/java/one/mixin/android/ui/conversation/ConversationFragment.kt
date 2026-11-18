@@ -55,7 +55,9 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.widget.PopupWindowCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -3265,15 +3267,18 @@ class ConversationFragment() :
         }
     }
 
-    private fun checkPeerIfNeeded() =
-        lifecycleScope.launch {
-            if (!isGroup) return@launch
+    private fun checkPeerIfNeeded() {
+        if (!isGroup) return
 
-            delay(1000)
-            if (callState.getGroupCallStateOrNull(conversationId) != null) return@launch
-
-            checkPeers(requireContext(), conversationId)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                delay(1000)
+                if (callState.getGroupCallStateOrNull(conversationId) == null) {
+                    checkPeers(requireContext(), conversationId)
+                }
+            }
         }
+    }
 
     private var snackBar: Snackbar? = null
 

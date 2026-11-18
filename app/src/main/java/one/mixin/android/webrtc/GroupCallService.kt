@@ -1,8 +1,10 @@
 package one.mixin.android.webrtc
 
 import android.annotation.SuppressLint
+import android.app.BackgroundServiceStartNotAllowedException
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.SystemClock
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.JsonElement
@@ -1090,10 +1092,22 @@ fun receiveDecline(
 fun checkPeers(
     ctx: Context,
     conversationId: String,
-) =
-    startService<GroupCallService>(ctx, ACTION_CHECK_PEER) {
-        it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+) {
+    try {
+        startService<GroupCallService>(ctx, ACTION_CHECK_PEER) {
+            it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+        }
+    } catch (e: IllegalStateException) {
+        val backgroundStartDenied = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            e is BackgroundServiceStartNotAllowedException
+        } else {
+            val message = e.message.orEmpty()
+            message.startsWith("Not allowed to start service ") && message.contains(": app is in background")
+        }
+        if (!backgroundStartDenied) throw e
+        Timber.d("Skipping group peer check while background service starts are restricted")
     }
+}
 
 fun acceptInvite(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE) {}
 
