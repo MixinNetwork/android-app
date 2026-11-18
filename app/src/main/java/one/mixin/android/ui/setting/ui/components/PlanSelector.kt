@@ -45,7 +45,7 @@ fun PlanSelector(
     LazyRow(
         state = listState,
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         itemsIndexed(
             items = plans,
