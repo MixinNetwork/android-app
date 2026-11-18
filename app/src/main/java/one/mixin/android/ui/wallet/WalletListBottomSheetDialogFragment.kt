@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.content.Context
 import android.view.View
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -368,6 +369,7 @@ fun SearchBar(
     isSearching: Boolean,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
+    @StringRes placeholderResId: Int = R.string.search_placeholder_asset,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -403,7 +405,7 @@ fun SearchBar(
                     ) {
                         if (query.isEmpty()) {
                             Text(
-                                text = stringResource(id = R.string.search_placeholder_asset),
+                                text = stringResource(id = placeholderResId),
                                 color = MixinAppTheme.colors.textAssist,
                                 fontSize = 14.sp
                             )

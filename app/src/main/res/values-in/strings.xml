@@ -858,4 +858,7 @@
     <string name="watch_only_wallet_dapp_connect_warning_message">Ini adalah dompet hanya-lihat dan tidak dapat terhubung ke dApp. Beralih ke dompet yang dapat menandatangani.</string>
     <string name="unsupported_wallet_dapp_connect_warning_message">Dompet ini tidak dapat menandatangani di perangkat ini dan tidak dapat terhubung ke dApp. Beralih ke dompet yang dapat menandatangani.</string>
     <string name="switch_wallet">Ganti Dompet</string>
+    <string name="Connect">Hubungkan</string>
+    <string name="Connected">Terhubung</string>
+    <string name="search_placeholder_wallet">Nama, Alamat</string>
 </resources>

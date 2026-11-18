@@ -1242,4 +1242,7 @@
     <string name="watch_only_wallet_dapp_connect_warning_message">Это кошелек только для просмотра, он не может подключаться к dApp. Переключитесь на кошелек, который может подписывать.</string>
     <string name="unsupported_wallet_dapp_connect_warning_message">Этот кошелек не может подписывать на этом устройстве и не может подключаться к dApp. Переключитесь на кошелек, который может подписывать.</string>
     <string name="switch_wallet">Сменить кошелек</string>
+    <string name="Connect">Подключить</string>
+    <string name="Connected">Подключено</string>
+    <string name="search_placeholder_wallet">Имя, адрес</string>
 </resources>

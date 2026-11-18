@@ -420,6 +420,15 @@ object WalletConnectV2 : WalletConnect() {
         return expected == null || expected == walletId
     }
 
+    fun rebindProposal(
+        pairingTopic: String,
+        walletId: String,
+    ) {
+        sessionGuard.bindProposal(pairingTopic, walletId)
+    }
+
+    fun getSessionWalletId(topic: String): String? = sessionGuard.getSessionWalletId(topic)
+
     fun validateSessionRequestForCurrentWallet(
         sessionRequest: Wallet.Model.SessionRequest,
         wallet: WalletItem? = null,

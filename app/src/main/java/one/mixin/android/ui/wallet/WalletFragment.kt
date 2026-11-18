@@ -53,6 +53,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSafeAccountsJob
 import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.WCChangeEvent
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
@@ -63,6 +64,7 @@ import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFr
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
+import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.ui.wallet.components.walletSelectionTarget
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.reloadWebViewInClips
@@ -346,6 +348,18 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                     else -> {
                         // Do nothing for Privacy wallet or null destination
                     }
+                }
+            }
+        RxBus.listen(WCChangeEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                val currentDest = selectedWalletDestination ?: return@subscribe
+                if (currentDest is WalletDestination.Privacy) return@subscribe
+                val targetWalletId = Web3Signer.currentWalletId
+                val targetCategory = Web3Signer.currentWalletCategory
+                if (targetWalletId.isNotBlank() && currentDest.walletSelectionTarget()?.walletId != targetWalletId) {
+                    selectWalletDestination(walletDestinationForWallet(targetWalletId, targetCategory))
                 }
             }
     }

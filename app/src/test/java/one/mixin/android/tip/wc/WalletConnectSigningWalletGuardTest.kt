@@ -11,6 +11,7 @@ import one.mixin.android.db.web3.vo.isWalletConnectSigningEligible
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
+import one.mixin.android.ui.tip.wc.sessionproposal.buildWalletChainAddressRows
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletSignerTarget
 import one.mixin.android.ui.wallet.components.walletSelectionTarget
@@ -700,5 +701,44 @@ class WalletConnectSigningWalletGuardTest {
         }
         assertNull(WalletConnectTIP.getSessionProposalUI())
         assertNull(WalletConnectTIP.getSessionRequestUI())
+    }
+
+    @Test
+    fun rebindingProposalAllowsApprovalForSelectedSigningWallet() {
+        val guard = WalletConnectSessionGuard()
+        WalletConnect.localPrivateKeyPresenceProvider = { walletId -> walletId == "imported-1" }
+
+        runBlocking {
+            Web3Signer.applyWalletForTest(
+                walletId = "classic-1",
+                category = WalletCategory.CLASSIC.value,
+                hasLocalPrivateKey = true,
+                addresses = sampleAddresses("classic-1", evm = "evm-classic", solana = "sol-classic"),
+            )
+        }
+        guard.bindProposal("pair-select", "classic-1")
+        assertTrue(guard.canApproveProposal("pair-select", WalletConnect.checkCurrentSigningWallet()))
+
+        runBlocking {
+            Web3Signer.applyWalletForTest(
+                walletId = "imported-1",
+                category = WalletCategory.IMPORTED_MNEMONIC.value,
+                hasLocalPrivateKey = true,
+                addresses = sampleAddresses("imported-1", evm = "evm-imported", solana = "sol-imported"),
+            )
+        }
+        assertFalse(guard.canApproveProposal("pair-select", WalletConnect.checkCurrentSigningWallet()))
+
+        guard.bindProposal("pair-select", "imported-1")
+        assertTrue(guard.canApproveProposal("pair-select", WalletConnect.checkCurrentSigningWallet()))
+        guard.markProposalApproved("pair-select", "imported-1")
+        assertEquals("imported-1", guard.consumeApprovedOrProposalWalletId("pair-select"))
+
+        val rows =
+            buildWalletChainAddressRows(
+                addresses = WalletConnectAddresses(evm = "evm-imported", solana = "sol-imported", bitcoin = "btc-imported"),
+                proposalChainIds = setOf("eip155:1", Chain.Solana.chainId),
+            )
+        assertEquals(listOf("evm-imported", "sol-imported"), rows.map { it.address })
     }
 }

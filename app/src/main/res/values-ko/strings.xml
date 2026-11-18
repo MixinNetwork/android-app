@@ -2729,4 +2729,7 @@
     <string name="watch_only_wallet_dapp_connect_warning_message">이 지갑은 감시 전용 지갑이므로 dApp에 연결할 수 없습니다. 서명할 수 있는 지갑으로 전환하세요.</string>
     <string name="unsupported_wallet_dapp_connect_warning_message">이 지갑은 이 기기에서 서명할 수 없어 dApp에 연결할 수 없습니다. 서명할 수 있는 지갑으로 전환하세요.</string>
     <string name="switch_wallet">지갑 전환</string>
+    <string name="Connect">연결</string>
+    <string name="Connected">연결됨</string>
+    <string name="search_placeholder_wallet">이름, 주소</string>
 </resources>

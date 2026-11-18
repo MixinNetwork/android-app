@@ -39,6 +39,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -76,9 +77,14 @@ import one.mixin.android.ui.home.web3.error.SolanaErrorHandler
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.tip.wc.compose.Loading
 import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
+import one.mixin.android.ui.tip.wc.sessionproposal.WalletConnectWalletSelectBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.sessionproposal.toWalletConnectAddresses
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.components.walletDestinationForWallet
+import one.mixin.android.ui.wallet.components.walletDestinationToJson
+import one.mixin.android.ui.web.reloadWebViewInClips
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
@@ -155,6 +161,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         private set
     private var isEligibilityChecked by mutableStateOf(false)
     private var initialWalletId: String = ""
+    private var selectedWalletId: String by mutableStateOf("")
     private var chain: Chain by mutableStateOf(Chain.Ethereum)
     private var errorInfo: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
@@ -185,8 +192,10 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     topic,
                     sessionProposal,
                     errorInfo,
+                    selectedWalletId = selectedWalletId,
                     isSigningBlocked = isSigningBlocked,
                     isEligibilityChecked = isEligibilityChecked,
+                    onSelectWalletClick = { openWalletSelector() },
                     onSwitchWallet = { switchWallet() },
                     onDismissRequest = { dismiss() },
                     showPin = { showPin() },
@@ -244,6 +253,21 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 RequestType.Pay -> Step.Done
             }
         checkV2ChainAndParseSignData()
+        parentFragmentManager.setFragmentResultListener(
+            WalletConnectWalletSelectBottomSheetDialogFragment.REQUEST_KEY_WALLET_SELECT,
+            viewLifecycleOwner,
+        ) { _, bundle ->
+            val walletId = bundle.getString(WalletConnectWalletSelectBottomSheetDialogFragment.RESULT_WALLET_ID)
+            if (!walletId.isNullOrBlank()) {
+                selectedWalletId = walletId
+                lifecycleScope.launch {
+                    val addresses = viewModel.getAddresses(walletId).toWalletConnectAddresses()
+                    sessionProposal?.let { proposal ->
+                        account = formatProposalAccountText(proposal.getProposalChainIds(), addresses)
+                    }
+                }
+            }
+        }
         RxBus.listen(WCSessionDeleteEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
@@ -348,6 +372,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         return@launch
                     }
                     val eligible = precheck as SigningWalletPrecheck.Eligible
+                    selectedWalletId = eligible.walletId
                     if (version == WalletConnect.Version.V2) {
                         if (!WalletConnectV2.isProposalBoundToWallet(topic, eligible.walletId)) {
                             if (topic.isNotBlank()) {
@@ -576,7 +601,47 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         } else {
                             if (version == WalletConnect.Version.V2 && requestType == RequestType.SessionProposal) {
                                 viewModel.verifyPin(requireContext(), pin)
-                                approveWithPriv(ByteArray(0))
+                                val targetWalletId = selectedWalletId.ifBlank { Web3Signer.currentWalletId }
+                                var switchedWallet = false
+                                if (targetWalletId.isNotBlank() && targetWalletId != Web3Signer.currentWalletId) {
+                                    val targetWallet = viewModel.findWalletById(targetWalletId)
+                                    val targetRawAddresses = viewModel.getAddresses(targetWalletId)
+                                    val targetPrecheck =
+                                        WalletConnect.evaluateSigningWallet(
+                                            targetWallet,
+                                            targetRawAddresses.toWalletConnectAddresses(),
+                                        )
+                                    if (targetWallet == null || targetPrecheck !is SigningWalletPrecheck.Eligible) {
+                                        if (topic.isNotBlank()) WalletConnectV2.rejectSession(topic)
+                                        processCompleted = true
+                                        return@withContext if (targetPrecheck is SigningWalletPrecheck.Blocked) {
+                                            targetPrecheck.localizedMessage(requireContext())
+                                        } else {
+                                            getString(R.string.connect_wallet_failed)
+                                        }
+                                    }
+                                    Web3Signer.setWallet(
+                                        targetWallet.id,
+                                        targetWallet.category,
+                                        targetWallet.hasLocalPrivateKey,
+                                    ) { queryWalletId ->
+                                        if (queryWalletId == targetWallet.id) targetRawAddresses else emptyList()
+                                    }
+                                    defaultSharedPreferences.putString(
+                                        Constants.Account.PREF_USED_WALLET,
+                                        walletDestinationToJson(walletDestinationForWallet(targetWallet.id, targetWallet.category)),
+                                    )
+                                    WalletConnectV2.rebindProposal(topic, targetWallet.id)
+                                    initialWalletId = targetWallet.id
+                                    switchedWallet = true
+                                }
+                                val approveResult = approveWithPriv(ByteArray(0))
+                                if (switchedWallet) {
+                                    withContext(Dispatchers.Main) {
+                                        reloadWebViewInClips()
+                                    }
+                                }
+                                approveResult
                             } else {
                                 val privateKey = viewModel.getWeb3Priv(requireContext(), pin, chain.assetId)
                                 approveWithPriv(privateKey)
@@ -783,6 +848,17 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             "",
         )
 
+    private fun openWalletSelector() {
+        if (step != Step.Input || version != WalletConnect.Version.V2 || isSigningBlocked) return
+        if (parentFragmentManager.findFragmentByTag(WalletConnectWalletSelectBottomSheetDialogFragment.TAG) != null) return
+        WalletConnectWalletSelectBottomSheetDialogFragment
+            .newInstance(
+                topic = topic,
+                selectedWalletId = selectedWalletId.ifBlank { Web3Signer.currentWalletId },
+            )
+            .show(parentFragmentManager, WalletConnectWalletSelectBottomSheetDialogFragment.TAG)
+    }
+
     private fun switchWallet() {
         if (version == WalletConnect.Version.V2 && topic.isNotBlank() && !processCompleted) {
             WalletConnectV2.rejectSession(topic)
@@ -802,7 +878,20 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     version == WalletConnect.Version.V2 &&
                         precheck is SigningWalletPrecheck.Eligible &&
                         !WalletConnectV2.isProposalBoundToWallet(topic, precheck.walletId)
-                if (precheck !is SigningWalletPrecheck.Eligible || walletChanged || proposalMismatch) {
+                val targetWalletId = selectedWalletId.ifBlank { initialWalletId }
+                val targetPrecheck =
+                    if (version == WalletConnect.Version.V2 && targetWalletId.isNotBlank() && targetWalletId != wallet?.id) {
+                        val targetWallet = viewModel.findWalletById(targetWalletId)
+                        val targetAddresses = viewModel.getAddresses(targetWalletId).toWalletConnectAddresses()
+                        WalletConnect.evaluateSigningWallet(targetWallet, targetAddresses)
+                    } else {
+                        precheck
+                    }
+                if (precheck !is SigningWalletPrecheck.Eligible ||
+                    targetPrecheck !is SigningWalletPrecheck.Eligible ||
+                    walletChanged ||
+                    proposalMismatch
+                ) {
                     if (version == WalletConnect.Version.V2 && topic.isNotBlank()) {
                         WalletConnectV2.rejectSession(topic)
                     } else if (version == WalletConnect.Version.TIP) {
@@ -811,7 +900,9 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     processCompleted = true
                     isSigningBlocked = true
                     errorInfo =
-                        if (precheck is SigningWalletPrecheck.Blocked) {
+                        if (targetPrecheck is SigningWalletPrecheck.Blocked) {
+                            targetPrecheck.localizedMessage(requireContext())
+                        } else if (precheck is SigningWalletPrecheck.Blocked) {
                             precheck.localizedMessage(requireContext())
                         } else {
                             getString(R.string.connect_wallet_failed)
