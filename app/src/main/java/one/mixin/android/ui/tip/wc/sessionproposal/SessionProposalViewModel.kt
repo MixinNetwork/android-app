@@ -146,13 +146,14 @@ class SessionProposalViewModel
             }
         }
 
-        private fun resolveConnectedWalletIds(): Set<String> {
-            val sessions = WalletConnectV2.getListOfActiveSessions()
-            if (sessions.isEmpty()) return emptySet()
-            return sessions.mapNotNull { session ->
-                WalletConnectV2.getSessionWalletId(session.topic) ?: Web3Signer.currentWalletId.takeIf { it.isNotBlank() }
-            }.toSet()
-        }
+        private fun resolveConnectedWalletIds(): Set<String> =
+            resolveConnectedWalletIds(
+                activeSessionWalletIds =
+                    WalletConnectV2.getListOfActiveSessions().mapNotNull { session ->
+                        WalletConnectV2.getSessionWalletId(session.topic)
+                    },
+                currentWalletId = Web3Signer.currentWalletId,
+            )
 
         private fun isWalletCompatibleWithProposal(
             addresses: WalletConnectAddresses,
@@ -195,6 +196,17 @@ class SessionProposalViewModel
             }
         }
 }
+
+internal fun resolveConnectedWalletIds(
+    activeSessionWalletIds: Collection<String>,
+    currentWalletId: String,
+): Set<String> =
+    buildSet {
+        activeSessionWalletIds.filterTo(this) { it.isNotBlank() }
+        if (currentWalletId.isNotBlank()) {
+            add(currentWalletId)
+        }
+    }
 
 internal fun List<Web3Address>.toWalletConnectAddresses(): WalletConnectAddresses =
     WalletConnectAddresses(
