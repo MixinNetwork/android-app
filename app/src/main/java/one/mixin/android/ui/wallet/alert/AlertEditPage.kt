@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -35,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -57,7 +55,6 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.removeEnd
@@ -73,6 +70,7 @@ import one.mixin.android.ui.wallet.alert.vo.AlertType
 import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.ui.wallet.alert.vo.InputError
+import one.mixin.android.ui.wallet.components.AssetPriceHeader
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -137,20 +135,11 @@ fun AlertEditPage(
                             modifier = Modifier
                                 .fillMaxWidth(), horizontalAlignment = Alignment.Start
                         ) {
-                            Row(modifier = Modifier.padding(horizontal = 6.dp)) {
-                                CoilImage(
-                                    model = coin.iconUrl,
-                                    placeholder = R.drawable.ic_avatar_place_holder,
-                                    modifier = Modifier
-                                        .size(42.dp)
-                                        .clip(CircleShape),
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Column {
-                                    Text(text = coin.symbol, fontSize = 16.sp, color = MixinAppTheme.colors.textPrimary)
-                                    Text(text = stringResource(R.string.Current_price, "${BigDecimal(coin.currentPrice).priceFormat()} USD"), fontSize = 13.sp, color = MixinAppTheme.colors.textAssist)
-                                }
-                            }
+                            AssetPriceHeader(
+                                iconUrl = coin.iconUrl,
+                                title = coin.symbol,
+                                price = "${currentPrice.priceFormat()} USD",
+                            )
 
                             Spacer(modifier = Modifier.height(12.dp))
 

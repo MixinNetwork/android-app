@@ -168,7 +168,7 @@ private fun LeverageContent(
     ) {
         Text(
             text = stringResource(R.string.Leverage),
-            modifier = Modifier.padding(horizontal = 20.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = MixinAppTheme.colors.textPrimary
@@ -280,7 +280,7 @@ private fun LeverageContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Box(
@@ -361,7 +361,7 @@ private fun ProfitLossInfo(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 16.dp)
         ) {
             Text(
                 text = context.formatPerpsProfitPreview(
@@ -393,7 +393,7 @@ private fun ProfitLossInfo(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 16.dp)
     ) {
         Text(
             text = context.formatPerpsProfitPreview(

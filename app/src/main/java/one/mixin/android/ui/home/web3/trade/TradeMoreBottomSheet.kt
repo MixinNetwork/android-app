@@ -26,7 +26,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -66,7 +65,7 @@ fun TradeMoreBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(70.dp)
-                .padding(start = 20.dp, end = 8.dp),
+                .padding(start = 16.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
@@ -122,8 +121,7 @@ private fun TradeMoreGroup(content: @Composable () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(13.dp))
-            .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor, cornerRadius = 13.dp),
+            .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor),
     ) {
         content()
     }
@@ -169,8 +167,7 @@ private fun TradeProPromo(onTradePro: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(13.dp))
-            .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor, cornerRadius = 13.dp)
+            .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
             .padding(start = 16.dp, top = 30.dp, end = 16.dp, bottom = 21.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

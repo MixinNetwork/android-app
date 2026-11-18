@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
@@ -39,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -59,7 +57,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.MixinAlertDialog
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -79,6 +76,7 @@ import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.ui.wallet.components.AssetPriceHeader
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -362,37 +360,11 @@ fun OpenPositionPage(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    CoilImage(
-                        model = currentMarket.iconUrl,
-                        placeholder = R.drawable.ic_avatar_place_holder,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = "${if (selectedIsLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${currentMarket.tokenSymbol}",
-                            fontSize = 16.sp,
-                            color = MixinAppTheme.colors.textPrimary
-                        )
-                        Text(
-                            text = stringResource(
-                                R.string.Current_price,
-                                formatPerpsPrice(currentMarket.last, currentMarket.priceScale)
-                            ),
-                            fontSize = 13.sp,
-                            color = MixinAppTheme.colors.textAssist
-                        )
-                    }
-                }
+                AssetPriceHeader(
+                    iconUrl = currentMarket.iconUrl,
+                    title = "${if (selectedIsLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${currentMarket.tokenSymbol}",
+                    price = formatPerpsPrice(currentMarket.last, currentMarket.priceScale),
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
