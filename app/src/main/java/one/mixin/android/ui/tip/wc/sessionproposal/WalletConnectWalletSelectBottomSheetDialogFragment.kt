@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -281,6 +282,7 @@ private fun WalletConnectSelectCard(
                         fontSize = 16.sp,
                         fontWeight = FontWeight.W500,
                         maxLines = 1,
+                        softWrap = false,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false),
                     )
@@ -306,7 +308,7 @@ private fun WalletConnectSelectCard(
                     painter = painterResource(id = if (isSelected) R.drawable.ic_wallet_select else R.drawable.ic_wallet_unselect),
                     tint = Color.Unspecified,
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.requiredSize(16.dp),
                 )
             }
             Spacer(modifier = Modifier.height(6.dp))

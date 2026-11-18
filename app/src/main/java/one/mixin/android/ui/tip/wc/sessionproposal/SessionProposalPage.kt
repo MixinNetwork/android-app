@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -294,6 +295,7 @@ fun SessionProposalPage(
                                         color = MixinAppTheme.colors.textPrimary,
                                         fontSize = 16.sp,
                                         maxLines = 1,
+                                        softWrap = false,
                                         overflow = TextOverflow.Ellipsis,
                                         modifier = Modifier.weight(1f, fill = false),
                                     )
@@ -309,7 +311,7 @@ fun SessionProposalPage(
                                 if (canSelectWallet) {
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Box(
-                                        modifier = Modifier.size(16.dp),
+                                        modifier = Modifier.requiredSize(16.dp),
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         Icon(

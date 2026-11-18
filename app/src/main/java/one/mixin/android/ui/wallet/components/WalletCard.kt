@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -66,6 +66,7 @@ fun WalletCard(
     onClick: () -> Unit,
     onSafeClick: (() -> Unit)? = null,
     enableFreeLabel: Boolean = false,
+    isConnected: Boolean = false,
     isSelectable: Boolean = false,
     isSelected: Boolean = false,
     viewModel: AssetDistributionViewModel = hiltViewModel(),
@@ -169,144 +170,126 @@ fun WalletCard(
                     .padding(start = 16.dp, end = 10.dp, top = 16.dp, bottom = 16.dp)
                     .fillMaxWidth()
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        name
-                            ?: if (destination is WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
-                                R.string.Common_Wallet
-                            ),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.W500,
-                        color = MixinAppTheme.colors.textPrimary,
-                        maxLines = 1,
-                        modifier = Modifier.widthIn(max = 240.dp),
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    if (destination is WalletDestination.Privacy) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            modifier = Modifier.size(18.dp),
-                            painter = painterResource(id = R.drawable.ic_wallet_privacy),
-                            tint = Color.Unspecified,
-                            contentDescription = null,
-                        )
-                    } else if (destination is WalletDestination.Classic) {
-                        Spacer(modifier = Modifier.width(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Text(
-                            text = stringResource(R.string.Wallet_Created),
-                            color = MixinAppTheme.colors.textRemarks,
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(
-                                    color = MixinAppTheme.colors.backgroundGrayLight,
-                                    shape = RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 4.dp)
+                            name
+                                ?: if (destination is WalletDestination.Privacy) stringResource(R.string.Privacy_Wallet) else stringResource(
+                                    R.string.Common_Wallet
+                                ),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.W500,
+                            color = MixinAppTheme.colors.textPrimary,
+                            maxLines = 1,
+                            softWrap = false,
+                            modifier = Modifier.weight(1f, fill = false),
+                            overflow = TextOverflow.Ellipsis
                         )
-                    } else if (destination is WalletDestination.Import) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = stringResource(R.string.Imported),
-                            color = MixinAppTheme.colors.textRemarks,
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(
-                                    color = MixinAppTheme.colors.backgroundGrayLight,
-                                    shape = RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 4.dp)
-                        )
-                        if (!hasLocalPrivateKey) {
+                        if (destination is WalletDestination.Privacy) {
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = stringResource(R.string.NoKey),
-                                color = MixinAppTheme.colors.red,
-                                fontSize = 12.sp,
-                                modifier = Modifier
-                                    .background(
-                                        color = MixinAppTheme.colors.red.copy(alpha = 0.2f),
-                                        shape = RoundedCornerShape(4.dp)
-                                    )
-                                    .padding(horizontal = 4.dp)
+                            Icon(
+                                modifier = Modifier.requiredSize(18.dp),
+                                painter = painterResource(id = R.drawable.ic_wallet_privacy),
+                                tint = Color.Unspecified,
+                                contentDescription = null,
                             )
-
+                        } else if (destination is WalletDestination.Classic) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            WalletCardBadge(
+                                text = stringResource(R.string.Wallet_Created),
+                                textColor = MixinAppTheme.colors.textRemarks,
+                                backgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+                            )
+                        } else if (destination is WalletDestination.Import) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            WalletCardBadge(
+                                text = stringResource(R.string.Imported),
+                                textColor = MixinAppTheme.colors.textRemarks,
+                                backgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+                            )
+                            if (!hasLocalPrivateKey) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                WalletCardBadge(
+                                    text = stringResource(R.string.NoKey),
+                                    textColor = MixinAppTheme.colors.red,
+                                    backgroundColor = MixinAppTheme.colors.red.copy(alpha = 0.2f),
+                                )
+                            }
+                        } else if (destination is WalletDestination.Watch) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                modifier = Modifier.requiredSize(18.dp),
+                                painter = painterResource(id = R.drawable.ic_wallet_watch),
+                                tint = Color.Unspecified,
+                                contentDescription = null,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            WalletCardBadge(
+                                text = stringResource(R.string.Watching),
+                                textColor = MixinAppTheme.colors.textRemarks,
+                                backgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+                            )
+                        } else if (destination is WalletDestination.Safe) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                modifier = Modifier.requiredSize(18.dp),
+                                painter = painterResource(id = R.drawable.ic_wallet_safe),
+                                tint = Color.Unspecified,
+                                contentDescription = null,
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            WalletCardBadge(
+                                text = stringResource(if (destination.isOwner) R.string.Wallet_Owner else R.string.Wallet_Member),
+                                textColor = if (destination.isOwner) Color.White else MixinAppTheme.colors.textRemarks,
+                                backgroundColor = if (destination.isOwner) MixinAppTheme.colors.walletOrange.copy(0.6f) else MixinAppTheme.colors.backgroundGrayLight,
+                            )
                         }
-                    } else if (destination is WalletDestination.Watch) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            modifier = Modifier.size(18.dp),
-                            painter = painterResource(id = R.drawable.ic_wallet_watch),
-                            tint = Color.Unspecified,
-                            contentDescription = null,
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = stringResource(R.string.Watching),
-                            color = MixinAppTheme.colors.textRemarks,
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(
-                                    color = MixinAppTheme.colors.backgroundGrayLight,
-                                    shape = RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 4.dp)
-                        )
-                    } else if (destination is WalletDestination.Safe) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            modifier = Modifier.size(18.dp),
-                            painter = painterResource(id = R.drawable.ic_wallet_safe),
-                            tint = Color.Unspecified,
-                            contentDescription = null,
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = stringResource(if (destination.isOwner) R.string.Wallet_Owner else R.string.Wallet_Member),
-                            color = if (destination.isOwner) Color.White else MixinAppTheme.colors.textRemarks,
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(
-                                    color = if (destination.isOwner) MixinAppTheme.colors.walletOrange.copy(0.6f) else MixinAppTheme.colors.backgroundGrayLight,
-                                    shape = RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 4.dp)
-                        )
+
+                        val isFeeFree = enableFreeLabel && when (destination) {
+                            is WalletDestination.Classic -> true
+                            is WalletDestination.Import -> hasLocalPrivateKey
+                            is WalletDestination.Safe -> true
+                            else -> false
+                        }
+                        if (isFeeFree) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            WalletCardBadge(
+                                text = stringResource(R.string.FREE),
+                                textColor = Color.White,
+                                backgroundColor = MixinAppTheme.colors.accent,
+                            )
+                        }
+                        if (isConnected) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            WalletCardBadge(
+                                text = stringResource(R.string.Connected),
+                                textColor = Color.White,
+                                backgroundColor = Color(0xFF50BD5C),
+                            )
+                        }
                     }
 
-                    val isFeeFree = enableFreeLabel && when (destination) {
-                        is WalletDestination.Classic -> true
-                        is WalletDestination.Import -> hasLocalPrivateKey
-                        is WalletDestination.Safe -> true
-                        else -> false
-                    }
-                    if (isFeeFree) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = stringResource(R.string.FREE),
-                            color = Color.White,
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(
-                                    color = MixinAppTheme.colors.accent,
-                                    shape = RoundedCornerShape(4.dp)
-                                )
-                                .padding(horizontal = 4.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
                     if (isSelectable) {
                         val iconRes = if (isSelected) R.drawable.ic_wallet_select else R.drawable.ic_wallet_unselect
                         Icon(
                             painter = painterResource(id = iconRes),
                             tint = Color.Unspecified,
                             contentDescription = null,
+                            modifier = Modifier.requiredSize(16.dp),
                         )
                     } else {
                         Icon(
                             painter = painterResource(id = if (destination is WalletDestination.Safe && topArrow) R.drawable.ic_arrow_top_right else R.drawable.ic_wallet_arrow_right),
                             tint = Color.Unspecified,
                             contentDescription = null,
+                            modifier = Modifier.requiredSize(30.dp),
                         )
                     }
                 }
@@ -427,3 +410,25 @@ val evmChain = listOf(
     R.drawable.ic_chain_optimism,
     R.drawable.ic_chain_avax,
 )
+
+@Composable
+private fun WalletCardBadge(
+    text: String,
+    textColor: Color,
+    backgroundColor: Color,
+) {
+    Text(
+        text = text,
+        color = textColor,
+        fontSize = 12.sp,
+        maxLines = 1,
+        softWrap = false,
+        modifier =
+            Modifier
+                .background(
+                    color = backgroundColor,
+                    shape = RoundedCornerShape(4.dp),
+                )
+                .padding(horizontal = 4.dp),
+    )
+}

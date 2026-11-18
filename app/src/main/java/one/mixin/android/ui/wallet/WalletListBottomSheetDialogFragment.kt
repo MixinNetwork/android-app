@@ -22,6 +22,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,12 +44,15 @@ import androidx.core.content.edit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.RxBus
 
 import one.mixin.android.compose.GetActionBarHeight
 import one.mixin.android.compose.GetStatusBarHeightValue
@@ -63,6 +67,8 @@ import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.withArgs
+import one.mixin.android.tip.wc.WCChangeEvent
+import one.mixin.android.tip.wc.WCSessionDeleteEvent
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.KEY_HIDE_COMMON_WALLET_INFO
@@ -102,6 +108,30 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             val searchQuery = remember { MutableStateFlow("") }
             val wallets by viewModel.walletsFlow.collectAsState()
             val allWallets by viewModel.allWalletsFlow.collectAsState()
+            val connectedWalletIds by viewModel.connectedWalletIds.collectAsState()
+            DisposableEffect(Unit) {
+                viewModel.refreshConnectedWalletIds()
+                val disposables =
+                    CompositeDisposable().apply {
+                        add(
+                            RxBus.listen(WCChangeEvent::class.java)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe {
+                                    viewModel.refreshConnectedWalletIds()
+                                },
+                        )
+                        add(
+                            RxBus.listen(WCSessionDeleteEvent::class.java)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe {
+                                    viewModel.refreshConnectedWalletIds()
+                                },
+                        )
+                    }
+                onDispose {
+                    disposables.dispose()
+                }
+            }
             LaunchedEffect(Unit) {
                 launch {
                     searchQuery.collect { query ->
@@ -125,6 +155,7 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 chainId = chainId,
                 wallets = wallets,
                 allWallets = allWallets,
+                connectedWalletIds = connectedWalletIds,
                 excludeWalletId = excludeWalletId,
                 onQueryChanged = { query ->
                     lifecycleScope.launch {
@@ -196,6 +227,7 @@ fun WalletListScreen(
     chainId:String?,
     wallets: List<WalletItem>,
     allWallets: List<WalletItem>,
+    connectedWalletIds: Set<String> = emptySet(),
     excludeWalletId: String?,
     onQueryChanged: (String) -> Unit,
     onWalletClick: (WalletItem?) -> Unit,
@@ -298,12 +330,14 @@ fun WalletListScreen(
 
                     is WalletListItem.RegularWallet -> {
                         val wallet = item.wallet
+                        val isWalletConnected = wallet.id in connectedWalletIds
                         if (wallet.isImported()) {
                             val destination = WalletDestination.Import(wallet.id, wallet.category)
                             WalletCard(
                                 name = wallet.name,
                                 destination = destination,
                                 hasLocalPrivateKey = wallet.hasLocalPrivateKey,
+                                isConnected = isWalletConnected,
                                 onClick = { onWalletClick(wallet) },
                             )
                         } else if (wallet.isWatch()) {
@@ -311,6 +345,7 @@ fun WalletListScreen(
                             WalletCard(
                                 name = wallet.name,
                                 destination = destination,
+                                isConnected = isWalletConnected,
                                 onClick = { onWalletClick(wallet) },
                             )
                         } else if (wallet.isMixinSafe()) {
@@ -326,6 +361,7 @@ fun WalletListScreen(
                             WalletCard(
                                 name = wallet.name,
                                 destination = destination,
+                                isConnected = isWalletConnected,
                                 onClick = { onWalletClick(wallet) },
                             )
                         }

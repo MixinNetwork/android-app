@@ -12,7 +12,6 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import one.mixin.android.ui.tip.wc.sessionproposal.buildWalletChainAddressRows
-import one.mixin.android.ui.tip.wc.sessionproposal.resolveConnectedWalletIds
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletSignerTarget
 import one.mixin.android.ui.wallet.components.walletSelectionTarget
@@ -741,13 +740,51 @@ class WalletConnectSigningWalletGuardTest {
                 proposalChainIds = setOf("eip155:1", Chain.Solana.chainId),
             )
         assertEquals(listOf("evm-imported", "sol-imported"), rows.map { it.address })
-        assertEquals(
-            setOf("imported-1"),
-            resolveConnectedWalletIds(activeSessionWalletIds = emptyList(), currentWalletId = "imported-1"),
-        )
-        assertEquals(
-            setOf("classic-1", "imported-1"),
-            resolveConnectedWalletIds(activeSessionWalletIds = listOf("classic-1"), currentWalletId = "imported-1"),
-        )
+        runBlocking {
+            assertEquals(
+                emptySet<String>(),
+                resolveActiveConnectedWalletIds(
+                    sessions = emptyList(),
+                    fallbackWalletId = "imported-1",
+                ),
+            )
+            assertEquals(
+                setOf("classic-1"),
+                resolveActiveConnectedWalletIds(
+                    sessions = listOf(ActiveSessionWalletSnapshot(boundWalletId = "classic-1")),
+                    fallbackWalletId = "imported-1",
+                ),
+            )
+            assertEquals(
+                setOf("imported-1"),
+                resolveActiveConnectedWalletIds(
+                    sessions =
+                        listOf(
+                            ActiveSessionWalletSnapshot(
+                                boundWalletId = null,
+                                accountAddresses = listOf("0xabc"),
+                            ),
+                        ),
+                    fallbackWalletId = "classic-1",
+                    resolveWalletIdByAddress = { address ->
+                        if (address == "0xabc") "imported-1" else null
+                    },
+                ),
+            )
+            assertEquals(
+                setOf("classic-1"),
+                resolveActiveConnectedWalletIds(
+                    sessions =
+                        listOf(
+                            ActiveSessionWalletSnapshot(
+                                boundWalletId = null,
+                                accountAddresses = listOf("0xunknown"),
+                            ),
+                        ),
+                    fallbackWalletId = "classic-1",
+                    resolveWalletIdByAddress = { null },
+                ),
+            )
+        }
     }
 }

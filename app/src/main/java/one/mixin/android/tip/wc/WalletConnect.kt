@@ -584,3 +584,44 @@ abstract class WalletConnect {
         throw WalletConnectException(error.code, error.message)
     }
 }
+
+internal data class ActiveSessionWalletSnapshot(
+    val boundWalletId: String?,
+    val accountAddresses: List<String> = emptyList(),
+)
+
+/**
+ * 解析当前存在活跃 WalletConnect 会话的钱包 ID 集合。
+ * 优先使用已记录的会话绑定，若为空则按会话账户地址回查钱包，最后才回退到当前签名钱包。
+ */
+internal suspend fun resolveActiveConnectedWalletIds(
+    sessions: List<ActiveSessionWalletSnapshot>,
+    fallbackWalletId: String,
+    resolveWalletIdByAddress: (suspend (String) -> String?)? = null,
+): Set<String> {
+    if (sessions.isEmpty()) return emptySet()
+    return buildSet {
+        sessions.forEach { session ->
+            val boundId = session.boundWalletId?.takeIf { it.isNotBlank() }
+            if (boundId != null) {
+                add(boundId)
+                return@forEach
+            }
+            var resolvedByAddress: String? = null
+            if (resolveWalletIdByAddress != null) {
+                for (address in session.accountAddresses.distinct()) {
+                    val matched = resolveWalletIdByAddress(address)?.takeIf { it.isNotBlank() }
+                    if (matched != null) {
+                        resolvedByAddress = matched
+                        break
+                    }
+                }
+            }
+            if (resolvedByAddress != null) {
+                add(resolvedByAddress)
+            } else if (fallbackWalletId.isNotBlank()) {
+                add(fallbackWalletId)
+            }
+        }
+    }
+}

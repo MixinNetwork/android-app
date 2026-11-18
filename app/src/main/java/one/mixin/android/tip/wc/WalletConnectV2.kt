@@ -293,6 +293,7 @@ object WalletConnectV2 : WalletConnect() {
                         if (walletId != null) {
                             sessionGuard.bindSession(settledSession.topic, walletId)
                         }
+                        RxBus.publish(WCChangeEvent())
                     }
                 }
 
@@ -367,6 +368,7 @@ object WalletConnectV2 : WalletConnect() {
                     .forEach { session ->
                         sessionGuard.bindSession(session.topic, eligible.walletId)
                     }
+                RxBus.publish(WCChangeEvent())
                 latch.countDown()
             }, onError = { error ->
                 sessionGuard.clearProposal(topic)
@@ -428,6 +430,28 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun getSessionWalletId(topic: String): String? = sessionGuard.getSessionWalletId(topic)
+
+    suspend fun getConnectedWalletIds(
+        resolveWalletIdByAddress: (suspend (String) -> String?)? = null,
+    ): Set<String> {
+        val sessions = getListOfActiveSessions()
+        return resolveActiveConnectedWalletIds(
+            sessions =
+                sessions.map { session ->
+                    ActiveSessionWalletSnapshot(
+                        boundWalletId = getSessionWalletId(session.topic),
+                        accountAddresses =
+                            session.namespaces.values
+                                .flatMap { it.accounts }
+                                .mapNotNull { account ->
+                                    account.substringAfterLast(':', "").takeIf { it.isNotBlank() }
+                                },
+                    )
+                },
+            fallbackWalletId = Web3Signer.currentWalletId,
+            resolveWalletIdByAddress = resolveWalletIdByAddress,
+        )
+    }
 
     fun validateSessionRequestForCurrentWallet(
         sessionRequest: Wallet.Model.SessionRequest,
@@ -692,10 +716,12 @@ object WalletConnectV2 : WalletConnect() {
 
     fun disconnect(topic: String) {
         sessionGuard.removeSession(topic)
+        RxBus.publish(WCChangeEvent())
         WalletKit.disconnectSession(
             Wallet.Params.SessionDisconnect(topic),
             onSuccess = {
                 Timber.d("$TAG disconnect success")
+                RxBus.publish(WCChangeEvent())
             },
         ) { error ->
             Timber.d("$TAG disconnect error $error")
@@ -712,6 +738,7 @@ object WalletConnectV2 : WalletConnect() {
         }
         sessionGuard.clearAll()
         WalletConnectTIP.clear()
+        RxBus.publish(WCChangeEvent())
     }
 
     fun switchAccount(
@@ -740,6 +767,7 @@ object WalletConnectV2 : WalletConnect() {
                 updateSessionSync(topic, newNamespaces)
             },
         )
+        RxBus.publish(WCChangeEvent())
     }
 
     private fun updateSessionSync(
