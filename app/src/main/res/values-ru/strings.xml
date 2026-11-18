@@ -1093,6 +1093,7 @@
     <string name="free_inheritance_service">Бесплатная служба наследования</string>
     <string name="membership_benefit_free_inheritance_service">Воспользуйтесь службой наследования бесплатно.</string>
     <string name="membership_renew_option_card_desc">Используйте Google Pay, кредитную или дебетовую карту, чтобы продлить план.</string>
+    <string name="membership_renew_option_crypto">Криптовалюта</string>
     <string name="membership_renew_option_crypto_desc">Используйте USDT, USDC или другую криптовалюту, чтобы продлить план.</string>
     <string name="mnemonic_login_security_title">Безопасно ли импортировать данные в Mixin?</string>
     <string name="mobile_number_description">Это номер мобильного телефона, привязанный к вашему аккаунту</string>
