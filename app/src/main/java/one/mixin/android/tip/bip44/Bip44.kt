@@ -5,6 +5,7 @@ import org.web3j.crypto.Bip32ECKeyPair.HARDENED_BIT
 
 object Bip44Path {
     const val LITECOIN_COIN_TYPE = 2
+    const val TRON_COIN_TYPE = 195
     const val PEARL_COIN_TYPE = 808276
 
     /**
@@ -80,6 +81,16 @@ object Bip44Path {
             index or HARDENED_BIT,
             0 or HARDENED_BIT,
         )
+
+    fun tron(index: Int = 0): IntArray {
+        require(index >= 0) { "Invalid Tron address index" }
+        return intArrayOf(44 or HARDENED_BIT, TRON_COIN_TYPE or HARDENED_BIT, HARDENED_BIT, 0, index)
+    }
+
+    fun tronPathString(index: Int = 0): String {
+        require(index >= 0) { "Invalid Tron address index" }
+        return "m/44'/$TRON_COIN_TYPE'/0'/0/$index"
+    }
 
     fun ethereumPathString(index: Int = 0): String {
         return "m/44'/60'/0'/0/$index"
