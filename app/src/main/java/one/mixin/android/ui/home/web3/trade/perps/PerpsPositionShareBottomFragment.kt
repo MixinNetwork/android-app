@@ -93,7 +93,6 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         private const val ARGS_MARKET_ICON_URL = "args_market_icon_url"
         private const val ARGS_MARKET_TOKEN_SYMBOL = "args_market_token_symbol"
         private const val ARGS_MARKET_DISPLAY_SYMBOL = "args_market_display_symbol"
-        private const val STATE_DISPLAY_ROE = "state_display_roe"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
         private const val POSTER_SIDE = 335
         private const val POSTER_MIN_SLOT = 200
@@ -152,22 +151,6 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
 
     @Composable
     override fun ComposeContent() {
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        sharePayload?.let { payload ->
-            val defaultRoe = payload.displayMetric == "roe"
-            val showRoe = savedInstanceState?.getBoolean(STATE_DISPLAY_ROE, defaultRoe) ?: defaultRoe
-            currentDisplayMetric = if (showRoe) ShareDisplayMetric.ROE else ShareDisplayMetric.PNL
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        if (sharePayload != null) {
-            outState.putBoolean(STATE_DISPLAY_ROE, currentDisplayMetric == ShareDisplayMetric.ROE)
-        }
     }
 
     override fun onCreateView(
@@ -250,15 +233,14 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         if (payload != null) {
             val args = requireArguments()
             val marketId = args.getString(ARGS_MARKET_ID) ?: return false
-            // Restore the metric from fragment state instead of the radio buttons' checked states.
-            binding.radioGroup.isSaveFromParentEnabled = false
+            binding.radioGroup.isVisible = false
             bindCardData(
                 marketId = marketId,
                 iconUrl = args.getString(ARGS_MARKET_ICON_URL),
                 side = payload.side,
                 leverage = payload.leverage,
-                pnlAmount = payload.pnlAmount,
-                pnlPercent = payload.pnlPercent,
+                pnlAmount = null,
+                pnlPercent = null,
                 tokenSymbol = args.getString(ARGS_MARKET_TOKEN_SYMBOL).orEmpty(),
                 displaySymbol = args.getString(ARGS_MARKET_DISPLAY_SYMBOL).orEmpty(),
                 entryPrice = payload.entryPrice,
@@ -320,8 +302,8 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         iconUrl: String?,
         side: String,
         leverage: Int,
-        pnlAmount: BigDecimal,
-        pnlPercent: BigDecimal,
+        pnlAmount: BigDecimal?,
+        pnlPercent: BigDecimal?,
         tokenSymbol: String,
         displaySymbol: String,
         entryPrice: String,
@@ -447,9 +429,6 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
                 val scale = 0.92f + factor * 0.08f
                 page.scaleX = scale
                 page.scaleY = scale
-            }
-            if (sharePayload?.posterStyle == "minimal") {
-                setCurrentItem(SharePosterStyle.MINIMAL.ordinal, false)
             }
             doOnPreDraw { updatePosterSlot() }
         }
@@ -668,8 +647,8 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         val iconUrl: String?,
         val side: String,
         val leverage: Int,
-        val pnlAmount: BigDecimal,
-        val pnlPercent: BigDecimal,
+        val pnlAmount: BigDecimal?,
+        val pnlPercent: BigDecimal?,
         val tokenSymbol: String,
         val displaySymbol: String,
         val entryPrice: String,
@@ -707,15 +686,19 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(style: SharePosterStyle) {
             val data = shareData
-            val isProfit = data.pnlAmount >= BigDecimal.ZERO
+            val isProfit = data.pnlAmount?.let { it >= BigDecimal.ZERO } ?: run {
+                val change = data.latestPrice.toBigDecimal().compareTo(data.entryPrice.toBigDecimal())
+                if (data.side == "long") change >= 0 else change <= 0
+            }
             val useProfitStyle = if (quoteColorReversed) !isProfit else isProfit
             itemBinding.root.tag = style.name
             itemBinding.topCard.setBackgroundResource(cardBackground(useProfitStyle))
             itemBinding.assetIcon.loadImage(data.iconUrl, R.drawable.ic_avatar_place_holder)
             itemBinding.pnlTv.text = when (currentDisplayMetric) {
-                ShareDisplayMetric.ROE -> formatSignedPercent(data.pnlPercent)
-                ShareDisplayMetric.PNL -> formatSignedAmount(data.pnlAmount)
+                ShareDisplayMetric.ROE -> data.pnlPercent?.let(::formatSignedPercent)
+                ShareDisplayMetric.PNL -> data.pnlAmount?.let(::formatSignedAmount)
             }
+            itemBinding.pnlTv.isVisible = data.pnlAmount != null
             itemBinding.pnlLabelTv.text = getString(currentDisplayMetric.labelRes)
 
             val isLong = data.side.equals("long", ignoreCase = true)

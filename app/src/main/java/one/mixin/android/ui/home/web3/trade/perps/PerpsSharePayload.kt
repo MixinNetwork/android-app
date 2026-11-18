@@ -15,10 +15,6 @@ data class PerpsSharePayload(
     val leverage: Int,
     val entryPrice: String,
     val markPrice: String,
-    val pnlAmount: BigDecimal,
-    val pnlPercent: BigDecimal,
-    val posterStyle: String,
-    val displayMetric: String,
 ) : Parcelable {
     companion object {
         const val CATEGORY = "perps_position"
@@ -34,20 +30,17 @@ data class PerpsSharePayload(
                 return null
             }
             val json = root.takeIf { it.isJsonObject }?.asJsonObject ?: return null
-            val position = json["position"]?.takeIf { it.isJsonObject }?.asJsonObject ?: return null
-            fun field(name: String) = position[name]?.takeIf { it.isJsonPrimitive }?.asString
+            fun field(name: String) = json[name]?.takeIf { it.isJsonPrimitive }?.asString
             fun number(name: String) = field(name)?.takeIf(decimal::matches)
 
             return PerpsSharePayload(
                 marketId = field("market_id")?.takeIf { it.length == 36 && it.isUUID() } ?: return null,
                 side = field("side")?.takeIf { it == "long" || it == "short" } ?: return null,
-                leverage = field("leverage")?.toIntOrNull()?.takeIf { it > 0 } ?: return null,
+                leverage = json["leverage"]?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }
+                    ?.asString?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO && it <= Int.MAX_VALUE.toBigDecimal() && it.stripTrailingZeros().scale() <= 0 }
+                    ?.toInt() ?: return null,
                 entryPrice = number("entry_price")?.takeIf { it.toBigDecimal().signum() > 0 } ?: return null,
                 markPrice = number("mark_price")?.takeIf { it.toBigDecimal().signum() > 0 } ?: return null,
-                pnlAmount = number("pnl_amount")?.toBigDecimal() ?: return null,
-                pnlPercent = number("pnl_percent")?.toBigDecimal() ?: return null,
-                posterStyle = json["poster_style"]?.takeIf { it.isJsonPrimitive }?.asString?.takeIf { it == "classic" || it == "minimal" } ?: return null,
-                displayMetric = json["display_metric"]?.takeIf { it.isJsonPrimitive }?.asString?.takeIf { it == "roe" || it == "pnl" } ?: return null,
             )
         }
     }
