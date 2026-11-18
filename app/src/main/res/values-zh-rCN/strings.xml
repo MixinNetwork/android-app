@@ -1448,6 +1448,13 @@
     <string name="buy_crypto_with_cash">用现金购买加密货币</string>
     <string name="trade_native_tokens">交易数千种原生代币</string>
     <string name="link_desktop_description">通过二维码链接桌面端</string>
+    <string name="desktop_intro_title">在电脑上使用 Mixin Messenger。</string>
+    <string name="desktop_intro_desc">前往 messenger.mixin.one 下载桌面端，并通过扫描二维码进行连接。</string>
+    <string name="Scan_to_Link_Desktop">扫码连接桌面端</string>
+    <string name="desktop_e2ee_tip">你的个人消息和聊天信息在所有设备上均受端到端加密保护。</string>
+    <string name="desktop_help_step_1">在电脑上打开 messenger.mixin.one。</string>
+    <string name="desktop_help_step_2">下载并打开 Mixin Messenger 桌面端。</string>
+    <string name="desktop_help_step_3">使用 Mixin Messenger 扫描其二维码。</string>
     <string name="Logined">已登录</string>
     <string name="Transfer_confirmation">转账确认</string>
     <string name="Withdrawal_confirmation">提现确认</string>

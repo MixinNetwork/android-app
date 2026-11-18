@@ -6,11 +6,14 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.text.method.LinkMovementMethod
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
+import androidx.core.view.doOnLayout
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
@@ -19,13 +22,15 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.service.UserService
 import one.mixin.android.databinding.FragmentDeviceBinding
-import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.highLightClick
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.sharedPreferences
-import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -39,6 +44,7 @@ import one.mixin.android.ui.setting.LogoutPinBottomSheetDialogFragment
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class DeviceFragment() : MixinBottomSheetDialogFragment() {
@@ -52,6 +58,11 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
                 }
             }
     }
+
+    override val centerOnExpandedScreen = true
+
+    @Inject
+    lateinit var userService: UserService
 
     private var disposable: Disposable? = null
 
@@ -109,30 +120,14 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
         }
 
         binding.titleView.leftIb.setOnClickListener { dismiss() }
-        binding.authTv.setOnClickListener {
-            if (loggedIn) {
-                loadOuting.show()
-                lifecycleScope.launch {
-                    val sessionId = Session.getExtensionSessionId()
-                    if (sessionId == null) {
-                        loadOuting.dismiss()
-                        toast(R.string.setting_desktop_logout_failed)
-                        return@launch
-                    }
-                    LogoutPinBottomSheetDialogFragment.newInstance(sessionId)
-                        .apply {
-                            setOnSuccess { isSuccess ->
-                                if (isSuccess) {
-                                    loadOuting.dismiss()
-                                    updateUI(false)
-                                } else {
-                                    loadOuting.dismiss()
-                                }
-                            }
-                        }
-                        .showNow(parentFragmentManager, LogoutPinBottomSheetDialogFragment.TAG)
-                }
-            } else {
+        binding.titleView.rightIb.setOnClickListener { showHelp() }
+        binding.scanBtn.apply {
+            doOnLayout {
+                val contentWidth = paint.measureText(text.toString()) + compoundDrawablePadding + 20.dp
+                val horizontalPadding = ((width - contentWidth) / 2).toInt().coerceAtLeast(0)
+                setPaddingRelative(horizontalPadding, paddingTop, horizontalPadding, paddingBottom)
+            }
+            setOnClickListener {
                 RxPermissions(requireActivity())
                     .request(Manifest.permission.CAMERA)
                     .autoDispose(stopScope)
@@ -145,6 +140,34 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
                     }
             }
         }
+        binding.logoutBtn.setOnClickListener {
+            loadOuting.show()
+            lifecycleScope.launch {
+                val sessionId = Session.getExtensionSessionId()
+                if (sessionId == null) {
+                    loadOuting.dismiss()
+                    toast(R.string.setting_desktop_logout_failed)
+                    return@launch
+                }
+                LogoutPinBottomSheetDialogFragment.newInstance(sessionId)
+                    .apply {
+                        setOnSuccess { isSuccess ->
+                            if (isSuccess) {
+                                loadOuting.dismiss()
+                                updateUI(false)
+                            } else {
+                                loadOuting.dismiss()
+                            }
+                        }
+                    }
+                    .showNow(parentFragmentManager, LogoutPinBottomSheetDialogFragment.TAG)
+            }
+        }
+    }
+
+    private fun showHelp() {
+        DesktopHelpBottomSheetDialogFragment.newInstance()
+            .showNow(parentFragmentManager, DesktopHelpBottomSheetDialogFragment.TAG)
     }
 
     private fun callbackScan(data: Intent?) {
@@ -178,14 +201,42 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
 
     private fun updateUI(loggedIn: Boolean) {
         this.loggedIn = loggedIn
+        binding.apply {
+            logoIv.setImageResource(if (loggedIn) R.drawable.ic_desktop_linked else R.drawable.ic_desktop_link)
+            desktopTitleTv.setText(if (loggedIn) R.string.Mixin_Messenger_Desktop else R.string.desktop_intro_title)
+            descTv.isVisible = !loggedIn
+            scanBtn.isVisible = !loggedIn
+            statusTv.isVisible = loggedIn
+            logoutBtn.isVisible = loggedIn
+            platformTv.isVisible = loggedIn
+        }
         if (loggedIn) {
-            binding.authTv.text = getString(R.string.log_out_from_desktop)
-            binding.descTv.text = getString(R.string.desktop_on_hint)
-            binding.authTv.textColor = requireContext().colorFromAttribute(R.attr.text_blue)
+            loadPlatform()
         } else {
-            binding.authTv.text = getString(R.string.Scan_QR_Code)
-            binding.descTv.text = getString(R.string.Scan_QR_Code)
-            binding.authTv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
+            val learnMore = getString(R.string.Learn_More)
+            binding.descTv.apply {
+                text = getString(R.string.desktop_intro_desc) + " " + learnMore
+                highLightClick(learnMore, color = requireContext().getColor(R.color.colorBlue)) { showHelp() }
+                movementMethod = LinkMovementMethod.getInstance()
+            }
+        }
+    }
+
+    private fun loadPlatform() {
+        val sessionId = Session.getExtensionSessionId() ?: return
+        val accountId = Session.getAccountId() ?: return
+        lifecycleScope.launch {
+            val platform =
+                handleMixinResponse(
+                    invokeNetwork = { userService.fetchSessionsSuspend(listOf(accountId)) },
+                    successBlock = { response ->
+                        response.data?.firstOrNull { it.sessionId == sessionId }?.platform
+                    },
+                    failureBlock = { true },
+                    exceptionBlock = { true },
+                )
+            if (!loggedIn || platform.isNullOrBlank()) return@launch
+            binding.platformTv.text = platform
         }
     }
 

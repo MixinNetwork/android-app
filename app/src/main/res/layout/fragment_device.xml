@@ -18,48 +18,160 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_below="@id/ph"
-        android:background="?attr/bg_window">
+        android:background="?attr/bg_white">
 
         <one.mixin.android.widget.TitleView
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:leftIcon="@drawable/ic_close_black"
+            app:rightIcon="@drawable/ic_help_outline"
             app:titleText="@string/Mixin_Messenger_Desktop"/>
 
-        <ImageView
-            android:id="@+id/logo_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_desktop"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="32dp"
-            android:layout_gravity="center"
-            android:contentDescription="@null"/>
-
-        <TextView
-            android:id="@+id/auth_tv"
-            style="@style/NormalTextStyle"
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:gravity="center_vertical"
-            android:background="?attr/bg_white"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:textColor="?attr/text_primary"
-            android:text="@string/Scan_QR_Code"
-            tools:ignore="RelativeOverlap"/>
+            android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/desc_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="8dp"
-            android:textColor="?attr/text_assist"
-            android:textSize="12sp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/margin20"
+                android:paddingTop="18dp"
+                android:paddingEnd="@dimen/margin20"
+                android:paddingBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/margin16"
+                    android:paddingTop="56dp"
+                    android:paddingEnd="@dimen/margin16"
+                    android:paddingBottom="@dimen/margin16">
+
+                    <ImageView
+                        android:id="@+id/logo_iv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_desktop_link"/>
+
+                    <TextView
+                        android:id="@+id/desktop_title_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:gravity="center"
+                        android:text="@string/desktop_intro_title"
+                        android:textColor="?attr/text_primary"
+                        android:textFontWeight="500"
+                        android:textSize="16sp"
+                        tools:ignore="UnusedAttribute"/>
+
+                    <TextView
+                        android:id="@+id/desc_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:lineHeight="21sp"
+                        android:text="@string/desktop_intro_desc"
+                        android:textColor="?attr/text_minor"
+                        android:textColorLink="@color/colorBlue"
+                        android:textSize="14sp"
+                        tools:ignore="UnusedAttribute"/>
+
+                    <TextView
+                        android:id="@+id/status_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:lineHeight="18sp"
+                        android:text="@string/desktop_on_hint"
+                        android:textColor="?attr/text_assist"
+                        android:textSize="12sp"
+                        android:visibility="gone"
+                        tools:ignore="UnusedAttribute"/>
+
+                    <TextView
+                        android:id="@+id/platform_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:lineHeight="18sp"
+                        android:minLines="1"
+                        android:maxLines="1"
+                        android:textColor="?attr/text_assist"
+                        android:textSize="12sp"
+                        android:visibility="gone"
+                        tools:ignore="UnusedAttribute"/>
+
+                    <Button
+                        android:id="@+id/scan_btn"
+                        style="@style/AppTheme.MaterialButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="32dp"
+                        android:background="@drawable/bg_desktop_primary_btn"
+                        android:minHeight="@dimen/btn_min_height"
+                        android:drawableStart="@drawable/ic_desktop_scan"
+                        android:drawablePadding="10dp"
+                        android:drawableTint="@color/white"
+                        android:text="@string/Scan_to_Link_Desktop"
+                        android:textAllCaps="false"
+                        android:textSize="16sp"
+                        tools:ignore="UnusedAttribute"/>
+
+                    <Button
+                        android:id="@+id/logout_btn"
+                        style="@style/AppTheme.MaterialButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="32dp"
+                        android:background="@drawable/bg_desktop_logout_btn"
+                        android:minHeight="@dimen/btn_min_height"
+                        android:text="@string/log_out_from_desktop"
+                        android:textAllCaps="false"
+                        android:textColor="@color/text_color_error_tip"
+                        android:textSize="16sp"
+                        android:visibility="gone"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="@dimen/margin16"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="@dimen/margin16"
+                    android:paddingBottom="8dp">
+
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:layout_marginTop="3dp"
+                        android:layout_marginEnd="4dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_chat_secret"
+                        android:tint="?attr/text_assist"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:lineHeight="18sp"
+                        android:text="@string/desktop_e2ee_tip"
+                        android:textColor="?attr/text_assist"
+                        android:textSize="12sp"
+                        tools:ignore="UnusedAttribute"/>
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 </RelativeLayout>

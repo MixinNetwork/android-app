@@ -1484,6 +1484,14 @@
     <string name="buy_crypto_with_cash">Purchase crypto with cash</string>
     <string name="trade_native_tokens">Trade thousands of native tokens</string>
     <string name="link_desktop_description">Link Mixin Desktop by QR code</string>
+    <string name="desktop_intro_title">Use Mixin Messenger on desktop.</string>
+    <string name="desktop_intro_desc">Download the desktop app at messenger.mixin.one and link it by scanning a QR code.</string>
+    <string name="Scan_to_Link_Desktop">Scan to Link Desktop</string>
+    <string name="desktop_e2ee_tip">Your personal messages and chat info are protected by end-to-end encryption on all devices.</string>
+    <string name="desktop_help_step_1">Open messenger.mixin.one on your computer.</string>
+    <string name="desktop_help_step_2">Download and open Mixin Messenger Desktop.</string>
+    <string name="desktop_help_step_3">Scan its QR code with Mixin Messenger.</string>
+    <string name="desktop_help_link" translatable="false">messenger.mixin.one</string>
     <string name="Logined">Logged in</string>
     <string name="Transfer_confirmation">Transfer confirmation</string>
     <string name="Withdrawal_confirmation">Withdrawal confirmation</string>

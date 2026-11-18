@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="36dp"
+        android:paddingTop="40dp"
+        android:paddingEnd="36dp"
+        android:paddingBottom="30dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:lineHeight="31sp"
+            android:text="@string/Link_desktop"
+            android:textColor="?attr/text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            tools:ignore="UnusedAttribute"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:lineHeight="21sp"
+            android:id="@+id/step1_tv"
+            android:textColor="?attr/text_minor"
+            android:textSize="14sp"
+            tools:ignore="UnusedAttribute"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:lineHeight="21sp"
+            android:id="@+id/step2_tv"
+            android:textColor="?attr/text_minor"
+            android:textSize="14sp"
+            tools:ignore="UnusedAttribute"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:lineHeight="21sp"
+            android:id="@+id/step3_tv"
+            android:textColor="?attr/text_minor"
+            android:textSize="14sp"
+            tools:ignore="UnusedAttribute"/>
+
+        <TextView
+            android:id="@+id/link_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:text="@string/desktop_help_link"
+            android:textColor="@color/colorBlue"
+            android:textSize="14sp"/>
+
+        <Button
+            android:id="@+id/got_it_btn"
+            style="@style/AppTheme.MaterialButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:background="@drawable/bg_desktop_primary_btn"
+            android:minHeight="@dimen/btn_min_height"
+            android:text="@string/Got_it"
+            android:textAllCaps="false"
+            android:textSize="16sp"/>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
