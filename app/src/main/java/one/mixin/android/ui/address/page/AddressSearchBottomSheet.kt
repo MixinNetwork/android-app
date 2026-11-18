@@ -107,7 +107,7 @@ fun AddressSearchBottomSheet(
                 .padding(horizontal = 12.dp, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AddressBookNetwork(chainId, chain)
+            AddressBookNetwork(chainId, chain, MixinAppTheme.colors.textPrimary)
         }
         if (filteredAddresses.isEmpty()) {
             Box(

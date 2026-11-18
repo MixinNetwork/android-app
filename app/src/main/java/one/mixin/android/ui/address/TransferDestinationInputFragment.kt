@@ -518,44 +518,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     }
                                 },
                                 errorInfo = errorInfo,
-                                onAddressClick = { address ->
-                                    requireView().hideKeyboard()
-                                    AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.ADDRESS_BOOK)
-                                    if (web3Token != null) {
-                                        val dialog =
-                                            indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                                                setCancelable(false)
-                                            }
-                                        lifecycleScope.launch {
-                                            dialog.show()
-                                            val fromAddress = web3ViewModel.getAddressesByChainId(web3Token!!.walletId, web3Token!!.chainId)?.destination
-                                            if (fromAddress.isNullOrBlank()) {
-                                                toast(R.string.Alert_Not_Support)
-                                            } else {
-                                                (chainToken ?: web3ViewModel.web3TokenItemById(
-                                                    web3Token!!.walletId,
-                                                    web3Token!!.chainId
-                                                ))?.let { chain ->
-                                                    navigateToInputFragmentWithBundle(Bundle().apply {
-                                                        putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
-                                                        putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
-                                                        putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
-                                                        putParcelable(InputFragment.ARGS_WEB3_TOKEN, web3Token!!)
-                                                        putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
-                                                        putParcelable(ARGS_WALLET, wallet)
-                                                    })
-                                                }
-                                            }
-                                            dialog.dismiss()
-                                        }
-                                    } else if (token != null) {
-                                        navigateToInputFragmentWithBundle(Bundle().apply {
-                                            putParcelable(InputFragment.ARGS_TOKEN, token)
-                                            putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
-                                            putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
-                                        })
-                                    }
-                                },
+                                onAddressClick = ::handleAddressBookClick,
                                 onDeleteAddress = { address ->
                                     if (token == null && web3Token != null) {
                                         lifecycleScope.launch {
@@ -571,51 +534,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 onShowAddressBook = {
                                     val chainId = token?.chainId ?: web3Token?.chainId ?: return@TransferDestinationInputPage
                                     AddressSearchBottomSheetDialogFragment.newInstance(chainId).apply {
-                                        onAddressClick = { address ->
-                                            this@TransferDestinationInputFragment.requireView().hideKeyboard()
-                                            AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.ADDRESS_BOOK)
-                                            if (web3Token != null) {
-                                                val selectedWeb3Token = web3Token!!
-                                                val dialog =
-                                                    indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
-                                                        setCancelable(false)
-                                                    }
-                                                this@TransferDestinationInputFragment.lifecycleScope.launch {
-                                                    dialog.show()
-                                                    try {
-                                                        val fromAddress = web3ViewModel.getAddressesByChainId(
-                                                            selectedWeb3Token.walletId,
-                                                            selectedWeb3Token.chainId
-                                                        )?.destination
-                                                        if (fromAddress.isNullOrBlank()) {
-                                                            toast(R.string.Alert_Not_Support)
-                                                        } else {
-                                                            (chainToken ?: web3ViewModel.web3TokenItemById(
-                                                                selectedWeb3Token.walletId,
-                                                                selectedWeb3Token.chainId
-                                                            ))?.let { chain ->
-                                                                navigateToInputFragmentWithBundle(Bundle().apply {
-                                                                    putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
-                                                                    putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
-                                                                    putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
-                                                                    putParcelable(InputFragment.ARGS_WEB3_TOKEN, selectedWeb3Token)
-                                                                    putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
-                                                                    putParcelable(ARGS_WALLET, wallet)
-                                                                })
-                                                            }
-                                                        }
-                                                    } finally {
-                                                        dialog.dismiss()
-                                                    }
-                                                }
-                                            } else if (token != null) {
-                                                navigateToInputFragmentWithBundle(Bundle().apply {
-                                                    putParcelable(InputFragment.ARGS_TOKEN, token)
-                                                    putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
-                                                    putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
-                                                })
-                                            }
-                                        }
+                                        onAddressClick = ::handleAddressBookClick
                                         onDeleteAddress = { address ->
                                             if (token == null && web3Token != null) {
                                                 lifecycleScope.launch {
@@ -1007,6 +926,43 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         putString(InputFragment.ARGS_CASH_BALANCE, balance)
         putString(InputFragment.ARGS_CASH_MIN_AMOUNT, minAmount)
         putString(InputFragment.ARGS_CASH_REWARD_APY, rewardApy)
+    }
+
+    private fun handleAddressBookClick(address: Address) {
+        view?.hideKeyboard()
+        AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.ADDRESS_BOOK)
+        val selectedWeb3Token = web3Token
+        if (selectedWeb3Token != null) {
+            lifecycleScope.launch {
+                val fromAddress = web3ViewModel.getAddressesByChainId(
+                    selectedWeb3Token.walletId,
+                    selectedWeb3Token.chainId,
+                )?.destination
+                if (fromAddress.isNullOrBlank()) {
+                    toast(R.string.Alert_Not_Support)
+                } else {
+                    (chainToken ?: web3ViewModel.web3TokenItemById(
+                        selectedWeb3Token.walletId,
+                        selectedWeb3Token.chainId,
+                    ))?.let { chain ->
+                        navigateToInputFragmentWithBundle(Bundle().apply {
+                            putString(InputFragment.ARGS_FROM_ADDRESS, fromAddress)
+                            putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
+                            putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
+                            putParcelable(InputFragment.ARGS_WEB3_TOKEN, selectedWeb3Token)
+                            putParcelable(InputFragment.ARGS_WEB3_CHAIN_TOKEN, chain)
+                            putParcelable(ARGS_WALLET, wallet)
+                        })
+                    }
+                }
+            }
+        } else if (token != null) {
+            navigateToInputFragmentWithBundle(Bundle().apply {
+                putParcelable(InputFragment.ARGS_TOKEN, token)
+                putString(InputFragment.ARGS_TO_ADDRESS, address.destination)
+                putString(InputFragment.ARGS_TO_ADDRESS_TAG, address.tag)
+            })
+        }
     }
 
     private fun navigateToInputFragmentWithBundle(bundle: Bundle) {
