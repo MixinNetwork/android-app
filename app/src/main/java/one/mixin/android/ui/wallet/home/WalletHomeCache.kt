@@ -53,6 +53,12 @@ data class WalletHomeCache(
     fun toState(): WalletHomeState {
         val cachedImportKeyAction = importKeyAction
         val cachedEarnAccounts = earnAccounts.orEmpty()
+        val cachedPendingIndicator = pendingIndicator?.let { indicator ->
+            // Gson can leave non-null fields unset in older caches.
+            val kind: WalletHomePendingKind? = indicator.kind
+            val value: String? = indicator.value
+            if (kind == null || value == null) null else indicator.copy(iconUrls = indicator.iconUrls.orEmpty())
+        }
         val cards = WalletHomeBuilder.build(
             walletType = walletType,
             hasAssetValue = true,
@@ -64,7 +70,7 @@ data class WalletHomeCache(
             hasTopMovers = false,
             hasTransactions = totalTransactionCount > 0,
             hasImportKeyAction = cachedImportKeyAction != null,
-            hasPendingIndicator = pendingIndicator != null,
+            hasPendingIndicator = cachedPendingIndicator != null,
             isWatchWallet = isWatchWallet,
             isLoading = false,
         )
@@ -83,7 +89,7 @@ data class WalletHomeCache(
             totalTransactionCount = totalTransactionCount,
             earnAccounts = cachedEarnAccounts,
             isWatchWallet = isWatchWallet,
-            pendingIndicator = pendingIndicator,
+            pendingIndicator = cachedPendingIndicator,
             watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses.orEmpty()) else null,
             importKeyAction = cachedImportKeyAction,
             showImportSafetyFooter = false,
