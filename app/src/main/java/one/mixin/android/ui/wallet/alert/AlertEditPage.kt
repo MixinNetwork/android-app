@@ -137,7 +137,7 @@ fun AlertEditPage(
                             modifier = Modifier
                                 .fillMaxWidth(), horizontalAlignment = Alignment.Start
                         ) {
-                            Row(modifier = Modifier.padding(horizontal = 10.dp)) {
+                            Row(modifier = Modifier.padding(horizontal = 6.dp)) {
                                 CoilImage(
                                     model = coin.iconUrl,
                                     placeholder = R.drawable.ic_avatar_place_holder,

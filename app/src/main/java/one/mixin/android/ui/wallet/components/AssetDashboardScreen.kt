@@ -142,7 +142,10 @@ fun AssetDashboardScreen(
                 .fillMaxSize()
                 .padding(horizontal = 10.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.padding(horizontal = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
                     text = stringResource(R.string.Wallets),
                     fontSize = 18.sp,

@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -55,7 +56,12 @@ internal fun isWeb3RecentTokenChain(chainId: String): Boolean = isWeb3TransferSu
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Unit) {
+internal fun RecentTokens(
+    web3: Boolean = false,
+    key: String,
+    horizontalPadding: Dp = 10.dp,
+    callback: (TokenItem) -> Unit,
+) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
     val source by viewModel.recentTokenItems.collectAsState(initial = emptyList())
@@ -76,7 +82,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
+                    .padding(horizontal = horizontalPadding),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -98,7 +104,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
+                    .padding(horizontal = horizontalPadding),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {

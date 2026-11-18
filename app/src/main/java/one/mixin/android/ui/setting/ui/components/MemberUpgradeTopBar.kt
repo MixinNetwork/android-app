@@ -25,7 +25,7 @@ fun MemberUpgradeTopBar(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 8.dp)) {
         Text(
             text = stringResource(id = R.string.Mixin_One),
             fontSize = 18.sp,

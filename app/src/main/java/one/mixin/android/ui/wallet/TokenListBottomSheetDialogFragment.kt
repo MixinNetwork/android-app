@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -334,7 +335,10 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     val composeView = ComposeView(requireContext()).apply {
                         id = View.generateViewId()
                         setContent {
-                            RecentTokens(false, key) {
+                            RecentTokens(
+                                key = key,
+                                horizontalPadding = if (fromType == TYPE_FROM_SEND) 16.dp else 10.dp,
+                            ) {
                                 if (fromType == TYPE_FROM_RECEIVE) {
                                     AnalyticsTracker.trackAssetReceiveTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
                                 } else if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {

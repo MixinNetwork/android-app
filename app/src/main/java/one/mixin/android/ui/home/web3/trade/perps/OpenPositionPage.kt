@@ -363,7 +363,9 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CoilImage(

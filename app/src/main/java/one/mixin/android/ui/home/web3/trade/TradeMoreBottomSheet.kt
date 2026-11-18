@@ -87,7 +87,7 @@ fun TradeMoreBottomSheet(
                 .weight(1f, fill = false)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, top = 10.dp, end = 16.dp, bottom = 30.dp),
+                .padding(start = 10.dp, top = 10.dp, end = 10.dp, bottom = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             TradeMoreGroup {
@@ -110,7 +110,7 @@ fun TradeMoreBottomSheet(
                 TradeMoreGroup {
                     TradeMoreRow(stringResource(R.string.Trade_Perpetual_Activity), onClick = onActivity)
                 }
-                Spacer(Modifier.height(36.dp))
+                Spacer(Modifier.height(10.dp))
                 TradeProPromo(onTradePro)
             }
         }
@@ -136,7 +136,7 @@ private fun TradeMoreRow(title: String, trailingText: String? = null, onClick: (
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .heightIn(min = 64.dp)
-            .padding(start = 20.dp, end = 10.dp),
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -171,7 +171,7 @@ private fun TradeProPromo(onTradePro: () -> Unit) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(13.dp))
             .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor, cornerRadius = 13.dp)
-            .padding(top = 30.dp, bottom = 21.dp),
+            .padding(start = 16.dp, top = 30.dp, end = 16.dp, bottom = 21.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
@@ -179,12 +179,11 @@ private fun TradeProPromo(onTradePro: () -> Unit) {
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 38.dp)
+                .padding(horizontal = 22.dp)
                 .aspectRatio(267f / 154f),
         )
         Spacer(Modifier.height(20.dp))
         Row(
-            modifier = Modifier.padding(horizontal = 28.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -205,7 +204,6 @@ private fun TradeProPromo(onTradePro: () -> Unit) {
         Spacer(Modifier.height(12.dp))
         Text(
             stringResource(R.string.Trade_Pro_Description),
-            modifier = Modifier.padding(horizontal = 28.dp),
             color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
             lineHeight = 18.sp,
