@@ -157,7 +157,11 @@ fun AddressSearchBottomSheet(
                     .weight(1f)
                     .fillMaxWidth()
             ) {
-                items(filteredAddresses) { address ->
+                items(
+                    items = filteredAddresses,
+                    key = { it.addressId },
+                    contentType = { "address_item" },
+                ) { address ->
                     AddressListItem(
                         address = address,
                         query = searchText,

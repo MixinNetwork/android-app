@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -127,8 +128,11 @@ fun AllAlertPage(coins: Set<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit,
                     .padding(horizontal = 14.dp)
                     .fillMaxSize()
             ) {
-                items(alertGroups.size) { index ->
-                    val group = alertGroups[index]
+                itemsIndexed(
+                    items = alertGroups,
+                    key = { _, group -> group.coinId },
+                    contentType = { _, _ -> "alert_group" },
+                ) { index, group ->
                     if (index != 0) {
                         Spacer(modifier = Modifier.height(2.dp))
                     }

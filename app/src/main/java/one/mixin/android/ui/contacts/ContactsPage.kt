@@ -94,20 +94,24 @@ internal fun ContactsPage(
         Column(Modifier.fillMaxSize().background(MixinAppTheme.colors.background)) {
             ContactPageHeader(stringResource(if (newChat) R.string.new_chat else R.string.contacts_title), onBack, newChat, onAddContact)
             ContactsSearchField(query, { query = it }, stringResource(R.string.contacts_search_hint), newChat)
-            BoxWithConstraints(Modifier.weight(1f)) {
+            Box(Modifier.weight(1f)) {
                 LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 8.dp)) {
                     if (onNewGroup != null && onAddContact != null) {
-                        item { ContactAction(R.drawable.ic_contacts_new_group, R.string.New_Group, onNewGroup) }
-                        item { ContactAction(R.drawable.ic_contacts_add_contact, R.string.Add_Contact, onAddContact) }
+                        item(key = "action:new_group", contentType = "action") { ContactAction(R.drawable.ic_contacts_new_group, R.string.New_Group, onNewGroup) }
+                        item(key = "action:add_contact", contentType = "action") { ContactAction(R.drawable.ic_contacts_add_contact, R.string.Add_Contact, onAddContact) }
                     }
                     if (groups.isEmpty()) {
-                        item { Text(stringResource(R.string.NO_RESULTS), color = MixinAppTheme.colors.textAssist, modifier = Modifier.padding(24.dp)) }
+                        item(key = "empty", contentType = "empty") { Text(stringResource(R.string.NO_RESULTS), color = MixinAppTheme.colors.textAssist, modifier = Modifier.padding(24.dp)) }
                     }
                     groups.forEach { (initial, users) ->
-                        item(key = "header:$initial") {
+                        item(key = "header:$initial", contentType = "section_header") {
                             ContactSectionHeader(initial)
                         }
-                        items(users, key = { it.userId }) { user ->
+                        items(
+                            items = users,
+                            key = { it.userId },
+                            contentType = { "contact_row" },
+                        ) { user ->
                             Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable { onContact(user) }.padding(vertical = 8.dp).height(50.dp).padding(start = 20.dp, end = 40.dp), verticalAlignment = Alignment.CenterVertically) {
                                 UserAvatarImage(user, 50.dp)
                                 Spacer(Modifier.width(16.dp))
