@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -591,8 +592,12 @@ private fun Instructions(
     LazyColumn(
         modifier = Modifier.height(200.dp)
     ) {
-        items(instructions.size) { i ->
-            Instruction(instruction = instructions[i])
+        itemsIndexed(
+            items = instructions,
+            key = { index, _ -> index },
+            contentType = { _, _ -> "instruction" },
+        ) { _, instruction ->
+            Instruction(instruction = instruction)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
