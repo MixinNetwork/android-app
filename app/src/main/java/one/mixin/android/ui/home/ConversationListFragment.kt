@@ -402,7 +402,7 @@ class ConversationListFragment : LinkFragment() {
         }
     }
 
-    private fun openSearch() {
+    fun openSearch() {
         if (isAdded) {
             binding.searchBar.openSearch()
         }

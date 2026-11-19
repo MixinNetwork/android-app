@@ -17,6 +17,7 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.TooltipCompat
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
@@ -155,6 +156,12 @@ class MaterialSearchView : FrameLayout {
 
     private fun initSearchView() {
         updateContainerHeight()
+        TooltipCompat.setTooltipText(binding.searchIb, context.getString(R.string.Search))
+        TooltipCompat.setTooltipText(binding.scanIb, context.getString(R.string.Scan))
+        TooltipCompat.setTooltipText(binding.newChat, context.getString(R.string.new_chat))
+        TooltipCompat.setTooltipText(binding.addIb, context.getString(R.string.Add))
+        TooltipCompat.setTooltipText(binding.rightClear, context.getString(R.string.Clear))
+        TooltipCompat.setTooltipText(binding.backIb, context.getString(R.string.Close))
         binding.containerShadow.setOnClickListener {
             hideContainer()
         }

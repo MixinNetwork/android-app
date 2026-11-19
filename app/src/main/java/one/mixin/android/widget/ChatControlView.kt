@@ -9,6 +9,7 @@ import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.text.Editable
@@ -35,6 +36,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
+import androidx.appcompat.widget.TooltipCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -269,6 +271,13 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                 callback.onBotClick()
             }
         binding.chatSlide.callback = chatSlideCallback
+        TooltipCompat.setTooltipText(binding.chatMenuIv, context.getString(R.string.More))
+        TooltipCompat.setTooltipText(binding.chatStickerIb, context.getString(R.string.Sticker))
+        TooltipCompat.setTooltipText(binding.chatImgIv, context.getString(R.string.Photo))
+        TooltipCompat.setTooltipText(binding.chatSendIb, context.getString(R.string.Send))
+        TooltipCompat.setTooltipText(binding.chatAudioDelete, context.getString(R.string.Delete))
+        TooltipCompat.setTooltipText(binding.chatAudioPlay, context.getString(R.string.Play))
+        TooltipCompat.setTooltipText(binding.chatAudioSend, context.getString(R.string.Send))
 
         remainFocusable()
     }
@@ -772,10 +781,28 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
         }
     }
 
+    private fun isHardwareKeyboardActive(): Boolean {
+        val config = resources.configuration
+        return config.keyboard != Configuration.KEYBOARD_NOKEYS &&
+            config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO
+    }
+
     private val keyListener =
-        OnKeyListener { _, keyCode, _ ->
+        OnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_DEL) {
                 callback.onDelete()
+            } else if (
+                (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER) &&
+                isHardwareKeyboardActive() &&
+                !event.isShiftPressed &&
+                !event.isCtrlPressed &&
+                !event.isAltPressed &&
+                !event.isMetaPressed
+            ) {
+                if (event.action == KeyEvent.ACTION_UP && (sendStatus == SEND || sendStatus == REPLY)) {
+                    clickSend()
+                }
+                return@OnKeyListener true
             }
             false
         }
