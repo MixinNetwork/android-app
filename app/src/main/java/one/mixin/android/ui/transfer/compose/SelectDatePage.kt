@@ -21,6 +21,9 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.ProvideTextStyle
@@ -29,10 +32,12 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -215,11 +220,16 @@ fun Tile(
 
 @Composable
 fun YearMothSwitch(onTextChange: (String?, Int) -> Unit) {
-    var number by remember { mutableStateOf("1") }
+    val numberState = rememberTextFieldState(initialText = "1")
     var index by remember { mutableStateOf(0) }
+    LaunchedEffect(numberState) {
+        snapshotFlow { numberState.text.toString() }.collect { current ->
+            onTextChange(current, index)
+        }
+    }
     DisposableEffect(Unit) {
         onDispose {
-            onTextChange(number, index)
+            onTextChange(numberState.text.toString(), index)
         }
     }
     Row(
@@ -233,6 +243,7 @@ fun YearMothSwitch(onTextChange: (String?, Int) -> Unit) {
         Text(text = stringResource(id = R.string.recent), color = MixinAppTheme.colors.textPrimary)
         Spacer(modifier = Modifier.width(12.dp))
         BasicTextField(
+            state = numberState,
             cursorBrush = SolidColor(MixinAppTheme.colors.accent),
             modifier =
                 Modifier
@@ -240,21 +251,20 @@ fun YearMothSwitch(onTextChange: (String?, Int) -> Unit) {
                     .clip(RoundedCornerShape(4.dp))
                     .background(MixinAppTheme.colors.shadow)
                     .padding(horizontal = 8.dp, vertical = 6.dp),
-            value = number,
             textStyle =
                 TextStyle(
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                     textAlign = TextAlign.Center,
                 ),
-            onValueChange = {
-                if (it.length <= 2 && it.all { char -> char.isDigit() }) {
-                    number = it
-                    onTextChange(number, index)
+            inputTransformation = InputTransformation {
+                val text = asCharSequence()
+                if (text.length > 2 || !text.all { it.isDigit() }) {
+                    revertAllChanges()
                 }
             },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            maxLines = 1,
+            lineLimits = TextFieldLineLimits.SingleLine,
         )
         Spacer(modifier = Modifier.width(4.dp))
         SegmentedControl(
@@ -262,7 +272,7 @@ fun YearMothSwitch(onTextChange: (String?, Int) -> Unit) {
             defaultSelectedItemIndex = index,
             onItemSelection = {
                 index = it
-                onTextChange(number, index)
+                onTextChange(numberState.text.toString(), index)
             },
         )
     }

@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -64,6 +66,7 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.ui.wallet.components.KEY_HIDE_COMMON_WALLET_INFO
 import one.mixin.android.ui.wallet.components.KEY_HIDE_PRIVACY_WALLET_INFO
 import one.mixin.android.ui.wallet.components.KEY_HIDE_SAFE_WALLET_INFO
@@ -369,13 +372,13 @@ fun SearchBar(
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val textFieldState = rememberSyncedTextFieldState(query, onQueryChanged)
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         BasicTextField(
-            value = query,
-            onValueChange = onQueryChanged,
+            state = textFieldState,
             modifier = Modifier
                 .weight(1f)
                 .height(44.dp)
@@ -387,9 +390,9 @@ fun SearchBar(
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp
             ),
-            singleLine = true,
+            lineLimits = TextFieldLineLimits.SingleLine,
             cursorBrush = SolidColor(MixinAppTheme.colors.textBlue),
-            decorationBox = { innerTextField ->
+            decorator = { innerTextField ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_edit_search),
@@ -401,7 +404,7 @@ fun SearchBar(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.CenterStart,
                     ) {
-                        if (query.isEmpty()) {
+                        if (textFieldState.text.isEmpty()) {
                             Text(
                                 text = stringResource(id = R.string.search_placeholder_asset),
                                 color = MixinAppTheme.colors.textAssist,
@@ -410,9 +413,9 @@ fun SearchBar(
                         }
                         innerTextField()
                     }
-                    if (query.isNotEmpty()) {
+                    if (textFieldState.text.isNotEmpty()) {
                         IconButton(
-                            onClick = { onQueryChanged("") },
+                            onClick = { textFieldState.clearText() },
                             modifier = Modifier.size(16.dp)
                         ) {
                             Icon(

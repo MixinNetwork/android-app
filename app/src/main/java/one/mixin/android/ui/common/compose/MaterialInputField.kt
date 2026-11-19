@@ -16,8 +16,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.KeyboardActionHandler
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -39,13 +40,14 @@ fun MaterialInputField(
     hint: String,
     modifier: Modifier = Modifier,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    onKeyboardAction: KeyboardActionHandler? = null,
     singleLine: Boolean = true,
     enabled: Boolean = true
 ) {
+    val textFieldState = rememberSyncedTextFieldState(value, onValueChange)
     var isFocused by remember { mutableStateOf(false) }
     val animatedProgress by animateFloatAsState(
-        targetValue = if (isFocused || value.isNotEmpty()) 1f else 0f,
+        targetValue = if (isFocused || textFieldState.text.isNotEmpty()) 1f else 0f,
         animationSpec = tween(200),
         label = "label_animation"
     )
@@ -73,20 +75,19 @@ fun MaterialInputField(
                 .padding(top = 14.dp)
         ) {
             BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
+                state = textFieldState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .onFocusChanged { focusState ->
                         isFocused = focusState.isFocused
                     },
                 keyboardOptions = keyboardOptions,
-                keyboardActions = keyboardActions,
-                singleLine = singleLine,
+                onKeyboardAction = onKeyboardAction,
+                lineLimits = if (singleLine) TextFieldLineLimits.SingleLine else TextFieldLineLimits.Default,
                 enabled = enabled,
                 cursorBrush = SolidColor(labelColor),
                 textStyle = MaterialTheme.typography.body1.copy(color = MixinAppTheme.colors.textPrimary),
-                decorationBox = { innerTextField ->
+                decorator = { innerTextField ->
                     Box {
                         Column {
                             AnimatedVisibility(
@@ -108,7 +109,7 @@ fun MaterialInputField(
                         Box(
                             modifier = Modifier.offset(y = if (animatedProgress > 0f) 8.dp else -10.dp)
                         ) {
-                            if (value.isEmpty() && !isFocused) {
+                            if (textFieldState.text.isEmpty() && !isFocused) {
                                 Text(
                                     text = hint,
                                 )

@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +44,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.tip.wc.compose.Loading
 
@@ -170,12 +172,13 @@ private fun SearchInput(
     val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     val interactionSource = remember { MutableInteractionSource() }
     val isFocusedState = interactionSource.collectIsFocusedAsState()
-    BasicTextField(
+    val textFieldState = rememberSyncedTextFieldState(
         value = text,
-        onValueChange = {
-            onInputChanged?.invoke(it)
-        },
-        maxLines = 1,
+        onValueChange = { onInputChanged?.invoke(it) },
+    )
+    BasicTextField(
+        state = textFieldState,
+        lineLimits = TextFieldLineLimits.SingleLine,
         modifier =
         Modifier
             .fillMaxWidth()
@@ -193,37 +196,38 @@ private fun SearchInput(
             textAlign = TextAlign.Start,
         ),
         cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-    ) { innerTextField ->
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, color = MixinAppTheme.colors.backgroundDark, RoundedCornerShape(12.dp))
-                .padding(16.dp, 10.dp),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+        decorator = { innerTextField ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, color = MixinAppTheme.colors.backgroundDark, RoundedCornerShape(12.dp))
+                    .padding(16.dp, 10.dp),
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_search),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                if (text.isEmpty() || !isFocusedState.value) {
-                    Text(
-                        text = stringResource(R.string.Search),
-                        style =
-                        TextStyle(
-                            color = MixinAppTheme.colors.textAssist,
-                            fontSize = 16.sp,
-                        ),
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_search),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.textAssist,
                     )
-                } else {
-                    innerTextField()
+                    Spacer(modifier = Modifier.width(10.dp))
+                    if (textFieldState.text.isEmpty() || !isFocusedState.value) {
+                        Text(
+                            text = stringResource(R.string.Search),
+                            style =
+                            TextStyle(
+                                color = MixinAppTheme.colors.textAssist,
+                                fontSize = 16.sp,
+                            ),
+                        )
+                    } else {
+                        innerTextField()
+                    }
                 }
             }
-        }
-    }
+        },
+    )
 }
 
 @Preview

@@ -21,17 +21,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -108,7 +113,8 @@ fun AlertEditPage(
         if (coin != null) {
             val context = LocalContext.current
             val currentPrice = BigDecimal(coin.currentPrice)
-            var alertValue by remember { mutableStateOf(alert?.rawValue ?: currentPrice.toPlainString()) }
+            val alertValueState = rememberTextFieldState(initialText = alert?.rawValue ?: currentPrice.toPlainString())
+            val alertValue = alertValueState.text.toString()
             val maxPrice = currentPrice.multiply(BigDecimal(100))
             val minPrice = currentPrice.divide(BigDecimal(100))
             val focusManager = LocalFocusManager.current
@@ -118,6 +124,101 @@ fun AlertEditPage(
             var isLoading by remember { mutableStateOf(false) }
             var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice && selectedAlertType != AlertType.PRICE_REACHED) InputError.EQUALS_CURRENT_PRICE else null) }
             val viewModel = hiltViewModel<AlertViewModel>()
+
+            LaunchedEffect(alertValueState, selectedAlertType) {
+                snapshotFlow { alertValueState.text.toString() }.collect { newValue ->
+                    if (newValue.isEmpty()) {
+                        inputError = null
+                        return@collect
+                    }
+                    if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
+                        val newPrice = newValue.replace(",", "").toBigDecimalOrNull()
+                        if (newPrice != null) {
+                            val formatted = newPrice.toPlainString().let {
+                                if (newValue.endsWith(".")) "$it." else it
+                            }
+                            if (formatted != newValue) {
+                                alertValueState.setTextAndPlaceCursorAtEnd(formatted)
+                            }
+                            inputError = if (selectedAlertType != AlertType.PRICE_REACHED && newPrice == currentPrice) {
+                                InputError.EQUALS_CURRENT_PRICE
+                            } else if (newPrice > maxPrice) {
+                                InputError.EXCEEDS_MAX_PRICE
+                            } else if (newPrice < minPrice) {
+                                InputError.BELOW_MIN_PRICE
+                            } else if (selectedAlertType == AlertType.PRICE_DECREASED && newPrice > currentPrice) {
+                                InputError.MUST_BE_LESS_THAN_CURRENT_PRICE
+                            } else if (selectedAlertType == AlertType.PRICE_INCREASED && newPrice < currentPrice) {
+                                InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE
+                            } else {
+                                null
+                            }
+                        } else {
+                            alertValueState.clearText()
+                            inputError = null
+                        }
+                    } else {
+                        if (newValue.replace("%", "") == "0.0") {
+                            if (newValue != "0.0") {
+                                alertValueState.setTextAndPlaceCursorAtEnd("0.0")
+                            }
+                            inputError = null
+                            return@collect
+                        }
+                        var dot: Boolean
+                        val newPercentage = newValue.replace("%", "").let {
+                            if (it.endsWith(".")) {
+                                dot = true
+                                it.removeEnd(".")
+                            } else {
+                                dot = false
+                                it
+                            }
+                        }.toBigDecimalOrNull()
+                        if (selectedAlertType == AlertType.PERCENTAGE_INCREASED) {
+                            if (newPercentage != null) {
+                                val adjustedPercentage = newPercentage.setScale(2, RoundingMode.DOWN)
+                                val formatted = adjustedPercentage.stripTrailingZeros().toPlainString().let {
+                                    if (dot) "$it.%" else "$it%"
+                                }
+                                if (formatted != newValue) {
+                                    alertValueState.setTextAndPlaceCursorAtEnd(formatted)
+                                }
+                                inputError = if (adjustedPercentage.toFloat() > 1000f) {
+                                    InputError.INCREASE_TOO_HIGH
+                                } else if (adjustedPercentage.toFloat() < 0.01f) {
+                                    InputError.INCREASE_TOO_LOW
+                                } else {
+                                    null
+                                }
+                            } else {
+                                alertValueState.clearText()
+                                inputError = null
+                            }
+                        } else if (selectedAlertType == AlertType.PERCENTAGE_DECREASED) {
+                            if (newPercentage != null) {
+                                val adjustedPercentage = newPercentage.setScale(2, RoundingMode.DOWN)
+                                val formatted = adjustedPercentage.stripTrailingZeros().toPlainString().let {
+                                    if (dot) "$it.%" else "$it%"
+                                }
+                                if (formatted != newValue) {
+                                    alertValueState.setTextAndPlaceCursorAtEnd(formatted)
+                                }
+                                inputError = if (adjustedPercentage.toFloat() > 99.99f) {
+                                    InputError.DECREASE_TOO_HIGH
+                                } else if (adjustedPercentage.toFloat() < 0.01f) {
+                                    InputError.DECREASE_TOO_LOW
+                                } else {
+                                    null
+                                }
+                            } else {
+                                alertValueState.clearText()
+                                inputError = null
+                            }
+                        }
+                    }
+                }
+            }
             PageScaffold(
                     title = stringResource(id = if (alert == null) R.string.Add_Alert else R.string.Edit_Alert),
                     verticalScrollable = false,
@@ -158,7 +259,7 @@ fun AlertEditPage(
                                 onShowTypeSelector(selectedAlertType) { newType ->
                                     if (selectedAlertType != newType) {
                                         inputError = null
-                                        alertValue = ""
+                                        alertValueState.clearText()
                                         selectedAlertType = newType
                                     }
                                 }
@@ -191,96 +292,7 @@ fun AlertEditPage(
 
                                     Spacer(modifier = Modifier.height(10.dp))
                                     BasicTextField(
-                                        value = alertValue,
-                                        onValueChange = { newValue ->
-                                            if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
-                                                val newPrice = newValue.replace(",", "").toBigDecimalOrNull()
-                                                if (newPrice != null) {
-                                                    alertValue = newPrice.toPlainString().let {
-                                                        if (newValue.endsWith(".")) {
-                                                            "$it."
-                                                        } else {
-                                                            it
-                                                        }
-                                                    }
-                                                    inputError = if (selectedAlertType != AlertType.PRICE_REACHED && newPrice == currentPrice) {
-                                                        InputError.EQUALS_CURRENT_PRICE
-                                                    } else if (newPrice > maxPrice) {
-                                                        InputError.EXCEEDS_MAX_PRICE
-                                                    } else if (newPrice < minPrice) {
-                                                        InputError.BELOW_MIN_PRICE
-                                                    } else if (selectedAlertType == AlertType.PRICE_DECREASED && newPrice > currentPrice) {
-                                                        InputError.MUST_BE_LESS_THAN_CURRENT_PRICE
-                                                    } else if (selectedAlertType == AlertType.PRICE_INCREASED && newPrice < currentPrice) {
-                                                        InputError.MUST_BE_GREATER_THAN_CURRENT_PRICE
-                                                    } else {
-                                                        null
-                                                    }
-                                                } else {
-                                                    alertValue = ""
-                                                    inputError = null
-                                                }
-                                            } else {
-                                                if (newValue.replace("%", "") == "0.0") {
-                                                    alertValue = "0.0"
-                                                    inputError = null
-                                                    return@BasicTextField
-                                                }
-                                                var dot: Boolean
-                                                val newPercentage = newValue.replace("%", "").let {
-                                                    if (it.endsWith(".")) {
-                                                        dot = true
-                                                        it.removeEnd(".")
-                                                    } else {
-                                                        dot = false
-                                                        it
-                                                    }
-                                                }.toBigDecimalOrNull()
-                                                if (selectedAlertType == AlertType.PERCENTAGE_INCREASED) {
-                                                    if (newPercentage != null) {
-                                                        val adjustedPercentage = newPercentage.setScale(2, RoundingMode.DOWN)
-                                                        alertValue = adjustedPercentage.stripTrailingZeros().toPlainString().let {
-                                                            if (dot) {
-                                                                "$it.%"
-                                                            } else {
-                                                                "$it%"
-                                                            }
-                                                        }
-                                                        inputError = if (adjustedPercentage.toFloat() > 1000f) {
-                                                            InputError.INCREASE_TOO_HIGH
-                                                        } else if (adjustedPercentage.toFloat() < 0.01f) {
-                                                            InputError.INCREASE_TOO_LOW
-                                                        } else {
-                                                            null
-                                                        }
-                                                    } else {
-                                                        alertValue = ""
-                                                        inputError = null
-                                                    }
-                                                } else if (selectedAlertType == AlertType.PERCENTAGE_DECREASED) {
-                                                    if (newPercentage != null) {
-                                                        val adjustedPercentage = newPercentage.setScale(2, RoundingMode.DOWN)
-                                                        alertValue = adjustedPercentage.stripTrailingZeros().toPlainString().let {
-                                                            if (dot) {
-                                                                "$it.%"
-                                                            } else {
-                                                                "$it%"
-                                                            }
-                                                        }
-                                                        inputError = if (adjustedPercentage.toFloat() > 99.99f) {
-                                                            InputError.DECREASE_TOO_HIGH
-                                                        } else if (adjustedPercentage.toFloat() < 0.01f) {
-                                                            InputError.DECREASE_TOO_LOW
-                                                        } else {
-                                                            null
-                                                        }
-                                                    } else {
-                                                        alertValue = ""
-                                                        inputError = null
-                                                    }
-                                                }
-                                            }
-                                        },
+                                        state = alertValueState,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .focusRequester(focusRequester)
@@ -298,7 +310,7 @@ fun AlertEditPage(
                                             color = if (inputError != null) Color(0xFFDB454F) else MixinAppTheme.colors.textPrimary,
                                             textAlign = TextAlign.Start,
                                         ),
-                                        decorationBox = { innerTextField ->
+                                        decorator = { innerTextField ->
                                             if (alertValue.isEmpty()) {
                                                 Text(
                                                     if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
@@ -372,17 +384,19 @@ fun AlertEditPage(
                             ) { percentage ->
                                 if (selectedAlertType in listOf(AlertType.PRICE_REACHED, AlertType.PRICE_DECREASED, AlertType.PRICE_INCREASED)) {
                                     val newPrice = currentPrice.multiply(BigDecimal.ONE.add(percentage.toBigDecimal()))
-                                    alertValue = newPrice.toPlainString()
+                                    alertValueState.setTextAndPlaceCursorAtEnd(newPrice.toPlainString())
                                     inputError = null
                                 } else {
-                                    alertValue = when (percentage) {
-                                        0.2f -> "20%"
-                                        0.1f -> "10%"
-                                        0.05f -> "5%"
-                                        -0.05f -> "5%"
-                                        -0.1f -> "10%"
-                                        else -> "20%"
-                                    }
+                                    alertValueState.setTextAndPlaceCursorAtEnd(
+                                        when (percentage) {
+                                            0.2f -> "20%"
+                                            0.1f -> "10%"
+                                            0.05f -> "5%"
+                                            -0.05f -> "5%"
+                                            -0.1f -> "10%"
+                                            else -> "20%"
+                                        }
+                                    )
                                     inputError = null
                                 }
                             }
