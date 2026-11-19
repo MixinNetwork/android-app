@@ -365,6 +365,7 @@ class TradeFragment : BaseFragment() {
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
                                 autoFocusAmount = autoFocusAmount,
+                                onAutoFocusConsumed = { autoFocusAmount = false },
                                 initialTabIndex = initialTabIndex,
                                 source = getSource(),
                                 entrySource = getEntrySource(),
