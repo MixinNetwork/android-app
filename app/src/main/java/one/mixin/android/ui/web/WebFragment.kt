@@ -500,6 +500,7 @@ class WebFragment : BaseFragment() {
     private var customView: View? = null
     private var customViewCallback: WebChromeClient.CustomViewCallback? = null
     private var originalSystemUiVisibility = 0
+    private var originalOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
@@ -638,6 +639,7 @@ class WebFragment : BaseFragment() {
                     customView = view
                     customViewCallback = callback
                     originalSystemUiVisibility = requireActivity().window.decorView.systemUiVisibility
+                    originalOrientation = requireActivity().requestedOrientation
 
                     binding.customViewContainer.addView(view)
                     binding.customViewContainer.isVisible = true
@@ -654,7 +656,6 @@ class WebFragment : BaseFragment() {
                     requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 }
 
-                @SuppressLint("SourceLockedOrientationActivity")
                 override fun onHideCustomView() {
                     if (customView == null) {
                         return
@@ -669,7 +670,7 @@ class WebFragment : BaseFragment() {
                     customView = null
 
                     requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
-                    requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    requireActivity().requestedOrientation = originalOrientation
 
                     customViewCallback?.onCustomViewHidden()
                     customViewCallback = null
@@ -1385,7 +1386,6 @@ class WebFragment : BaseFragment() {
 
     var titleColor: Int = Color.WHITE
 
-    @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
         webView.stopLoading()
         when {
@@ -1412,9 +1412,9 @@ class WebFragment : BaseFragment() {
         unregisterForContextMenu(webView)
         binding.webLl.removeView(webView)
         processor.close()
-        if (requireActivity().requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+        if (customView != null) {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
-            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            requireActivity().requestedOrientation = originalOrientation
         }
         super.onDestroyView()
         _binding = null

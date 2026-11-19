@@ -110,7 +110,6 @@ val markdownVersion = rootProject.extra["markdownVersion"] as String
 val bcVersion = rootProject.extra["bcVersion"] as String
 val jsonVersion = rootProject.extra["jsonVersion"] as String
 val composeVersion = rootProject.extra["composeVersion"] as String
-val accompanistVersion = rootProject.extra["accompanistVersion"] as String
 val sol4kVersion = rootProject.extra["sol4kVersion"] as String
 val protobufVersion = rootProject.extra["protobufVersion"] as String
 val kotsonVersion = rootProject.extra["kotsonVersion"] as String
@@ -546,11 +545,6 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout-compose:$constraintLayoutComposeVersion")
     implementation("androidx.activity:activity-compose:$activityVersion")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-
-    // accompanist
-    implementation("com.google.accompanist:accompanist-navigation-animation:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-pager-indicators:$accompanistVersion")
 
     // wallet connect && web3j
     implementation("org.web3j:core:$web3jVersion")

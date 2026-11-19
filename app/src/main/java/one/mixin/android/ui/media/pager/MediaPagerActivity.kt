@@ -69,6 +69,7 @@ import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.isAutoRotate
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openPermissionSetting
@@ -264,7 +265,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     @Synchronized
     private fun changeOrientation(orientation: Int) {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
+        // Large screens and multi-window ignore orientation requests, so keep following the window
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O || isInMultiWindowMode || !isCompactWindow()) {
             return
         }
 

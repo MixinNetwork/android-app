@@ -4,11 +4,9 @@ package one.mixin.android.ui.common
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
@@ -21,7 +19,6 @@ import androidx.core.view.doOnPreDraw
 import coil3.toBitmap
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityAvatarBinding
-import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.supportsS
@@ -63,12 +60,8 @@ class AvatarActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAvatarBinding
 
-    @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        belowOreo {
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
         postponeEnterTransition()
         SystemUIManager.setSafePadding(window, Color.TRANSPARENT)
         SystemUIManager.fullScreen(window)

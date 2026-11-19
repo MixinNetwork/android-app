@@ -18,6 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLandingBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
@@ -90,9 +91,13 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
                 val basePercent = if (heightDp <= 700) 0.35f else 0.48f
                 val percent = basePercent + 156f / heightDp
                 val params = binding.featurePager.layoutParams as ConstraintLayout.LayoutParams
-                if (params.matchConstraintPercentHeight != percent) {
-                    params.matchConstraintPercentHeight = percent
-                    params.height = 0
+                val indicatorParams = binding.featureIndicator.layoutParams as ConstraintLayout.LayoutParams
+                // Keep the indicator clear of the bottom buttons on short windows
+                val available = binding.createTv.top - params.bottomMargin - indicatorParams.topMargin -
+                    binding.featureIndicator.height - 16.dp
+                val target = minOf((height * percent).toInt(), available).coerceAtLeast(0)
+                if (params.height != target) {
+                    params.height = target
                     binding.featurePager.layoutParams = params
                 }
             }
