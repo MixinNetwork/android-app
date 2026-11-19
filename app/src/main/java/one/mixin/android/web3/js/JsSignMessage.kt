@@ -4,6 +4,7 @@ import android.os.Parcelable
 import com.google.gson.reflect.TypeToken
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.extension.hexStringToByteArray
+import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.util.GsonHelper
 import org.web3j.utils.Numeric
@@ -24,7 +25,12 @@ class JsSignMessage(
     val virtualSize: Int? = null, // UTXO chain vbytes
     val utxoChainId: String? = null,
     val broadcast: Boolean = false,
+    // Chain selected when the dApp made the request; later bridge calls can change Web3Signer.currentChain.
+    var chainHex: String? = null,
 ) : Parcelable {
+    val chain: Chain?
+        get() = findChainByHexReference(chainHex)
+
     companion object {
         const val TYPE_TYPED_MESSAGE = 0
         const val TYPE_PERSONAL_MESSAGE = 1
