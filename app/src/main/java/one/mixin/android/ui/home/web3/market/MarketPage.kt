@@ -671,15 +671,13 @@ private fun RowScope.SpotMarketRowContent(
     }
     MarketPriceText(text = priceText)
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
-    key(market.coinId, settings.priceChangePeriod) {
-        MarketChangeColumn(
-            change = change,
-            sparkline = market.sparkline(settings.priceChangePeriod),
-            quoteColorReversed = settings.quoteColorReversed,
-            sparklineCacheKey = marketSparklineCacheKey(market.coinId, settings.priceChangePeriod, market.updatedAt),
-            modifier = Modifier.width(MarketChangeColumnWidth),
-        )
-    }
+    MarketChangeColumn(
+        change = change,
+        sparkline = market.sparkline(settings.priceChangePeriod),
+        quoteColorReversed = settings.quoteColorReversed,
+        sparklineCacheKey = marketSparklineCacheKey(market.coinId, settings.priceChangePeriod, market.updatedAt),
+        modifier = Modifier.width(MarketChangeColumnWidth),
+    )
 }
 
 @Composable
