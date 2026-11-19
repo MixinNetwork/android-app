@@ -4,7 +4,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_root"
     app:startDestination="@+id/transactions_fragment">
-    
+
+    <fragment
+        android:id="@+id/address_book_fragment"
+        android:name="one.mixin.android.ui.address.AddressBookFragment">
+        <action
+            android:id="@+id/action_address_book_to_all_transactions"
+            app:destination="@id/all_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"
+            app:popExitAnim="@anim/slide_out_right" />
+        <action
+            android:id="@+id/action_address_book_to_all_web3_transactions"
+            app:destination="@id/all_web3_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
     <fragment
         android:id="@+id/transactions_fragment"
         android:name="one.mixin.android.ui.wallet.TransactionsFragment"

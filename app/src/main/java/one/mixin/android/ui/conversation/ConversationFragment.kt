@@ -55,7 +55,9 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.widget.PopupWindowCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -717,11 +719,21 @@ class ConversationFragment() :
             }
 
             override fun onDisappearingMessagesClick() {
-                activity?.addFragment(
-                    this@ConversationFragment,
-                    DisappearingFragment.newInstance(conversationId, recipient?.userId),
-                    DisappearingFragment.TAG,
-                )
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val canEdit = !isGroup || withContext(Dispatchers.IO) {
+                        val role = Session.getAccountId()?.let { chatViewModel.findParticipantById(conversationId, it)?.role }
+                        role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+                    }
+                    if (canEdit) {
+                        activity?.addFragment(
+                            this@ConversationFragment,
+                            DisappearingFragment.newInstance(conversationId, recipient?.userId),
+                            DisappearingFragment.TAG,
+                        )
+                    } else {
+                        getString(R.string.disappearing_message_url).openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+                    }
+                }
             }
 
             override fun onInscriptionClick(
@@ -1499,7 +1511,8 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    if (messageAdapter.data.first()?.messageId == id) {
+                    if (viewDestroyed()) return@post
+                    if (messageAdapter.data.firstOrNull()?.messageId == id) {
                         messageAdapter.submitPrevious(pageData)
                     }
                 }
@@ -1514,7 +1527,8 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    if (messageAdapter.data.last()?.messageId == id) {
+                    if (viewDestroyed()) return@post
+                    if (messageAdapter.data.lastOrNull()?.messageId == id) {
                         messageAdapter.submitNext(pageData)
                     }
                 }
@@ -2030,6 +2044,13 @@ class ConversationFragment() :
                     keyword = keyword,
                 )
             binding.messageRv.adapter = messageAdapter
+            if (isGroup) {
+                Session.getAccountId()?.let { accountId ->
+                    chatViewModel.observeParticipantRole(conversationId, accountId).observe(viewLifecycleOwner) { role ->
+                        messageAdapter.canEditDisappearingMessages = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+                    }
+                }
+            }
             chatViewModel.observeConversation(conversationId).observe(viewLifecycleOwner) { conversation ->
                 val expireIn = if (conversation == null && !isGroup) {
                     DEFAULT_NEW_CHAT_EXPIRE_IN
@@ -3263,15 +3284,18 @@ class ConversationFragment() :
         }
     }
 
-    private fun checkPeerIfNeeded() =
-        lifecycleScope.launch {
-            if (!isGroup) return@launch
+    private fun checkPeerIfNeeded() {
+        if (!isGroup) return
 
-            delay(1000)
-            if (callState.getGroupCallStateOrNull(conversationId) != null) return@launch
-
-            checkPeers(requireContext(), conversationId)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                delay(1000)
+                if (callState.getGroupCallStateOrNull(conversationId) == null) {
+                    checkPeers(requireContext(), conversationId)
+                }
+            }
         }
+    }
 
     private var snackBar: Snackbar? = null
 

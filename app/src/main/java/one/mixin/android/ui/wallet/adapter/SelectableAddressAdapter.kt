@@ -44,14 +44,16 @@ class SelectableAddressAdapter(private val selectedUsers: MutableList<Recipient>
             binding.addressTv.text = address.displayAddress()
             binding.avatar.bg.loadImage(address.chainUrl, R.drawable.ic_avatar_place_holder)
             binding.avatar.badge.isVisible = false
-            binding.cb.isChecked = selectedRecipients.contains(address)
+            val isChecked = selectedRecipients.any { it is AddressItem && it.id == address.id }
+            binding.cb.isChecked = isChecked
             binding.cb.isClickable = false
             itemView.setOnClickListener {
-                if (!binding.cb.isChecked && selectedRecipients.size >= MultiSelectRecipientsListBottomSheetDialogFragment.LIMIT) {
+                val currentlyChecked = selectedRecipients.any { it is AddressItem && it.id == address.id }
+                if (!currentlyChecked && selectedRecipients.size >= MultiSelectRecipientsListBottomSheetDialogFragment.LIMIT) {
                     toast(binding.root.context.getString(R.string.Select_LIMIT, MultiSelectRecipientsListBottomSheetDialogFragment.LIMIT))
                     return@setOnClickListener
                 }
-                binding.cb.isChecked = !binding.cb.isChecked
+                binding.cb.isChecked = !currentlyChecked
                 callback?.onAddressClick(address)
                 notifyItemChanged(adapterPosition)
             }

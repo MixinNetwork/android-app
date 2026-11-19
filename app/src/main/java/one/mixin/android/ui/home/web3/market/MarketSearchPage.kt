@@ -115,7 +115,7 @@ internal fun MarketSearchPage(
             state = listState,
         ) {
             if (showRecentSearches) {
-                item(key = "recent_header") {
+                item(key = "recent_header", contentType = "recent_header") {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -141,7 +141,7 @@ internal fun MarketSearchPage(
                         }
                     }
                 }
-                item(key = "recent_items") {
+                item(key = "recent_items", contentType = "recent_items") {
                     FlowRow(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -160,7 +160,7 @@ internal fun MarketSearchPage(
                 }
             }
 
-            item(key = "tabs") {
+            item(key = "tabs", contentType = "tabs") {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -179,7 +179,7 @@ internal fun MarketSearchPage(
             }
 
             if (state.isSearching) {
-                item(key = "searching") {
+                item(key = "searching", contentType = "searching") {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -199,6 +199,7 @@ internal fun MarketSearchPage(
                         items(
                             items = state.spotTrending,
                             key = { "trending_spot:${it.coinId}" },
+                            contentType = { "spot_row" },
                         ) { market ->
                             SpotMarketSearchRow(
                                 market = market,
@@ -211,6 +212,7 @@ internal fun MarketSearchPage(
                         items(
                             items = state.perpetualTrending,
                             key = { "trending_perpetual:${it.marketId}" },
+                            contentType = { "perpetual_row" },
                         ) { market ->
                             PerpetualMarketSearchRow(
                                 market = market,
@@ -224,7 +226,7 @@ internal fun MarketSearchPage(
             } else {
                 when (state.selectedTab) {
                     MarketSearchTab.ALL -> {
-                        item(key = "all_results") {
+                        item(key = "all_results", contentType = "all_results") {
                             Column(modifier = Modifier.padding(bottom = 12.dp)) {
                                 if (state.spotResults.isNotEmpty()) {
                                     SearchResultSection(
@@ -269,11 +271,12 @@ internal fun MarketSearchPage(
                     }
                     MarketSearchTab.CRYPTO -> {
                         if (state.spotResults.isEmpty()) {
-                            item(key = "empty_spot_results") { SearchEmptyResult() }
+                            item(key = "empty_spot_results", contentType = "empty_result") { SearchEmptyResult() }
                         } else {
                             items(
                                 items = state.spotResults,
                                 key = { "search_spot:${it.coinId}" },
+                                contentType = { "spot_row" },
                             ) { market ->
                                 SpotMarketSearchRow(
                                     market = market,
@@ -286,11 +289,12 @@ internal fun MarketSearchPage(
                     }
                     MarketSearchTab.PERPETUAL -> {
                         if (state.perpetualResults.isEmpty()) {
-                            item(key = "empty_perpetual_results") { SearchEmptyResult() }
+                            item(key = "empty_perpetual_results", contentType = "empty_result") { SearchEmptyResult() }
                         } else {
                             items(
                                 items = state.perpetualResults,
                                 key = { "search_perpetual:${it.marketId}" },
+                                contentType = { "perpetual_row" },
                             ) { market ->
                                 PerpetualMarketSearchRow(
                                     market = market,
@@ -302,7 +306,7 @@ internal fun MarketSearchPage(
                     }
                 }
             }
-            item(key = "bottom_spacing") { Spacer(modifier = Modifier.height(20.dp)) }
+            item(key = "bottom_spacing", contentType = "bottom_spacing") { Spacer(modifier = Modifier.height(20.dp)) }
         }
     }
 }

@@ -65,6 +65,8 @@ fun MemoInputPage(
     token: TokenItem?,
     web3Token: Web3TokenItem?,
     address: String,
+    networkName: String? = null,
+    networkIconUrl: String? = null,
     contentText: String = "",
     errorInfo: String? = null,
     isLoading: Boolean = false,
@@ -119,7 +121,11 @@ fun MemoInputPage(
                 .padding(horizontal = 16.dp)
         ) {
             Column(modifier = Modifier.imePadding()) {
-                TokenInfoHeader(token = token, web3Token = web3Token)
+                if (networkName == null) {
+                    TokenInfoHeader(token = token, web3Token = web3Token)
+                } else {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -207,15 +213,25 @@ fun MemoInputPage(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp)
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(address, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End, fontSize = 14.sp, lineHeight = 17.sp)
+                if (networkName == null) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(address, color = MixinAppTheme.colors.textAssist, textAlign = TextAlign.End, fontSize = 14.sp, lineHeight = 17.sp)
+                    }
+                } else {
+                    AddressInfoRows(
+                        networkName = networkName,
+                        networkIconUrl = networkIconUrl,
+                        address = address,
+                        memoTitle = R.string.Memo,
+                        memo = null,
+                    )
                 }
                 Spacer(modifier = Modifier.weight(1f))
 

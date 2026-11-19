@@ -216,6 +216,7 @@ private fun TopTabs(
         items(
             items = tabs,
             key = { it.name },
+            contentType = { "top_tab" },
         ) { tab ->
             MarketChip(
                 text = topTabLabel(tab),
@@ -247,6 +248,7 @@ private fun SubTabs(
         items(
             items = tabs,
             key = { it.name },
+            contentType = { if (it == MarketSubTab.FAVORITE) "favorite_tab" else "text_tab" },
         ) { tab ->
             if (tab == MarketSubTab.FAVORITE) {
                 Box(
@@ -406,11 +408,11 @@ private fun MarketContent(
         modifier = Modifier.fillMaxSize().homeNavigationScroll(),
         contentPadding = PaddingValues(bottom = homeNavigationInset()),
     ) {
-        item(key = "header") {
+        item(key = "header", contentType = "header") {
             Column { header() }
         }
         if (state.selectedTopTab != MarketTopTab.INDICATOR) {
-            stickyHeader(key = "filters") {
+            stickyHeader(key = "filters", contentType = "filters") {
                 Column(modifier = Modifier.fillMaxWidth().background(MixinAppTheme.colors.background).padding(top = 16.dp)) {
                     filters()
                 }
@@ -418,7 +420,7 @@ private fun MarketContent(
         }
         when {
             state.selectedTopTab == MarketTopTab.INDICATOR -> {
-                item(key = "indicator") {
+                item(key = "indicator", contentType = "indicator") {
                     IndicatorPage(
                         indicator = state.indicator,
                         quoteColorReversed = state.displaySettings.quoteColorReversed,
@@ -429,7 +431,7 @@ private fun MarketContent(
             }
 
             state.showsMarketLoading -> {
-                item(key = "loading") {
+                item(key = "loading", contentType = "loading") {
                     Box(
                         modifier = Modifier.fillMaxWidth().fillParentMaxHeight(),
                         contentAlignment = Alignment.Center,
@@ -440,7 +442,7 @@ private fun MarketContent(
             }
 
             state.isShowingRecommendations -> {
-                item(key = "recommendations") {
+                item(key = "recommendations", contentType = "recommendations") {
                     MarketRecommendations(
                         entries = state.entries,
                         isAdding = state.isAddingRecommendations,
@@ -451,7 +453,7 @@ private fun MarketContent(
             }
 
             state.entries.isEmpty() && state.hasLoadedLocalData -> {
-                item(key = "empty") {
+                item(key = "empty", contentType = "empty") {
                     Box(
                         modifier = Modifier.fillMaxWidth().fillParentMaxHeight(),
                         contentAlignment = Alignment.Center,
@@ -476,6 +478,7 @@ private fun MarketContent(
                 items(
                     items = state.entries,
                     key = MarketListEntry::stableId,
+                    contentType = { if (it is MarketListEntry.Spot) "spot_market_row" else "perps_market_row" },
                 ) { entry ->
                     MarketRow(
                         entry = entry,
@@ -673,15 +676,13 @@ private fun RowScope.SpotMarketRowContent(
     }
     MarketPriceText(text = priceText)
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
-    key(market.coinId, settings.priceChangePeriod) {
-        MarketChangeColumn(
-            change = change,
-            sparkline = market.sparkline(settings.priceChangePeriod),
-            quoteColorReversed = settings.quoteColorReversed,
-            sparklineCacheKey = marketSparklineCacheKey(market.coinId, settings.priceChangePeriod, market.updatedAt),
-            modifier = Modifier.width(MarketChangeColumnWidth),
-        )
-    }
+    MarketChangeColumn(
+        change = change,
+        sparkline = market.sparkline(settings.priceChangePeriod),
+        quoteColorReversed = settings.quoteColorReversed,
+        sparklineCacheKey = marketSparklineCacheKey(market.coinId, settings.priceChangePeriod, market.updatedAt),
+        modifier = Modifier.width(MarketChangeColumnWidth),
+    )
 }
 
 @Composable

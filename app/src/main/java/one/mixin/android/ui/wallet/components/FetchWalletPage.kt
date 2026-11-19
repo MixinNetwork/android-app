@@ -224,7 +224,7 @@ fun SelectContent(
     isLoadingMore: Boolean,
 ) {
     MixinAppTheme {
-        val selectableWallets = wallets.filter { !it.exists }
+        val selectableWallets = remember(wallets) { wallets.filter { !it.exists } }
         val isAllSelected = selectableWallets.isNotEmpty() && selectedWalletInfos.containsAll(selectableWallets)
 
         Column(
@@ -261,14 +261,18 @@ fun SelectContent(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(items = wallets, key = { it.hashCode() }) { wallet ->
+                items(
+                    items = wallets,
+                    key = { "${it.name}_${it.ethereumWallet.address}" },
+                    contentType = { "wallet_item" },
+                ) { wallet ->
                     WalletItem(
                         wallet = wallet,
                         isSelected = selectedWalletInfos.contains(wallet),
                         onToggle = { onWalletToggle(wallet) }
                     )
                 }
-                item {
+                item(key = "find_more_footer", contentType = "footer") {
                     Spacer(modifier = Modifier.height(16.dp))
                     if (isLoadingMore) {
                         Row(

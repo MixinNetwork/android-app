@@ -124,6 +124,9 @@ interface ParticipantDao : BaseDao<Participant> {
         userId: String,
     ): Participant?
 
+    @Query("SELECT role FROM participants WHERE conversation_id = :conversationId AND user_id = :userId")
+    fun observeParticipantRole(conversationId: String, userId: String): LiveData<String?>
+
     @Query("SELECT count(1) FROM participants WHERE conversation_id = :conversationId")
     suspend fun getParticipantsCount(conversationId: String): Int
 

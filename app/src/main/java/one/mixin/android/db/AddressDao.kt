@@ -15,7 +15,10 @@ interface AddressDao : BaseDao<Address> {
     @Query("SELECT * FROM addresses WHERE chain_id = :id ORDER BY updated_at DESC")
     fun addressesFlow(id: String): Flow<List<Address>>
 
-    @Query("SELECT a.address_id, t.icon_url, c.icon_url as chain_icon_url, a.label, a.destination, a.tag FROM addresses a LEFT JOIN tokens t ON t.asset_id = a.asset_id LEFT JOIN tokens c ON c.asset_id = t.chain_id ORDER BY updated_at DESC")
+    @Query("SELECT * FROM addresses ORDER BY updated_at DESC")
+    fun allAddressesFlow(): Flow<List<Address>>
+
+    @Query("SELECT a.address_id, a.chain_id, COALESCE(t.icon_url, ch.icon_url) AS icon_url, COALESCE(c.icon_url, ch.icon_url) AS chain_icon_url, a.label, a.destination, a.tag FROM addresses a LEFT JOIN tokens t ON t.asset_id = a.asset_id LEFT JOIN tokens c ON c.asset_id = t.chain_id LEFT JOIN chains ch ON ch.chain_id = a.chain_id ORDER BY updated_at DESC")
     fun allAddresses(): LiveData<List<AddressItem>>
 
     @Query("SELECT * FROM addresses WHERE chain_id = :chainId ORDER BY updated_at DESC")

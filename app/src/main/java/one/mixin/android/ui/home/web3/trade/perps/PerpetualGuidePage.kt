@@ -178,7 +178,8 @@ fun PerpetualGuidePage(
                 ) {
                     itemsIndexed(
                         items = tabs,
-                        key = { index, tab -> "$tab-$index" }
+                        key = { index, tab -> "$tab-$index" },
+                        contentType = { _, _ -> "guide_tab" },
                     ) { index, tab ->
                         OutlinedTab(
                             text = tab,
