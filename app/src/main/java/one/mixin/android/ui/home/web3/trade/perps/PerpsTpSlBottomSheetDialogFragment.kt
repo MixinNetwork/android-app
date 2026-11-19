@@ -133,7 +133,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
             entryPrice: String? = null,
             marketId: String? = null,
             priceScale: Int,
-            liquidationPrice: String? = null,
+            liquidationPrice: BigDecimal,
             positionQuantity: String? = null,
             feeRate: String? = null,
         ): PerpsTpSlBottomSheetDialogFragment {
@@ -149,7 +149,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
                 putString(ARGS_ENTRY_PRICE, entryPrice)
                 putString(ARGS_MARKET_ID, marketId)
                 putInt(ARGS_PRICE_SCALE, priceScale)
-                putString(ARGS_LIQUIDATION_PRICE, liquidationPrice)
+                putString(ARGS_LIQUIDATION_PRICE, liquidationPrice.toString())
                 putString(ARGS_POSITION_QUANTITY, positionQuantity)
                 putString(ARGS_FEE_RATE, feeRate)
             }
@@ -173,7 +173,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
         require(args.containsKey(ARGS_PRICE_SCALE)) { "priceScale is required" }
         args.getInt(ARGS_PRICE_SCALE)
     }
-    private val liquidationPrice by lazy { requireArguments().getString(ARGS_LIQUIDATION_PRICE) }
+    private val liquidationPrice by lazy { resolveTpSlLiquidationBound(requireArguments().getString(ARGS_LIQUIDATION_PRICE)) }
     private val positionQuantity by lazy { requireArguments().getString(ARGS_POSITION_QUANTITY) }
     private val feeRate by lazy { requireArguments().getString(ARGS_FEE_RATE) }
 
@@ -219,6 +219,11 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
 
     @Composable
     override fun ComposeContent() {
+        val bound = liquidationPrice
+        if (bound == null) {
+            LaunchedEffect(Unit) { dismiss() }
+            return
+        }
         MixinAppTheme {
             PerpsTpSlContent(
                 mode = mode,
@@ -232,7 +237,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
                 entryPrice = entryPrice,
                 marketId = marketId,
                 priceScale = priceScale,
-                liquidationPrice = liquidationPrice,
+                liquidationBound = bound,
                 positionQuantity = positionQuantity,
                 feeRate = feeRate,
                 onCancel = { dismiss() },
@@ -268,7 +273,7 @@ private fun PerpsTpSlContent(
     entryPrice: String,
     marketId: String,
     priceScale: Int,
-    liquidationPrice: String?,
+    liquidationBound: BigDecimal,
     positionQuantity: String?,
     feeRate: String?,
     onCancel: () -> Unit,
@@ -317,15 +322,6 @@ private fun PerpsTpSlContent(
             positionQuantity = positionQuantity,
             leverage = leverage,
             feeRate = latestFeeRate,
-        )
-    }
-    val liquidationBound = remember(liquidationPrice, entryPrice, latestCurrentPrice, leverage, isLong) {
-        resolveTpSlLiquidationBound(
-            serverLiquidationPrice = liquidationPrice,
-            entryPrice = entryPrice,
-            currentPrice = latestCurrentPrice,
-            leverage = leverage,
-            isLong = isLong,
         )
     }
     val storedInputType = remember(preferences) {
@@ -1153,7 +1149,7 @@ private fun derivePercentMagnitudeInput(
 internal fun validateTpSlPrice(
     rawValue: String,
     currentPrice: BigDecimal,
-    liquidationBound: BigDecimal?,
+    liquidationBound: BigDecimal,
     isLong: Boolean,
     isTakeProfit: Boolean,
     calculationBasis: TpSlCalculationBasis?,
@@ -1184,7 +1180,7 @@ internal fun validateTpSlPrice(
                     R.string.the_price_must_lower_than,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
-                liquidationBound != null && !isStopBeyondLiquidation(price, liquidationBound, isLong = true) -> MixinApplicationHolder.getString(
+                price <= liquidationBound -> MixinApplicationHolder.getString(
                     R.string.the_price_must_higher_than,
                     "$PERPS_USD_SYMBOL${liquidationBound.stripTrailingZeros().toPlainString()}",
                 )
@@ -1206,7 +1202,7 @@ internal fun validateTpSlPrice(
                     R.string.the_price_must_higher_than,
                     "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
-                liquidationBound != null && !isStopBeyondLiquidation(price, liquidationBound, isLong = false) -> MixinApplicationHolder.getString(
+                price >= liquidationBound -> MixinApplicationHolder.getString(
                     R.string.the_price_must_lower_than,
                     "$PERPS_USD_SYMBOL${liquidationBound.stripTrailingZeros().toPlainString()}",
                 )
@@ -1220,7 +1216,7 @@ private fun validateTpSlPercent(
     rawValue: String,
     currentPrice: BigDecimal,
     calculationBasis: TpSlCalculationBasis?,
-    liquidationBound: BigDecimal?,
+    liquidationBound: BigDecimal,
     isLong: Boolean,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
     isProfit: Boolean,

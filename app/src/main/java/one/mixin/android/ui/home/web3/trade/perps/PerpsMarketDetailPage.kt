@@ -459,7 +459,7 @@ fun PerpsMarketDetailPage(
                             entryPrice = currentPosition.entryPrice,
                             marketId = currentPosition.marketId,
                             priceScale = currentPosition.priceScale,
-                            liquidationPrice = currentPosition.liquidationPrice,
+                            liquidationPrice = resolveTpSlLiquidationBound(currentPosition.liquidationPrice) ?: return,
                             positionQuantity = currentPosition.quantity,
                             feeRate = currentPosition.feeRate,
                         ).setOnApply { value ->
@@ -1342,7 +1342,7 @@ private fun OpenPositionCard(
             entryPrice = position.entryPrice,
             marketId = position.marketId,
             priceScale = position.priceScale,
-            liquidationPrice = position.liquidationPrice,
+            liquidationPrice = resolveTpSlLiquidationBound(position.liquidationPrice) ?: return,
             positionQuantity = position.quantity,
             feeRate = position.feeRate,
         ).setOnApply { value ->

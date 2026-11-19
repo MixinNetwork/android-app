@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -183,7 +182,7 @@ class PerpsTpSlCalculationTest {
         for (quantity in listOf<String?>(null, "10")) {
             val basis = resolveTpSlCalculationBasis("100", "100", "100", quantity, 10, "0.001")!!
             for ((isLong, price) in listOf(true to "100.1", false to "99.9")) {
-                assertNull(validateTpSlPrice(price, BigDecimal("100"), null, isLong, true, basis))
+                assertNull(validateTpSlPrice(price, BigDecimal("100"), BigDecimal.ZERO, isLong, true, basis))
                 val result = basis.pnlAt(BigDecimal(price), isLong)!!
                 assertTrue(result.signedPnl < BigDecimal.ZERO)
                 assertEquals(price, targetPriceForRoiPercent(basis, result.signedRoiPercent.abs().toPlainString(), isLong, isProfit = false, priceScale = 2))
@@ -195,7 +194,8 @@ class PerpsTpSlCalculationTest {
     fun stopLossAllowsNetProfitAfterFeesForBothDirections() {
         val basis = existingBasis(quantity = "10", margin = "100", feeRate = "0.001")!!
         for ((isLong, currentPrice, price) in listOf(Triple(true, "110", "105"), Triple(false, "90", "95"))) {
-            assertNull(validateTpSlPrice(price, BigDecimal(currentPrice), null, isLong, false, basis))
+            val liquidationBound = if (isLong) BigDecimal("80") else BigDecimal("120")
+            assertNull(validateTpSlPrice(price, BigDecimal(currentPrice), liquidationBound, isLong, false, basis))
             val result = basis.pnlAt(BigDecimal(price), isLong)!!
             assertTrue(result.signedPnl > BigDecimal.ZERO)
             assertEquals(price, targetPriceForRoiPercent(basis, result.signedRoiPercent.toPlainString(), isLong, isProfit = true, priceScale = 2))
@@ -267,28 +267,12 @@ class PerpsTpSlCalculationTest {
     }
 
     @Test
-    fun validServerLiquidationIsAuthoritativeAndStrict() {
-        val longBound = resolveTpSlLiquidationBound("80", "100", "100", leverage = 10, isLong = true)
-        val longBoundAtDifferentLeverage = resolveTpSlLiquidationBound("80", "100", "100", leverage = 50, isLong = true)
-        val shortBound = resolveTpSlLiquidationBound("120", "100", "100", leverage = 50, isLong = false)
-
-        assertDecimalEquals("80", longBound)
-        assertDecimalEquals("80", longBoundAtDifferentLeverage)
-        assertFalse(isStopBeyondLiquidation(BigDecimal("80"), longBound, isLong = true))
-        assertFalse(isStopBeyondLiquidation(BigDecimal("79.99"), longBound, isLong = true))
-        assertTrue(isStopBeyondLiquidation(BigDecimal("80.01"), longBound, isLong = true))
-        assertDecimalEquals("120", shortBound)
-        assertFalse(isStopBeyondLiquidation(BigDecimal("120"), shortBound, isLong = false))
-        assertFalse(isStopBeyondLiquidation(BigDecimal("120.01"), shortBound, isLong = false))
-        assertTrue(isStopBeyondLiquidation(BigDecimal("119.99"), shortBound, isLong = false))
-    }
-
-    @Test
-    fun absentServerLiquidationUsesLegacyEstimateOnly() {
-        assertDecimalEquals("90.0", resolveTpSlLiquidationBound(null, "100", "90", 10, isLong = true))
-        assertDecimalEquals("110.0", resolveTpSlLiquidationBound("", "100", "90", 10, isLong = false))
-        assertNull(resolveTpSlLiquidationBound("bad", "100", "90", 10, isLong = true))
-        assertNull(resolveTpSlLiquidationBound("0", "100", "90", 10, isLong = true))
+    fun liquidationBoundRequiresAServerPriceAndPreservesZero() {
+        assertNull(resolveTpSlLiquidationBound(null))
+        assertNull(resolveTpSlLiquidationBound(""))
+        assertNull(resolveTpSlLiquidationBound("invalid"))
+        assertDecimalEquals("0", resolveTpSlLiquidationBound("0.00"))
+        assertDecimalEquals("80", resolveTpSlLiquidationBound("80"))
     }
 
     private fun existingBasis(

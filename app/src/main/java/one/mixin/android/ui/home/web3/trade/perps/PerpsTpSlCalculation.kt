@@ -101,31 +101,5 @@ internal fun targetPriceForRoiPercent(
     return formatPerpsPriceInput(roundedPrice, safeScale)
 }
 
-internal fun resolveTpSlLiquidationBound(
-    serverLiquidationPrice: String?,
-    entryPrice: String,
-    currentPrice: String,
-    leverage: Int,
-    isLong: Boolean,
-): BigDecimal? {
-    if (!serverLiquidationPrice.isNullOrBlank()) {
-        return serverLiquidationPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
-    }
-    if (leverage <= 0) return null
-    val base = entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
-        ?: currentPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
-        ?: return null
-    val offset = BigDecimal.ONE.divide(BigDecimal(leverage), TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-    return base.multiply(if (isLong) BigDecimal.ONE.subtract(offset) else BigDecimal.ONE.add(offset))
-        .takeIf { it > BigDecimal.ZERO }
-}
-
-internal fun isStopBeyondLiquidation(
-    stopPrice: BigDecimal,
-    liquidationBound: BigDecimal?,
-    isLong: Boolean,
-): Boolean = when {
-    liquidationBound == null -> true
-    isLong -> stopPrice > liquidationBound
-    else -> stopPrice < liquidationBound
-}
+internal fun resolveTpSlLiquidationBound(serverLiquidationPrice: String?): BigDecimal? =
+    serverLiquidationPrice?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO }

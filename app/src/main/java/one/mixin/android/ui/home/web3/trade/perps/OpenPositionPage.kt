@@ -286,15 +286,14 @@ fun OpenPositionPage(
             .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
     }
 
+    val liquidationBound = resolveTpSlLiquidationBound(remoteLiquidationPrice)
+
     fun showTpSlBottomSheet(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
         if (!hasInputAmount || leverage < 1f) {
             showTpSlRequirements = true
             return
         }
-        if (isLiquidationLoading) return
-        val liquidationPrice = remoteLiquidationPrice?.takeIf {
-            it.toBigDecimalOrNull()?.let { price -> price >= BigDecimal.ZERO } == true
-        } ?: return
+        if (isLiquidationLoading || liquidationBound == null) return
         val activity = context as? FragmentActivity ?: return
         PerpsTpSlBottomSheetDialogFragment.newInstance(
             mode = mode,
@@ -313,7 +312,7 @@ fun OpenPositionPage(
             marketId = currentMarket.marketId,
             priceScale = currentMarket.priceScale,
             feeRate = currentMarket.feeRate,
-            liquidationPrice = liquidationPrice,
+            liquidationPrice = liquidationBound,
         ).setOnApply { value ->
             if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
                 takeProfitPrice = value.orEmpty()
@@ -681,7 +680,7 @@ fun OpenPositionPage(
                         title = stringResource(R.string.Take_Profit),
                         value = takeProfitPrice.takeIf { it.isNotBlank() }?.let(::formatPerpsPrice),
                         valueColor = tpColor,
-                        enabled = !hasInputAmount || (!isLiquidationLoading && remoteLiquidationPrice?.toBigDecimalOrNull()?.let { it >= BigDecimal.ZERO } == true),
+                        enabled = !hasInputAmount || (!isLiquidationLoading && liquidationBound != null),
                         onClick = {
                             showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT)
                         },
@@ -694,7 +693,7 @@ fun OpenPositionPage(
                         title = stringResource(R.string.Stop_Loss),
                         value = stopLossPrice.takeIf { it.isNotBlank() }?.let(::formatPerpsPrice),
                         valueColor = slColor,
-                        enabled = !hasInputAmount || (!isLiquidationLoading && remoteLiquidationPrice?.toBigDecimalOrNull()?.let { it >= BigDecimal.ZERO } == true),
+                        enabled = !hasInputAmount || (!isLiquidationLoading && liquidationBound != null),
                         onClick = {
                             showTpSlBottomSheet(PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS)
                         },

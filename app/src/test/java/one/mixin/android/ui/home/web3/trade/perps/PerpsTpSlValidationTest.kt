@@ -31,30 +31,40 @@ class PerpsTpSlValidationTest {
             Triple(false, "90", "95"),
             Triple(false, "90", "90"),
         )) {
-            assertNotNull(validateTpSlPrice(invalidPrice, BigDecimal(currentPrice), null, isLong, true, basis))
+            assertNotNull(validateTpSlPrice(invalidPrice, BigDecimal(currentPrice), BigDecimal.ZERO, isLong, true, basis))
         }
-        assertNull(validateTpSlPrice("95", BigDecimal("90"), null, true, true, basis))
-        assertNull(validateTpSlPrice("100", BigDecimal("90"), null, true, true, basis))
-        assertNull(validateTpSlPrice("105", BigDecimal("110"), null, false, true, basis))
-        assertNull(validateTpSlPrice("100", BigDecimal("110"), null, false, true, basis))
-        assertNotNull(validateTpSlPrice("0", BigDecimal("110"), null, false, true, basis))
-        assertNull(validateTpSlPrice("100.1", BigDecimal("90"), null, true, true, basis))
-        assertNull(validateTpSlPrice("99.9", BigDecimal("110"), null, false, true, basis))
+        assertNull(validateTpSlPrice("95", BigDecimal("90"), BigDecimal.ZERO, true, true, basis))
+        assertNull(validateTpSlPrice("100", BigDecimal("90"), BigDecimal.ZERO, true, true, basis))
+        assertNull(validateTpSlPrice("105", BigDecimal("110"), BigDecimal.ZERO, false, true, basis))
+        assertNull(validateTpSlPrice("100", BigDecimal("110"), BigDecimal.ZERO, false, true, basis))
+        assertNotNull(validateTpSlPrice("0", BigDecimal("110"), BigDecimal.ZERO, false, true, basis))
+        assertNull(validateTpSlPrice("100.1", BigDecimal("90"), BigDecimal.ZERO, true, true, basis))
+        assertNull(validateTpSlPrice("99.9", BigDecimal("110"), BigDecimal.ZERO, false, true, basis))
     }
 
     @Test
     fun missingLastPriceAllowsClearingButBlocksNewTriggers() {
         val basis = resolveTpSlCalculationBasis("100", "", "100", "10", 10, "0.001")!!
-        assertNotNull(validateTpSlPrice("105", BigDecimal.ZERO, null, true, true, basis))
-        assertNotNull(validateTpSlPrice("95", BigDecimal.ZERO, null, true, false, basis))
-        assertNull(validateTpSlPrice("", BigDecimal.ZERO, null, true, true, basis))
+        assertNotNull(validateTpSlPrice("105", BigDecimal.ZERO, BigDecimal.ZERO, true, true, basis))
+        assertNotNull(validateTpSlPrice("95", BigDecimal.ZERO, BigDecimal.ZERO, true, false, basis))
+        assertNull(validateTpSlPrice("", BigDecimal.ZERO, BigDecimal.ZERO, true, true, basis))
+    }
+
+    @Test
+    fun zeroLiquidationPriceAllowsOnlyLongStopsBelowLastPrice() {
+        val currentPrice = BigDecimal("100")
+        val basis = resolveTpSlCalculationBasis("100", "100", "100", "10", 10, "0.001")!!
+        assertNull(validateTpSlPrice("99", currentPrice, BigDecimal.ZERO, true, false, basis))
+        assertNotNull(validateTpSlPrice("0", currentPrice, BigDecimal.ZERO, true, false, basis))
+        assertNotNull(validateTpSlPrice("100", currentPrice, BigDecimal.ZERO, true, false, basis))
+        assertNotNull(validateTpSlPrice("101", currentPrice, BigDecimal.ZERO, false, false, basis))
     }
 
     @Test
     fun openingStopLossUsesServerBoundaryInsteadOfLeverageEstimate() {
         val basis = resolveTpSlCalculationBasis("", "100", "100", null, 10, "0.001")!!
-        val longBound = resolveTpSlLiquidationBound("95", "", "100", 10, true)
-        val shortBound = resolveTpSlLiquidationBound("105", "", "100", 10, false)
+        val longBound = BigDecimal("95")
+        val shortBound = BigDecimal("105")
         for (price in listOf("92", "95")) {
             assertNotNull(validateTpSlPrice(price, BigDecimal("100"), longBound, true, false, basis))
         }
