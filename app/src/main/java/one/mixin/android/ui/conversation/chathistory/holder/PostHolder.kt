@@ -18,7 +18,7 @@ import one.mixin.android.vo.MessageStatus
 class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root) {
     init {
         binding.chatTv.layoutParams.width = itemView.context.maxItemWidth()
-        binding.chatTv.maxHeight = itemView.context.maxItemWidth() * 10 / 16
+        binding.chatTv.maxHeight = itemView.context.maxItemWidth()
         binding.chatTv.round(3.dp)
     }
 

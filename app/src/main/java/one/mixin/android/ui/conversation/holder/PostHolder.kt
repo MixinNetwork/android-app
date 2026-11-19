@@ -22,7 +22,7 @@ import one.mixin.android.vo.isSecret
 class PostHolder constructor(val binding: ItemChatPostBinding) : BaseViewHolder(binding.root), Terminable {
     init {
         binding.chatTv.layoutParams.width = itemView.context.maxItemWidth()
-        binding.chatTv.maxHeight = itemView.context.maxItemWidth() * 10 / 16
+        binding.chatTv.maxHeight = itemView.context.maxItemWidth()
         binding.chatTv.round(3.dp)
     }
 
