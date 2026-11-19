@@ -43,6 +43,14 @@ class PerpsTpSlValidationTest {
     }
 
     @Test
+    fun missingLastPriceAllowsClearingButBlocksNewTriggers() {
+        val basis = resolveTpSlCalculationBasis("100", "", "100", "10", 10, "0.001")!!
+        assertNotNull(validateTpSlPrice("105", BigDecimal.ZERO, null, true, true, basis))
+        assertNotNull(validateTpSlPrice("95", BigDecimal.ZERO, null, true, false, basis))
+        assertNull(validateTpSlPrice("", BigDecimal.ZERO, null, true, true, basis))
+    }
+
+    @Test
     fun openingStopLossUsesServerBoundaryInsteadOfLeverageEstimate() {
         val basis = resolveTpSlCalculationBasis("", "100", "100", null, 10, "0.001")!!
         val longBound = resolveTpSlLiquidationBound("95", "", "100", 10, true)

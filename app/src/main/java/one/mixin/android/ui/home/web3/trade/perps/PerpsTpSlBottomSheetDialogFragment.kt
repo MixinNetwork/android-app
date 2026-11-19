@@ -287,14 +287,15 @@ private fun PerpsTpSlContent(
                 marketId = marketId,
                 onSuccess = { market ->
                     latestFeeRate = market.feeRate
-                    latestCurrentPrice = market.last.ifBlank { market.markPrice }.ifBlank { latestCurrentPrice }
+                    if (market.last.toBigDecimalOrNull()?.signum() == 1) {
+                        latestCurrentPrice = market.last
+                    }
                 },
                 onError = {},
             )
             delay(10_000)
         }
     }
-    val currentPriceValue = remember(latestCurrentPrice) { latestCurrentPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO }
     val validationCurrentPrice = remember(latestCurrentPrice) {
         latestCurrentPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ZERO
     }
@@ -414,7 +415,7 @@ private fun PerpsTpSlContent(
     )
     val errorText = if (inputType == InputType.PNL) percentErrorText else priceErrorText
     val canApply = errorText == null && percentInitialized
-    val currentPriceText = formatPerpsPrice(currentPriceValue, safePriceScale)
+    val currentPriceText = if (validationCurrentPrice.signum() > 0) formatPerpsPrice(validationCurrentPrice, safePriceScale) else "--"
     val entryPriceText = remember(entryPriceValue) {
         entryPriceValue?.let { formatPerpsPrice(it, safePriceScale) }
     }
@@ -1166,10 +1167,8 @@ internal fun validateTpSlPrice(
     if (price <= BigDecimal.ZERO) {
         return MixinApplicationHolder.getString(R.string.the_price_must_higher_than, "${PERPS_USD_SYMBOL}0")
     }
+    if (currentPrice <= BigDecimal.ZERO) return MixinApplicationHolder.getString(R.string.Price_data_unavailable)
     if (calculationBasis == null) return MixinApplicationHolder.getString(R.string.error_invalid_number)
-    if (currentPrice <= BigDecimal.ZERO) {
-        return null
-    }
     return when {
         isLong && isTakeProfit -> {
             if (price <= currentPrice) {

@@ -446,12 +446,11 @@ fun PerpsMarketDetailPage(
                             PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> currentPosition.takeProfitPrice.orEmpty()
                             PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> currentPosition.stopLossPrice.orEmpty()
                         }
-                        val currentPrice = currentPosition.markPrice.orEmpty().ifBlank { currentPosition.entryPrice }
                         val requestMarginAmount = currentPosition.margin ?: currentPosition.openPayAmount.orEmpty()
                         PerpsTpSlBottomSheetDialogFragment.newInstance(
                             mode = mode,
                             price = existingPrice,
-                            currentPrice = currentPrice,
+                            currentPrice = market?.last,
                             isLong = currentPosition.side.equals("long", ignoreCase = true),
                             marketIconUrl = currentPosition.iconUrl.orEmpty(),
                             marketSymbol = currentPosition.tokenSymbol ?: "",
@@ -523,6 +522,7 @@ fun PerpsMarketDetailPage(
                     }
                     OpenPositionCard(
                         position = currentPosition,
+                        lastPrice = market?.last,
                         viewModel = viewModel,
                         onShare = {
                             onSharePosition(currentPosition)
@@ -1280,6 +1280,7 @@ private fun TimeFrameSelector(
 @Composable
 private fun OpenPositionCard(
     position: PerpsPositionItem,
+    lastPrice: String?,
     viewModel: PerpetualViewModel,
     onShare: () -> Unit,
 ) {
@@ -1327,13 +1328,12 @@ private fun OpenPositionCard(
             PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> position.takeProfitPrice.orEmpty()
             PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> position.stopLossPrice.orEmpty()
         }
-        val currentPrice = position.markPrice.orEmpty().ifBlank { position.entryPrice }
         val requestMarginAmount = position.margin ?: position.openPayAmount.orEmpty()
 
         PerpsTpSlBottomSheetDialogFragment.newInstance(
             mode = mode,
             price = existingPrice,
-            currentPrice = currentPrice,
+            currentPrice = lastPrice,
             isLong = isLong,
             marketIconUrl = position.iconUrl.orEmpty(),
             marketSymbol = position.tokenSymbol ?: "",
