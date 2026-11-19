@@ -49,7 +49,8 @@ fun PlanSelector(
     ) {
         itemsIndexed(
             items = plans,
-            key = { _: Int, plan: Plan -> plan.name }
+            key = { _: Int, plan: Plan -> plan.name },
+            contentType = { _, _ -> "plan_chip" },
         ) { _: Int, plan: Plan ->
             Box(
                 modifier = Modifier

@@ -31,6 +31,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -84,8 +85,9 @@ internal fun MorePage(
     onBot: (BotInterface) -> Unit,
     onBotProfile: (ExploreApp) -> Unit,
 ) {
-    val bots = (favorites + apps).distinctBy { it.appId }
-    val favoriteIds = favorites.map { it.appId }.toSet()
+    val bots = remember(favorites, apps) { (favorites + apps).distinctBy { it.appId } }
+    val favoriteIds = remember(favorites) { favorites.map { it.appId }.toSet() }
+    val internalBotRows = remember { InternalBots.chunked(2) }
     MixinAppTheme {
         val profileNameColor = MixinAppTheme.colors.textMinor.toArgb()
         LazyColumn(
@@ -93,7 +95,7 @@ internal fun MorePage(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 16.dp + homeNavigationInset()),
         ) {
             user?.let {
-                item {
+                item(key = "profile", contentType = "profile_card") {
                     Row(
                         Modifier.moreCard().clickable(onClick = onProfile).padding(start = 16.dp, end = 8.dp).heightIn(min = 68.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -115,7 +117,11 @@ internal fun MorePage(
                     Spacer(Modifier.height(10.dp))
                 }
             }
-            items(InternalBots.chunked(2)) { row ->
+            items(
+                items = internalBotRows,
+                key = { row -> row.joinToString(":") { it.id } },
+                contentType = { "internal_bot_row" },
+            ) { row ->
                 Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     row.forEach { bot ->
                         MoreActionCard(bot, isDesktopLogin, bot.id !in clickedBotIds && bot.id in ExploreFragment.SHOW_DOT_BOT_IDS, Modifier.weight(1f).fillMaxHeight()) { onBot(bot) }
@@ -123,7 +129,7 @@ internal fun MorePage(
                 }
                 Spacer(Modifier.height(10.dp))
             }
-            item {
+            item(key = "contacts_card", contentType = "contacts_card") {
                 Column(Modifier.moreCard()) {
                     MoreSectionHeader(stringResource(R.string.contacts_title), contacts.size, onContacts)
                     contacts.take(3).forEach { contact ->
@@ -150,7 +156,7 @@ internal fun MorePage(
                     }
                 }
             }
-            item {
+            item(key = "bots_card", contentType = "bots_card") {
                 Spacer(Modifier.height(10.dp))
                 Column(Modifier.moreCard()) {
                     MoreSectionHeader(stringResource(R.string.bots_title), bots.size, onBots)
@@ -251,7 +257,11 @@ private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 
         CoilImage(app.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(avatarSize).clip(CircleShape))
         Spacer(Modifier.width(if (external) 14.dp else 16.dp))
         Column(Modifier.weight(1f)) {
-            AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(app) })
+            AndroidView(
+                factory = { NameTextView(it).apply { textView.textSize = 16f } },
+                onReset = {},
+                update = { it.setName(app) },
+            )
             Spacer(Modifier.height(4.dp))
             Text(app.appNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
@@ -262,22 +272,35 @@ private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 
 @Composable
 internal fun BotsPage(favorites: List<ExploreApp>, apps: List<ExploreApp>, onBack: () -> Unit, onEdit: () -> Unit, onFavoriteClick: (ExploreApp) -> Unit, onBotClick: (ExploreApp) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
-    val matches: (ExploreApp) -> Boolean = { it.name.contains(query.trim(), true) || it.appNumber.contains(query.trim(), true) }
-    val favoriteIds = favorites.map { it.appId }.toSet()
-    val groups = apps.filter { it.appId !in favoriteIds && matches(it) }.groupBy { contactInitial(it.name) }.toSortedMap(compareBy { if (it == "#") "[" else it })
-    val filteredFavorites = favorites.filter(matches)
+    val favoriteIds = remember(favorites) { favorites.map { it.appId }.toSet() }
+    val filteredFavorites = remember(favorites, query) {
+        val keyword = query.trim()
+        favorites.filter { it.name.contains(keyword, true) || it.appNumber.contains(keyword, true) }
+    }
+    val groups = remember(apps, favoriteIds, query) {
+        val keyword = query.trim()
+        apps.filter { it.appId !in favoriteIds && (it.name.contains(keyword, true) || it.appNumber.contains(keyword, true)) }
+            .groupBy { contactInitial(it.name) }
+            .toSortedMap(compareBy { if (it == "#") "[" else it })
+    }
     val listState = rememberLazyListState()
-    var offset = filteredFavorites.size + 2
-    val sectionOffsets = groups.mapValues { (_, group) -> offset.also { offset += group.size + 1 } }
+    val sectionOffsets = remember(groups, filteredFavorites.size) {
+        var offset = filteredFavorites.size + 2
+        groups.mapValues { (_, group) -> offset.also { offset += group.size + 1 } }
+    }
     MixinAppTheme {
         Column(Modifier.fillMaxSize().background(MixinAppTheme.colors.background)) {
             ContactPageHeader(stringResource(R.string.bots_title), onBack)
             ContactsSearchField(query, { query = it }, stringResource(R.string.setting_auth_search_hint))
-            BoxWithConstraints(Modifier.weight(1f)) {
+            Box(Modifier.weight(1f)) {
                 LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 8.dp)) {
-                    item { ContactSectionHeader(stringResource(R.string.Favorite)) }
-                    items(filteredFavorites, key = { "favorite:${it.appId}" }) { app -> BotRow(app) { onFavoriteClick(app) } }
-                    item {
+                    item(key = "header:favorite", contentType = "section_header") { ContactSectionHeader(stringResource(R.string.Favorite)) }
+                    items(
+                        items = filteredFavorites,
+                        key = { "favorite:${it.appId}" },
+                        contentType = { "bot_row" },
+                    ) { app -> BotRow(app) { onFavoriteClick(app) } }
+                    item(key = "action:favorite_edit", contentType = "favorite_edit") {
                         Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable(onClick = onEdit).padding(vertical = 8.dp).height(50.dp).padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(painterResource(R.drawable.ic_favorite_edit), null, tint = Color.Unspecified, modifier = Modifier.size(50.dp))
                             Spacer(Modifier.width(16.dp))
@@ -289,8 +312,12 @@ internal fun BotsPage(favorites: List<ExploreApp>, apps: List<ExploreApp>, onBac
                         }
                     }
                     groups.forEach { (initial, group) ->
-                        item(key = "header:$initial") { ContactSectionHeader(initial) }
-                        items(group, key = { it.appId }) { app -> BotRow(app) { onBotClick(app) } }
+                        item(key = "header:$initial", contentType = "section_header") { ContactSectionHeader(initial) }
+                        items(
+                            items = group,
+                            key = { it.appId },
+                            contentType = { "bot_row" },
+                        ) { app -> BotRow(app) { onBotClick(app) } }
                     }
                 }
                 BoxWithConstraints(Modifier.fillMaxSize().padding(top = 8.dp)) {

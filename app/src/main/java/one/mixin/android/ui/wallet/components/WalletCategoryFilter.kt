@@ -81,7 +81,8 @@ private fun WalletCategoryTabRow(
     ) {
         itemsIndexed(
             items = tabs,
-            key = { index: Int, tab: WalletCategoryTab -> "${tab.category ?: "all"}-$index" }
+            key = { index: Int, tab: WalletCategoryTab -> "${tab.category ?: "all"}-$index" },
+            contentType = { _, _ -> "category_tab" },
         ) { index: Int, tab: WalletCategoryTab ->
             OutlinedTab(
                 text = stringResource(tab.textResId),

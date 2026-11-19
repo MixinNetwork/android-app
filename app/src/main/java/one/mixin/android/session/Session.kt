@@ -287,8 +287,8 @@ object Session {
         if (acct == null || key == null) {
             return ""
         }
-        val expire = currentTimeSeconds() + 1800
         val iat = currentTimeSeconds()
+        val expire = iat + 300
 
         var content = "${request.method}${request.url.cutOut()}"
         request.body?.apply {

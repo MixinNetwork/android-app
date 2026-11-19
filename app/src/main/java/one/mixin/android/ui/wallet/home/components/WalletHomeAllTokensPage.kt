@@ -76,7 +76,7 @@ fun WalletHomeAllTokensPage(
                     .fillMaxSize()
                     .background(backgroundColor),
             ) {
-                item(key = "balance") {
+                item(key = "balance", contentType = "balance_card") {
                     Column {
                         Spacer(modifier = Modifier.height(10.dp))
                         WalletHomeCard(WalletHomeCardType.BALANCE, state, callbacks)
@@ -93,6 +93,7 @@ fun WalletHomeAllTokensPage(
                             "${token.assetId}-${token.chainId}"
                         }
                     },
+                    contentType = { if (isPrivacy) "privacy_token" else "web3_token" },
                 ) { index ->
                     TokenCardSegment(
                         isFirst = index == 0,
@@ -113,7 +114,7 @@ fun WalletHomeAllTokensPage(
                         }
                     }
                 }
-                item(key = "bottom") {
+                item(key = "bottom", contentType = "bottom_spacing") {
                     Spacer(modifier = Modifier.height(20.dp))
                 }
             }
