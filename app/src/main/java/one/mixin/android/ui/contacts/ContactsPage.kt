@@ -116,7 +116,11 @@ internal fun ContactsPage(
                                 UserAvatarImage(user, 50.dp)
                                 Spacer(Modifier.width(16.dp))
                                 Column(Modifier.weight(1f)) {
-                                    AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(user); it.setTextColor(nameColor) })
+                                    AndroidView(
+                                        factory = { NameTextView(it).apply { textView.textSize = 16f } },
+                                        onReset = {},
+                                        update = { it.setName(user); it.setTextColor(nameColor) },
+                                    )
                                     Spacer(Modifier.height(4.dp))
                                     Text(user.identityNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
                                 }

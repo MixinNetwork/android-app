@@ -473,7 +473,7 @@ private fun MarketContent(
                 items(
                     items = state.entries,
                     key = MarketListEntry::stableId,
-                    contentType = { "market_row" },
+                    contentType = { if (it is MarketListEntry.Spot) "spot_market_row" else "perps_market_row" },
                 ) { entry ->
                     MarketRow(
                         entry = entry,

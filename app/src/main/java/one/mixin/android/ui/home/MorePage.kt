@@ -258,7 +258,11 @@ private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 
         CoilImage(app.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(avatarSize).clip(CircleShape))
         Spacer(Modifier.width(if (external) 14.dp else 16.dp))
         Column(Modifier.weight(1f)) {
-            AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(app) })
+            AndroidView(
+                factory = { NameTextView(it).apply { textView.textSize = 16f } },
+                onReset = {},
+                update = { it.setName(app) },
+            )
             Spacer(Modifier.height(4.dp))
             Text(app.appNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
