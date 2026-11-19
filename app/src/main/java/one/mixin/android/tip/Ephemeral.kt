@@ -15,7 +15,6 @@ import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
-import one.mixin.android.tip.exception.TipException
 import one.mixin.android.tip.exception.TipNullException
 import timber.log.Timber
 import javax.inject.Inject
@@ -67,8 +66,15 @@ class Ephemeral
             val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
             val cipherText = seedBase64.base64RawURLDecode()
             val plain = aesDecrypt(pinToken, cipherText)
-            if (!storeEphemeralSeed(context, plain)) {
-                throw TipException("Store ephemeral error")
+            try {
+                if (!storeEphemeralSeed(context, plain)) {
+                    Timber.e("Store ephemeral seed returned false")
+                    clearEphemeralSeed(context)
+                }
+            } catch (e: Exception) {
+                // Keep recovered ephemeral seed usable in memory when AndroidKeyStore fails.
+                reportKeyStoreError("storeEphemeralSeed", e)
+                clearEphemeralSeed(context)
             }
             return plain
         }
