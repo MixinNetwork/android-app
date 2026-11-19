@@ -34,8 +34,10 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.animation.PathInterpolator
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
@@ -55,7 +57,9 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.widget.PopupWindowCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -283,6 +287,7 @@ import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
+import one.mixin.android.widget.GroupCallEdgeDrawable
 import one.mixin.android.widget.LinearSmoothScrollerCustom
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
@@ -291,6 +296,7 @@ import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
 import one.mixin.android.widget.linktext.AutoLinkMode
+import one.mixin.android.widget.picker.DEFAULT_NEW_CHAT_EXPIRE_IN
 import timber.log.Timber
 import java.io.File
 import java.util.UUID
@@ -716,11 +722,21 @@ class ConversationFragment() :
             }
 
             override fun onDisappearingMessagesClick() {
-                activity?.addFragment(
-                    this@ConversationFragment,
-                    DisappearingFragment.newInstance(conversationId, recipient?.userId),
-                    DisappearingFragment.TAG,
-                )
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val canEdit = !isGroup || withContext(Dispatchers.IO) {
+                        val role = Session.getAccountId()?.let { chatViewModel.findParticipantById(conversationId, it)?.role }
+                        role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+                    }
+                    if (canEdit) {
+                        activity?.addFragment(
+                            this@ConversationFragment,
+                            DisappearingFragment.newInstance(conversationId, recipient?.userId),
+                            DisappearingFragment.TAG,
+                        )
+                    } else {
+                        getString(R.string.disappearing_message_url).openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+                    }
+                }
             }
 
             override fun onInscriptionClick(
@@ -953,13 +969,9 @@ class ConversationFragment() :
                             .show()
                     }
                 } else {
-                    if (checkFloatingPermission()) {
-                        checkVoicePermissions {
-                            initAudioSwitch()
-                            voiceCall()
-                        }
-                    } else {
-                        requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+                    checkVoicePermissions {
+                        initAudioSwitch()
+                        voiceCall()
                     }
                 }
             }
@@ -1498,7 +1510,8 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    if (messageAdapter.data.first()?.messageId == id) {
+                    if (viewDestroyed()) return@post
+                    if (messageAdapter.data.firstOrNull()?.messageId == id) {
                         messageAdapter.submitPrevious(pageData)
                     }
                 }
@@ -1513,7 +1526,8 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    if (messageAdapter.data.last()?.messageId == id) {
+                    if (viewDestroyed()) return@post
+                    if (messageAdapter.data.lastOrNull()?.messageId == id) {
                         messageAdapter.submitNext(pageData)
                     }
                 }
@@ -1522,7 +1536,13 @@ class ConversationFragment() :
     }
 
     private fun initView() {
-        binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
+        viewLifecycleOwner.lifecycleScope.launch {
+            val context = requireContext()
+            val wallpaper = withContext(Dispatchers.IO) {
+                WallpaperManager.getWallpaper(context)
+            }
+            binding.inputLayout.backgroundImage = wallpaper
+        }
         binding.chatControl.callback = chatControlCallback
         binding.chatControl.activity = requireActivity()
         binding.chatControl.inputLayout = binding.inputLayout
@@ -1783,6 +1803,98 @@ class ConversationFragment() :
             requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(conversationId, false)
             binding.groupFlag.isVisible = false
         }
+        binding.tapJoinView.root.apply {
+            val container = parent as View
+            val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+            val edgeDrawable = GroupCallEdgeDrawable(this)
+            val snapInterpolator = PathInterpolator(0.22f, 1f, 0.36f, 1f)
+            var dockedLeft: Boolean? = false
+            var downX = 0f
+            var downY = 0f
+            var startX = 0f
+            var startY = 0f
+            var dragging = false
+
+            fun constrainPosition() {
+                if (!isLaidOut) return
+                val maxX = (container.width - width).coerceAtLeast(0).toFloat()
+                val inputTop = if (binding.chatControl.isVisible) binding.chatControl.top else binding.bottomLayout.top
+                val maxY = minOf(container.height, binding.rootView.top + inputTop) - height
+                val minY = minOf(10.dp, maxY.coerceAtLeast(0)).toFloat()
+                x = dockedLeft?.let { if (it) 0f else maxX } ?: x.coerceIn(0f, maxX)
+                y = y.coerceIn(minY, maxY.coerceAtLeast(0).toFloat())
+                edgeDrawable.update()
+            }
+
+            fun snapToEdge() {
+                constrainPosition()
+                val maxX = (container.width - width).coerceAtLeast(0).toFloat()
+                val toLeft = x < maxX / 2f
+                animate()
+                    .x(if (toLeft) 0f else maxX)
+                    .setDuration(250L)
+                    .setInterpolator(snapInterpolator)
+                    .setUpdateListener { edgeDrawable.update() }
+                    .withEndAction {
+                        dockedLeft = toLeft
+                        constrainPosition()
+                    }
+                    .start()
+            }
+
+            container.overlay.add(edgeDrawable)
+            addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(view: View) {
+                    container.overlay.add(edgeDrawable)
+                    constrainPosition()
+                }
+
+                override fun onViewDetachedFromWindow(view: View) {
+                    animate().cancel()
+                    container.overlay.remove(edgeDrawable)
+                }
+            })
+            addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> constrainPosition() }
+            container.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> constrainPosition() }
+            binding.chatControl.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> constrainPosition() }
+            binding.bottomLayout.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> constrainPosition() }
+            setOnTouchListener { view, event ->
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        animate().cancel()
+                        downX = event.rawX
+                        downY = event.rawY
+                        startX = x
+                        startY = y
+                        dragging = false
+                        parent.requestDisallowInterceptTouchEvent(true)
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val dx = event.rawX - downX
+                        val dy = event.rawY - downY
+                        if (!dragging && (abs(dx) > touchSlop || abs(dy) > touchSlop)) {
+                            dragging = true
+                            dockedLeft = null
+                        }
+                        if (dragging) {
+                            x = startX + dx
+                            y = startY + dy
+                            constrainPosition()
+                        }
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        parent.requestDisallowInterceptTouchEvent(false)
+                        if (dockedLeft == null) snapToEdge()
+                        if (!dragging) view.performClick()
+                    }
+                    MotionEvent.ACTION_CANCEL -> {
+                        parent.requestDisallowInterceptTouchEvent(false)
+                        if (dockedLeft == null) snapToEdge()
+                    }
+                }
+                true
+            }
+        }
         binding.tapJoinView.root.setOnClickListener {
             if (!requireContext().networkConnected()) {
                 toast(R.string.Network_error)
@@ -1798,13 +1910,9 @@ class ConversationFragment() :
                     .show()
                 return@setOnClickListener
             }
-            if (checkFloatingPermission()) {
-                checkBlueToothConnectPermissions {
-                    initAudioSwitch()
-                    receiveInvite(requireContext(), conversationId, playRing = false)
-                }
-            } else {
-                requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+            checkBlueToothConnectPermissions {
+                initAudioSwitch()
+                receiveInvite(requireContext(), conversationId, playRing = false)
             }
         }
         callState.observe(viewLifecycleOwner) { state ->
@@ -2023,8 +2131,19 @@ class ConversationFragment() :
                     keyword = keyword,
                 )
             binding.messageRv.adapter = messageAdapter
+            if (isGroup) {
+                Session.getAccountId()?.let { accountId ->
+                    chatViewModel.observeParticipantRole(conversationId, accountId).observe(viewLifecycleOwner) { role ->
+                        messageAdapter.canEditDisappearingMessages = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+                    }
+                }
+            }
             chatViewModel.observeConversation(conversationId).observe(viewLifecycleOwner) { conversation ->
-                val expireIn = conversation?.expireIn ?: 0L
+                val expireIn = if (conversation == null && !isGroup) {
+                    DEFAULT_NEW_CHAT_EXPIRE_IN
+                } else {
+                    conversation?.expireIn ?: 0L
+                }
                 binding.actionBar.setExpireIconVisible(expireIn > 0L)
                 messageAdapter.expireIn = expireIn
             }
@@ -2750,13 +2869,9 @@ class ConversationFragment() :
                                         .show()
                                 }
                             } else {
-                                if (checkFloatingPermission()) {
-                                    checkVoicePermissions {
-                                        initAudioSwitch()
-                                        voiceCall()
-                                    }
-                                } else {
-                                    requireActivity().showPipPermissionNotification(MusicActivity::class.java, getString(R.string.web_floating_permission))
+                                checkVoicePermissions {
+                                    initAudioSwitch()
+                                    voiceCall()
                                 }
                             }
                         }
@@ -3252,15 +3367,18 @@ class ConversationFragment() :
         }
     }
 
-    private fun checkPeerIfNeeded() =
-        lifecycleScope.launch {
-            if (!isGroup) return@launch
+    private fun checkPeerIfNeeded() {
+        if (!isGroup) return
 
-            delay(1000)
-            if (callState.getGroupCallStateOrNull(conversationId) != null) return@launch
-
-            checkPeers(requireContext(), conversationId)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                delay(1000)
+                if (callState.getGroupCallStateOrNull(conversationId) == null) {
+                    checkPeers(requireContext(), conversationId)
+                }
+            }
         }
+    }
 
     private var snackBar: Snackbar? = null
 
@@ -3474,12 +3592,8 @@ class ConversationFragment() :
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             RxPermissions(this)
                 .request(Manifest.permission.BLUETOOTH_CONNECT)
-                .autoDispose(stopScope).subscribe({ granted ->
-                    if (granted) {
-                        callback.invoke()
-                    } else {
-                        context?.openPermissionSetting()
-                    }
+                .autoDispose(stopScope).subscribe({
+                    callback.invoke()
                 }, {
                     reportException(it)
                 })
@@ -3490,18 +3604,10 @@ class ConversationFragment() :
 
     private fun checkVoicePermissions(callback: () -> Unit) {
         RxPermissions(this)
-            .request(
-                * (
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.BLUETOOTH_CONNECT)
-                    } else {
-                        arrayOf(Manifest.permission.RECORD_AUDIO)
-                    }
-                ),
-            )
+            .request(Manifest.permission.RECORD_AUDIO)
             .autoDispose(stopScope).subscribe({ granted ->
                 if (granted) {
-                    callback.invoke()
+                    checkBlueToothConnectPermissions(callback)
                 } else {
                     context?.openPermissionSetting()
                 }
@@ -3513,7 +3619,7 @@ class ConversationFragment() :
     private var initAudioSwitch = false
 
     private fun initAudioSwitch() {
-        if (!requireContext().isAuto() && !initAudioSwitch && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED)) {
+        if (!requireContext().isAuto() && !initAudioSwitch) {
             initAudioSwitch = true
             audioSwitch.start()
         }

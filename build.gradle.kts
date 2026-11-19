@@ -1,7 +1,7 @@
 buildscript {
     val jetifierVersion = "1.0.0-beta10"
     val hiltGradlePluginVersion = "2.60.1"
-    val googleServicesPluginVersion = "4.5.0"
+    val googleServicesPluginVersion = "4.6.0"
     val firebaseCrashlyticsPluginVersion = "3.0.8"
 
     repositories {
@@ -18,7 +18,7 @@ buildscript {
 }
 
 plugins {
-    id("com.bugsnag.gradle") version "1.2.0" apply false
+    id("com.bugsnag.gradle") version "1.2.1" apply false
     id("com.android.application") apply false
     id("com.android.library") apply false
     id("org.jetbrains.kotlin.plugin.parcelize") apply false
@@ -103,7 +103,7 @@ extra.set("swirlVersion", "1.3.0")
 extra.set("indicatorseekbarVersion", "2.1.2")
 extra.set("emojiVersion", "1.7.0")
 extra.set("cronetOkhttpVersion", "0.1.2")
-extra.set("diffUtilsVersion", "4.16")
+extra.set("diffUtilsVersion", "4.18")
 extra.set("argon2ktVersion", "0.0.2")
 extra.set("keccakVersion", "1.1.3")
 extra.set("streetMapVersion", "6.1.20")
@@ -111,9 +111,9 @@ extra.set("junitVersion", "4.13.2")
 extra.set("testCoreVersion", "1.7.0")
 extra.set("mockitoVersion", "5.24.0")
 extra.set("androidxJunitVersion", "1.3.0")
-extra.set("robolectricVersion", "4.17")
+extra.set("robolectricVersion", "4.18")
 extra.set("gsonVersion", "2.15.0")
-extra.set("serializationVersion", "1.12.0")
+extra.set("serializationVersion", "1.13.0")
 extra.set("autodisposeVersion", "1.4.1")
 extra.set("bitcoinPaymentUriVersion", "1.0.3")
 extra.set("startupVersion", "1.2.0")
@@ -133,11 +133,11 @@ extra.set("reownBomVersion", "1.6.17")
 extra.set("playServicesMapsVersion", "20.1.0")
 extra.set("playServicesLocationVersion", "21.4.0")
 extra.set("firebaseBomVersion", "34.19.0")
-extra.set("webpDecoderVersion", "2.7.4.16.0")
+extra.set("webpDecoderVersion", "2.8.5.0.9")
 extra.set("tweetnaclVersion", "0.1.6")
 extra.set("sol4kUtilitiesVersion", "0.1.0")
 extra.set("desugarJdkLibsVersion", "2.1.5")
-extra.set("bugsnagVersion", "6.26.1")
+extra.set("bugsnagVersion", "6.28.1")
 extra.set("appsFlyerVersion", "7.0.4")
 extra.set("installReferrerVersion", "2.2")
 extra.set("billingVersion", "8.3.0")

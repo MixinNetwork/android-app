@@ -1,5 +1,6 @@
 package one.mixin.android.extension
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
@@ -18,6 +19,7 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import androidx.core.content.ContextCompat
 import one.mixin.android.util.reportException
 import one.mixin.android.webrtc.TAG_AUDIO
 import timber.log.Timber
@@ -182,7 +184,6 @@ class AudioSwitch(
         synchronized(lock) {
             if (state != State.STOPPED) return
             state = State.STARTED
-            wiredHeadsetAvailable = hasWiredHeadset()
         }
 
         registerAudioDeviceCallback()
@@ -299,8 +300,9 @@ class AudioSwitch(
 
             val oldDevices = devices
             val oldSelectedDevice = selectedDevice
-            wiredHeadsetAvailable = hasWiredHeadset()
-            val newDevices = buildAvailableDevicesLocked()
+            val outputDevices = audioOutputDevices()
+            wiredHeadsetAvailable = outputDevices.any { it.isWiredHeadset() }
+            val newDevices = buildAvailableDevicesLocked(outputDevices)
             if (newDevices.none { it is AudioDevice.BluetoothHeadset }) {
                 bluetoothActivationError = false
             }
@@ -346,7 +348,7 @@ class AudioSwitch(
         listener.invoke(currentDevices, currentSelectedDevice)
     }
 
-    private fun buildAvailableDevicesLocked(): List<AudioDevice> {
+    private fun buildAvailableDevicesLocked(outputDevices: Array<AudioDeviceInfo>): List<AudioDevice> {
         val bluetoothHeadset = bluetoothHeadsetDeviceLocked()
         val result = ArrayList<AudioDevice>(preferredDeviceClasses.size)
         preferredDeviceClasses.forEach { deviceClass ->
@@ -357,11 +359,11 @@ class AudioSwitch(
                 }
 
                 AudioDevice.Earpiece::class.java -> {
-                    if (hasEarpiece() && !wiredHeadsetAvailable) result += AudioDevice.Earpiece()
+                    if (hasEarpiece(outputDevices) && !wiredHeadsetAvailable) result += AudioDevice.Earpiece()
                 }
 
                 AudioDevice.Speakerphone::class.java -> {
-                    if (hasSpeakerphone()) result += AudioDevice.Speakerphone()
+                    if (hasSpeakerphone(outputDevices)) result += AudioDevice.Speakerphone()
                 }
             }
         }
@@ -460,23 +462,24 @@ class AudioSwitch(
         }.onFailure { log("Start Bluetooth profile failed: $it") }
     }
 
-    private fun hasWiredHeadset(): Boolean {
-        return audioOutputDevices().any { it.isWiredHeadset() }
-    }
-
-    private fun hasEarpiece(): Boolean {
+    private fun hasEarpiece(outputDevices: Array<AudioDeviceInfo>): Boolean {
         return context.packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY) ||
-            audioOutputDevices().any { it.type == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE }
+            outputDevices.any { it.type == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE }
     }
 
-    private fun hasSpeakerphone(): Boolean {
-        return audioOutputDevices().any { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER } ||
+    private fun hasSpeakerphone(outputDevices: Array<AudioDeviceInfo>): Boolean {
+        return outputDevices.any { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER } ||
             context.packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_OUTPUT)
     }
 
     private fun bluetoothHeadsetDeviceLocked(): AudioDevice.BluetoothHeadset? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+        ) return null
+
+        val communicationDevices = communicationDevices()
         val name = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            communicationDevices().firstOrNull { it.isBluetoothHeadset() }?.productName?.toString()
+            communicationDevices.firstOrNull { it.isBluetoothHeadset() }?.productName?.toString()
         } else {
             bluetoothHeadsetProxy?.let { proxy ->
                 runCatching {
@@ -487,7 +490,7 @@ class AudioSwitch(
             }
         }
         val isAvailable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            communicationDevices().any { it.isBluetoothHeadset() }
+            communicationDevices.any { it.isBluetoothHeadset() }
         } else {
             val proxyAvailable = runCatching {
                 bluetoothHeadsetProxy?.connectedDevices?.isNotEmpty() == true

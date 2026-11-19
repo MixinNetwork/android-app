@@ -55,6 +55,9 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     """)
     fun recentWeb3Transactions(walletId: String): LiveData<List<Web3TransactionItem>>
 
+    @RawQuery
+    suspend fun transactionItems(query: RoomRawQuery): List<Web3TransactionItem>
+
     @RawQuery(observedEntities = [Web3Transaction::class])
     fun allTransactions(query: RoomRawQuery): PagingSource<Int, Web3TransactionItem>
 

@@ -16,9 +16,9 @@ apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 7
-val versionMinor = 0
-val versionPatch = 1
-val versionBuild = 0
+val versionMinor = 1
+val versionPatch = 0
+val versionBuild = 3
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
 val jetifierVersion = rootProject.extra["jetifierVersion"] as String
@@ -337,6 +337,13 @@ androidComponents {
             finalizedBy("bugsnagUpload${variantName}ProguardMapping", "bugsnagCreate${variantName}Build")
         }
     }
+}
+
+// The BugSnag plugin extracts its embedded bugsnag-cli to a temp file at configuration time and the
+// configuration cache stores that path. Once the OS cleans the temp dir, cached builds fail with
+// "A problem occurred starting process '.../bugsnag-cli…'", so force a fresh configuration for these tasks.
+tasks.matching { it.name.startsWith("bugsnag") }.configureEach {
+    notCompatibleWithConfigurationCache("bugsnag-cli is extracted to a temp file at configuration time")
 }
 
 room3 {

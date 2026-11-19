@@ -485,7 +485,7 @@ interface MessageDao : BaseDao<Message> {
         """
         SELECT m.category as type, m.id as messageId, m.media_url as mediaUrl FROM messages m 
         WHERE conversation_id = :conversationId AND media_status = 'DONE' 
-        AND category IN (:signalCategory, :plainCategory, :encryptedCategory) ORDER BY created_at ASC
+        AND category IN (:signalCategory, :plainCategory, :encryptedCategory)
         """,
     )
     fun getMediaByConversationIdAndCategory(
@@ -619,20 +619,10 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE id = :messageId")
     suspend fun exists(messageId: String): String?
 
-    // DELETE COUNT
-    @Query(
-        """
-        SELECT count(id) FROM messages 
-        WHERE conversation_id = :conversationId AND media_status = 'DONE' AND category IN (:signalCategory, :plainCategory, :encryptedCategory)
-        """,
-    )
-    fun countDeleteMediaMessageByConversationAndCategory(
-        conversationId: String,
-        signalCategory: String,
-        plainCategory: String,
-        encryptedCategory: String,
-    ): Int
+    @Query("SELECT id FROM messages WHERE id IN (:ids)")
+    fun findExistingIds(ids: List<String>): List<String>
 
+    // DELETE COUNT
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId")
     suspend fun countDeleteMessageByConversationId(conversationId: String): Int
 
@@ -940,20 +930,6 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("DELETE FROM messages WHERE id IN (:ids)")
     fun deleteMessageById(ids: List<String>)
-
-    @Query(
-        """
-        SELECT id FROM messages WHERE  conversation_id = :conversationId AND (media_status = 'DONE' OR media_status ISNULL)
-        AND category IN (:signalCategory, :plainCategory, :encryptedCategory) LIMIT :limit
-        """,
-    )
-    fun findMediaMessageByConversationAndCategory(
-        conversationId: String,
-        signalCategory: String,
-        plainCategory: String,
-        encryptedCategory: String,
-        limit: Int,
-    ): List<String>
 
     @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(

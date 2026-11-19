@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -95,25 +94,33 @@ internal fun ContactsPage(
         Column(Modifier.fillMaxSize().background(MixinAppTheme.colors.background)) {
             ContactPageHeader(stringResource(if (newChat) R.string.new_chat else R.string.contacts_title), onBack, newChat, onAddContact)
             ContactsSearchField(query, { query = it }, stringResource(R.string.contacts_search_hint), newChat)
-            BoxWithConstraints(Modifier.weight(1f)) {
+            Box(Modifier.weight(1f)) {
                 LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 8.dp)) {
                     if (onNewGroup != null && onAddContact != null) {
-                        item { ContactAction(R.drawable.ic_contacts_new_group, R.string.New_Group, onNewGroup) }
-                        item { ContactAction(R.drawable.ic_contacts_add_contact, R.string.Add_Contact, onAddContact) }
+                        item(key = "action:new_group", contentType = "action") { ContactAction(R.drawable.ic_contacts_new_group, R.string.New_Group, onNewGroup) }
+                        item(key = "action:add_contact", contentType = "action") { ContactAction(R.drawable.ic_contacts_add_contact, R.string.Add_Contact, onAddContact) }
                     }
                     if (groups.isEmpty()) {
-                        item { Text(stringResource(R.string.NO_RESULTS), color = MixinAppTheme.colors.textAssist, modifier = Modifier.padding(24.dp)) }
+                        item(key = "empty", contentType = "empty") { Text(stringResource(R.string.NO_RESULTS), color = MixinAppTheme.colors.textAssist, modifier = Modifier.padding(24.dp)) }
                     }
                     groups.forEach { (initial, users) ->
-                        item(key = "header:$initial") {
+                        item(key = "header:$initial", contentType = "section_header") {
                             ContactSectionHeader(initial)
                         }
-                        items(users, key = { it.userId }) { user ->
-                            Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable { onContact(user) }.padding(vertical = 8.dp).height(50.dp).padding(start = 20.dp, end = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+                        items(
+                            items = users,
+                            key = { it.userId },
+                            contentType = { "contact_row" },
+                        ) { user ->
+                            Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable { onContact(user) }.padding(vertical = 8.dp).height(50.dp).padding(start = 20.dp, end = 40.dp), verticalAlignment = Alignment.CenterVertically) {
                                 UserAvatarImage(user, 50.dp)
                                 Spacer(Modifier.width(16.dp))
                                 Column(Modifier.weight(1f)) {
-                                    AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(user); it.setTextColor(nameColor) })
+                                    AndroidView(
+                                        factory = { NameTextView(it).apply { textView.textSize = 16f } },
+                                        onReset = {},
+                                        update = { it.setName(user); it.setTextColor(nameColor) },
+                                    )
                                     Spacer(Modifier.height(4.dp))
                                     Text(user.identityNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
                                 }
@@ -189,7 +196,7 @@ internal fun ContactPageHeader(title: String, onBack: () -> Unit, close: Boolean
 
 @Composable
 private fun ContactAction(icon: Int, title: Int, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable(onClick = onClick).padding(vertical = 8.dp).height(50.dp).padding(start = 20.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable(onClick = onClick).padding(vertical = 8.dp).height(50.dp).padding(start = 20.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(painterResource(icon), null, tint = Color.Unspecified, modifier = Modifier.size(50.dp))
         Spacer(Modifier.width(16.dp))
         Text(stringResource(title), color = MixinAppTheme.colors.accent, fontSize = 16.sp, lineHeight = 20.sp, letterSpacing = 0.sp, modifier = Modifier.weight(1f))
