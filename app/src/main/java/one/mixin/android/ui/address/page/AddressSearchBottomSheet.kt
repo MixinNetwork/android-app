@@ -102,7 +102,7 @@ fun AddressSearchBottomSheet(
         }
         Row(
             modifier = Modifier
-                .padding(start = 20.dp, top = 16.dp, bottom = 8.dp)
+                .padding(start = 10.dp, top = 16.dp, bottom = 8.dp)
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor, cornerRadius = 24.dp)
                 .padding(horizontal = 12.dp, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -127,7 +127,7 @@ fun AddressSearchBottomSheet(
         } else {
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(

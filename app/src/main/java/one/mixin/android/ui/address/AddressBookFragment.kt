@@ -199,8 +199,8 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                     )
                     LazyColumn(
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         item {
                             Column(
@@ -260,7 +260,7 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                                                 transactionError = false
                                                 transactionRetry++
                                             },
-                                            modifier = Modifier.padding(horizontal = 20.dp),
+                                            modifier = Modifier.padding(horizontal = 16.dp),
                                         ) {
                                             Text(stringResource(R.string.Retry), color = MixinAppTheme.colors.textBlue)
                                         }
@@ -269,7 +269,7 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                                         }
                                         transactionCount == 0 -> Text(
                                             stringResource(R.string.No_transactions),
-                                            modifier = Modifier.padding(horizontal = 20.dp),
+                                            modifier = Modifier.padding(horizontal = 16.dp),
                                             color = MixinAppTheme.colors.textAssist,
                                         )
                                         currentWalletId == null -> PrivacyTransactionRecycler(
@@ -277,14 +277,14 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                                             onClick = { index -> transactions?.getOrNull(index)?.let { openAddressTransaction(it, viewModel) } },
                                             onUserClick = {},
                                             modifier = Modifier.fillMaxWidth(),
-                                            contentHorizontalPadding = 20.dp,
+                                            contentHorizontalPadding = 16.dp,
                                         )
                                         else -> Web3TransactionRecycler(
                                             transactions = web3Transactions.orEmpty().take(10),
                                             onClick = { index -> web3Transactions?.getOrNull(index)?.let { openAddressTransaction(it, currentWalletId, viewModel) } },
                                             onTokenClick = { index -> web3Transactions?.getOrNull(index)?.let { openAddressTransaction(it, currentWalletId, viewModel) } },
                                             modifier = Modifier.fillMaxWidth(),
-                                            contentHorizontalPadding = 20.dp,
+                                            contentHorizontalPadding = 16.dp,
                                         )
                                     }
                                 }
