@@ -859,4 +859,11 @@
     <string name="network_fee_independent_of_amount">Biaya jaringan tidak bergantung pada jumlah transfer.</string>
     <string name="mixin_support">Dukungan Mixin</string>
     <string name="real_people_real_support">Orang Sungguhan. Dukungan Nyata.</string>
+    <string name="no_key_wallet_dapp_connect_warning_message">Dompet ini tidak memiliki kunci pribadi di perangkat ini dan tidak dapat terhubung ke dApp. Beralih ke dompet yang dapat menandatangani.</string>
+    <string name="watch_only_wallet_dapp_connect_warning_message">Ini adalah dompet hanya-lihat dan tidak dapat terhubung ke dApp. Beralih ke dompet yang dapat menandatangani.</string>
+    <string name="unsupported_wallet_dapp_connect_warning_message">Dompet ini tidak dapat menandatangani di perangkat ini dan tidak dapat terhubung ke dApp. Beralih ke dompet yang dapat menandatangani.</string>
+    <string name="switch_wallet">Ganti Dompet</string>
+    <string name="Connect">Hubungkan</string>
+    <string name="Connected">Terhubung</string>
+    <string name="search_placeholder_wallet">Nama, Alamat</string>
 </resources>

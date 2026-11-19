@@ -2738,4 +2738,11 @@
     <string name="network_fee_description">網路費是區塊鏈處理交易時產生的手續費，用於支付礦工或驗證節點處理和確認交易的費用。</string>
     <string name="network_fee_charged_by">網路費由 %1$s 網路收取</string>
     <string name="network_fee_independent_of_amount">網路費與轉帳金額無關</string>
+    <string name="no_key_wallet_dapp_connect_warning_message">當前錢包在此裝置上沒有私鑰，無法連接 dApp。請切換到可簽名的錢包。</string>
+    <string name="watch_only_wallet_dapp_connect_warning_message">這是觀察錢包，無法連接 dApp。請切換到可簽名的錢包。</string>
+    <string name="unsupported_wallet_dapp_connect_warning_message">當前錢包無法在此裝置上簽名，無法連接 dApp。請切換到可簽名的錢包。</string>
+    <string name="switch_wallet">切換錢包</string>
+    <string name="Connect">連線</string>
+    <string name="Connected">已連線</string>
+    <string name="search_placeholder_wallet">名稱, 地址</string>
 </resources>

@@ -1866,4 +1866,9 @@ class BottomSheetViewModel
         suspend fun getPerpsMarket(marketId: String): PerpsMarket? = withContext(Dispatchers.IO) {
             web3Repository.getPerpsMarket(marketId)
         }
+
+        suspend fun findWalletById(walletId: String) =
+            withContext(Dispatchers.IO) {
+                if (walletId.isBlank()) null else web3Repository.findWalletById(walletId)
+            }
 }

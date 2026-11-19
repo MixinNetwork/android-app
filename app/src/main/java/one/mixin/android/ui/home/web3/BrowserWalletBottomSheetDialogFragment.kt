@@ -38,6 +38,8 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.tip.wc.SigningWalletPrecheck
+import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.buildTipGas
@@ -197,6 +199,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private var parsedTx: ParsedTx? by mutableStateOf(null)
     private var solanaSignInInput: SignInInput? by mutableStateOf(null)
     private var requestSettled = false
+    private var initialWalletId: String = ""
 
     @Inject
     lateinit var rpc: Rpc
@@ -206,6 +209,15 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
         amount = requireArguments().getString(ARGS_AMOUNT)
         tipGas = initialTipGas
+        initialWalletId = token?.walletId?.takeIf { it.isNotBlank() } ?: Web3Signer.currentWalletId
+        lifecycleScope.launch {
+            val errorMsg = validateSigningWallet()
+            if (errorMsg != null && isAdded) {
+                settleError(WalletErrorCode.UNAUTHORIZED, errorMsg)
+                toast(errorMsg)
+                dismiss()
+            }
+        }
         if (isAccountUnavailable()) {
             val message = getString(R.string.not_support_network, currentChain.symbol)
             settleError(WalletErrorCode.UNSUPPORTED_METHOD, message)
@@ -438,6 +450,15 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             try {
                 step = Step.Loading
                 errorInfo = null
+                val blockedMsg = validateSigningWallet()
+                if (blockedMsg != null) {
+                    withContext(Dispatchers.Main.immediate) {
+                        settleError(WalletErrorCode.UNAUTHORIZED, blockedMsg)
+                        errorInfo = blockedMsg
+                        step = Step.Error
+                    }
+                    return@launch
+                }
                 customPinAction?.let { action ->
                     withContext(Dispatchers.Main.immediate) {
                         action(pin)
@@ -651,17 +672,40 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             "",
         )
 
+    private suspend fun validateSigningWallet(): String? {
+        val walletId = initialWalletId.ifBlank { token?.walletId?.takeIf { it.isNotBlank() } ?: Web3Signer.currentWalletId }
+        val wallet = viewModel.findWalletById(walletId)
+        if (token == null && Web3Signer.currentWalletId != walletId) {
+            return getString(R.string.Data_error)
+        }
+        val precheck = WalletConnect.evaluateSigningWallet(wallet, Web3Signer.currentWalletConnectAddresses())
+        return if (precheck is SigningWalletPrecheck.Blocked) {
+            precheck.localizedMessage(requireContext())
+        } else {
+            null
+        }
+    }
+
     private fun showPin() {
-        PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
-            lifecycleScope.launch(
-                CoroutineExceptionHandler { _, error ->
-                    settleError(WalletErrorCode.INTERNAL_ERROR, error.message ?: "Signing failed")
-                    handleException(error)
-                },
-            ) {
-                doAfterPinComplete(pin)
+        lifecycleScope.launch {
+            val errorMsg = validateSigningWallet()
+            if (errorMsg != null) {
+                settleError(WalletErrorCode.UNAUTHORIZED, errorMsg)
+                toast(errorMsg)
+                dismiss()
+                return@launch
             }
-        }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+            PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
+                lifecycleScope.launch(
+                    CoroutineExceptionHandler { _, error ->
+                        settleError(WalletErrorCode.INTERNAL_ERROR, error.message ?: "Signing failed")
+                        handleException(error)
+                    },
+                ) {
+                    doAfterPinComplete(pin)
+                }
+            }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+        }
     }
 
     private fun deposit() {

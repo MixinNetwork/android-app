@@ -15,6 +15,8 @@ import one.mixin.android.extension.checkUserOrApp
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.SigningWalletPrecheck
+import one.mixin.android.tip.wc.WCError
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
@@ -22,6 +24,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.oldwallet.OldTransferFragment
+import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.web3.convertWcLink
@@ -93,7 +96,12 @@ class UrlInterpreterActivity : BaseActivity() {
             val wcUri = convertWcLink(data.toString())
             if (wcUri != null && WalletConnect.isEnabled()) {
                 if (MixinApplication.get().topActivity is WebActivity) {
-                    WalletConnect.connect(wcUri.toString())
+                    val precheck = WalletConnect.checkCurrentSigningWallet()
+                    if (precheck is SigningWalletPrecheck.Blocked) {
+                        WalletConnectActivity.show(this, WCError(precheck.toException(this)))
+                    } else {
+                        WalletConnect.connect(wcUri.toString())
+                    }
                 } else {
                     startActivity(
                         Intent(this, MainActivity::class.java).apply {

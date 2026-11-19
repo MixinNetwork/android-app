@@ -94,6 +94,19 @@ fun Web3Wallet.isWatch(): Boolean {
     return category == WalletCategory.WATCH_ADDRESS.value
 }
 
+fun isWalletConnectSigningEligible(
+    category: String?,
+    hasLocalPrivateKey: Boolean,
+): Boolean {
+    return category == WalletCategory.CLASSIC.value ||
+        ((category == WalletCategory.IMPORTED_MNEMONIC.value ||
+            category == WalletCategory.IMPORTED_PRIVATE_KEY.value) && hasLocalPrivateKey)
+}
+
+fun Web3Wallet.isSigningEligible(): Boolean {
+    return isWalletConnectSigningEligible(category, hasLocalPrivateKey)
+}
+
 fun Web3Wallet.isMixinSafe(): Boolean {
     return category == WalletCategory.MIXIN_SAFE.value
 }

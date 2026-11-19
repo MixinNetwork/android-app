@@ -1,5 +1,6 @@
 package one.mixin.android.web3.js
 
+import android.content.SharedPreferences
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import okio.Buffer
@@ -10,11 +11,13 @@ import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.EthGaslessTxPayload
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.isNativeEvmAsset
+import one.mixin.android.db.web3.vo.isWalletConnectSigningEligible
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.putString
@@ -98,9 +101,26 @@ object Web3Signer {
     private const val TAG = "Web3Signer"
     private val walletSelectionMutex = Mutex()
 
-    private val sp by lazy {
-        MixinApplication.appContext.defaultSharedPreferences
+    internal var walletConnectSyncHandler: (eligible: Boolean, walletId: String, addresses: WalletConnectAddresses) -> Unit =
+        defaultWalletConnectSyncHandler()
+
+    private fun defaultWalletConnectSyncHandler(): (Boolean, String, WalletConnectAddresses) -> Unit =
+        { eligible, walletId, addresses ->
+            if (WalletConnect.isEnabled()) {
+                if (eligible) {
+                    WalletConnectV2.switchAccount(addresses, walletId)
+                } else {
+                    WalletConnectV2.disconnectAllSessions()
+                }
+            }
+        }
+
+    internal fun resetTestHooks() {
+        walletConnectSyncHandler = defaultWalletConnectSyncHandler()
     }
+
+    private fun sharedPrefsOrNull(): SharedPreferences? =
+        runCatching { MixinApplication.appContext.defaultSharedPreferences }.getOrNull()
 
     private object Keys {
         const val ADDRESS = "signer_address"
@@ -111,6 +131,7 @@ object Web3Signer {
         const val LITECOIN_ADDRESS = "signer_litecoin_address"
         const val PATH = "signer_path"
         const val CURRENT_WALLET_CATEGORY = "signer_current_wallet_category"
+        const val HAS_LOCAL_PRIVATE_KEY = "signer_has_local_private_key"
         const val CLASSIC_WALLET_ID = "signer_classic_wallet_id"
         const val SELECTED_WEB3_WALLET_ID = "selected_web3_wallet_id"
         const val CURRENT_CHAIN = "signer_current_chain"
@@ -135,10 +156,22 @@ object Web3Signer {
         private set
     var currentWalletCategory: String = ""
         private set
+    var hasLocalPrivateKey: Boolean = false
+        private set
     var classicWalletId: String = ""
         private set
     var currentChain: Chain = Chain.Ethereum
         private set
+
+    val isSigningEligible: Boolean
+        get() = currentWalletId.isNotBlank() && isWalletConnectSigningEligible(currentWalletCategory, hasLocalPrivateKey)
+
+    fun currentWalletConnectAddresses(): WalletConnectAddresses =
+        if (isSigningEligible) {
+            WalletConnectAddresses(evmAddress, solanaAddress, btcAddress)
+        } else {
+            WalletConnectAddresses("", "", "")
+        }
 
     // Kept while currentChain is Solana, so useEvm() can return to it.
     private var lastEvmChain: Chain = Chain.Ethereum
@@ -152,24 +185,33 @@ object Web3Signer {
     }
 
     private fun load() {
-        address = sp.getString(Keys.ADDRESS, "") ?: ""
-        evmAddress = sp.getString(Keys.EVM_ADDRESS, "") ?: ""
-        solanaAddress = sp.getString(Keys.SOLANA_ADDRESS, "") ?: ""
-        btcAddress = sp.getString(Keys.BTC_ADDRESS, "") ?: ""
-        pearlAddress = sp.getString(Keys.PEARL_ADDRESS, "") ?: ""
-        litecoinAddress = sp.getString(Keys.LITECOIN_ADDRESS, "") ?: ""
-        path = sp.getString(Keys.PATH, "") ?: ""
-        currentWalletId = sp.getString(Keys.SELECTED_WEB3_WALLET_ID, "") ?: ""
-        currentWalletCategory = sp.getString(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
+        val sp = sharedPrefsOrNull()
+        address = sp?.getString(Keys.ADDRESS, "") ?: ""
+        evmAddress = sp?.getString(Keys.EVM_ADDRESS, "") ?: ""
+        solanaAddress = sp?.getString(Keys.SOLANA_ADDRESS, "") ?: ""
+        btcAddress = sp?.getString(Keys.BTC_ADDRESS, "") ?: ""
+        pearlAddress = sp?.getString(Keys.PEARL_ADDRESS, "") ?: ""
+        litecoinAddress = sp?.getString(Keys.LITECOIN_ADDRESS, "") ?: ""
+        path = sp?.getString(Keys.PATH, "") ?: ""
+        currentWalletId = sp?.getString(Keys.SELECTED_WEB3_WALLET_ID, "") ?: ""
+        currentWalletCategory = sp?.getString(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
             ?: WalletCategory.CLASSIC.value
-        classicWalletId = sp.getString(Keys.CLASSIC_WALLET_ID, "") ?: ""
-        currentChain = findChainByHexReference(sp.getString(Keys.CURRENT_CHAIN, Chain.Ethereum.hexReference))
+        hasLocalPrivateKey = sp?.let { prefs ->
+            if (prefs.contains(Keys.HAS_LOCAL_PRIVATE_KEY)) {
+                prefs.getBoolean(Keys.HAS_LOCAL_PRIVATE_KEY, false)
+            } else {
+                currentWalletId.isNotBlank() && currentWalletCategory == WalletCategory.CLASSIC.value
+            }
+        } ?: false
+        classicWalletId = sp?.getString(Keys.CLASSIC_WALLET_ID, "") ?: ""
+        currentChain = findChainByHexReference(sp?.getString(Keys.CURRENT_CHAIN, Chain.Ethereum.hexReference))
             ?: Chain.Ethereum
-        lastEvmChain = evmChainAfter(currentChain, findChainByHexReference(sp.getString(Keys.LAST_EVM_CHAIN, null)))
+        lastEvmChain = evmChainAfter(currentChain, findChainByHexReference(sp?.getString(Keys.LAST_EVM_CHAIN, null)))
         currentNetwork = if (currentChain == Chain.Solana) JsSignerNetwork.Solana.name else JsSignerNetwork.Ethereum.name
     }
 
     private fun persist() {
+        val sp = sharedPrefsOrNull() ?: return
         sp.putString(Keys.ADDRESS, address)
         sp.putString(Keys.EVM_ADDRESS, evmAddress)
         sp.putString(Keys.SOLANA_ADDRESS, solanaAddress)
@@ -179,6 +221,7 @@ object Web3Signer {
         sp.putString(Keys.PATH, path)
         sp.putString(Keys.SELECTED_WEB3_WALLET_ID, currentWalletId)
         sp.putString(Keys.CURRENT_WALLET_CATEGORY, currentWalletCategory)
+        sp.edit().putBoolean(Keys.HAS_LOCAL_PRIVATE_KEY, hasLocalPrivateKey).apply()
         sp.putString(Keys.CLASSIC_WALLET_ID, classicWalletId)
         sp.putString(Keys.CURRENT_CHAIN, currentChain.hexReference)
         if (evmChainList.contains(currentChain)) lastEvmChain = currentChain
@@ -229,15 +272,34 @@ object Web3Signer {
                 Keys.SELECTED_WEB3_WALLET_ID,
                 classicWalletId
             )
-            currentWalletCategory = PropertyHelper.findValueByKey(Keys.CURRENT_WALLET_CATEGORY, queryWallet(currentWalletId)?.category ?: WalletCategory.CLASSIC.value)
+            val wallet = currentWalletId.takeIf { it.isNotBlank() }?.let { queryWallet(it) }
+            currentWalletCategory = wallet?.category
+                ?: PropertyHelper.findValueByKey(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
+            hasLocalPrivateKey = currentWalletId.isNotBlank() && isWalletConnectSigningEligible(
+                currentWalletCategory,
+                wallet?.hasLocalPrivateKey ?: false,
+            )
             updateAddressesAndPaths(currentWalletId, queryAddress)
             persist()
         }
 
     suspend fun setWallet(walletId: String, category: String, queryAddress: (String) -> List<Web3Address>) {
-        if (category == WalletCategory.WATCH_ADDRESS.value) return
+        setWallet(
+            walletId = walletId,
+            category = category,
+            hasLocalPrivateKey = resolveDefaultHasLocalPrivateKey(walletId, category),
+            queryAddress = queryAddress,
+        )
+    }
+
+    suspend fun setWallet(
+        walletId: String,
+        category: String,
+        hasLocalPrivateKey: Boolean,
+        queryAddress: (String) -> List<Web3Address>,
+    ) {
         walletSelectionMutex.withLock {
-            setWalletLocked(walletId, category, queryAddress)
+            setWalletLocked(walletId, category, hasLocalPrivateKey, queryAddress, persistToStorage = true)
         }
     }
 
@@ -248,32 +310,85 @@ object Web3Signer {
         walletId: String,
         category: String,
         queryAddress: (String) -> List<Web3Address>,
+    ): Boolean =
+        setWalletIfCurrent(
+            expectedWalletId = expectedWalletId,
+            walletId = walletId,
+            category = category,
+            hasLocalPrivateKey = resolveDefaultHasLocalPrivateKey(walletId, category),
+            queryAddress = queryAddress,
+        )
+
+    suspend fun setWalletIfCurrent(
+        expectedWalletId: String,
+        walletId: String,
+        category: String,
+        hasLocalPrivateKey: Boolean,
+        queryAddress: (String) -> List<Web3Address>,
     ): Boolean {
-        if (category == WalletCategory.WATCH_ADDRESS.value) return false
         return walletSelectionMutex.withLock {
             if (currentWalletId != expectedWalletId) return@withLock false
-            setWalletLocked(walletId, category, queryAddress)
+            setWalletLocked(walletId, category, hasLocalPrivateKey, queryAddress, persistToStorage = true)
             true
+        }
+    }
+
+    internal suspend fun applyWalletForTest(
+        walletId: String,
+        category: String,
+        hasLocalPrivateKey: Boolean,
+        addresses: List<Web3Address>,
+    ) {
+        walletSelectionMutex.withLock {
+            setWalletLocked(
+                walletId = walletId,
+                category = category,
+                hasLocalPrivateKey = hasLocalPrivateKey,
+                queryAddress = { queryWalletId -> if (queryWalletId == walletId) addresses else emptyList() },
+                persistToStorage = false,
+            )
+        }
+    }
+
+    private fun resolveDefaultHasLocalPrivateKey(
+        walletId: String,
+        category: String,
+    ): Boolean {
+        if (walletId.isBlank()) return false
+        return when (category) {
+            WalletCategory.CLASSIC.value -> true
+            WalletCategory.IMPORTED_MNEMONIC.value,
+            WalletCategory.IMPORTED_PRIVATE_KEY.value ->
+                runCatching { CryptoWalletHelper.hasPrivateKey(MixinApplication.appContext, walletId) }.getOrDefault(false)
+            else -> false
         }
     }
 
     private suspend fun setWalletLocked(
         walletId: String,
         category: String,
+        hasLocalPrivateKey: Boolean,
         queryAddress: (String) -> List<Web3Address>,
+        persistToStorage: Boolean,
     ) {
         currentWalletId = walletId
-        PropertyHelper.updateKeyValue(Keys.SELECTED_WEB3_WALLET_ID, walletId)
         currentWalletCategory = category
+        this.hasLocalPrivateKey = walletId.isNotBlank() && isWalletConnectSigningEligible(category, hasLocalPrivateKey)
+        if (persistToStorage) {
+            PropertyHelper.updateKeyValue(Keys.SELECTED_WEB3_WALLET_ID, walletId)
+            PropertyHelper.updateKeyValue(Keys.CURRENT_WALLET_CATEGORY, category)
+        }
         updateAddressesAndPaths(walletId, queryAddress)
-        persist()
+        if (persistToStorage) {
+            persist()
+        }
     }
 
     private fun updateAddressesAndPaths(
         walletId: String,
         queryAddress: (String) -> List<Web3Address>,
     ) {
-        if (walletId.isNotBlank()) {
+        if (walletId.isNotBlank() && isSigningEligible) {
             val addresses = queryAddress(walletId)
             path = addresses.firstOrNull {
                 it.chainId in Constants.Web3ChainIds ||
@@ -286,10 +401,10 @@ object Web3Signer {
             solanaAddress =
                 addresses.firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.destination
                     ?: ""
-            btcAddress = addresses.firstOrNull {it.chainId == BITCOIN_CHAIN_ID}?.destination ?:""
+            btcAddress = addresses.firstOrNull { it.chainId == BITCOIN_CHAIN_ID }?.destination ?: ""
             pearlAddress = addresses.firstOrNull { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }?.destination ?: ""
             litecoinAddress = addresses.firstOrNull { it.chainId == Constants.ChainId.Litecoin }?.destination ?: ""
-            address = evmAddress
+            address = if (currentChain == Chain.Solana) solanaAddress else evmAddress
         } else {
             evmAddress = ""
             solanaAddress = ""
@@ -300,9 +415,11 @@ object Web3Signer {
             path = ""
         }
 
-        if (WalletConnect.isEnabled()) {
-            WalletConnectV2.switchAccount(WalletConnectAddresses(evmAddress, solanaAddress, btcAddress))
-        }
+        walletConnectSyncHandler(
+            isSigningEligible,
+            currentWalletId,
+            currentWalletConnectAddresses(),
+        )
     }
 
     fun switchChain(switchChain: SwitchChain): Result<String> {

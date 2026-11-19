@@ -73,7 +73,10 @@ import one.mixin.android.tip.TAG_TIP_SIGN
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignAction
 import one.mixin.android.tip.matchTipSignAction
+import one.mixin.android.tip.wc.SigningWalletPrecheck
+import one.mixin.android.tip.wc.WCError
 import one.mixin.android.tip.wc.WalletConnect
+import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
@@ -982,7 +985,12 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             val wcUri = convertWcLink(url)
             if (wcUri != null && WalletConnect.isEnabled()) {
                 if (MixinApplication.get().topActivity is WebActivity) {
-                    WalletConnect.connect(wcUri.toString())
+                    val precheck = WalletConnect.checkCurrentSigningWallet()
+                    if (precheck is SigningWalletPrecheck.Blocked) {
+                        WalletConnectActivity.show(requireContext(), WCError(precheck.toException(requireContext())))
+                    } else {
+                        WalletConnect.connect(wcUri.toString())
+                    }
                 } else {
                     startActivity(
                         Intent(requireContext(), MainActivity::class.java).apply {
@@ -1078,6 +1086,12 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             } catch (e: IllegalArgumentException) {
                 return false
             }
+        val currentWallet = linkViewModel.findWalletById(Web3Signer.currentWalletId)
+        val precheck = WalletConnect.evaluateSigningWallet(currentWallet, Web3Signer.currentWalletConnectAddresses())
+        if (precheck is SigningWalletPrecheck.Blocked) {
+            showError(precheck.localizedMessage(requireContext()))
+            return true
+        }
         Web3Signer.useSolana()
         if (Web3Signer.address.isBlank()) {
             return true

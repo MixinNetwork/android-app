@@ -16,6 +16,8 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.web3.WalletOutput
+import one.mixin.android.db.web3.vo.WalletItem
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
@@ -80,6 +82,7 @@ object WalletConnectV2 : WalletConnect() {
     private const val CHAIN_TYPE_BSC: String = "bsc"
     private const val CHAIN_TYPE_SOLANA: String = "solana"
     private const val CHAIN_TYPE_BTC: String = "btc"
+    private const val PREF_SESSION_WALLET_IDS = "wc_v2_session_wallet_ids"
 
     private val gson =
         GsonBuilder()
@@ -87,6 +90,28 @@ object WalletConnectV2 : WalletConnect() {
             .registerTypeAdapter(ethTransactionSerializer)
             .registerTypeAdapter(WcInstruction::class.java, WcInstructionDeserializer())
             .create()
+
+    private val sessionGuard by lazy {
+        WalletConnectSessionGuard(
+            loadBindings = { loadSessionWalletBindings() },
+            saveBindings = { bindings -> saveSessionWalletBindings(bindings) },
+        )
+    }
+
+    private fun loadSessionWalletBindings(): Map<String, String> {
+        val raw = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_SESSION_WALLET_IDS, null)
+            ?: return emptyMap()
+        return runCatching {
+            gson.fromJson<Map<String, String>>(raw)
+        }.getOrDefault(emptyMap())
+    }
+
+    private fun saveSessionWalletBindings(bindings: Map<String, String>) {
+        MixinApplication.appContext.defaultSharedPreferences
+            .edit()
+            .putString(PREF_SESSION_WALLET_IDS, gson.toJson(bindings))
+            .apply()
+    }
 
     init {
         val appMetaData =
@@ -150,6 +175,7 @@ object WalletConnectV2 : WalletConnect() {
                 override fun onSessionDelete(sessionDelete: Wallet.Model.SessionDelete) {
                     Timber.d("$TAG onSessionDelete $sessionDelete")
                     if (sessionDelete is Wallet.Model.SessionDelete.Success) {
+                        sessionGuard.removeSession(sessionDelete.topic)
                         RxBus.publish(WCSessionDeleteEvent(sessionDelete.topic))
                     }
                 }
@@ -162,9 +188,19 @@ object WalletConnectV2 : WalletConnect() {
                     sessionProposal: Wallet.Model.SessionProposal,
                     verifyContext: Wallet.Model.VerifyContext,
                 ) {
-                    Timber.d("$TAG onSessionProposal $sessionProposal $verifyContext")
+                    Timber.d("$TAG onSessionProposal topic=${sessionProposal.pairingTopic}")
+                    val precheck = checkCurrentSigningWallet()
+                    if (precheck is SigningWalletPrecheck.Blocked) {
+                        sessionGuard.clearProposal(sessionProposal.pairingTopic)
+                        rejectSessionSilently(sessionProposal)
+                        RxBus.publish(WCErrorEvent(WCError(precheck.toException(MixinApplication.appContext))))
+                        return
+                    }
+                    val eligible = precheck as SigningWalletPrecheck.Eligible
+                    sessionGuard.bindProposal(sessionProposal.pairingTopic, eligible.walletId)
+
                     val supportedWalletChains =
-                        getSupportedNamespaces(currentWalletConnectAddresses())
+                        getSupportedNamespaces(eligible.addresses)
                             .values
                             .flatMap { it.chains ?: emptyList() }
                             .toSet()
@@ -180,6 +216,8 @@ object WalletConnectV2 : WalletConnect() {
 
                     val namespace = sessionProposal.getNamespaceProposal()
                     if (namespace == null) {
+                        sessionGuard.clearProposal(sessionProposal.pairingTopic)
+                        rejectSessionSilently(sessionProposal)
                         RxBus.publish(
                             WCErrorEvent(
                                 WCError(
@@ -207,6 +245,8 @@ object WalletConnectV2 : WalletConnect() {
                     if (hasSupportChain) {
                         RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionProposal, sessionProposal.pairingTopic, chainType))
                     } else {
+                        sessionGuard.clearProposal(sessionProposal.pairingTopic)
+                        rejectSessionSilently(sessionProposal)
                         val notSupportChainIds =
                             namespaces.flatMap { proposal ->
                                 proposal.chains!!.filter { chain ->
@@ -230,12 +270,31 @@ object WalletConnectV2 : WalletConnect() {
                     verifyContext: Wallet.Model.VerifyContext,
                 ) {
                     Timber.d("$TAG onSessionRequest summary topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} method=${sessionRequest.request.method} chainId=${sessionRequest.chainId}")
-                    Timber.d("$TAG onSessionRequest $sessionRequest")
+                    val guardResult = validateSessionRequestForCurrentWallet(sessionRequest)
+                    if (guardResult is SessionRequestGuardResult.Rejected) {
+                        Timber.w("$TAG onSessionRequest rejected topic=${sessionRequest.topic} failure=${guardResult.failure} reason=${guardResult.reason}")
+                        rejectRequest(guardResult.message, sessionRequest, CODE_SIGNING_BLOCKED)
+                        val precheck = checkCurrentSigningWallet()
+                        if (precheck is SigningWalletPrecheck.Blocked) {
+                            RxBus.publish(WCErrorEvent(WCError(precheck.toException(MixinApplication.appContext))))
+                        } else {
+                            RxBus.publish(WCErrorEvent(WCError(WalletConnectException(CODE_SIGNING_BLOCKED, guardResult.message))))
+                        }
+                        return
+                    }
                     RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest, sessionRequest.topic))
                 }
 
                 override fun onSessionSettleResponse(settleSessionResponse: Wallet.Model.SettledSessionResponse) {
                     Timber.d("$TAG onSessionSettleResponse $settleSessionResponse")
+                    if (settleSessionResponse is Wallet.Model.SettledSessionResponse.Result) {
+                        val settledSession = settleSessionResponse.session
+                        val walletId = sessionGuard.consumeApprovedOrProposalWalletId(settledSession.pairingTopic)
+                        if (walletId != null) {
+                            sessionGuard.bindSession(settledSession.topic, walletId)
+                        }
+                        RxBus.publish(WCChangeEvent())
+                    }
                 }
 
                 override fun onSessionUpdateResponse(sessionUpdateResponse: Wallet.Model.SessionUpdateResponse) {
@@ -272,14 +331,29 @@ object WalletConnectV2 : WalletConnect() {
             Timber.e("$TAG approveSession sessionProposal is null")
             return
         }
-        val supportedNamespaces = getSupportedNamespaces(currentWalletConnectAddresses())
-        if (supportedNamespaces.isEmpty()) {
-            Timber.e("$TAG approveSession wallet has no supported address")
-            return
+        val precheck = checkCurrentSigningWallet()
+        if (precheck is SigningWalletPrecheck.Blocked) {
+            sessionGuard.clearProposal(topic)
+            rejectSessionSilently(sessionProposal)
+            throw precheck.toException(MixinApplication.appContext)
         }
-        Timber.e("$TAG supportedNamespaces $supportedNamespaces")
+        if (!sessionGuard.canApproveProposal(topic, precheck)) {
+            sessionGuard.clearProposal(topic)
+            rejectSessionSilently(sessionProposal)
+            throw WalletConnectException(CODE_SIGNING_BLOCKED, "Wallet changed before session approval")
+        }
+        val eligible = precheck as SigningWalletPrecheck.Eligible
+        val supportedNamespaces = getSupportedNamespaces(eligible.addresses)
+        if (supportedNamespaces.isEmpty()) {
+            sessionGuard.clearProposal(topic)
+            rejectSessionSilently(sessionProposal)
+            Timber.e("$TAG approveSession wallet has no supported address")
+            throw WalletConnectException(CODE_SIGNING_BLOCKED, "Wallet has no supported address")
+        }
+        val previousTopics = getListOfActiveSessions().map { it.topic }.toSet()
+        sessionGuard.markProposalApproved(topic, eligible.walletId)
         val sessionNamespaces = WalletKit.generateApprovedNamespaces(sessionProposal, supportedNamespaces)
-        Timber.d("$TAG approveSession $sessionNamespaces")
+        Timber.d("$TAG approveSession topic=$topic namespaces=${sessionNamespaces.keys}")
         val approveParams: Wallet.Params.SessionApprove =
             Wallet.Params.SessionApprove(
                 sessionProposal.proposerPublicKey,
@@ -289,8 +363,15 @@ object WalletConnectV2 : WalletConnect() {
         waitActionCheckError { latch ->
             var errMsg: String? = null
             WalletKit.approveSession(approveParams, onSuccess = {
+                getListOfActiveSessions()
+                    .filter { it.pairingTopic == topic || it.topic !in previousTopics }
+                    .forEach { session ->
+                        sessionGuard.bindSession(session.topic, eligible.walletId)
+                    }
+                RxBus.publish(WCChangeEvent())
                 latch.countDown()
             }, onError = { error ->
+                sessionGuard.clearProposal(topic)
                 errMsg = "$TAG approveSession error: $error"
                 Timber.d(errMsg)
                 latch.countDown()
@@ -300,6 +381,7 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun rejectSession(topic: String) {
+        sessionGuard.clearProposal(topic)
         val sessionProposal = getSessionProposal(topic)
         if (sessionProposal == null) {
             Timber.e("$TAG rejectSession sessionProposal is null")
@@ -309,6 +391,7 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun rejectSession(sessionProposal: Wallet.Model.SessionProposal) {
+        sessionGuard.clearProposal(sessionProposal.pairingTopic)
         val rejectParams: Wallet.Params.SessionReject =
             Wallet.Params.SessionReject(
                 sessionProposal.proposerPublicKey,
@@ -318,6 +401,81 @@ object WalletConnectV2 : WalletConnect() {
             Timber.d("$TAG rejectSession error: $error")
             RxBus.publish(WCErrorEvent(WCError(error.throwable)))
         }
+    }
+
+    private fun rejectSessionSilently(sessionProposal: Wallet.Model.SessionProposal) {
+        val rejectParams: Wallet.Params.SessionReject =
+            Wallet.Params.SessionReject(
+                sessionProposal.proposerPublicKey,
+                "Reject session",
+            )
+        WalletKit.rejectSession(rejectParams) { error ->
+            Timber.d("$TAG rejectSessionSilently error: $error")
+        }
+    }
+
+    fun isProposalBoundToWallet(
+        pairingTopic: String,
+        walletId: String,
+    ): Boolean {
+        val expected = sessionGuard.getProposalWalletId(pairingTopic)
+        return expected == null || expected == walletId
+    }
+
+    fun rebindProposal(
+        pairingTopic: String,
+        walletId: String,
+    ) {
+        sessionGuard.bindProposal(pairingTopic, walletId)
+    }
+
+    fun getSessionWalletId(topic: String): String? = sessionGuard.getSessionWalletId(topic)
+
+    suspend fun getConnectedWalletIds(
+        resolveWalletIdByAddress: (suspend (String) -> String?)? = null,
+    ): Set<String> {
+        val sessions = getListOfActiveSessions()
+        return resolveActiveConnectedWalletIds(
+            sessions =
+                sessions.map { session ->
+                    ActiveSessionWalletSnapshot(
+                        boundWalletId = getSessionWalletId(session.topic),
+                        accountAddresses =
+                            session.namespaces.values
+                                .flatMap { it.accounts }
+                                .mapNotNull { account ->
+                                    account.substringAfterLast(':', "").takeIf { it.isNotBlank() }
+                                },
+                    )
+                },
+            fallbackWalletId = Web3Signer.currentWalletId,
+            resolveWalletIdByAddress = resolveWalletIdByAddress,
+        )
+    }
+
+    fun validateSessionRequestForCurrentWallet(
+        sessionRequest: Wallet.Model.SessionRequest,
+        wallet: WalletItem? = null,
+    ): SessionRequestGuardResult {
+        val precheck =
+            if (wallet != null) {
+                val addresses =
+                    if (wallet.id == Web3Signer.currentWalletId && Web3Signer.isSigningEligible) {
+                        Web3Signer.currentWalletConnectAddresses()
+                    } else {
+                        WalletConnectAddresses("", "", "")
+                    }
+                evaluateSigningWallet(wallet, addresses)
+            } else {
+                checkCurrentSigningWallet()
+            }
+        val activeSession = getListOfActiveSessions().firstOrNull { it.topic == sessionRequest.topic }
+        return sessionGuard.validateRequest(
+            topic = sessionRequest.topic,
+            chainId = sessionRequest.chainId,
+            precheck = precheck,
+            sessionNamespaces = activeSession?.namespaces ?: emptyMap(),
+        )
     }
 
     fun parseSessionRequest(
@@ -438,6 +596,11 @@ object WalletConnectV2 : WalletConnect() {
             Timber.e("$TAG approveRequest sessionRequest is null")
             return null
         }
+        val guardResult = validateSessionRequestForCurrentWallet(sessionRequest)
+        if (guardResult is SessionRequestGuardResult.Rejected) {
+            rejectRequest(guardResult.message, sessionRequest, CODE_SIGNING_BLOCKED)
+            throw WalletConnectException(CODE_SIGNING_BLOCKED, guardResult.message)
+        }
 
         val signMessage = signData.signMessage
         if (signMessage is WCEthereumSignMessage) {
@@ -485,18 +648,20 @@ object WalletConnectV2 : WalletConnect() {
     fun rejectRequest(
         message: String? = null,
         topic: String,
+        code: Int = 500,
     ) {
         val request = getSessionRequest(topic)
         if (request == null) {
             Timber.e("$TAG rejectRequest sessionRequest is null")
             return
         }
-        rejectRequest(message, request)
+        rejectRequest(message, request, code)
     }
 
     fun rejectRequest(
         message: String? = null,
         request: Wallet.Model.SessionRequest,
+        code: Int = 500,
     ) {
         val result =
             Wallet.Params.SessionRequestResponse(
@@ -504,7 +669,7 @@ object WalletConnectV2 : WalletConnect() {
                 jsonRpcResponse =
                     Wallet.Model.JsonRpcResponse.JsonRpcError(
                         id = request.request.id,
-                        code = 500,
+                        code = code,
                         message = message ?: "Mixin Wallet Error",
                     ),
             )
@@ -550,10 +715,13 @@ object WalletConnectV2 : WalletConnect() {
     }
 
     fun disconnect(topic: String) {
+        sessionGuard.removeSession(topic)
+        RxBus.publish(WCChangeEvent())
         WalletKit.disconnectSession(
             Wallet.Params.SessionDisconnect(topic),
             onSuccess = {
                 Timber.d("$TAG disconnect success")
+                RxBus.publish(WCChangeEvent())
             },
         ) { error ->
             Timber.d("$TAG disconnect error $error")
@@ -563,38 +731,71 @@ object WalletConnectV2 : WalletConnect() {
         }
     }
 
-    fun switchAccount(addresses: WalletConnectAddresses = currentWalletConnectAddresses()) {
+    fun disconnectAllSessions() {
         val sessions = getListOfActiveSessions()
+        sessions.forEach { session ->
+            disconnect(session.topic)
+        }
+        sessionGuard.clearAll()
+        WalletConnectTIP.clear()
+        RxBus.publish(WCChangeEvent())
+    }
+
+    fun switchAccount(
+        addresses: WalletConnectAddresses = currentWalletConnectAddresses(),
+        walletId: String = Web3Signer.currentWalletId,
+    ) {
+        val sessions = getListOfActiveSessions()
+        val precheck =
+            if (walletId.isBlank() || !Web3Signer.isSigningEligible) {
+                checkCurrentSigningWallet()
+            } else {
+                SigningWalletPrecheck.Eligible(walletId, Web3Signer.currentWalletCategory, addresses)
+            }
         if (sessions.isEmpty()) {
-            Timber.e("$TAG switchAccount session not found for topic")
+            if (precheck !is SigningWalletPrecheck.Eligible) {
+                sessionGuard.clearAll()
+                WalletConnectTIP.clear()
+            }
             return
         }
-        sessions.forEach { session ->
-            val newNamespaces = buildUpdatedNamespaces(session.namespaces, addresses)
-            if (newNamespaces == null) {
-                Timber.w("$TAG switchAccount: empty namespaces or missing connected chain address, disconnecting ${session.topic}")
-                disconnect(session.topic)
-                return@forEach
-            }
+        sessionGuard.handleWalletSwitch(
+            precheck = precheck,
+            activeSessions = sessions.map { it.topic to it.namespaces },
+            disconnectSession = { topic -> disconnect(topic) },
+            updateSession = { topic, newNamespaces ->
+                updateSessionSync(topic, newNamespaces)
+            },
+        )
+        RxBus.publish(WCChangeEvent())
+    }
 
-            val updateParams = Wallet.Params.SessionUpdate(
-                sessionTopic = session.topic,
-                namespaces = newNamespaces,
+    private fun updateSessionSync(
+        topic: String,
+        namespaces: Map<String, Wallet.Model.Namespace.Session>,
+    ): Boolean {
+        val updateParams =
+            Wallet.Params.SessionUpdate(
+                sessionTopic = topic,
+                namespaces = namespaces,
             )
-
-            waitActionCheckError { latch ->
-                var errMsg: String? = null
-                WalletKit.updateSession(updateParams, onSuccess = {
-                    Timber.d("$TAG session updated successfully")
-                    latch.countDown()
-                }, onError = { error ->
-                    errMsg = "$TAG session update error: $error"
-                    Timber.e(errMsg)
-                    latch.countDown()
-                })
-                errMsg
-            }
-        }
+        val latch = CountDownLatch(1)
+        var success = false
+        WalletKit.updateSession(
+            updateParams,
+            onSuccess = {
+                Timber.d("$TAG session updated successfully topic=$topic")
+                success = true
+                latch.countDown()
+            },
+            onError = { error ->
+                Timber.e("$TAG session update error topic=$topic error=$error")
+                success = false
+                latch.countDown()
+            },
+        )
+        runCatching { latch.await(30, TimeUnit.SECONDS) }
+        return success
     }
 
     fun approveRequestInternal(
@@ -887,9 +1088,5 @@ object WalletConnectV2 : WalletConnect() {
             .toSet()
 
     private fun currentWalletConnectAddresses(): WalletConnectAddresses =
-        WalletConnectAddresses(
-            evm = Web3Signer.evmAddress,
-            solana = Web3Signer.solanaAddress,
-            bitcoin = Web3Signer.btcAddress,
-        )
+        Web3Signer.currentWalletConnectAddresses()
 }

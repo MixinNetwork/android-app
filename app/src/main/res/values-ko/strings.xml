@@ -2730,4 +2730,11 @@
     <string name="network_fee_description">네트워크 수수료는 블록체인에서 거래를 처리하고 확인하는 채굴자 또는 검증자에게 지불되는 거래 수수료입니다.</string>
     <string name="network_fee_charged_by">네트워크 수수료는 %1$s 네트워크에서 부과합니다.</string>
     <string name="network_fee_independent_of_amount">네트워크 수수료는 전송 금액과 관계없습니다.</string>
+    <string name="no_key_wallet_dapp_connect_warning_message">이 지갑에는 이 기기에 개인 키가 없어 dApp에 연결할 수 없습니다. 서명할 수 있는 지갑으로 전환하세요.</string>
+    <string name="watch_only_wallet_dapp_connect_warning_message">이 지갑은 감시 전용 지갑이므로 dApp에 연결할 수 없습니다. 서명할 수 있는 지갑으로 전환하세요.</string>
+    <string name="unsupported_wallet_dapp_connect_warning_message">이 지갑은 이 기기에서 서명할 수 없어 dApp에 연결할 수 없습니다. 서명할 수 있는 지갑으로 전환하세요.</string>
+    <string name="switch_wallet">지갑 전환</string>
+    <string name="Connect">연결</string>
+    <string name="Connected">연결됨</string>
+    <string name="search_placeholder_wallet">이름, 주소</string>
 </resources>
