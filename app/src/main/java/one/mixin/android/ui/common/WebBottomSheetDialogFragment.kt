@@ -55,6 +55,7 @@ import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebFragment
+import one.mixin.android.ui.web.WebViewBridgeBinding
 import one.mixin.android.ui.web.prepareForExternalWebLaunch
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
@@ -242,7 +243,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @JavascriptInterface
         fun getContext(): String? {
             val conversationId = Session.getAccountId()?.let { generateConversationId(it, Constants.TEAM_MIXIN_USER_ID) }
-            return WebFragment.WebAppInterface(context, conversationId, false).getContext()
+            return WebFragment.WebAppInterface(context, metadataProvider = { WebViewBridgeBinding.Metadata(conversationId, false) }).getContext()
         }
     }
 
