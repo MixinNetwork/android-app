@@ -34,7 +34,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
 import one.mixin.android.extension.withAlpha
@@ -72,9 +72,7 @@ class MaterialSearchView : FrameLayout {
         initSearchView()
     }
 
-    private val containerHeight by lazy {
-        context.screenHeight() * 0.7f
-    }
+    private fun containerHeight(): Int = (context.windowHeight() * 0.7f).toInt()
 
     @Suppress("unused")
     val currentQuery: String
@@ -143,10 +141,20 @@ class MaterialSearchView : FrameLayout {
     }
 
     @SuppressLint("CheckResult")
+    private fun updateContainerHeight() {
+        (binding.containerCircle.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight = containerHeight()
+        binding.containerShadow.layoutParams.height = context.windowHeight()
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        if (h != oldh) {
+            updateContainerHeight()
+        }
+    }
+
     private fun initSearchView() {
-        (binding.containerCircle.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight =
-            containerHeight.toInt()
-        binding.containerShadow.layoutParams.height = context.screenHeight()
+        updateContainerHeight()
         binding.containerShadow.setOnClickListener {
             hideContainer()
         }

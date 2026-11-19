@@ -6,10 +6,13 @@ import android.Manifest
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -235,6 +238,26 @@ class TransferActivity : BaseActivity() {
         binding.titleView.leftIb.setOnClickListener {
             onBackPressed()
         }
+        if (Build.VERSION.SDK_INT >= 37 &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) != PackageManager.PERMISSION_GRANTED
+        ) {
+            RxPermissions(this)
+                .request(Manifest.permission.ACCESS_LOCAL_NETWORK)
+                .autoDispose(destroyScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        setupTransfer()
+                    } else {
+                        openPermissionSetting()
+                        finish()
+                    }
+                }
+        } else {
+            setupTransfer()
+        }
+    }
+
+    private fun setupTransfer() {
         initView()
 
         status.observe(this) { s ->

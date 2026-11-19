@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,15 +61,15 @@ fun SelectDatePage(
     onExit: () -> Unit,
     onResult: (Int?) -> Unit,
 ) {
-    var dateSelect by remember {
+    var dateSelect by rememberSaveable {
         mutableStateOf(false)
     }
 
-    var unit by remember {
+    var unit by rememberSaveable {
         mutableStateOf(0)
     }
 
-    var localText by remember {
+    var localText by rememberSaveable {
         mutableStateOf("1")
     }
     MixinAppTheme {
@@ -221,7 +222,7 @@ fun Tile(
 @Composable
 fun YearMothSwitch(onTextChange: (String?, Int) -> Unit) {
     val numberState = rememberTextFieldState(initialText = "1")
-    var index by remember { mutableStateOf(0) }
+    var index by rememberSaveable { mutableStateOf(0) }
     LaunchedEffect(numberState) {
         snapshotFlow { numberState.text.toString() }.collect { current ->
             onTextChange(current, index)
@@ -284,7 +285,7 @@ fun SegmentedControl(
     defaultSelectedItemIndex: Int = 0,
     onItemSelection: (selectedItemIndex: Int) -> Unit,
 ) {
-    val selectedIndex = remember { mutableStateOf(defaultSelectedItemIndex) }
+    val selectedIndex = rememberSaveable(defaultSelectedItemIndex) { mutableStateOf(defaultSelectedItemIndex) }
 
     Row(
         modifier =

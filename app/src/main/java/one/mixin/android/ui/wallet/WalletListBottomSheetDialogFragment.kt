@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -205,7 +206,7 @@ fun WalletListScreen(
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
-    var query by remember { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf("") }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
@@ -215,7 +216,7 @@ fun WalletListScreen(
     val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
     val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds || chainId in Constants.Web3UtxoChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
     val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
-    var selectedCategory by remember(hasAll, hasSafe, hasCreated, hasImported, hasWatch) {
+    var selectedCategory by rememberSaveable(hasAll, hasSafe, hasCreated, hasImported, hasWatch) {
         mutableStateOf(
             when {
                 hasAll -> null

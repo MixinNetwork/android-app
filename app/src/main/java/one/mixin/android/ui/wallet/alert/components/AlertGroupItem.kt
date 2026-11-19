@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,7 +48,7 @@ import java.math.BigDecimal
 
 @Composable
 fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (Alert) -> Unit) {
-    var expand by remember { mutableStateOf(initiallyExpanded) }
+    var expand by rememberSaveable { mutableStateOf(initiallyExpanded) }
     val viewModel = hiltViewModel<AlertViewModel>()
     val alerts by viewModel.alertsByCoinId(alertGroup.coinId).collectAsState(initial = emptyList())
     val rotationState by animateFloatAsState(targetValue = if (expand) 0f else -180f, label = "")

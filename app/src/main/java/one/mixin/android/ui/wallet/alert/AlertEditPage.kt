@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -119,8 +120,8 @@ fun AlertEditPage(
             val minPrice = currentPrice.divide(BigDecimal(100))
             val focusManager = LocalFocusManager.current
             val keyboardController = LocalSoftwareKeyboardController.current
-            var selectedAlertType by remember { mutableStateOf(alert?.type ?: AlertType.PRICE_REACHED) }
-            var selectedAlertFrequency by remember { mutableStateOf(alert?.frequency ?: AlertFrequency.ONCE) }
+            var selectedAlertType by rememberSaveable { mutableStateOf(alert?.type ?: AlertType.PRICE_REACHED) }
+            var selectedAlertFrequency by rememberSaveable { mutableStateOf(alert?.frequency ?: AlertFrequency.ONCE) }
             var isLoading by remember { mutableStateOf(false) }
             var inputError by remember { mutableStateOf(if (alertValue.toBigDecimalOrNull() == currentPrice && selectedAlertType != AlertType.PRICE_REACHED) InputError.EQUALS_CURRENT_PRICE else null) }
             val viewModel = hiltViewModel<AlertViewModel>()

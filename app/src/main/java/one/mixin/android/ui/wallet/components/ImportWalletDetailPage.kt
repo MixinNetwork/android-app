@@ -22,6 +22,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.Button
@@ -36,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -91,7 +93,7 @@ fun ImportWalletDetailPage(
     defaultWalletName: String? = null,
 ) {
     val context = LocalContext.current
-    val textState = rememberTextFieldState(initialText = contentText)
+    val textState = remember { TextFieldState(initialText = contentText) }
     LaunchedEffect(contentText) {
         if (textState.text.toString() != contentText) {
             textState.setTextAndPlaceCursorAtEnd(contentText)
@@ -123,7 +125,7 @@ fun ImportWalletDetailPage(
         else networks.entries.find { it.value == chainId }?.key
     }
 
-    var selectedNetworkName by remember(initialNetworkName) {
+    var selectedNetworkName by rememberSaveable(initialNetworkName) {
         mutableStateOf(initialNetworkName ?: "Ethereum")
     }
     val showWalletNameInput = mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY ||

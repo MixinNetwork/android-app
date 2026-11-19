@@ -6,6 +6,7 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 
@@ -13,8 +14,9 @@ import androidx.compose.runtime.snapshotFlow
 internal fun rememberSyncedTextFieldState(
     value: String,
     onValueChange: (String) -> Unit,
+    saveable: Boolean = true,
 ): TextFieldState {
-    val state = rememberTextFieldState(initialText = value)
+    val state = if (saveable) rememberTextFieldState(initialText = value) else remember { TextFieldState(initialText = value) }
     val latestValue by rememberUpdatedState(value)
     val latestOnValueChange by rememberUpdatedState(onValueChange)
 

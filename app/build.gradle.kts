@@ -135,7 +135,7 @@ android {
     defaultConfig {
         applicationId = "one.mixin.messenger"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName = "$versionMajor.$versionMinor.$versionPatch"
         multiDexEnabled = true

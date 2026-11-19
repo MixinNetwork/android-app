@@ -73,7 +73,7 @@ import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.shareMedia
 import one.mixin.android.extension.statusBarHeight
@@ -648,7 +648,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val rect = PipVideoView.getPipRect(videoAspectRatioLayout.aspectRatio)
         val isLandscape = isLandscape()
         if (isLandscape) {
-            val screenHeight = realSize().y
+            val screenHeight = windowHeight()
             if (rect.width > screenHeight) {
                 val ratio = rect.width / rect.height
                 rect.height = screenHeight / ratio

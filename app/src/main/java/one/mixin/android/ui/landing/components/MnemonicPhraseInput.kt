@@ -367,6 +367,7 @@ fun MnemonicPhraseInput(
                                                 updateInputs(inputs.toMutableList().also { it[index] = newText })
                                                 currentText = newText
                                             },
+                                            saveable = false,
                                         )
                                         val textColor = if (index != focusIndex && text.isNotEmpty() && MnemonicCode.INSTANCE.wordList.contains(text).not()) {
                                             MixinAppTheme.colors.tipError

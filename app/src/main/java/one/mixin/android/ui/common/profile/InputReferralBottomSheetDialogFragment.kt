@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -101,7 +102,7 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     override fun ComposeContent() {
         MixinAppTheme {
             val defaultValue = arguments?.getString(ARG_DEFAULT_VALUE) ?: ""
-            var input by remember { mutableStateOf(defaultValue) }
+            var input by rememberSaveable(defaultValue) { mutableStateOf(defaultValue) }
             var uiState by remember { mutableStateOf<UiState>(UiState.Initial) }
             val scope = rememberCoroutineScope()
 

@@ -35,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -154,7 +155,7 @@ fun LimitOrderContent(
 
     val viewModel = hiltViewModel<SwapViewModel>()
 
-    var limitPriceText by remember { mutableStateOf("") }
+    var limitPriceText by rememberSaveable { mutableStateOf("") }
     var marketPriceClickTime by remember { mutableStateOf(lastOrderTime) }
     var priceMultiplier by remember { mutableStateOf<Float?>(null) }
     var isPriceInverted by remember { mutableStateOf(false) }
@@ -173,10 +174,10 @@ fun LimitOrderContent(
     val fromMaxDecimalPlaces = fromToken.tradeInputMaxDecimalPlaces()
     val toMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
 
-    var inputText by remember {
+    var inputText by rememberSaveable {
         mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces))
     }
-    var outputText by remember { mutableStateOf("") }
+    var outputText by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(lastOrderTime) {
         inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)

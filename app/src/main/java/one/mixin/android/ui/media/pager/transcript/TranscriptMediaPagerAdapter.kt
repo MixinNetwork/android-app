@@ -12,8 +12,8 @@ import one.mixin.android.Constants.BIG_IMAGE_SIZE
 import one.mixin.android.R
 import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.inflate
-import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.screenWidth
+import one.mixin.android.extension.windowHeight
+import one.mixin.android.extension.windowWidth
 import one.mixin.android.ui.media.pager.MediaItemType
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.isImage
@@ -98,8 +98,8 @@ class TranscriptMediaPagerAdapter(
                 ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
                 (
                     messageItem.mediaHeight / messageItem.mediaWidth.toFloat() > context.displayRatio() * 1.5f ||
-                        messageItem.mediaHeight > context.screenHeight() * 3 ||
-                        messageItem.mediaWidth > context.screenWidth() * 3 ||
+                        messageItem.mediaHeight > context.windowHeight() * 3 ||
+                        messageItem.mediaWidth > context.windowWidth() * 3 ||
                         (messageItem.mediaSize != null && messageItem.mediaSize >= BIG_IMAGE_SIZE)
                 )
             ) {
