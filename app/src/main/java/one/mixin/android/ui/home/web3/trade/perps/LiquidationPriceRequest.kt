@@ -7,8 +7,10 @@ import androidx.compose.runtime.setValue
 import com.google.gson.JsonElement
 import kotlinx.coroutines.delay
 import one.mixin.android.R
+import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.util.ErrorHandler
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 internal class LiquidationPriceState {
     var price by mutableStateOf<String?>(null)
@@ -95,6 +97,25 @@ internal fun shouldRequestLiquidationPrice(
     return amount != null &&
         amount > BigDecimal.ZERO &&
         (minimumAmount <= BigDecimal.ZERO || amount >= minimumAmount)
+}
+
+internal suspend fun requestMaximumMarginReduction(
+    margin: BigDecimal,
+    onFailure: (String?) -> Unit,
+    request: suspend () -> LiquidationPriceResult,
+): BigDecimal? {
+    if (margin <= BigDecimal.ZERO) return BigDecimal.ZERO
+    var availableMargin: BigDecimal? = null
+    val price = requestLiquidationPrice(
+        onMarginExceeded = {
+            availableMargin = it?.min(margin)?.setScale(TRADE_INPUT_MAX_DECIMAL_PLACES, RoundingMode.DOWN)?.stripTrailingZeros()
+            if (it == null) onFailure(null)
+        },
+        onLimitExceeded = { onFailure(null) },
+        onFailure = onFailure,
+        request = request,
+    )
+    return if (price != null) margin.setScale(TRADE_INPUT_MAX_DECIMAL_PLACES, RoundingMode.DOWN).stripTrailingZeros() else availableMargin
 }
 
 internal suspend fun requestLiquidationPrice(
