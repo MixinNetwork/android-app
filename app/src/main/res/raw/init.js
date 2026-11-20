@@ -14,6 +14,9 @@
         isDebug: false
     };
     const core = mixinwallet.core('CALLBACK', (params) => {
+        if (params.network === 'ethereum') {
+            params.chainId = ethereum.getChainId();
+        }
         window._mw_.postMessage(JSON.stringify(params));
     });
     const ethereum = mixinwallet.ethereum(config.ethereum);
