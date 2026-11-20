@@ -47,6 +47,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
+import coil3.request.ImageRequest
+import coil3.request.transformations
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPositionItem
@@ -70,6 +72,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.details.Web3TransactionHolder
+import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import java.math.BigDecimal
 
 @Composable
@@ -676,13 +679,16 @@ internal fun WalletAssetIcon(
     size: Dp = 42.dp,
     chainBadgeSize: Dp = 14.dp,
 ) {
+    val isMao = !collectionHash.isNullOrEmpty()
     Box(modifier = Modifier.size(size)) {
         CoilImage(
-            model = iconUrl,
+            model = ImageRequest.Builder(LocalContext.current).data(iconUrl).apply {
+                if (isMao) transformations(CoilRoundedHexagonTransformation())
+            }.build(),
             placeholder = R.drawable.ic_avatar_place_holder,
             modifier = Modifier
                 .size(size)
-                .clip(CircleShape),
+                .then(if (isMao) Modifier else Modifier.clip(CircleShape)),
             contentScale = ContentScale.Crop,
         )
         if (collectionHash.isNullOrEmpty() && !chainIconUrl.isNullOrBlank()) {

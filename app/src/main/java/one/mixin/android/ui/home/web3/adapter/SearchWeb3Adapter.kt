@@ -38,6 +38,7 @@ class SearchWeb3Adapter : ListAdapter<Web3TokenItem, SearchWeb3Adapter.TokenHold
                 icSpam.isVisible = token.isSpam()
                 val balance = runCatching { BigDecimal(token.balance) }.getOrDefault(BigDecimal.ZERO)
                 
+                balanceTv.maxWidth = root.resources.displayMetrics.widthPixels / 2
                 balanceTv.text = "${balance.numberFormat8()} ${token.symbol}"
                 val chainNetwork = getChainNetwork(token.assetId, token.chainId, token.assetKey)
                 binding.networkTv.isVisible = chainNetwork != null
