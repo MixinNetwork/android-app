@@ -79,8 +79,11 @@ class PerpsTpSlCalculationTest {
         val basis = existingBasis(quantity = "3", margin = "100")!!
         val submittedPrice = targetPriceForRoiPercent(basis, "10", isLong = true, isProfit = true, priceScale = 2)
 
-        assertEquals("103.33", submittedPrice)
-        assertResult(basis.pnlAt(BigDecimal(submittedPrice), isLong = true), pnl = "9.99", roiPercent = "9.99")
+        assertEquals("103.34", submittedPrice)
+        assertResult(basis.pnlAt(BigDecimal(submittedPrice), isLong = true), pnl = "10.02", roiPercent = "10.02")
+        assertEquals("96.66", targetPriceForRoiPercent(basis, "10", isLong = false, isProfit = true, priceScale = 2))
+        assertEquals("93.34", targetPriceForRoiPercent(basis, "20", isLong = true, isProfit = false, priceScale = 2))
+        assertEquals("106.66", targetPriceForRoiPercent(basis, "20", isLong = false, isProfit = false, priceScale = 2))
     }
 
     @Test
@@ -132,9 +135,9 @@ class PerpsTpSlCalculationTest {
 
         assertDecimalEquals("0.001", basis.feeRate)
         assertResult(basis.pnlAt(BigDecimal("110"), isLong = true), pnl = "97.9", roiPercent = "48.95")
-        assertEquals("110.2102102102102102", targetPriceForRoiPercent(basis, "50", isLong = true, isProfit = true, priceScale = 16))
+        assertEquals("110.2102102102102103", targetPriceForRoiPercent(basis, "50", isLong = true, isProfit = true, priceScale = 16))
         assertEquals("90.1901901901901902", targetPriceForRoiPercent(basis, "50", isLong = true, isProfit = false, priceScale = 16))
-        assertEquals("89.8101898101898102", targetPriceForRoiPercent(basis, "50", isLong = false, isProfit = true, priceScale = 16))
+        assertEquals("89.8101898101898101", targetPriceForRoiPercent(basis, "50", isLong = false, isProfit = true, priceScale = 16))
         assertEquals("109.7902097902097902", targetPriceForRoiPercent(basis, "50", isLong = false, isProfit = false, priceScale = 16))
         assertDecimalEquals("500.5", basis.zeroPriceRoiPercentCeiling(isLong = true))
         assertDecimalEquals("499.5", basis.zeroPriceRoiPercentCeiling(isLong = false))
@@ -203,7 +206,7 @@ class PerpsTpSlCalculationTest {
     }
 
     @Test
-    fun tinyProfitUsesMarketPrecisionWithoutForcingBreakEven() {
+    fun tinyProfitRoundsToProfitablePriceAfterFees() {
         val longBasis = existingBasis(quantity = "10", margin = "0.01", feeRate = "0.001")!!
         val shortBasis = existingBasis(
             quantity = "10",
@@ -216,18 +219,18 @@ class PerpsTpSlCalculationTest {
         val longPrice = targetPriceForRoiPercent(longBasis, "0.01", isLong = true, isProfit = true, priceScale = 2)
         val shortPrice = targetPriceForRoiPercent(shortBasis, "0.01", isLong = false, isProfit = true, priceScale = 2)
 
-        assertEquals("100.2", longPrice)
-        assertEquals("100.8", shortPrice)
-        assertTrue(longBasis.pnlAt(BigDecimal(longPrice), isLong = true)!!.signedPnl < BigDecimal.ZERO)
-        assertTrue(shortBasis.pnlAt(BigDecimal(shortPrice), isLong = false)!!.signedPnl < BigDecimal.ZERO)
+        assertEquals("100.21", longPrice)
+        assertEquals("100.79", shortPrice)
+        assertTrue(longBasis.pnlAt(BigDecimal(longPrice), isLong = true)!!.signedPnl > BigDecimal.ZERO)
+        assertTrue(shortBasis.pnlAt(BigDecimal(shortPrice), isLong = false)!!.signedPnl > BigDecimal.ZERO)
     }
 
     @Test
-    fun tinyProfitCanRoundToZeroProfit() {
+    fun tinyProfitRoundsOneTickAwayFromEntry() {
         val basis = existingBasis(quantity = "10", margin = "0.01")!!
 
-        assertEquals("100", targetPriceForRoiPercent(basis, "0.01", isLong = true, isProfit = true, priceScale = 2))
-        assertEquals("100", targetPriceForRoiPercent(basis, "0.01", isLong = false, isProfit = true, priceScale = 2))
+        assertEquals("100.01", targetPriceForRoiPercent(basis, "0.01", isLong = true, isProfit = true, priceScale = 2))
+        assertEquals("99.99", targetPriceForRoiPercent(basis, "0.01", isLong = false, isProfit = true, priceScale = 2))
     }
 
     @Test
