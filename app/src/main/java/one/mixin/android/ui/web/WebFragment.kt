@@ -723,7 +723,7 @@ class WebFragment : BaseFragment() {
                     }
                 }
 
-                private var lastGrantedUri: String? = null
+                private val originPermissionGrants = WebOriginPermissionGrants()
 
                 override fun onPermissionRequest(request: PermissionRequest?) {
                     request?.let {
@@ -736,11 +736,11 @@ class WebFragment : BaseFragment() {
                             }
                             if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
                                 request.deny()
-                                lastGrantedUri = null
+                                originPermissionGrants.clear()
                                 return@let
                             }
                         }
-                        if (lastGrantedUri == request.origin.toString()) {
+                        if (originPermissionGrants.covers(request.origin.toString(), request.resources)) {
                             request.grant(request.resources)
                             return@let
                         }
@@ -758,7 +758,7 @@ class WebFragment : BaseFragment() {
                             }.toIntArray(),
                         )
                             .setCancelAction {
-                                lastGrantedUri = null
+                                originPermissionGrants.clear()
                                 request.deny()
                             }.setGrantedAction {
                                 RxPermissions(requireActivity())
@@ -767,15 +767,15 @@ class WebFragment : BaseFragment() {
                                     .subscribe(
                                         { granted ->
                                             if (granted) {
-                                                lastGrantedUri = request.origin.toString()
+                                                originPermissionGrants.grant(request.origin.toString(), request.resources)
                                                 request.grant(request.resources)
                                             } else {
-                                                lastGrantedUri = null
+                                                originPermissionGrants.clear()
                                                 context?.openPermissionSetting()
                                             }
                                         },
                                         {
-                                            lastGrantedUri = null
+                                            originPermissionGrants.clear()
                                         },
                                     )
                             }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
