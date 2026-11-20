@@ -177,6 +177,9 @@
 -keep class org.whispersystems.curve25519.JavaCurve25519Provider { *; }
 -keep class org.whispersystems.curve25519.OpportunisticCurve25519Provider { *; }
 -keep,allowoptimization,allowobfuscation,allowshrinking class org.whispersystems.libsignal.** { *; }
+-keepclassmembers class * extends org.whispersystems.libsignal.shaded.protobuf.GeneratedMessageLite {
+    <fields>;
+}
 
 -dontwarn groovy.lang.GroovyShell
 
