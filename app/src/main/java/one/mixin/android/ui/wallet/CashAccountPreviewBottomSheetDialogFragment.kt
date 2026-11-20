@@ -35,7 +35,6 @@ import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
-import one.mixin.android.util.msg
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
@@ -214,7 +213,7 @@ class CashAccountPreviewBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
                         is ServerErrorException -> getString(R.string.error_server_5xx_code, throwable.code)
 
-                        else -> getString(R.string.error_unknown_with_message, throwable.msg())
+                        else -> ErrorHandler.getErrorMessage(throwable)
                     }
 
                 is TipNodeException -> {
@@ -236,7 +235,7 @@ class CashAccountPreviewBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                     }
                 }
 
-                else -> getString(R.string.error_unknown_with_message, throwable.msg())
+                else -> ErrorHandler.getErrorMessage(throwable)
             }
     }
 

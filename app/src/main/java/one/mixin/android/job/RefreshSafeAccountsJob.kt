@@ -66,7 +66,8 @@ class RefreshSafeAccountsJob : BaseJob(
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
             },
-            defaultErrorHandle = {}
+            defaultErrorHandle = logJobError,
+            defaultExceptionHandle = logJobException
         )
     }
 

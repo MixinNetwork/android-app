@@ -36,6 +36,7 @@ import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.ChooseFolderContract
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.backup.BackupInfo
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
@@ -350,8 +351,8 @@ class LocalRestoreFragment : BaseFragment(R.layout.fragment_local_restore) {
 
     private fun showRestoreFailure(error: Throwable? = null) {
         val context = context ?: return
-        val errorMessage = error?.localizedMessage?.takeIf { it.isNotBlank() } ?: context.getString(R.string.Failure)
-        toast(context.getString(R.string.error_unknown_with_message, errorMessage))
+        val errorMessage = error?.let { ErrorHandler.getErrorMessage(it) } ?: context.getString(R.string.Failure)
+        toast(errorMessage)
     }
 
     private fun showProgress() {

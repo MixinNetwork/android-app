@@ -123,7 +123,7 @@ class ConfirmBottomFragment : BiometricBottomSheetDialogFragment() {
         if (t is TipNetworkException) {
             handleError(requireNotNull(t.error))
         } else {
-            showErrorInfo(t.stackTraceToString(), true, errorAction = BiometricLayout.ErrorAction.Close)
+            showErrorInfo(ErrorHandler.getErrorMessage(t), true, errorAction = BiometricLayout.ErrorAction.Close)
             ErrorHandler.handleError(t)
         }
     }

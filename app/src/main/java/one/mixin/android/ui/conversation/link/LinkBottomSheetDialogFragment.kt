@@ -1549,7 +1549,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 else -> {
                     ErrorHandler.handleError(error)
                     Timber.e(error)
-                    showError(error.message ?: getString(R.string.Unknown))
+                    showError(ErrorHandler.getErrorMessage(error))
                 }
             }
         }

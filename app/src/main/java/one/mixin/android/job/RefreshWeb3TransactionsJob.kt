@@ -102,7 +102,8 @@ class RefreshWeb3TransactionsJob(
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
             },
-            defaultErrorHandle = {}
+            defaultErrorHandle = logJobError,
+            defaultExceptionHandle = logJobException
         )
 
         return result
@@ -145,7 +146,8 @@ class RefreshWeb3TransactionsJob(
                     requestSession = {
                         userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
                     },
-                    defaultErrorHandle = {}
+                    defaultErrorHandle = logJobError,
+                    defaultExceptionHandle = logJobException
                 )
             } catch (e: Exception) {
                 Timber.e(e, "Error syncing asset $assetId")

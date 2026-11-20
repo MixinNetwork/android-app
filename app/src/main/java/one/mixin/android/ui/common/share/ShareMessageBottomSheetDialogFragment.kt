@@ -41,6 +41,7 @@ import one.mixin.android.ui.common.share.renderer.ShareStickerRenderer
 import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -399,7 +400,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (app != null || host != null) {
             reportException(IllegalArgumentException("app:${app?.appNumber} host:$host ${e.message}"))
         }
-        toast(getString(R.string.error_unknown_with_message, "${e.javaClass.name} ${shareMessage.content}"))
+        toast(ErrorHandler.getErrorMessage(e))
         dismiss()
     }
 
