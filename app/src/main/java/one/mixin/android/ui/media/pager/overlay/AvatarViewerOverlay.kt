@@ -36,6 +36,7 @@ class AvatarViewerOverlay private constructor(
 
     private var initialThumb: MediaThumbLocation? = null
     private var isClosing = false
+    private var hasDismissed = false
     private var chromeVisible = true
     private var chromeVisibleBeforeDrag = true
     private var topBarInsetTop = 0
@@ -51,39 +52,64 @@ class AvatarViewerOverlay private constructor(
 
         setupInsets()
         setupViews()
+        val thumb = initialThumb
+        binding.backgroundView.alpha = 0f
+        binding.topBar.alpha = 0f
+        if (thumb != null && thumb.drawable != null) {
+            binding.dismissLayout.visibility = View.INVISIBLE
+        }
         dialog.setContentView(binding.root)
         dialog.show()
 
-        val thumb = initialThumb
         if (thumb != null && thumb.drawable != null) {
-            binding.dismissLayout.visibility = View.INVISIBLE
-            binding.backgroundView.alpha = 0f
-            binding.topBar.alpha = 0f
-            thumb.setSourceVisible(false)
-
             binding.transitionView.doOnLayout {
-                binding.transitionView.animateOpen(
-                    location = thumb,
-                    onProgress = { t ->
-                        binding.backgroundView.alpha = t
-                        binding.topBar.alpha = t
-                    },
-                    onEnd = {
-                        binding.backgroundView.alpha = 1f
-                        binding.topBar.alpha = if (chromeVisible) 1f else 0f
-                        binding.dismissLayout.visibility = View.VISIBLE
-                        binding.dismissLayout.doOnPreDraw {
-                            if (!isClosing) {
-                                binding.transitionView.clearAndHide()
-                            }
-                        }
-                    },
-                )
+                if (isClosing) return@doOnLayout
+                if (!binding.transitionView.prepareOpen(thumb)) {
+                    binding.backgroundView.alpha = 1f
+                    dialog.syncSystemBarAppearance(1f)
+                    binding.topBar.alpha = if (chromeVisible) 1f else 0f
+                    binding.dismissLayout.visibility = View.VISIBLE
+                    binding.transitionView.clearAndHide()
+                    return@doOnLayout
+                }
+                binding.transitionView.doOnPreDraw {
+                    binding.transitionView.post {
+                        if (isClosing) return@post
+                        thumb.setSourceVisible(false)
+                        binding.transitionView.startPreparedOpen(
+                            onProgress = { t ->
+                                binding.backgroundView.alpha = t
+                                dialog.syncSystemBarAppearance(t)
+                                binding.topBar.alpha = t
+                            },
+                            onEnd = {
+                                binding.backgroundView.alpha = 1f
+                                dialog.syncSystemBarAppearance(1f)
+                                binding.topBar.alpha = if (chromeVisible) 1f else 0f
+                                binding.dismissLayout.visibility = View.VISIBLE
+                                binding.dismissLayout.doOnPreDraw {
+                                    binding.dismissLayout.post {
+                                        if (!isClosing) {
+                                            binding.transitionView.clearAndHide()
+                                        }
+                                    }
+                                }
+                            },
+                        )
+                    }
+                }
             }
         } else {
-            binding.backgroundView.alpha = 0f
-            binding.topBar.alpha = 0f
-            binding.backgroundView.animate().alpha(1f).setDuration(200L).start()
+            binding.backgroundView.animate()
+                .alpha(1f)
+                .setDuration(200L)
+                .setUpdateListener { anim ->
+                    dialog.syncSystemBarAppearance(anim.animatedFraction)
+                }
+                .withEndAction {
+                    dialog.syncSystemBarAppearance(1f)
+                }
+                .start()
             binding.topBar.animate().alpha(1f).setDuration(200L).start()
         }
     }
@@ -140,7 +166,9 @@ class AvatarViewerOverlay private constructor(
                 }
 
                 override fun onDragProgress(progress: Float) {
-                    binding.backgroundView.alpha = (1f - progress).coerceIn(0f, 1f)
+                    val bgAlpha = (1f - progress).coerceIn(0f, 1f)
+                    binding.backgroundView.alpha = bgAlpha
+                    dialog.syncSystemBarAppearance(bgAlpha)
                 }
 
                 override fun onDismiss(velocityY: Float) {
@@ -149,6 +177,7 @@ class AvatarViewerOverlay private constructor(
 
                 override fun onDragCancel() {
                     binding.backgroundView.alpha = 1f
+                    dialog.syncSystemBarAppearance(1f)
                     if (chromeVisibleBeforeDrag) {
                         binding.topBar.animate().alpha(1f).setDuration(150L).start()
                     }
@@ -190,7 +219,7 @@ class AvatarViewerOverlay private constructor(
         isClosing = true
         binding.dismissLayout.dismissEnabled = false
         binding.topBar.animate().cancel()
-        binding.topBar.isVisible = false
+        val startTopBarAlpha = if (binding.topBar.isVisible) binding.topBar.alpha else 0f
         dialog.restoreSystemBarsForDismiss()
 
         val targetThumb =
@@ -204,8 +233,6 @@ class AvatarViewerOverlay private constructor(
         val currentDrawable = extractDrawable(binding.avatarPhotoView.drawable) ?: targetThumb?.drawable
         val startBgAlpha = binding.backgroundView.alpha
 
-        binding.dismissLayout.visibility = View.INVISIBLE
-
         if (targetThumb != null && currentDrawable != null) {
             targetThumb.setSourceVisible(false)
             binding.transitionView.animateCloseToTarget(
@@ -214,30 +241,61 @@ class AvatarViewerOverlay private constructor(
                 targetLocation = targetThumb,
                 velocityY = velocityY,
                 onProgress = { t ->
-                    binding.backgroundView.alpha = startBgAlpha * (1f - t)
+                    val bgAlpha = startBgAlpha * (1f - t)
+                    binding.backgroundView.alpha = bgAlpha
+                    dialog.syncSystemBarAppearance(bgAlpha)
+                    if (startTopBarAlpha > 0f) {
+                        binding.topBar.alpha = startTopBarAlpha * (1f - (t * 2.5f).coerceIn(0f, 1f))
+                    }
                 },
                 onEnd = {
-                    restoreAllSourceVisibility(targetThumb)
-                    finishDismiss()
+                    completeCloseAfterSourceFrame(targetThumb)
                 },
             )
+            binding.dismissLayout.visibility = View.INVISIBLE
         } else if (currentDrawable != null) {
             binding.transitionView.animateFadeClose(
                 currentScreenRect = currentRect,
                 currentDrawable = currentDrawable,
                 velocityY = velocityY,
                 onProgress = { t ->
-                    binding.backgroundView.alpha = startBgAlpha * (1f - t)
+                    val bgAlpha = startBgAlpha * (1f - t)
+                    binding.backgroundView.alpha = bgAlpha
+                    dialog.syncSystemBarAppearance(bgAlpha)
+                    if (startTopBarAlpha > 0f) {
+                        binding.topBar.alpha = startTopBarAlpha * (1f - (t * 2.5f).coerceIn(0f, 1f))
+                    }
                 },
                 onEnd = {
-                    restoreAllSourceVisibility(targetThumb)
-                    finishDismiss()
+                    completeCloseAfterSourceFrame(targetThumb)
                 },
             )
+            binding.dismissLayout.visibility = View.INVISIBLE
         } else {
             restoreAllSourceVisibility(targetThumb)
             finishDismiss()
         }
+    }
+
+    private fun completeCloseAfterSourceFrame(targetThumb: MediaThumbLocation?) {
+        binding.backgroundView.alpha = 0f
+        binding.topBar.isVisible = false
+        dialog.syncSystemBarAppearance(0f)
+        restoreAllSourceVisibility(targetThumb)
+        val hostRoot = sourceView?.rootView ?: activity.window?.decorView
+        if (hostRoot == null || !hostRoot.isAttachedToWindow) {
+            finishDismiss()
+            return
+        }
+        val finishRunnable = Runnable { finishDismiss() }
+        hostRoot.postDelayed(finishRunnable, 48L)
+        hostRoot.doOnPreDraw {
+            hostRoot.post {
+                hostRoot.removeCallbacks(finishRunnable)
+                finishDismiss()
+            }
+        }
+        hostRoot.invalidate()
     }
 
     private fun resolveCurrentAvatarScreenRect(): RectF {
@@ -271,6 +329,8 @@ class AvatarViewerOverlay private constructor(
     }
 
     private fun finishDismiss() {
+        if (hasDismissed) return
+        hasDismissed = true
         isClosing = true
         binding.transitionView.clearAndHide()
         initialThumb?.setSourceVisible?.invoke(true)

@@ -2,6 +2,7 @@ package one.mixin.android.ui.media.pager.overlay
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.util.LruCache
 import android.view.Gravity
 import android.view.ViewGroup
@@ -43,6 +44,8 @@ internal class OverlayMediaPagerAdapter(
     private val onDismissListener: MediaDismissLayout.OnDismissListener,
     private val listener: MediaPagerAdapterListener,
     private val onOutsideTap: () -> Unit,
+    private val initialMessageId: String? = null,
+    private val initialPlaceholderProvider: (() -> Drawable?)? = null,
 ) : SafePagingDataAdapter<MessageItem, MediaPagerHolder>(MessageItem.DIFF_CALLBACK) {
 
     var initialPos: Int = 0
@@ -82,7 +85,13 @@ internal class OverlayMediaPagerAdapter(
             holder.itemView.tag = "$PREFIX${messageItem.messageId}"
             when (holder) {
                 is PhotoHolder -> {
-                    holder.bind(messageItem, position == initialPos, listener)
+                    val placeholder =
+                        if (messageItem.messageId == initialMessageId) {
+                            initialPlaceholderProvider?.invoke()
+                        } else {
+                            null
+                        }
+                    holder.bind(messageItem, position == initialPos, listener, placeholder)
                 }
                 is LargeImageHolder -> {
                     holder.bind(messageItem, position == initialPos, listener)
@@ -120,6 +129,8 @@ internal class OverlayTranscriptPagerAdapter(
     private val onDismissListener: MediaDismissLayout.OnDismissListener,
     private val listener: TranscriptMediaPagerAdapterListener,
     private val onOutsideTap: () -> Unit,
+    private val initialMessageId: String? = null,
+    private val initialPlaceholderProvider: (() -> Drawable?)? = null,
 ) : RecyclerView.Adapter<TranscriptMediaPagerHolder>() {
 
     var initialPos: Int = 0
@@ -166,7 +177,13 @@ internal class OverlayTranscriptPagerAdapter(
         holder.itemView.tag = "$PREFIX${messageItem.messageId}"
         when (holder) {
             is TranscriptPhotoHolder -> {
-                holder.bind(messageItem, position == initialPos, listener)
+                val placeholder =
+                    if (messageItem.messageId == initialMessageId) {
+                        initialPlaceholderProvider?.invoke()
+                    } else {
+                        null
+                    }
+                holder.bind(messageItem, position == initialPos, listener, placeholder)
             }
             is TranscriptLargeImageHolder -> {
                 holder.bind(messageItem, position == initialPos, listener)

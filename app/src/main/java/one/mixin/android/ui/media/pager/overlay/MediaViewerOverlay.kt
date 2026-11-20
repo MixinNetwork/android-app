@@ -49,6 +49,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import coil3.imageLoader
 import coil3.request.ImageRequest
@@ -188,7 +189,9 @@ class MediaViewerOverlay private constructor(
 
     private var initialIndex = 0
     private var firstLoad = true
+    private var isOpeningTransition = false
     private var isClosing = false
+    private var hasDismissed = false
     private var manualFinish = false
     private var pipAnimationInProgress = false
     private var isLocked = false
@@ -237,6 +240,7 @@ class MediaViewerOverlay private constructor(
         SensorOrientationChangeNotifier.resume()
         activity.lifecycle.addObserver(hostLifecycleObserver)
 
+        prepareEnterTransitionState()
         dialog.setContentView(binding.root)
         dialog.show()
 
@@ -282,6 +286,17 @@ class MediaViewerOverlay private constructor(
 
     private fun setupViewPager() {
         binding.viewPager.isSaveEnabled = false
+        // Disable DefaultItemAnimator so PagingData updates never fade-in the visible page
+        (binding.viewPager.getChildAt(0) as? RecyclerView)?.itemAnimator = null
+        val initialMessageId =
+            when (mode) {
+                is Mode.Conversation -> mode.messageId
+                is Mode.Transcript -> mode.messageId
+            }
+        val initialPlaceholder: (() -> Drawable?)? =
+            initialThumb?.drawable?.let { thumbDrawable ->
+                { copyDrawable(thumbDrawable) }
+            }
         when (mode) {
             is Mode.Conversation -> {
                 conversationAdapter =
@@ -290,6 +305,8 @@ class MediaViewerOverlay private constructor(
                         onDismissListener = this,
                         listener = conversationPagerListener,
                         onOutsideTap = { toggleImageChrome() },
+                        initialMessageId = initialMessageId,
+                        initialPlaceholderProvider = initialPlaceholder,
                     )
                 binding.viewPager.adapter = conversationAdapter
             }
@@ -300,11 +317,23 @@ class MediaViewerOverlay private constructor(
                         onDismissListener = this,
                         listener = transcriptPagerListener,
                         onOutsideTap = { toggleImageChrome() },
+                        initialMessageId = initialMessageId,
+                        initialPlaceholderProvider = initialPlaceholder,
                     )
                 binding.viewPager.adapter = transcriptAdapter
             }
         }
         binding.viewPager.registerOnPageChangeCallback(onPageChangeCallback)
+    }
+
+    private fun prepareEnterTransitionState() {
+        val thumb = initialThumb
+        isOpeningTransition = true
+        binding.backgroundView.alpha = 0f
+        binding.topBar.alpha = 0f
+        if (thumb != null && !thumb.isEmpty() && thumb.drawable != null) {
+            binding.viewPager.visibility = View.INVISIBLE
+        }
     }
 
     private fun runEnterTransition() {
@@ -319,38 +348,74 @@ class MediaViewerOverlay private constructor(
             binding.viewPager.visibility = View.INVISIBLE
             binding.backgroundView.alpha = 0f
             binding.topBar.alpha = 0f
-            hideSourceForMessage(initialMessageId, thumb)
 
             binding.transitionView.doOnLayout {
-                binding.transitionView.animateOpen(
-                    location = thumb,
-                    onProgress = { t ->
-                        binding.backgroundView.alpha = t
-                        if (!currentIsVideo && chromeVisible) {
-                            binding.topBar.alpha = t
-                        }
-                    },
-                    onEnd = {
-                        binding.backgroundView.alpha = 1f
-                        binding.viewPager.visibility = View.VISIBLE
-                        binding.topBar.alpha = if (!currentIsVideo && chromeVisible) 1f else 0f
-                        binding.topBar.isVisible = !currentIsVideo && chromeVisible
-                        binding.viewPager.doOnPreDraw {
-                            if (!isClosing) {
-                                binding.transitionView.clearAndHide()
-                            }
-                        }
-                    },
-                )
+                if (isClosing) return@doOnLayout
+                if (!binding.transitionView.prepareOpen(thumb)) {
+                    finishEnterTransitionImmediate()
+                    return@doOnLayout
+                }
+                // Wait until the overlay window has committed its first frame covering the thumbnail
+                // before hiding the underlying source view so there is no blank frame on open.
+                binding.transitionView.doOnPreDraw {
+                    binding.transitionView.post {
+                        if (isClosing) return@post
+                        hideSourceForMessage(initialMessageId, thumb)
+                        binding.transitionView.startPreparedOpen(
+                            onProgress = { t ->
+                                binding.backgroundView.alpha = t
+                                dialog.syncSystemBarAppearance(t)
+                                if (!currentIsVideo && chromeVisible) {
+                                    binding.topBar.alpha = t
+                                }
+                            },
+                            onEnd = {
+                                isOpeningTransition = false
+                                binding.backgroundView.alpha = 1f
+                                dialog.syncSystemBarAppearance(1f)
+                                binding.viewPager.visibility = View.VISIBLE
+                                binding.topBar.alpha = if (!currentIsVideo && chromeVisible) 1f else 0f
+                                binding.topBar.isVisible = !currentIsVideo && chromeVisible
+                                binding.viewPager.doOnPreDraw {
+                                    binding.viewPager.post {
+                                        if (!isClosing) {
+                                            binding.transitionView.clearAndHide()
+                                        }
+                                    }
+                                }
+                            },
+                        )
+                    }
+                }
             }
         } else {
             binding.backgroundView.alpha = 0f
             binding.topBar.alpha = 0f
-            binding.backgroundView.animate().alpha(1f).setDuration(200L).start()
+            binding.backgroundView.animate()
+                .alpha(1f)
+                .setDuration(200L)
+                .setUpdateListener { anim ->
+                    dialog.syncSystemBarAppearance(anim.animatedFraction)
+                }
+                .withEndAction {
+                    isOpeningTransition = false
+                    dialog.syncSystemBarAppearance(1f)
+                }
+                .start()
             if (!currentIsVideo) {
                 binding.topBar.animate().alpha(1f).setDuration(200L).start()
             }
         }
+    }
+
+    private fun finishEnterTransitionImmediate() {
+        isOpeningTransition = false
+        binding.backgroundView.alpha = 1f
+        dialog.syncSystemBarAppearance(1f)
+        binding.viewPager.visibility = View.VISIBLE
+        binding.topBar.alpha = if (!currentIsVideo && chromeVisible) 1f else 0f
+        binding.topBar.isVisible = !currentIsVideo && chromeVisible
+        binding.transitionView.clearAndHide()
     }
 
     @SuppressLint("RestrictedApi")
@@ -484,7 +549,7 @@ class MediaViewerOverlay private constructor(
             binding.subtitleTv.text = time
             binding.subtitleTv.isVisible = time.isNotBlank()
             binding.moreIv.isVisible = item.isAppCard() || item.isImage()
-            if (!binding.transitionView.isAnimating && !inDismissState) {
+            if (!isOpeningTransition && !binding.transitionView.isAnimating && !inDismissState) {
                 binding.topBar.isVisible = chromeVisible
                 binding.topBar.alpha = if (chromeVisible) 1f else 0f
                 binding.topBar.translationY = 0f
@@ -507,7 +572,7 @@ class MediaViewerOverlay private constructor(
             binding.subtitleTv.text = time
             binding.subtitleTv.isVisible = time.isNotBlank()
             binding.moreIv.isVisible = item.isImage()
-            if (!binding.transitionView.isAnimating && !inDismissState) {
+            if (!isOpeningTransition && !binding.transitionView.isAnimating && !inDismissState) {
                 binding.topBar.isVisible = chromeVisible
                 binding.topBar.alpha = if (chromeVisible) 1f else 0f
                 binding.topBar.translationY = 0f
@@ -666,7 +731,9 @@ class MediaViewerOverlay private constructor(
     }
 
     override fun onDragProgress(progress: Float) {
-        binding.backgroundView.alpha = (1f - progress).coerceIn(0f, 1f)
+        val bgAlpha = (1f - progress).coerceIn(0f, 1f)
+        binding.backgroundView.alpha = bgAlpha
+        dialog.syncSystemBarAppearance(bgAlpha)
     }
 
     override fun onDismiss(velocityY: Float) {
@@ -677,6 +744,7 @@ class MediaViewerOverlay private constructor(
     override fun onDragCancel() {
         inDismissState = false
         binding.backgroundView.alpha = 1f
+        dialog.syncSystemBarAppearance(1f)
         if (!currentIsVideo && chromeVisibleBeforeDrag) {
             binding.topBar.isVisible = true
             binding.topBar.animate().alpha(1f).setDuration(150L).start()
@@ -698,9 +766,10 @@ class MediaViewerOverlay private constructor(
     private fun dismissWithAnimation(velocityY: Float) {
         if (isClosing) return
         isClosing = true
+        isOpeningTransition = false
         manualFinish = true
         binding.topBar.animate().cancel()
-        binding.topBar.isVisible = false
+        val startTopBarAlpha = if (binding.topBar.isVisible) binding.topBar.alpha else 0f
         binding.lockTv.isVisible = false
         dialog.restoreSystemBarsForDismiss()
 
@@ -727,7 +796,6 @@ class MediaViewerOverlay private constructor(
         val rectForClose = currentContent?.first ?: RectF(0f, 0f, binding.root.width.toFloat(), binding.root.height.toFloat())
 
         if (drawableForClose != null) {
-            binding.viewPager.visibility = View.INVISIBLE
             if (targetThumb != null && !targetThumb.isEmpty()) {
                 binding.transitionView.animateCloseToTarget(
                     currentScreenRect = rectForClose,
@@ -735,10 +803,15 @@ class MediaViewerOverlay private constructor(
                     targetLocation = targetThumb,
                     velocityY = velocityY,
                     onProgress = { t ->
-                        binding.backgroundView.alpha = startBgAlpha * (1f - t)
+                        val bgAlpha = startBgAlpha * (1f - t)
+                        binding.backgroundView.alpha = bgAlpha
+                        dialog.syncSystemBarAppearance(bgAlpha)
+                        if (startTopBarAlpha > 0f) {
+                            binding.topBar.alpha = startTopBarAlpha * (1f - (t * 2.5f).coerceIn(0f, 1f))
+                        }
                     },
                     onEnd = {
-                        cleanupAndDismissImmediate()
+                        completeCloseAfterHostFrame()
                     },
                 )
             } else {
@@ -747,16 +820,45 @@ class MediaViewerOverlay private constructor(
                     currentDrawable = drawableForClose,
                     velocityY = velocityY,
                     onProgress = { t ->
-                        binding.backgroundView.alpha = startBgAlpha * (1f - t)
+                        val bgAlpha = startBgAlpha * (1f - t)
+                        binding.backgroundView.alpha = bgAlpha
+                        dialog.syncSystemBarAppearance(bgAlpha)
+                        if (startTopBarAlpha > 0f) {
+                            binding.topBar.alpha = startTopBarAlpha * (1f - (t * 2.5f).coerceIn(0f, 1f))
+                        }
                     },
                     onEnd = {
-                        cleanupAndDismissImmediate()
+                        completeCloseAfterHostFrame()
                     },
                 )
             }
+            binding.viewPager.visibility = View.INVISIBLE
         } else {
             cleanupAndDismissImmediate()
         }
+    }
+
+    private fun completeCloseAfterHostFrame() {
+        binding.backgroundView.alpha = 0f
+        binding.topBar.isVisible = false
+        dialog.syncSystemBarAppearance(0f)
+        // Reveal the underlying thumbnail first and keep the overlay window alive until
+        // the host window has committed a frame, preventing a 1-frame flash on dismiss.
+        restoreHiddenSource()
+        val hostDecor = activity.window?.decorView
+        if (hostDecor == null || !hostDecor.isAttachedToWindow) {
+            cleanupAndDismissImmediate()
+            return
+        }
+        val finishRunnable = Runnable { cleanupAndDismissImmediate() }
+        hostDecor.postDelayed(finishRunnable, 48L)
+        hostDecor.doOnPreDraw {
+            hostDecor.post {
+                hostDecor.removeCallbacks(finishRunnable)
+                cleanupAndDismissImmediate()
+            }
+        }
+        hostDecor.invalidate()
     }
 
     private fun resolveCurrentVisualSnapshot(container: MediaDismissLayout?): Pair<RectF, Drawable?>? {
@@ -844,7 +946,10 @@ class MediaViewerOverlay private constructor(
     }
 
     private fun cleanupAndDismissImmediate() {
+        if (hasDismissed) return
+        hasDismissed = true
         isClosing = true
+        isOpeningTransition = false
         binding.transitionView.clearAndHide()
         binding.lockTv.removeCallbacks(hideLockRunnable)
         binding.viewPager.unregisterOnPageChangeCallback(onPageChangeCallback)

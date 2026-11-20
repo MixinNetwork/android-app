@@ -36,6 +36,8 @@ class MediaOverlayDialog(
     private val onBackRequest: () -> Unit,
 ) : ComponentDialog(hostActivity, R.style.AppTheme_MediaOverlay) {
 
+    private val hostLightSystemBars: Boolean = !hostActivity.isNightMode()
+    private var currentLightSystemBars: Boolean = hostLightSystemBars
     private var systemBarsVisible: Boolean = true
     private var hostLifecycleObserver: DefaultLifecycleObserver? = null
     private var floatingHidden = false
@@ -82,7 +84,9 @@ class MediaOverlayDialog(
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             w.attributes = lp
         }
-        SystemUIManager.lightUI(w, false)
+        // Start with the host window's bar icon polarity so opening does not flash icons before the backdrop darkens
+        currentLightSystemBars = hostLightSystemBars
+        SystemUIManager.lightUI(w, currentLightSystemBars)
     }
 
     override fun show() {
@@ -92,8 +96,19 @@ class MediaOverlayDialog(
         hideFloatingIfNeeded()
         attachHostLifecycle()
         super.show()
-        // Re-apply layout after show so OEM themes cannot shrink the dialog window
-        window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        window?.let { w ->
+            if (w.attributes.width != ViewGroup.LayoutParams.MATCH_PARENT || w.attributes.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+                w.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            }
+        }
+    }
+
+    fun syncSystemBarAppearance(backdropAlpha: Float) {
+        if (!systemBarsVisible) return
+        val light = if (backdropAlpha >= 0.45f) false else hostLightSystemBars
+        if (light == currentLightSystemBars) return
+        currentLightSystemBars = light
+        window?.let { SystemUIManager.lightUI(it, light) }
     }
 
     fun setSystemBarsVisible(visible: Boolean) {
@@ -102,7 +117,7 @@ class MediaOverlayDialog(
         val w = window ?: return
         if (visible) {
             SystemUIManager.showSystemUI(w)
-            SystemUIManager.lightUI(w, false)
+            SystemUIManager.lightUI(w, currentLightSystemBars)
         } else {
             SystemUIManager.hideSystemUI(w)
         }

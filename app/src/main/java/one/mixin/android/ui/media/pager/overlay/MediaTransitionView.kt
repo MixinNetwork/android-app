@@ -61,25 +61,20 @@ class MediaTransitionView @JvmOverloads constructor(
         drawable = null
     }
 
-    fun animateOpen(
-        location: MediaThumbLocation,
-        onProgress: (Float) -> Unit,
-        onEnd: () -> Unit,
-    ) {
+    fun prepareOpen(location: MediaThumbLocation): Boolean {
         cancelAnimation()
-        drawable = location.drawable
-        if (drawable == null || width <= 0 || height <= 0) {
-            onProgress(1f)
-            onEnd()
-            return
+        val d = location.drawable
+        drawable = d
+        if (d == null || width <= 0 || height <= 0) {
+            return false
         }
 
         getLocationOnScreen(screenOffset)
         val localThumbRect = toLocalRect(location.screenRect)
         val localClipRect = toLocalRect(location.clipRect)
 
-        val contentW = resolveContentWidth(location.contentWidth, drawable!!)
-        val contentH = resolveContentHeight(location.contentHeight, drawable!!)
+        val contentW = resolveContentWidth(location.contentWidth, d)
+        val contentH = resolveContentHeight(location.contentHeight, d)
 
         computeSourceImageRect(localThumbRect, contentW, contentH, location.scaleType, startImageRect)
         computeFitCenterRect(width.toFloat(), height.toFloat(), contentW, contentH, endImageRect)
@@ -96,7 +91,18 @@ class MediaTransitionView @JvmOverloads constructor(
 
         applyProgress(0f)
         visibility = VISIBLE
+        return true
+    }
 
+    fun startPreparedOpen(
+        onProgress: (Float) -> Unit,
+        onEnd: () -> Unit,
+    ) {
+        if (drawable == null || width <= 0 || height <= 0) {
+            onProgress(1f)
+            onEnd()
+            return
+        }
         startValueAnimator(
             durationMs = OPEN_DURATION_MS,
             interpolator = OPEN_INTERPOLATOR,
@@ -108,6 +114,19 @@ class MediaTransitionView @JvmOverloads constructor(
                 onEnd()
             },
         )
+    }
+
+    fun animateOpen(
+        location: MediaThumbLocation,
+        onProgress: (Float) -> Unit,
+        onEnd: () -> Unit,
+    ) {
+        if (!prepareOpen(location)) {
+            onProgress(1f)
+            onEnd()
+            return
+        }
+        startPreparedOpen(onProgress = onProgress, onEnd = onEnd)
     }
 
     fun animateCloseToTarget(
