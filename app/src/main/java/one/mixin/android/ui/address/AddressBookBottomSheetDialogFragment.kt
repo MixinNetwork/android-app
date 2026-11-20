@@ -192,6 +192,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         Text(
                             if (selectedChainIds.isEmpty()) stringResource(R.string.All_Networks)
                             else stringResource(R.string.number_of_networks, selectedChainIds.size),
+                            modifier = Modifier.weight(1f, fill = false),
                             color = MixinAppTheme.colors.textPrimary,
                             fontSize = 14.sp,
                             maxLines = 1,
