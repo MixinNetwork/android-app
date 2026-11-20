@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -56,11 +55,6 @@ internal class TradeQuoteMixinErrorException(
     val max: String?,
 ) : Exception()
 
-internal fun recommendedMarketsFromDatabase(
-    markets: Flow<List<MarketItem>>,
-    limit: Int,
-): Flow<List<MarketItem>> = markets.map { items -> items.take(limit) }
-
 @HiltViewModel
 class SwapViewModel
 
@@ -87,16 +81,18 @@ class SwapViewModel
     ): MixinResponse<List<Market>> = tokenRepository.markets(category = category, limit = limit, sort = sort, duration = duration)
 
     fun observeRecommendedMarkets(category: MarketCategory): Flow<List<MarketItem>> =
-        recommendedMarketsFromDatabase(
-            markets = tokenRepository.observeMarketsByCategory(category),
-            limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-        )
+        tokenRepository.observeMarketsByCategory(category)
+
+    fun observeAllMarkets(): Flow<List<MarketItem>> =
+        tokenRepository.observeAllMarkets()
 
     internal suspend fun refreshRecommendedMarkets(
         category: MarketCategory,
+        duration: String? = null,
     ): MarketRefreshResult =
         tokenRepository.fetchMarketsResult(
             category = category.apiValue,
+            duration = duration,
             limit = marketRefreshLimit(category),
             persist = true,
         )

@@ -112,6 +112,7 @@ fun InputContent(
     inputFontSize: TextUnit = 24.sp,
     inputFontWeight: FontWeight = FontWeight.Black,
     autoFocus: Boolean = false,
+    onAutoFocusConsumed: (() -> Unit)? = null,
     maxDecimalPlaces: Int? = null,
     onFocusChanged: ((Boolean) -> Unit)? = null,
 ) {
@@ -147,6 +148,7 @@ fun InputContent(
             if (autoFocus) {
                 focusRequester.requestFocus()
                 keyboardController?.show()
+                onAutoFocusConsumed?.invoke()
             }
         }
         val interactionSource = remember { MutableInteractionSource() }
