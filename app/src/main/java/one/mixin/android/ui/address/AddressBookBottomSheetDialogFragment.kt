@@ -152,7 +152,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 }
                 Row(
                     modifier = Modifier
-                        .padding(start = 20.dp, top = 16.dp, bottom = 8.dp)
+                        .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 8.dp)
                         .clip(RoundedCornerShape(24.dp))
                         .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor, cornerRadius = 24.dp)
                         .clickable {
@@ -171,13 +171,20 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         AddressBookNetwork(selectedChainIds.first(), chains.firstOrNull { it.chainId == selectedChainIds.first() }, MixinAppTheme.colors.textPrimary)
                     } else {
                         if (selectedChainIds.size > 1) {
-                            Row(horizontalArrangement = Arrangement.spacedBy((-4).dp)) {
-                                selectedChainIds.take(2).forEach { chainId ->
-                                    CoilImage(
-                                        chains.firstOrNull { it.chainId == chainId }?.iconUrl,
-                                        R.drawable.ic_avatar_place_holder,
-                                        Modifier.size(16.dp).clip(CircleShape),
-                                    )
+                            Row(horizontalArrangement = Arrangement.spacedBy((-10).dp)) {
+                                selectedChainIds.take(MAX_NETWORK_FILTER_ICONS).forEach { chainId ->
+                                    Box(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .background(MixinAppTheme.colors.background, CircleShape)
+                                            .padding(1.dp),
+                                    ) {
+                                        CoilImage(
+                                            chains.firstOrNull { it.chainId == chainId }?.iconUrl,
+                                            R.drawable.ic_avatar_place_holder,
+                                            Modifier.size(18.dp).clip(CircleShape),
+                                        )
+                                    }
                                 }
                             }
                             Spacer(Modifier.width(4.dp))
@@ -187,6 +194,8 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             else stringResource(R.string.number_of_networks, selectedChainIds.size),
                             color = MixinAppTheme.colors.textPrimary,
                             fontSize = 14.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                     Spacer(Modifier.width(6.dp))
@@ -263,6 +272,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
 
     companion object {
         const val TAG = "AddressBookBottomSheetDialogFragment"
+        private const val MAX_NETWORK_FILTER_ICONS = 10
 
         fun newInstance(walletId: String?) = AddressBookBottomSheetDialogFragment().withArgs {
             putString(WalletActivity.ARGS_WALLET_ID, walletId)
