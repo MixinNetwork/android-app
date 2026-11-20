@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.chathistory.holder
 
+import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -16,6 +17,8 @@ import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaThumbViewHolder
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -24,12 +27,24 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSecret
 
-class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root) {
+class VideoHolder constructor(val binding: ItemChatVideoBinding) : MediaHolder(binding.root), MediaThumbViewHolder {
+    private val cornerRadiusPx = itemView.context.dpToPx(4f).toFloat()
+
+    override val thumbMessageId: String? get() = currentMessageId
+
+    override fun createThumbLocation(clipHost: View?): MediaThumbLocation? =
+        MediaThumbLocation.fromView(
+            view = binding.chatImage,
+            clipHost = clipHost,
+            cornerRadii = MediaThumbLocation.uniformRadii(cornerRadiusPx),
+            contentWidth = currentMediaWidth,
+            contentHeight = currentMediaHeight,
+        )
+
     init {
-        val radius = itemView.context.dpToPx(4f).toFloat()
-        binding.chatImage.round(radius)
-        binding.chatTime.round(radius)
-        binding.progress.round(radius)
+        binding.chatImage.round(cornerRadiusPx)
+        binding.chatTime.round(cornerRadiusPx)
+        binding.progress.round(cornerRadiusPx)
     }
 
     private val dp4 by lazy {

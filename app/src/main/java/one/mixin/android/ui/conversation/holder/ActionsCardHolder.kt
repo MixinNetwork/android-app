@@ -1,9 +1,13 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
+import android.graphics.RectF
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
+import android.widget.ImageView
+import androidx.compose.runtime.mutableStateOf
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.Constants.Colors.SELECT_COLOR
@@ -14,17 +18,40 @@ import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.maxCardWidth
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaThumbViewHolder
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSecret
-import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.widget.ActionButton
 
 class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
-    BaseViewHolder(binding.root) {
+    BaseViewHolder(binding.root),
+    MediaThumbViewHolder {
+    private val coverHiddenState = mutableStateOf(false)
+    private var coverScreenRect: RectF? = null
+    private var coverDrawable: Drawable? = null
+
+    override val thumbMessageId: String? get() = currentMessageId
+
+    override fun createThumbLocation(clipHost: View?): MediaThumbLocation? {
+        val rect = coverScreenRect ?: return null
+        val drawableCopy =
+            coverDrawable?.let { d ->
+                d.constantState?.newDrawable(itemView.resources)?.mutate() ?: d
+            }
+        return MediaThumbLocation.fromScreenBounds(
+            screenRect = rect,
+            clipHost = clipHost,
+            cornerRadii = MediaThumbLocation.topRadii(6.dp.toFloat()),
+            drawable = drawableCopy,
+            scaleType = ImageView.ScaleType.CENTER_CROP,
+            setSourceVisible = { visible -> coverHiddenState.value = !visible },
+        )
+    }
     init {
         binding.chatGroupLayout.layoutParams = binding.chatGroupLayout.layoutParams.apply {
             width = itemView.context.maxCardWidth() - 6.dp
@@ -46,6 +73,9 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         onItemListener: MessageAdapter.OnItemListener,
     ) {
         super.bind(messageItem)
+        coverHiddenState.value = false
+        coverScreenRect = null
+        coverDrawable = null
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         if (hasSelect && isSelect) {
@@ -114,16 +144,13 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                     if (hasSelect) {
                         onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                     } else {
-                        MediaPagerActivity.show(
-                            itemView.context,
-                            messageItem.conversationId,
-                            messageItem.messageId,
-                            0f,
-                            MediaPagerActivity.MediaSource.Chat,
-                        )
+                        onItemListener.onImageClick(messageItem, binding.chatContentLayout)
                     }
                 },
                 mentionUserMap = mentionUserMap,
+                coverHidden = coverHiddenState.value,
+                onCoverPositioned = { rect -> coverScreenRect = rect },
+                onCoverDrawableReady = { drawable -> coverDrawable = drawable },
             )
         }
         binding.chatGroupLayout.removeAllViews()

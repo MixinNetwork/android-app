@@ -13,6 +13,8 @@ import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaThumbViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MediaStatus
@@ -20,15 +22,26 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.absolutePath
 
-class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : BaseViewHolder(binding.root) {
+class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : BaseViewHolder(binding.root), MediaThumbViewHolder {
     private val minWidth by lazy {
         (itemView.context.messageAreaWidth() * 0.5).toInt()
     }
+    private val cornerRadiusPx = itemView.context.dpToPx(4f).toFloat()
+
+    override val thumbMessageId: String? get() = currentMessageId
+
+    override fun createThumbLocation(clipHost: View?): MediaThumbLocation? =
+        MediaThumbLocation.fromView(
+            view = binding.chatImage,
+            clipHost = clipHost,
+            cornerRadii = MediaThumbLocation.uniformRadii(cornerRadiusPx),
+            contentWidth = currentMediaWidth,
+            contentHeight = currentMediaHeight,
+        )
 
     init {
-        val radius = itemView.context.dpToPx(4f).toFloat()
-        binding.chatImageLayout.round(radius)
-        binding.chatTime.round(radius)
+        binding.chatImageLayout.round(cornerRadiusPx)
+        binding.chatTime.round(cornerRadiusPx)
     }
 
     override fun chatLayout(

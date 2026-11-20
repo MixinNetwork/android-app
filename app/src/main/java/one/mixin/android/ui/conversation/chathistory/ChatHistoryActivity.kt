@@ -68,6 +68,9 @@ import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaViewerOverlay
+import one.mixin.android.ui.media.pager.overlay.createMediaThumbProvider
 import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WallpaperManager
@@ -372,21 +375,32 @@ class ChatHistoryActivity : BaseActivity() {
                 messageItem: ChatHistoryMessageItem,
                 view: View,
             ) {
+                val thumbProvider = binding.recyclerView.createMediaThumbProvider()
+                val initialThumb =
+                    thumbProvider.findThumbLocation(messageItem.messageId)
+                        ?: MediaThumbLocation.fromView(
+                            view = view,
+                            clipHost = binding.recyclerView,
+                            contentWidth = messageItem.mediaWidth ?: 0,
+                            contentHeight = messageItem.mediaHeight ?: 0,
+                        )
                 if (isTranscript) {
-                    TranscriptMediaPagerActivity.show(
-                        this@ChatHistoryActivity,
-                        view,
-                        transcriptId,
-                        messageItem.messageId,
+                    MediaViewerOverlay.showTranscript(
+                        activity = this@ChatHistoryActivity,
+                        transcriptId = transcriptId,
+                        messageId = messageItem.messageId,
+                        initialThumb = initialThumb,
+                        thumbProvider = thumbProvider,
                     )
                 } else {
-                    MediaPagerActivity.show(
-                        this@ChatHistoryActivity,
-                        view,
-                        messageItem.conversationId!!,
-                        messageItem.messageId,
-                        messageItem.toMessageItem(),
-                        MediaPagerActivity.MediaSource.ChatHistory,
+                    MediaViewerOverlay.showConversation(
+                        activity = this@ChatHistoryActivity,
+                        conversationId = messageItem.conversationId!!,
+                        messageId = messageItem.messageId,
+                        initialItem = messageItem.toMessageItem(),
+                        mediaSource = MediaPagerActivity.MediaSource.ChatHistory,
+                        initialThumb = initialThumb,
+                        thumbProvider = thumbProvider,
                     )
                 }
             }

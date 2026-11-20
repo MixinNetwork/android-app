@@ -2,6 +2,7 @@ package one.mixin.android.ui.media
 
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
 import android.widget.ViewAnimator
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +20,9 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationForGrid
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaViewerOverlay
+import one.mixin.android.ui.media.pager.overlay.createMediaThumbProvider
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.MessageItem
 
@@ -51,7 +55,25 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
                 imageView: View,
                 messageItem: MessageItem,
             ) {
-                MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageItem.messageId, messageItem, MediaPagerActivity.MediaSource.SharedMedia)
+                val thumbProvider = binding.recyclerView.createMediaThumbProvider()
+                val initialThumb =
+                    thumbProvider.findThumbLocation(messageItem.messageId)
+                        ?: MediaThumbLocation.fromView(
+                            view = imageView,
+                            clipHost = binding.recyclerView,
+                            contentWidth = messageItem.mediaWidth ?: 0,
+                            contentHeight = messageItem.mediaHeight ?: 0,
+                            scaleType = ImageView.ScaleType.CENTER_CROP,
+                        )
+                MediaViewerOverlay.showConversation(
+                    activity = requireActivity(),
+                    conversationId = conversationId,
+                    messageId = messageItem.messageId,
+                    initialItem = messageItem,
+                    mediaSource = MediaPagerActivity.MediaSource.SharedMedia,
+                    initialThumb = initialThumb,
+                    thumbProvider = thumbProvider,
+                )
             },
             fun(messageId: String) {
                 onLongClickListener?.invoke(messageId)
