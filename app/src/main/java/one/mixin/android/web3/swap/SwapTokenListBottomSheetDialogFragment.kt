@@ -475,6 +475,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     } else {
                         this
                     }
+                }?.filterNot { ra ->
+                    if (inMixin) {
+                        swapViewModel.findToken(ra.assetId)?.let { it.hidden == true && (it.level ?: Constants.AssetLevel.VERIFIED) < Constants.AssetLevel.UNKNOWN }
+                    } else {
+                        swapViewModel.web3TokenItemById(ra.walletId ?: "", ra.assetId)?.let { it.hidden == true && it.level < Constants.AssetLevel.UNKNOWN }
+                    } == true
                 }?.map { ra ->
                     (localTokens.find { swapToken -> swapToken.assetId == ra.assetId && swapToken.chain.chainId == ra.chain.chainId } ?: (
                             if (inMixin) {
@@ -490,7 +496,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                             }
                             )
                             )?.let {
-                            return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash, level = it.level, isWeb3 = it.isWeb3)
+                            return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash, level = ra.level ?: it.level, isWeb3 = it.isWeb3)
                         }
                     return@map ra
                 }
