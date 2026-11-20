@@ -72,9 +72,9 @@ internal fun WalletHomeCard(
 
     val contentPadding = when {
         card.hasSelfPaddedItems() -> Modifier
-        card == WalletHomeCardType.BALANCE -> Modifier.padding(top = 20.dp, bottom = 12.dp)
-        card == WalletHomeCardType.CASH -> Modifier.padding(horizontal = 16.dp, vertical = 20.dp)
-        else -> Modifier.padding(horizontal = 16.dp, vertical = 20.dp)
+        card == WalletHomeCardType.BALANCE -> Modifier.padding(top = 16.dp, bottom = 12.dp)
+        card == WalletHomeCardType.CASH -> Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+        else -> Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
     }
     Column(
         modifier = Modifier
@@ -185,7 +185,7 @@ internal fun WalletHomeCard(
                 state.collectibles.take(PREVIEW_LIMIT).forEach { collectible ->
                     Row(
                         modifier = Modifier.fillMaxWidth()
-                            .height(70.dp).padding(bottom = 20.dp)
+                            .height(66.dp).padding(bottom = 16.dp)
                             .clickable { callbacks.onCollectibleClicked(collectible.inscriptionHash) }
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -352,7 +352,7 @@ private fun BalanceCardGroup(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                .padding(horizontal = 16.dp, vertical = 20.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
         ) {
             BalanceCard(state, callbacks)
         }

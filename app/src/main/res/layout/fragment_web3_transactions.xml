@@ -84,7 +84,7 @@
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:layout_alignParentEnd="true"
-                            android:layout_marginTop="20dp"
+                            android:layout_marginTop="16dp"
                             android:layout_marginEnd="16dp"
                             android:layout_marginBottom="16dp"
                             tools:ignore="ContentDescription" />
@@ -170,7 +170,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="16dp"
                         android:layout_marginEnd="@dimen/margin16"
                         android:src="@drawable/ic_arrow_gray_right"
                         tools:ignore="ContentDescription" />
@@ -280,7 +280,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:foreground="?android:attr/selectableItemBackground"
-                        android:paddingTop="20dp"
+                        android:paddingTop="16dp"
                         android:paddingBottom="10dp">
 
                         <ImageView

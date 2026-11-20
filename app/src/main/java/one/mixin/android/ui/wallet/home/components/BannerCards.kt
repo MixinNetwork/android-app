@@ -344,7 +344,7 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
                 .align(Alignment.TopCenter)
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
-                .padding(bottom = 20.dp),
+                .padding(bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom,
         ) {

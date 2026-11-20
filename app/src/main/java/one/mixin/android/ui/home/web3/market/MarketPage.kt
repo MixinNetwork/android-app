@@ -116,7 +116,7 @@ fun MarketPage(
             onEntryClick = onEntryClick,
             header = {
                 if (state.banners.isNotEmpty() || state.selectedTopTab == MarketTopTab.INDICATOR) {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
                 if (state.banners.isNotEmpty()) {
                     key(state.selectedTopTab) {
@@ -130,7 +130,7 @@ fun MarketPage(
                         )
                     }
                     if (state.selectedTopTab == MarketTopTab.INDICATOR) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
                     }
                 }
             },
@@ -499,7 +499,7 @@ private fun MarketRecommendations(
     val recommendationIds = recommendations.map(MarketListEntry::stableId)
     var selectedIds by remember(recommendationIds) { mutableStateOf(recommendationIds.toSet()) }
     Column(
-        modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 12.dp, bottom = 20.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 12.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         recommendations.chunked(2).forEach { row ->
@@ -535,7 +535,7 @@ private fun MarketRecommendations(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(top = 20.dp),
+                    .padding(top = 16.dp),
             contentAlignment = Alignment.Center,
         ) {
             MixinButton(
@@ -742,7 +742,7 @@ private fun MarketOverviewCard(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 20.dp),
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
         ) {
             IndicatorMetric(
                 title = stringResource(R.string.Global_Market_Cap),
@@ -824,7 +824,7 @@ private fun BitcoinDominanceCard(indicator: GlobalMarket) {
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 20.dp),
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
         ) {
             Text(
                 text = stringResource(R.string.Bitcoin_Dominance),

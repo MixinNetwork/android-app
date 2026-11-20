@@ -145,7 +145,7 @@ fun PerpetualGuidePage(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 20.dp),
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
             ) {
                 Text(
                     text = stringResource(R.string.Perpetual_Futures_Guide),
@@ -190,7 +190,7 @@ fun PerpetualGuidePage(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Column(
                     modifier = Modifier
@@ -211,7 +211,7 @@ fun PerpetualGuidePage(
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 GuideBottomNavigation(
                     selectedTab = selectedTab,
                     tabs = navigationTabs,
@@ -296,7 +296,7 @@ private fun LongContent() {
         showScenarioTitle = false,
         showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     DescriptionWithRulesCard(
         description = stringResource(R.string.perps_long_overview),
         rules = listOf(
@@ -354,7 +354,7 @@ private fun ShortContent() {
         showScenarioTitle = false,
         showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     DescriptionWithRulesCard(
         description = stringResource(R.string.perps_short_overview),
         rules = listOf(
@@ -425,7 +425,7 @@ private fun LeverageContent() {
         showScenarioTitle = false,
         showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_leverage_overview),
         infoTitle = stringResource(R.string.PnL),
@@ -510,7 +510,7 @@ private fun PositionContent() {
         showScenarioTitle = false,
         showRowsDivider = true,
     )
-    Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_position_size_overview),
         infoTitle = stringResource(R.string.PnL),
@@ -624,7 +624,7 @@ private fun TpSlContent() {
             Text(text = "-500 USDT", fontSize = 14.sp, fontWeight = FontWeight.W500, color = lossColor)
         }
     }
-    Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_tpsl_overview),
         infoTitle = stringResource(R.string.PnL),
@@ -658,7 +658,7 @@ private fun LiquidationContent() {
         marketPrice = marketPrice,
         liquidationPrice = liquidationPrice,
     )
-    Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_liquidation_price_overview),
         infoTitle = stringResource(R.string.Spot_Trade_Guide_Additional_Notes),
@@ -674,7 +674,7 @@ private fun LiquidationContent() {
 @Composable
 private fun FundingRateContent() {
     FundingRateExampleCard()
-    Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_funding_rate_overview),
         infoTitle = stringResource(R.string.perps_funding_rate_purpose),
@@ -690,7 +690,7 @@ private fun FundingRateContent() {
 @Composable
 private fun TradingFeeContent() {
     TradingFeeExampleCard()
-    Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     DescriptionWithInfoAndRiskCard(
         description = stringResource(R.string.perps_trading_fee_overview),
         infoTitle = stringResource(R.string.PnL),

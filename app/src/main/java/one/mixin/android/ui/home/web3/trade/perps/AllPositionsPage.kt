@@ -318,7 +318,7 @@ private fun OpenPositionsContent(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 20.dp)
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
             ) {

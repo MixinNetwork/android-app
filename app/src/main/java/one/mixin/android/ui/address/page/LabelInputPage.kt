@@ -232,7 +232,7 @@ fun LabelInputPage(
                         color = if (label.isNullOrBlank()) MixinAppTheme.colors.textAssist else Color.White,
                     )
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
         }

@@ -134,7 +134,7 @@ fun MixinMemberInvoicesPage(
                             .clickable {
                                 onAll.invoke()
                             }
-                            .padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 10.dp),
+                            .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(stringResource(R.string.Invoices), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
@@ -155,7 +155,7 @@ fun MixinMemberInvoicesPage(
                         }
                     )
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }

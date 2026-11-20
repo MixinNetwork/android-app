@@ -179,7 +179,7 @@ private fun TradeProPromo(onTradePro: () -> Unit) {
                 .padding(horizontal = 22.dp)
                 .aspectRatio(267f / 154f),
         )
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,

@@ -124,7 +124,7 @@ private fun LoadingState(title: String, subtitle: String) {
                 color = MixinAppTheme.colors.textPrimary
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = subtitle,
@@ -177,7 +177,7 @@ fun FetchErrorContent(
                 fontWeight = FontWeight.W600,
                 color = MixinAppTheme.colors.textPrimary,
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = errorMessage ?: stringResource(R.string.error_connection_error),
                 fontSize = 14.sp,
@@ -386,7 +386,7 @@ fun ImportErrorContent(
                 color = MixinAppTheme.colors.textPrimary
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = if (errorCode == 10632) {

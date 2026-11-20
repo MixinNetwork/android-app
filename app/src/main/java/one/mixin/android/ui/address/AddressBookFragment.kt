@@ -204,8 +204,8 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                     ) {
                         item {
                             Column(
-                                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor).padding(horizontal = 16.dp, vertical = 20.dp),
-                                verticalArrangement = Arrangement.spacedBy(20.dp),
+                                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor).padding(horizontal = 16.dp, vertical = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
                             ) {
                                 AddressBookField(stringResource(R.string.Label), address.label)
                                 AddressBookField(stringResource(R.string.Address), address.destination, valueLineHeight = 25.sp)

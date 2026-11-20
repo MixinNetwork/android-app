@@ -164,7 +164,7 @@ private fun LeverageContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 20.dp)
+            .padding(vertical = 16.dp)
     ) {
         Text(
             text = stringResource(R.string.Leverage),

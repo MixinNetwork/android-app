@@ -65,7 +65,7 @@ fun AllInvoicesPage(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 10.dp)
+                    .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 10.dp)
             ) {
                 Text(stringResource(R.string.Invoices), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp)
             }

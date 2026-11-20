@@ -71,7 +71,7 @@ fun WalletHomePage(
             if (state.showImportSafetyFooter) {
                 Spacer(modifier = Modifier.height(36.dp))
                 ImportSafetyFooter(state.walletType)
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }

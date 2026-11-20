@@ -169,7 +169,7 @@ fun InvoicesList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onShowMoreClick?.invoke() }
-                    .padding(horizontal = 16.dp, vertical = 20.dp),
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(

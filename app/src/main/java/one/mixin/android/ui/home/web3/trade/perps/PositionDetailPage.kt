@@ -153,7 +153,7 @@ fun PositionDetailPage(
                         .align(Alignment.CenterHorizontally)
                 )
                 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -195,7 +195,7 @@ fun PositionDetailPage(
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 
                 Row(
                     modifier = Modifier
@@ -268,7 +268,7 @@ fun PositionDetailPage(
                     icon = position.iconUrl
                 )
                 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 
                 PositionDetailItem(
                     label = stringResource(R.string.perps_unrealized_pnl),
@@ -277,21 +277,21 @@ fun PositionDetailPage(
                     subtitle = formatSignedPercent(roe),
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
                     value = formatPerpsPrice(entryPrice, position.priceScale)
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Liquidation_Price).uppercase(),
                     value = liquidationPriceText
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 ItemWalletContent(
                     title = stringResource(R.string.Wallet).uppercase(),
@@ -299,7 +299,7 @@ fun PositionDetailPage(
                     padding = 0.dp
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Open_Time).uppercase(),
@@ -470,7 +470,7 @@ fun PositionDetailPage(
                         .align(Alignment.CenterHorizontally)
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -511,7 +511,7 @@ fun PositionDetailPage(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 if (!isFailed) {
                     Row(
@@ -576,7 +576,7 @@ fun PositionDetailPage(
                     icon = closeOrder.iconUrl
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.perps_realized_pnl).uppercase(),
@@ -585,7 +585,7 @@ fun PositionDetailPage(
                 )
 
                 if (fee.signum() != 0) {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     PositionDetailItem(
                         label = stringResource(R.string.Fee).uppercase(),
@@ -594,21 +594,21 @@ fun PositionDetailPage(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Entry_Price).uppercase(),
                     value = formatPerpsPrice(closeOrder.entryPrice, closeOrder.priceScale)
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Close_Price).uppercase(),
                     value = formatPerpsPrice(closeOrder.closePrice, closeOrder.priceScale)
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 ItemWalletContent(
                     title = stringResource(R.string.Wallet).uppercase(),
@@ -616,7 +616,7 @@ fun PositionDetailPage(
                     padding = 0.dp
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Date).uppercase(),
@@ -744,7 +744,7 @@ fun OpenedOrderDetailPage(
                         .align(Alignment.CenterHorizontally)
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -789,7 +789,7 @@ fun OpenedOrderDetailPage(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 if (!isFailed) {
                     Row(
@@ -838,32 +838,32 @@ fun OpenedOrderDetailPage(
                     icon = openedOrder.iconUrl
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 if (!isFailed && openedOrder.orderType == PerpsOrder.TYPE_OPEN) {
                     PositionDetailItem(
                         label = stringResource(R.string.Amount).uppercase(),
                         value = amountText ?: "--",
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     PositionDetailItem(
                         label = stringResource(R.string.Margin).uppercase(),
                         value = openedOrder.marginAmount.toBigDecimalOrNull()
                             ?.let(::formatPerpsUsdDecimal) ?: "--",
                         onTipClick = onMarginTipClick,
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     PositionDetailItem(
                         label = stringResource(R.string.Fee).uppercase(),
                         value = openedOrder.feeAmount.toBigDecimalOrNull()?.let { formatPerpsExactUsdDecimal(it.abs()) } ?: "--",
                         onTipClick = onFeeTipClick,
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     PositionDetailItem(
                         label = stringResource(R.string.Entry_Price).uppercase(),
                         value = formatPerpsPrice(openedOrder.entryPrice, openedOrder.priceScale),
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 } else if (!isFailed) {
                     if (!isMargin) {
                         PositionDetailItem(
@@ -873,7 +873,7 @@ fun OpenedOrderDetailPage(
 
                         val fee = openedOrder.feeAmount.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
                         if (fee.signum() != 0) {
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
                             PositionDetailItem(
                                 label = stringResource(R.string.Fee).uppercase(),
@@ -882,7 +882,7 @@ fun OpenedOrderDetailPage(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
                     amountText?.let { amount ->
@@ -890,7 +890,7 @@ fun OpenedOrderDetailPage(
                             label = stringResource(R.string.Amount).uppercase(),
                             value = amount
                         )
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
 
@@ -900,7 +900,7 @@ fun OpenedOrderDetailPage(
                     padding = 0.dp
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 PositionDetailItem(
                     label = stringResource(R.string.Date).uppercase(),

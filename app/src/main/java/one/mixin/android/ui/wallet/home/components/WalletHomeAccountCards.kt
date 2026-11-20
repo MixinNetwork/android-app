@@ -209,7 +209,7 @@ private fun EarnAccountCard(
     val account = accounts.summary()
     AccountCardSurface(
         modifier = modifier.clickable { callbacks.onEarnAccountClicked() },
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+        contentPadding = PaddingValues(16.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

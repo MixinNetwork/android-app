@@ -153,7 +153,7 @@ fun ViewAddressScreen(walletId: String, learnMoreAction: () -> Unit, pop: () -> 
                     .cardBackground(
                         Color.Transparent, MixinAppTheme.colors.borderColor, cornerRadius = 8.dp
                     )
-                    .padding(vertical = 20.dp)
+                    .padding(vertical = 16.dp)
             ) {
                 Text(
                     text = stringResource(R.string.Address), fontSize = 16.sp, color = MixinAppTheme.colors.textAssist, modifier = Modifier

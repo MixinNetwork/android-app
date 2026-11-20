@@ -78,7 +78,7 @@ fun PrivacyTokenRecycler(
     earnAssetIds: Set<String> = emptySet(),
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    itemSpacing: Dp = 20.dp,
+    itemSpacing: Dp = 16.dp,
 ) {
     WalletHomeItemColumn(
         count = tokens.size,
@@ -98,7 +98,7 @@ fun Web3TokenRecycler(
     tokens: List<Web3TokenItem>,
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    itemSpacing: Dp = 20.dp,
+    itemSpacing: Dp = 16.dp,
 ) {
     WalletHomeItemColumn(
         count = tokens.size,
@@ -118,7 +118,7 @@ fun PrivacyTransactionRecycler(
     onClick: (Int) -> Unit,
     onUserClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    itemSpacing: Dp = 20.dp,
+    itemSpacing: Dp = 16.dp,
     contentHorizontalPadding: Dp = 16.dp,
 ) {
     val spacing = with(LocalDensity.current) { itemSpacing.roundToPx() }
@@ -179,7 +179,7 @@ fun Web3TransactionRecycler(
     onClick: (Int) -> Unit,
     onTokenClick: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
-    itemSpacing: Dp = 20.dp,
+    itemSpacing: Dp = 16.dp,
     contentHorizontalPadding: Dp = 16.dp,
 ) {
     val spacing = with(LocalDensity.current) { itemSpacing.roundToPx() }

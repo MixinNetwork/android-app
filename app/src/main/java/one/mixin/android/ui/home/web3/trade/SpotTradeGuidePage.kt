@@ -96,7 +96,7 @@ fun SpotTradeGuidePage(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 20.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp),
         ) {
             Text(
                 text = stringResource(R.string.Spot_Trading_Guide),
@@ -137,7 +137,7 @@ fun SpotTradeGuidePage(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Column(
                 modifier = Modifier
@@ -153,7 +153,7 @@ fun SpotTradeGuidePage(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             SpotTradeGuideBottomNavigation(
                 selectedTab = selectedTab,
                 tabs = tabs,
@@ -187,7 +187,7 @@ private fun OverviewContent() {
 @Composable
 private fun SimpleSwapContent() {
     SpotTradeExampleCard(limitStrategy = null)
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     TradeGuideInfoCard(
         title = stringResource(R.string.Overview),
         description = stringResource(R.string.Spot_Trade_Guide_Swap_Desc),
@@ -211,7 +211,7 @@ private fun SimpleSwapContent() {
 @Composable
 private fun LimitTradeContent() {
     SpotTradeExampleCard(limitStrategy = LimitStrategy.BuyLow)
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(10.dp))
     TradeGuideInfoCard(
         title = stringResource(R.string.Overview),
         description = stringResource(R.string.Spot_Trade_Guide_Limit_Desc),

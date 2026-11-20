@@ -114,7 +114,7 @@ fun InvoiceHeaderSection(order: MembershipOrder, onCancel:(MembershipOrder) -> U
                 .padding(horizontal = 8.dp, vertical = 2.5.dp)
         )
         if (order.status == MemberOrderStatus.INITIAL.value) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.verifying_payment_description),
                 fontSize = 14.sp,

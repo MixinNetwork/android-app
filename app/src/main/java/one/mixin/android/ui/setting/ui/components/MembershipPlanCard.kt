@@ -58,7 +58,7 @@ fun MembershipPlanCard(
                 MixinAppTheme.colors.background,
                 MixinAppTheme.colors.borderColor
             )
-            .padding(horizontal = 16.dp, vertical = 20.dp)
+            .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -104,7 +104,7 @@ fun MembershipPlanCard(
                 textAlign = TextAlign.Center
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         if (showRenew) {
             PlanCardButton(
                 text = stringResource(R.string.Renew_Plan),

@@ -367,7 +367,7 @@ fun SwapContent(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 20.dp)
+                            .padding(vertical = 16.dp)
                     ) {
                         ReviewButton(
                             inputText = inputText,

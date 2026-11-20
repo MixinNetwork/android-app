@@ -571,7 +571,7 @@ private fun PerpsTpSlContent(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Column(
                 modifier = Modifier
@@ -749,7 +749,7 @@ private fun PerpsTpSlContent(
             }
 
             if (showInfoCard) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 PerpsTpSlGuideCard(
                     guideType = if (isTakeProfit) {
@@ -782,7 +782,7 @@ private fun PerpsTpSlContent(
                 .fillMaxWidth()
                 .background(surfaceColor)
                 .padding(horizontal = 16.dp)
-                .padding(bottom = 20.dp, top = 12.dp)
+                .padding(bottom = 16.dp, top = 12.dp)
                 .imePadding(),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {

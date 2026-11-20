@@ -42,7 +42,7 @@ internal fun SupportCard(callbacks: WalletHomeCallbacks) {
             .padding(horizontal = 10.dp)
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(horizontal = 16.dp, vertical = 20.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
         Text(
             text = stringResource(R.string.wallet_home_support),
@@ -50,7 +50,7 @@ internal fun SupportCard(callbacks: WalletHomeCallbacks) {
             fontSize = 14.sp,
             fontWeight = FontWeight.W400,
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         SupportRow(
             iconRes = R.drawable.ic_help_outline,
             titleRes = R.string.wallet_home_contact_us,
@@ -58,7 +58,7 @@ internal fun SupportCard(callbacks: WalletHomeCallbacks) {
             trailingRes = R.drawable.ic_arrow_gray_right,
             onClick = callbacks::onSupportClicked,
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         SupportRow(
             iconRes = R.drawable.ic_bot_category_books,
             titleRes = R.string.Help_center,

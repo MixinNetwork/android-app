@@ -757,7 +757,7 @@ private fun BottomActions(
         modifier = modifier
             .background(MixinAppTheme.colors.background)
             .padding(horizontal = 16.dp)
-            .padding(bottom = 20.dp, top = 12.dp),
+            .padding(bottom = 16.dp, top = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         MixinButton(

@@ -312,7 +312,7 @@ fun ImportWalletDetailPage(
                             )
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
 
                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -374,7 +374,7 @@ fun ImportWalletDetailPage(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Box(
                     modifier = Modifier
@@ -545,7 +545,7 @@ fun ImportWalletDetailPage(
                         color = Color.White
                     )
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }

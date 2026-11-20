@@ -65,9 +65,9 @@ fun WalletHomeAllTokensPage(
                         .cardBackground(backgroundColor, borderColor),
                 ) {
                     EmptyTokens()
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         } else {
             val count = if (isPrivacy) state.privacyTokens.size else state.web3Tokens.size
@@ -115,7 +115,7 @@ fun WalletHomeAllTokensPage(
                     }
                 }
                 item(key = "bottom", contentType = "bottom_spacing") {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -135,13 +135,13 @@ private fun TokenCardSegment(
             .padding(horizontal = 10.dp)
             .tokenCardBorder(isFirst, isLast, borderColor)
             .padding(
-                top = if (isFirst) 20.dp else 0.dp,
-                bottom = if (isLast) 20.dp else 0.dp,
+                top = if (isFirst) 16.dp else 0.dp,
+                bottom = if (isLast) 16.dp else 0.dp,
             ),
     ) {
         content()
         if (!isLast) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

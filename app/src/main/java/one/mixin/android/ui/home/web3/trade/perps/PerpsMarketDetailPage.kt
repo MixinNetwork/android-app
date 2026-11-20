@@ -619,7 +619,7 @@ fun PerpsMarketDetailPage(
                     .fillMaxWidth()
                     .background(MixinAppTheme.colors.background)
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 20.dp, top = 20.dp)
+                    .padding(bottom = 16.dp, top = 16.dp)
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     PerpsBottomActionPlaceholder()
@@ -1411,7 +1411,7 @@ private fun OpenPositionCard(
             )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Column {
             Row(
@@ -1474,7 +1474,7 @@ private fun OpenPositionCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Column {
             Row(
@@ -1527,7 +1527,7 @@ private fun OpenPositionCard(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Column {
             Row(
@@ -1622,7 +1622,7 @@ private fun OpenPositionCard(
             style = compactTextStyle,
             color = MixinAppTheme.colors.textMinor,
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.Entry_Price).uppercase(),
             fontSize = 12.sp,
@@ -1638,7 +1638,7 @@ private fun OpenPositionCard(
             style = compactTextStyle,
             color = MixinAppTheme.colors.textPrimary,
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         CompactPerpsInfoLabel(
             text = stringResource(R.string.Liquidation_Price).uppercase(),
             compactTextStyle = compactTextStyle,
@@ -1674,7 +1674,7 @@ private fun OpenPositionCard(
                 color = MixinAppTheme.colors.textAssist,
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         CompactPerpsInfoLabel(
             text = stringResource(R.string.perps_funding_payments).uppercase(),
             compactTextStyle = compactTextStyle,

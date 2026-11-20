@@ -151,7 +151,7 @@ internal fun MorePage(
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                                 .clickable(onClick = onContacts)
-                                .padding(top = 18.dp, bottom = 20.dp),
+                                .padding(top = 18.dp, bottom = 16.dp),
                         )
                     }
                 }
@@ -174,7 +174,7 @@ internal fun MorePage(
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                                 .clickable(onClick = onBots)
-                                .padding(top = 18.dp, bottom = 20.dp),
+                                .padding(top = 18.dp, bottom = 16.dp),
                         )
                     }
                 }

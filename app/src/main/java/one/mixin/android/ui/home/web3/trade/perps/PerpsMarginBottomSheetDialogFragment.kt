@@ -630,7 +630,7 @@ private fun PerpsMarginActions(
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 12.dp, bottom = 20.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 12.dp, bottom = 16.dp),
         ) {
             MixinButton(
                 onClick = onCancel,
@@ -724,7 +724,7 @@ internal fun PerpsReductionInput(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(start = 16.dp, top = 36.dp, end = 16.dp, bottom = 20.dp),
+            .padding(start = 16.dp, top = 36.dp, end = 16.dp, bottom = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(title, color = MixinAppTheme.colors.textRemarks, fontSize = 12.sp, lineHeight = 16.sp)

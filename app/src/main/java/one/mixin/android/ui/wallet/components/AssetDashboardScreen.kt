@@ -383,7 +383,7 @@ fun AssetDashboardScreen(
                             prefs.edit { putBoolean(KEY_HIDE_SAFE_WALLET_INFO, true) }
                         }
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -534,7 +534,7 @@ fun WalletEmptyGuideCard(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             modifier = Modifier
@@ -845,7 +845,7 @@ fun UpgradeSafeCard(
                 modifier = Modifier.size(48.dp)
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             modifier = Modifier
@@ -949,7 +949,7 @@ fun CreateSafeCard(
                 modifier = Modifier.size(48.dp)
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Box(
             modifier = Modifier

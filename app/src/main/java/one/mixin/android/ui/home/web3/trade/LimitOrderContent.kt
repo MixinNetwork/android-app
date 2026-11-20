@@ -440,7 +440,7 @@ fun LimitOrderContent(
                     Column(modifier = Modifier
                         .wrapContentHeight()
                         .padding(horizontal = 20.dp)
-                        .padding(bottom = 20.dp)) {
+                        .padding(bottom = 16.dp)) {
                         Spacer(modifier = Modifier.height(16.dp))
                         if (availableHeight == null) {
                             Spacer(modifier = Modifier.weight(1f))
@@ -598,13 +598,13 @@ fun LimitOrderContent(
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                     } else {
                         Spacer(modifier = Modifier.height(4.dp))
                         Column(
                             modifier = Modifier
                                 .padding(horizontal = 10.dp)
-                                .padding(bottom = 20.dp)
+                                .padding(bottom = 16.dp)
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
                                 .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)

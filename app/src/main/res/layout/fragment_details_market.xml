@@ -50,7 +50,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="16dp"
-                            android:layout_marginTop="20dp"
+                            android:layout_marginTop="16dp"
                             android:layout_marginEnd="16dp">
 
                             <TextView
@@ -189,7 +189,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="16dp"
-                            android:layout_marginTop="20dp"
+                            android:layout_marginTop="16dp"
                             android:layout_marginBottom="14dp"
                             android:text="@string/Stats"
                             android:textColor="?attr/text_minor" />
@@ -236,7 +236,7 @@
                             android:layout_below="@id/market_cap_stats_title"
                             android:layout_marginStart="16dp"
                             android:layout_marginTop="10dp"
-                            android:layout_marginBottom="20dp"
+                            android:layout_marginBottom="16dp"
                             android:text="@string/N_A"
                             android:textColor="?attr/text_primary"
                             android:textFontWeight="600"
@@ -249,7 +249,7 @@
                             android:layout_height="wrap_content"
                             android:layout_below="@id/market_vol_u"
                             android:layout_alignParentEnd="true"
-                            android:layout_marginTop="20dp"
+                            android:layout_marginTop="16dp"
                             android:layout_marginEnd="16dp"
                             android:text="@string/low_24h"
                             android:textColor="?attr/text_remarks"
@@ -263,7 +263,7 @@
                             android:layout_alignParentEnd="true"
                             android:layout_marginTop="10dp"
                             android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="20dp"
+                            android:layout_marginBottom="16dp"
                             android:text="@string/N_A"
                             android:textColor="?attr/text_primary"
                             android:textFontWeight="600"
@@ -276,7 +276,7 @@
                             android:layout_height="wrap_content"
                             android:layout_below="@id/market_vol_u"
                             android:layout_marginStart="16dp"
-                            android:layout_marginTop="20dp"
+                            android:layout_marginTop="16dp"
                             android:text="@string/high_24h"
                             android:textColor="?attr/text_remarks"
                             android:textSize="12sp" />
@@ -317,7 +317,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="16dp"
                         android:layout_marginEnd="@dimen/margin16"
                         android:src="@drawable/ic_arrow_gray_right"
                         tools:ignore="ContentDescription" />
@@ -429,7 +429,7 @@
                         android:id="@+id/symbol_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/Symbol"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp" />
@@ -447,7 +447,7 @@
                         android:id="@+id/market_cap_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/Market_Cap"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp" />
@@ -466,7 +466,7 @@
                         android:id="@+id/circulation_supply_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/Circulation_Supply"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp" />
@@ -485,7 +485,7 @@
                         android:id="@+id/total_supply_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/Total_Supply"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp" />
@@ -504,7 +504,7 @@
                         android:id="@+id/all_time_high_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/All_Time_High"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp" />
@@ -532,7 +532,7 @@
                         android:id="@+id/all_time_low_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/All_Time_Low"
                         android:textColor="?attr/text_assist"
                         android:textSize="14sp" />
@@ -564,9 +564,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingStart="26dp"
-                android:paddingTop="20dp"
+                android:paddingTop="16dp"
                 android:paddingEnd="26dp"
-                android:paddingBottom="20dp"
+                android:paddingBottom="16dp"
                 android:visibility="gone">
 
                 <TextView

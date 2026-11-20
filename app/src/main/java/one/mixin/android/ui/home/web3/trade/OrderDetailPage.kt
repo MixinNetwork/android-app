@@ -99,7 +99,7 @@ fun DetailItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 20.dp)
+            .padding(bottom = 16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -272,7 +272,7 @@ fun DetailItem(
                                 }
                             )
                         }
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         val scope = rememberCoroutineScope()
                         when {
                             order.type == "limit" && (uiState == OrderState.PRICING || uiState == OrderState.CREATED || uiState == OrderState.QUOTING || uiState == OrderState.PENDING) -> {
@@ -442,7 +442,7 @@ fun DetailItem(
                             val isPrivacyWallet = currentWalletId != null && currentWalletId == Session.getAccountId()
                             if (isPrivacyWallet) {
                                 ItemWalletContent(title = stringResource(id = R.string.Wallet).uppercase(), fontSize = 16.sp, padding = 0.dp)
-                                Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
                             } else {
                                 ItemContent(
                                     title = stringResource(id = R.string.Receivers).uppercase(),
@@ -451,7 +451,7 @@ fun DetailItem(
                                     isAddress = !toAddress.isNullOrBlank(),
                                     padding = 0.dp
                                 )
-                                Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
                             order.expiredAt?.let { exp ->
                                 DetailItem(
@@ -467,7 +467,7 @@ fun DetailItem(
                             val isPrivacyWallet = currentWalletId != null && currentWalletId == Session.getAccountId()
                             if (isPrivacyWallet) {
                                 ItemWalletContent(title = stringResource(id = R.string.Wallet).uppercase(), fontSize = 16.sp, padding = 0.dp)
-                                Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
                             } else {
                                 ItemContent(
                                     title = stringResource(id = R.string.Receivers).uppercase(),
@@ -476,7 +476,7 @@ fun DetailItem(
                                     isAddress = !toAddress.isNullOrBlank(),
                                     padding = 0.dp
                                 )
-                                Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
                             DetailItem(
                                 label = stringResource(R.string.Type).uppercase(),
@@ -513,7 +513,7 @@ fun DetailPriceItemLimit(orderItem: OrderItem) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 20.dp)
+            .padding(bottom = 16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -571,7 +571,7 @@ private fun DetailPriceItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 20.dp)
+            .padding(bottom = 16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -625,7 +625,7 @@ private fun DetailItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 20.dp)
+            .padding(bottom = 16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(

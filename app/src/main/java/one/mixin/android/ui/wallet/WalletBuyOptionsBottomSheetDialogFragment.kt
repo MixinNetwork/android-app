@@ -117,7 +117,7 @@ private fun WalletBuyOptionsSheet(
             .fillMaxWidth()
             .background(MixinAppTheme.colors.background)
             .padding(horizontal = 10.dp)
-            .padding(top = 24.dp, bottom = 20.dp),
+            .padding(top = 24.dp, bottom = 16.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

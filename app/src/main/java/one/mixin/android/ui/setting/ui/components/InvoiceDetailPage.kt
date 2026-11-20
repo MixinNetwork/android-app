@@ -74,7 +74,7 @@ fun InvoiceDetailPage(orderId: String, onPop: () -> Unit, onCancel: (MembershipO
                             MixinAppTheme.colors.background,
                             MixinAppTheme.colors.borderColor
                         )
-                        .padding(horizontal = 16.dp, vertical = 20.dp)
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.Transaction_Id).uppercase(),
