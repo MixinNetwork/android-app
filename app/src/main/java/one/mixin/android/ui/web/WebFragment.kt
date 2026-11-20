@@ -138,6 +138,7 @@ import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.tip.wc.internal.evmChainList
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
@@ -2057,10 +2058,16 @@ class WebFragment : BaseFragment() {
                 val method = DAppMethod.fromValue(obj.getString("name"))
                 val network = obj.getString("network")
                 if (!isValidJavaScriptCallback(network)) return
+                val pageChainId = obj.optString("chainId")
                 if (network == Web3Signer.JsSignerNetwork.Solana.name) {
                     Web3Signer.useSolana()
                 } else {
-                    Web3Signer.useEvm()
+                    val chain = evmChainList.firstOrNull { it.hexReference == pageChainId }
+                    if (chain == null) {
+                        onWalletActionError(id, WalletErrorCode.UNRECOGNIZED_CHAIN, "Unrecognized EVM chain")
+                        return
+                    }
+                    Web3Signer.useEvm(chain)
                 }
                 if (isAddressEmpty(network, id)) {
                     return
@@ -2137,7 +2144,8 @@ class WebFragment : BaseFragment() {
                         onWalletActionError(id, WalletErrorCode.INVALID_PARAMS, "Transaction sender does not match the selected account")
                         return
                     }
-                    signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
+                    val tx = WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data)
+                    onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = tx, evmChainId = pageChainId))
                 }
 
                 DAppMethod.SIGNRAWTRANSACTION -> {
@@ -2173,13 +2181,6 @@ class WebFragment : BaseFragment() {
                 return true
             }
             return false
-        }
-
-        private fun signTransaction(
-            callbackId: Long,
-            wcEthereumTransaction: WCEthereumTransaction,
-        ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
         }
 
         private fun signRawTransaction(
