@@ -197,6 +197,9 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.imageeditor.ImageEditorActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaViewerOverlay
+import one.mixin.android.ui.media.pager.overlay.createMediaThumbProvider
 import one.mixin.android.ui.oldwallet.OldTransactionFragment
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
@@ -636,32 +639,35 @@ class ConversationFragment() :
                 messageItem: MessageItem,
                 view: View,
             ) {
-                starTransition = true
-                if (messageItem.isLive()) {
-                    getMediaResult.launch(
-                        MediaPagerActivity.MediaParam(
-                            messageItem.conversationId,
-                            messageItem.messageId,
-                            messageItem,
-                            MediaPagerActivity.MediaSource.Chat,
-                        ),
-                        MediaPagerActivity.getOptions(requireActivity(), view),
-                    )
+                if (!messageItem.isLive() && !messageItem.isAppCard() && !messageItem.mediaExists()) {
+                    toast(R.string.File_does_not_exist)
                     return
                 }
-                if (messageItem.mediaExists()) {
-                    getMediaResult.launch(
-                        MediaPagerActivity.MediaParam(
-                            messageItem.conversationId,
-                            messageItem.messageId,
-                            messageItem,
-                            MediaPagerActivity.MediaSource.Chat,
-                        ),
-                        MediaPagerActivity.getOptions(requireActivity(), view),
-                    )
-                } else {
-                    toast(R.string.File_does_not_exist)
-                }
+                val thumbProvider = binding.messageRv.createMediaThumbProvider()
+                val initialThumb =
+                    thumbProvider.findThumbLocation(messageItem.messageId)
+                        ?: MediaThumbLocation.fromView(
+                            view = view,
+                            clipHost = binding.messageRv,
+                            contentWidth = messageItem.mediaWidth ?: 0,
+                            contentHeight = messageItem.mediaHeight ?: 0,
+                        )
+                MediaViewerOverlay.showConversation(
+                    activity = requireActivity(),
+                    conversationId = messageItem.conversationId,
+                    messageId = messageItem.messageId,
+                    initialItem = messageItem,
+                    mediaSource = MediaPagerActivity.MediaSource.Chat,
+                    initialThumb = initialThumb,
+                    thumbProvider = thumbProvider,
+                    onShowInChat = { jumpId ->
+                        binding.messageRv.postDelayed({
+                            scrollToMessage(jumpId) {
+                                positionBeforeClickQuote = null
+                            }
+                        }, 100)
+                    },
+                )
             }
 
             override fun onStickerClick(messageItem: MessageItem) {
@@ -1099,7 +1105,6 @@ class ConversationFragment() :
     lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage>, String?>>
     private lateinit var getCombineForwardResult: ActivityResultLauncher<ArrayList<TranscriptMessage>>
     private lateinit var getChatHistoryResult: ActivityResultLauncher<Triple<String, Boolean, Int>>
-    private lateinit var getMediaResult: ActivityResultLauncher<MediaPagerActivity.MediaParam>
     private lateinit var getShareMediaResult: ActivityResultLauncher<Pair<String, Boolean>>
     private lateinit var pickFileLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
@@ -1112,7 +1117,6 @@ class ConversationFragment() :
         getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract(), resultRegistry, ::callbackForward)
         getCombineForwardResult = registerForActivityResult(ForwardActivity.CombineForwardContract(), resultRegistry, ::callbackForward)
         getChatHistoryResult = registerForActivityResult(ChatHistoryContract(), resultRegistry, ::callbackChatHistory)
-        getMediaResult = registerForActivityResult(MediaPagerActivity.MediaContract(), resultRegistry, ::callbackChatHistory)
         getShareMediaResult = registerForActivityResult(SharedMediaActivity.SharedMediaContract(), resultRegistry, ::callbackChatHistory)
         getEditorResult = registerForActivityResult(ImageEditorActivity.ImageEditorContract(), resultRegistry, ::callbackEditor)
         pickFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -1204,7 +1208,6 @@ class ConversationFragment() :
     }
 
     private var paused = false
-    private var starTransition = false
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onResume() {

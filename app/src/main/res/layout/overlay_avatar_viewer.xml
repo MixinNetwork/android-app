@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/overlay_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/background_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black" />
+
+    <one.mixin.android.ui.media.pager.overlay.MediaDismissLayout
+        android:id="@+id/dismiss_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <one.mixin.android.widget.PhotoView.PhotoView
+            android:id="@+id/avatar_photo_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </one.mixin.android.ui.media.pager.overlay.MediaDismissLayout>
+
+    <one.mixin.android.ui.media.pager.overlay.MediaTransitionView
+        android:id="@+id/transition_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible" />
+
+    <FrameLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="@drawable/bg_gradient_bar">
+
+        <LinearLayout
+            android:id="@+id/top_bar_content"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp">
+
+            <ImageButton
+                android:id="@+id/back_iv"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/Close"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_back"
+                app:tint="@color/white" />
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>

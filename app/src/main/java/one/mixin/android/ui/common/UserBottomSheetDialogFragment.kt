@@ -71,6 +71,7 @@ import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
+import one.mixin.android.ui.media.pager.overlay.AvatarViewerOverlay
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment
@@ -202,8 +203,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             if (avatar.isNullOrBlank()) {
                 return@setOnClickListener
             }
-            AvatarActivity.show(requireActivity(), avatar, binding.avatar)
-            dismiss()
+            AvatarViewerOverlay.show(requireActivity(), avatar, binding.avatar)
         }
 
         bottomViewModel.findUserById(user.userId).observe(

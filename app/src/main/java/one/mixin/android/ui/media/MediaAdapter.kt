@@ -3,6 +3,7 @@ package one.mixin.android.ui.media
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
@@ -10,6 +11,8 @@ import one.mixin.android.databinding.ItemMediaBinding
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.recyclerview.NormalHolder
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaThumbViewHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isImage
@@ -44,13 +47,31 @@ class MediaAdapter(private val onClickListener: (imageView: View, messageItem: M
     override fun getHeaderTextMargin() = 5f
 }
 
-class MediaHolder(itemView: View) : NormalHolder(itemView) {
+class MediaHolder(itemView: View) : NormalHolder(itemView), MediaThumbViewHolder {
+    private var currentItem: MessageItem? = null
+
+    override val thumbMessageId: String? get() = currentItem?.messageId
+
+    override fun createThumbLocation(clipHost: View?): MediaThumbLocation? {
+        val binding = ItemMediaBinding.bind(itemView)
+        val item = currentItem
+        return MediaThumbLocation.fromView(
+            view = binding.thumbnailIv,
+            clipHost = clipHost,
+            cornerRadii = MediaThumbLocation.ZERO_RADII,
+            contentWidth = item?.mediaWidth ?: 0,
+            contentHeight = item?.mediaHeight ?: 0,
+            scaleType = ImageView.ScaleType.CENTER_CROP,
+        )
+    }
+
     fun bind(
         item: MessageItem,
         size: Int,
         onClickListener: (imageView: View, messageItem: MessageItem) -> Unit,
         onLongClickListener: (messageId: String) -> Unit,
     ) {
+        currentItem = item
         val binding = ItemMediaBinding.bind(itemView)
         itemView.updateLayoutParams<ViewGroup.LayoutParams> {
             width = size

@@ -16,6 +16,8 @@ import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaThumbViewHolder
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -23,15 +25,27 @@ import one.mixin.android.vo.isSecret
 
 class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) :
     BaseViewHolder(binding.root),
-    Terminable {
+    Terminable,
+    MediaThumbViewHolder {
         private val dp16 = itemView.context.dpToPx(16f)
+        private val cornerRadiusPx = itemView.context.dpToPx(4f).toFloat()
         private val minWidth: Int
             get() = (itemView.context.messageAreaWidth() * 0.5).toInt()
 
+        override val thumbMessageId: String? get() = currentMessageId
+
+        override fun createThumbLocation(clipHost: View?): MediaThumbLocation? =
+            MediaThumbLocation.fromView(
+                view = binding.chatImage,
+                clipHost = clipHost,
+                cornerRadii = MediaThumbLocation.uniformRadii(cornerRadiusPx),
+                contentWidth = currentMediaWidth,
+                contentHeight = currentMediaHeight,
+            )
+
         init {
-            val radius = itemView.context.dpToPx(4f).toFloat()
-            binding.chatImageLayout.round(radius)
-            binding.chatTime.round(radius)
+            binding.chatImageLayout.round(cornerRadiusPx)
+            binding.chatTime.round(cornerRadiusPx)
         }
 
         override fun chatLayout(

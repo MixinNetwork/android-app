@@ -58,8 +58,14 @@ abstract class BaseViewHolder constructor(containerView: View) :
 
         protected var isMe = false
         var canNotReply = true
+        protected var currentMessageId: String? = null
+        protected var currentMediaWidth: Int = 0
+        protected var currentMediaHeight: Int = 0
 
         protected open fun bind(messageItem: MessageItem) {
+            currentMessageId = messageItem.messageId
+            currentMediaWidth = messageItem.mediaWidth ?: 0
+            currentMediaHeight = messageItem.mediaHeight ?: 0
             canNotReply = messageItem.canNotReply()
             if (this is Terminable && itemView.isShown) {
                 onRead(messageItem.messageId, messageItem.expireIn, messageItem.expireAt)

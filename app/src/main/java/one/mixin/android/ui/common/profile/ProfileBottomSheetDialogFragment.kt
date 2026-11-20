@@ -53,7 +53,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.AvatarActivity
+import one.mixin.android.ui.media.pager.overlay.AvatarViewerOverlay
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.ReceiveQrActivity
@@ -203,8 +203,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 if (avatar.isNullOrBlank()) {
                     return@setOnClickListener
                 }
-                AvatarActivity.show(requireActivity(), avatar, binding.avatar)
-                dismiss()
+                AvatarViewerOverlay.show(requireActivity(), avatar, binding.avatar)
             }
 
             name.setName(account)

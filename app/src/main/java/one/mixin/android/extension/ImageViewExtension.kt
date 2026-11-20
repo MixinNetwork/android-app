@@ -51,10 +51,13 @@ fun ImageView.loadImage(
     )? = null,
     onError: ((request: ImageRequest, result: ErrorResult) -> Unit)? = null,
     transformation: Transformation? = null,
+    placeholderDrawable: Drawable? = null,
 ) {
     if (data == null) {
         dispose()
-        if (base64Holder != null) {
+        if (placeholderDrawable != null) {
+            setImageDrawable(placeholderDrawable)
+        } else if (base64Holder != null) {
             setImageDrawable(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             setImageResource(holder)
@@ -62,7 +65,9 @@ fun ImageView.loadImage(
         return
     }
     this.load(data) {
-        if (base64Holder != null) {
+        if (placeholderDrawable != null) {
+            placeholder(placeholderDrawable)
+        } else if (base64Holder != null) {
             placeholder(base64Holder.toDrawable(layoutParams?.width ?: 0, layoutParams?.height ?: 0))
         } else if (holder != null) {
             placeholder(holder)

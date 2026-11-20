@@ -47,7 +47,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.navTo
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.AvatarActivity
+import one.mixin.android.ui.media.pager.overlay.AvatarViewerOverlay
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
@@ -94,7 +94,7 @@ class ProfileFragment : BaseFragment() {
                                                 avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
                                                 avatar.contentDescription = getString(R.string.Profile)
                                                 avatar.setOnClickListener {
-                                                    user.avatarUrl?.takeIf { it.isNotBlank() }?.let { AvatarActivity.show(requireActivity(), it, avatar) }
+                                                    user.avatarUrl?.takeIf { it.isNotBlank() }?.let { AvatarViewerOverlay.show(requireActivity(), it, avatar) }
                                                 }
                                             },
                                         )

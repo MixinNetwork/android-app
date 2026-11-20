@@ -2,6 +2,8 @@
 
 package one.mixin.android.ui.conversation.holder
 
+import android.graphics.RectF
+import android.graphics.drawable.Drawable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -27,13 +29,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
+import coil3.asDrawable
+import coil3.compose.AsyncImage
+import coil3.compose.rememberAsyncImagePainter
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
@@ -77,10 +87,14 @@ fun AppCard(
     isWhite: Boolean = false,
     coverClick: (() -> Unit)? = null,
     mentionUserMap: Map<String, String> = emptyMap(),
+    coverHidden: Boolean = false,
+    onCoverPositioned: ((RectF) -> Unit)? = null,
+    onCoverDrawableReady: ((Drawable?) -> Unit)? = null,
 ) {
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
     val context = LocalContext.current
+    val hostView = LocalView.current
     val textSize = (context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14).textDp)
     val titleSize = ((context.defaultSharedPreferences.getInt(Constants.Account.PREF_TEXT_SIZE, 14) + 2).textDp)
 
@@ -92,21 +106,50 @@ fun AppCard(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = contentClick, onLongClick = contentLongClick
             )) {
+            val coverModifierBase =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = if (isMe) 0.dp else 7.dp,
+                        end = if (isMe) {
+                            if (isLast) 6.dp else 7.dp
+                        } else 0.dp,
+                    )
             if (!appCardData.coverUrl.isNullOrBlank()) {
-                CoilImage(
+                val placeholderPainter = painterResource(id = R.drawable.bot_default)
+                AsyncImage(
                     model = appCardData.coverUrl,
-                    placeholder = R.drawable.bot_default,
+                    contentDescription = null,
+                    placeholder = placeholderPainter,
+                    error = placeholderPainter,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
-                                if (isLast) 6.dp else 7.dp
-                            } else 0.dp
-                        )
+                    onSuccess = { state ->
+                        onCoverDrawableReady?.invoke(state.result.image.asDrawable(context.resources))
+                    },
+                    modifier = coverModifierBase
                         .aspectRatio(1.0f)
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                        .alpha(if (coverHidden) 0f else 1f)
+                        .onGloballyPositioned { coords ->
+                            onCoverPositioned?.let { callback ->
+                                val bounds = coords.boundsInWindow()
+                                val winLoc = IntArray(2)
+                                val screenLoc = IntArray(2)
+                                hostView.getLocationInWindow(winLoc)
+                                hostView.getLocationOnScreen(screenLoc)
+                                val offsetX = (screenLoc[0] - winLoc[0]).toFloat()
+                                val offsetY = (screenLoc[1] - winLoc[1]).toFloat()
+                                callback(
+                                    RectF(
+                                        bounds.left + offsetX,
+                                        bounds.top + offsetY,
+                                        bounds.right + offsetX,
+                                        bounds.bottom + offsetY,
+                                    ),
+                                )
+                            }
+                        }
                         .then(
                             if (coverClick != null) {
                                 Modifier.clickable(
@@ -115,24 +158,44 @@ fun AppCard(
                                 ) { coverClick() }
                             } else {
                                 Modifier
-                            }
-                        )
+                            },
+                        ),
                 )
             } else if (appCardData.cover != null) {
-                CoilImage(
+                val thumbPainter = appCardData.cover.thumbnailDrawable?.let { rememberAsyncImagePainter(it) }
+                AsyncImage(
                     model = appCardData.cover.url,
-                    placeholder = appCardData.cover.thumbnailDrawable,
+                    contentDescription = null,
+                    placeholder = thumbPainter,
+                    error = thumbPainter,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = if (isMe) 0.dp else 7.dp, end = if (isMe) {
-                                if (isLast) 6.dp else 7.dp
-                            } else 0.dp
-                        )
+                    onSuccess = { state ->
+                        onCoverDrawableReady?.invoke(state.result.image.asDrawable(context.resources))
+                    },
+                    modifier = coverModifierBase
                         .aspectRatio(appCardData.cover.radio)
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                        .alpha(if (coverHidden) 0f else 1f)
+                        .onGloballyPositioned { coords ->
+                            onCoverPositioned?.let { callback ->
+                                val bounds = coords.boundsInWindow()
+                                val winLoc = IntArray(2)
+                                val screenLoc = IntArray(2)
+                                hostView.getLocationInWindow(winLoc)
+                                hostView.getLocationOnScreen(screenLoc)
+                                val offsetX = (screenLoc[0] - winLoc[0]).toFloat()
+                                val offsetY = (screenLoc[1] - winLoc[1]).toFloat()
+                                callback(
+                                    RectF(
+                                        bounds.left + offsetX,
+                                        bounds.top + offsetY,
+                                        bounds.right + offsetX,
+                                        bounds.bottom + offsetY,
+                                    ),
+                                )
+                            }
+                        }
                         .then(
                             if (coverClick != null) {
                                 Modifier.clickable(
@@ -141,8 +204,8 @@ fun AppCard(
                                 ) { coverClick() }
                             } else {
                                 Modifier
-                            }
-                        )
+                            },
+                        ),
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
