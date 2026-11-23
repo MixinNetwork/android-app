@@ -8,6 +8,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ContentResolver
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -190,6 +191,7 @@ class MediaViewerOverlay private constructor(
 
     private var initialIndex = 0
     private var firstLoad = true
+    private var pendingConversationPosition: Int? = null
     private var isOpeningTransition = false
     private var isClosing = false
     private var hasDismissed = false
@@ -452,6 +454,7 @@ class MediaViewerOverlay private constructor(
         if (messageItem.isAppCard() && (mode.mediaSource == MediaSource.SharedMedia || !messageItem.isAppCardWithMediaCover())) {
             checkOrientation()
             firstLoad = false
+            observeStandaloneMessage(mode.messageId)
             return
         }
 
@@ -461,7 +464,18 @@ class MediaViewerOverlay private constructor(
                 conversationRepository.indexMediaMessages(mode.conversationId, mode.messageId, excludeLive)
             }
         adapter.addOnPagesUpdatedListener {
-            positionInitialConversationItem(mode, excludeLive)
+            if (firstLoad) {
+                positionInitialConversationItem(mode, excludeLive)
+            } else {
+                val pendingPos = pendingConversationPosition
+                if (pendingPos != null && binding.viewPager.currentItem == pendingPos) {
+                    val loaded = getConversationItem(pendingPos)
+                    if (loaded != null) {
+                        pendingConversationPosition = null
+                        applyConversationSelection(pendingPos, loaded)
+                    }
+                }
+            }
         }
         Pager(
             config =
@@ -674,6 +688,37 @@ class MediaViewerOverlay private constructor(
         hiddenMessageId = null
     }
 
+    private fun observeStandaloneMessage(messageId: String) {
+        var sawMessage = false
+        conversationRepository.findMessageItemByMessageId(messageId).observe(dialog) { item ->
+            if (hasDismissed) return@observe
+            if (item != null) {
+                sawMessage = true
+                if (item.type == MessageCategory.MESSAGE_RECALL.name || !item.isAppCard()) {
+                    cleanupAndDismissImmediate()
+                }
+            } else if (sawMessage) {
+                cleanupAndDismissImmediate()
+            }
+        }
+    }
+
+    private fun applyConversationSelection(
+        position: Int,
+        messageItem: MessageItem,
+    ) {
+        updateTopBarForConversation(messageItem)
+        if (VideoPlayer.player().mId != messageItem.messageId && !pipVideoView.shown) {
+            VideoPlayer.player().stop()
+            VideoPlayer.player().pause()
+        }
+        if (downloadMedia(position)) return
+        if (messageItem.isVideo() || messageItem.isLive()) {
+            checkPip(messageItem.messageId)
+            loadConversationVideoMessage(messageItem)
+        }
+    }
+
     private val onPageChangeCallback =
         object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -689,17 +734,17 @@ class MediaViewerOverlay private constructor(
 
                 when (mode) {
                     is Mode.Conversation -> {
-                        val messageItem = getConversationItem(position) ?: return
-                        updateTopBarForConversation(messageItem)
-                        if (VideoPlayer.player().mId != messageItem.messageId && !pipVideoView.shown) {
-                            VideoPlayer.player().stop()
-                            VideoPlayer.player().pause()
+                        val messageItem = getConversationItem(position)
+                        if (messageItem == null) {
+                            pendingConversationPosition = position
+                            if (!pipVideoView.shown) {
+                                VideoPlayer.player().stop()
+                                VideoPlayer.player().pause()
+                            }
+                            return
                         }
-                        if (downloadMedia(position)) return
-                        if (messageItem.isVideo() || messageItem.isLive()) {
-                            checkPip(messageItem.messageId)
-                            loadConversationVideoMessage(messageItem)
-                        }
+                        pendingConversationPosition = null
+                        applyConversationSelection(position, messageItem)
                     }
                     is Mode.Transcript -> {
                         val messageItem = transcriptAdapter?.getItem(position) ?: return
@@ -1809,7 +1854,12 @@ class MediaViewerOverlay private constructor(
         @Volatile
         private var currentOverlay: MediaViewerOverlay? = null
 
-        fun isShowing(): Boolean = currentOverlay?.let { !it.hasDismissed && it.dialog.isShowing } == true
+        fun isShowing(activity: Activity? = null): Boolean =
+            currentOverlay?.let {
+                !it.hasDismissed &&
+                    it.dialog.isShowing &&
+                    (activity == null || it.activity === activity)
+            } == true
 
         fun showConversation(
             activity: FragmentActivity,

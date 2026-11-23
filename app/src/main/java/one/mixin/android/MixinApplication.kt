@@ -541,7 +541,7 @@ open class MixinApplication :
         activity: Activity,
         recreate: Boolean,
     ) {
-        if (activity is MediaPagerActivity || MediaViewerOverlay.isShowing() || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
+        if (activity is MediaPagerActivity || MediaViewerOverlay.isShowing(activity) || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
             FloatingWebClip.getInstance(activity.isNightMode()).hide()
             FloatingPlayer.getInstance(activity.isNightMode()).hide()
         } else if (activity !is LandingActivity && activity !is InitializeActivity) {
