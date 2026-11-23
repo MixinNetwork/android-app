@@ -48,6 +48,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -214,7 +215,7 @@ internal class CandleChartState {
     fun fling(scope: CoroutineScope, velocityPx: Float, decay: DecayAnimationSpec<Float>) {
         stopFling()
         isScrolling = true
-        flingJob = scope.launch {
+        val job = scope.launch(start = CoroutineStart.LAZY) {
             try {
                 var last = 0f
                 AnimationState(initialValue = 0f, initialVelocity = velocityPx).animateDecay(decay) {
@@ -223,9 +224,14 @@ internal class CandleChartState {
                     if (!scrollByPx(delta)) cancelAnimation()
                 }
             } finally {
-                isScrolling = false
+                if (flingJob === coroutineContext[Job]) {
+                    flingJob = null
+                    isScrolling = false
+                }
             }
         }
+        flingJob = job
+        job.start()
     }
 
     fun stopFling() {
@@ -452,9 +458,9 @@ private fun lerp(from: PriceRange, to: PriceRange, fraction: Float): PriceRange 
     max = from.max + (to.max - from.max) * fraction,
 )
 
-private enum class GestureMode { Pending, Drag, Pinch, Select }
+private enum class GestureMode { Cancelled, Drag, Pinch, Select }
 
-private suspend fun PointerInputScope.detectChartGestures(
+internal suspend fun PointerInputScope.detectChartGestures(
     state: CandleChartState,
     scope: CoroutineScope,
     decay: DecayAnimationSpec<Float>,
@@ -465,80 +471,106 @@ private suspend fun PointerInputScope.detectChartGestures(
         val down = awaitFirstDown(requireUnconsumed = false)
         state.stopFling()
         val tracker = VelocityTracker().apply { addPointerInputChange(down) }
-        val longPressDeadline = down.uptimeMillis + min(viewConfiguration.longPressTimeoutMillis, LONG_PRESS_TIMEOUT_MS)
-        var mode = GestureMode.Pending
-        var lastUptime = down.uptimeMillis
+        val longPressTimeout = min(viewConfiguration.longPressTimeoutMillis, LONG_PRESS_TIMEOUT_MS)
+        val longPressDeadline = down.uptimeMillis + longPressTimeout
         var lastPosition = down.position
         var totalDrag = Offset.Zero
 
-        while (true) {
-            val event = if (mode == GestureMode.Pending) {
-                withTimeoutOrNull((longPressDeadline - lastUptime).coerceAtLeast(0L)) { awaitPointerEvent() }
-            } else {
-                awaitPointerEvent()
-            }
-            if (event == null) {
-                // Long press: scrub through candles; the chart itself stays put until release.
-                mode = GestureMode.Select
-                state.stopFling()
-                state.select(lastPosition.x)
-                onLongPress()
-                continue
-            }
+        // Keep a single timeout across all pending pointer events so high-frequency micro-moves
+        // cannot repeatedly reset Compose's 8ms timeout micro-delay and starve long press.
+        val initialMode = withTimeoutOrNull(longPressTimeout) {
+            while (true) {
+                val event = awaitPointerEvent()
+                val pressed = event.changes.filter { it.pressed }
+                if (pressed.isEmpty()) return@withTimeoutOrNull GestureMode.Cancelled
 
-            val pressed = event.changes.filter { it.pressed }
-            if (pressed.isEmpty()) {
-                when (mode) {
-                    GestureMode.Drag -> state.fling(scope, tracker.calculateVelocity().x, decay)
-                    // The detail card is only shown while the finger is held down.
-                    GestureMode.Select -> state.clearSelection()
-                    GestureMode.Pending, GestureMode.Pinch -> Unit
+                val primary = pressed.first()
+                lastPosition = primary.position
+
+                // A parent (the page's vertical scroll) claimed the gesture.
+                if (event.changes.any { it.isConsumed }) return@withTimeoutOrNull GestureMode.Cancelled
+                if (pressed.size > 1) {
+                    state.clearSelection()
+                    return@withTimeoutOrNull GestureMode.Pinch
                 }
-                break
-            }
-            val primary = pressed.first()
-            lastUptime = primary.uptimeMillis
-            lastPosition = primary.position
 
+                totalDrag += primary.positionChange()
+                if (totalDrag.getDistance() > viewConfiguration.touchSlop) {
+                    if (abs(totalDrag.x) < abs(totalDrag.y)) return@withTimeoutOrNull GestureMode.Cancelled
+                    tracker.addPointerInputChange(primary)
+                    primary.consume()
+                    return@withTimeoutOrNull GestureMode.Drag
+                }
+
+                if (primary.uptimeMillis >= longPressDeadline) {
+                    primary.consume()
+                    return@withTimeoutOrNull GestureMode.Select
+                }
+            }
+        } ?: GestureMode.Select
+
+        if (initialMode == GestureMode.Cancelled) return@awaitEachGesture
+
+        var mode = initialMode
+        var finishedNormally = false
+        try {
             when (mode) {
-                GestureMode.Pending -> {
-                    // A parent (the page's vertical scroll) claimed the gesture.
-                    if (event.changes.any { it.isConsumed }) break
-                    if (pressed.size > 1) {
-                        mode = GestureMode.Pinch
-                        state.clearSelection()
-                    } else {
-                        totalDrag += primary.positionChange()
-                        if (totalDrag.getDistance() > viewConfiguration.touchSlop) {
-                            if (abs(totalDrag.x) < abs(totalDrag.y)) break
-                            mode = GestureMode.Drag
-                            state.clearSelection()
-                            state.startScroll()
+                GestureMode.Drag -> {
+                    state.clearSelection()
+                    state.startScroll()
+                }
+                GestureMode.Select -> {
+                    // Long press: scrub through candles; the chart itself stays put until release.
+                    state.stopFling()
+                    state.select(lastPosition.x)
+                    onLongPress()
+                }
+                GestureMode.Pinch, GestureMode.Cancelled -> Unit
+            }
+
+            while (true) {
+                val event = awaitPointerEvent()
+                val pressed = event.changes.filter { it.pressed }
+                if (pressed.isEmpty()) {
+                    finishedNormally = true
+                    when (mode) {
+                        GestureMode.Drag -> state.fling(scope, tracker.calculateVelocity().x, decay)
+                        // The detail card is only shown while the finger is held down.
+                        GestureMode.Select -> state.clearSelection()
+                        GestureMode.Pinch, GestureMode.Cancelled -> Unit
+                    }
+                    break
+                }
+
+                val primary = pressed.first()
+                when (mode) {
+                    GestureMode.Drag -> {
+                        if (pressed.size > 1) {
+                            mode = GestureMode.Pinch
+                            state.stopFling()
+                        } else {
                             tracker.addPointerInputChange(primary)
+                            state.scrollByPx(primary.positionChange().x)
                             primary.consume()
                         }
                     }
-                }
-                GestureMode.Drag -> {
-                    if (pressed.size > 1) {
-                        mode = GestureMode.Pinch
-                        state.stopFling()
-                    } else {
-                        tracker.addPointerInputChange(primary)
-                        state.scrollByPx(primary.positionChange().x)
-                        primary.consume()
+                    GestureMode.Pinch -> {
+                        val zoom = event.pressedZoom()
+                        if (zoom != 1f) state.zoom(zoom, event.pressedCentroid().x)
+                        state.scrollByPx(event.pressedPan().x)
+                        pressed.forEach { it.consume() }
                     }
+                    GestureMode.Select -> {
+                        if (state.select(primary.position.x)) onSelectionMove()
+                        pressed.forEach { it.consume() }
+                    }
+                    GestureMode.Cancelled -> break
                 }
-                GestureMode.Pinch -> {
-                    val zoom = event.pressedZoom()
-                    if (zoom != 1f) state.zoom(zoom, event.pressedCentroid().x)
-                    state.scrollByPx(event.pressedPan().x)
-                    pressed.forEach { it.consume() }
-                }
-                GestureMode.Select -> {
-                    if (state.select(primary.position.x)) onSelectionMove()
-                    pressed.forEach { it.consume() }
-                }
+            }
+        } finally {
+            if (!finishedNormally) {
+                state.clearSelection()
+                state.stopFling()
             }
         }
     }
