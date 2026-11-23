@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,8 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,16 +41,11 @@ import one.mixin.android.vo.User
 @Composable
 fun BlockedPage() {
     Scaffold(
-        containerColor = MixinAppTheme.colors.backgroundWindow,
-        contentWindowInsets = WindowInsets(0),
+        backgroundColor = MixinAppTheme.colors.backgroundWindow,
         topBar = {
             MixinTopAppBar(
                 title = {
-                    Text(
-                        text = stringResource(id = R.string.Blocked),
-                        fontSize = 18.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                    )
+                    Text(stringResource(id = R.string.Blocked))
                 },
                 navigationIcon = {
                     MixinBackButton()

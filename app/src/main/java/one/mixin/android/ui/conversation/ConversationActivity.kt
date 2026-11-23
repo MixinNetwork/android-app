@@ -51,7 +51,7 @@ class ConversationActivity : BlazeBaseActivity() {
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
+        if (keyCode == KeyEvent.KEYCODE_ESCAPE && event != null && !event.isCanceled && event.hasNoModifiers()) {
             onBackPressedDispatcher.onBackPressed()
             return true
         }

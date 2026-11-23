@@ -31,6 +31,7 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import android.view.inputmethod.BaseInputConnection
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -784,7 +785,7 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
     private fun isHardwareKeyboardActive(): Boolean {
         val config = resources.configuration
         return config.keyboard != Configuration.KEYBOARD_NOKEYS &&
-            config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO
+            config.hardKeyboardHidden != Configuration.HARDKEYBOARDHIDDEN_YES
     }
 
     private val keyListener =
@@ -797,9 +798,11 @@ class ChatControlView : LinearLayout, ActionMode.Callback {
                 !event.isShiftPressed &&
                 !event.isCtrlPressed &&
                 !event.isAltPressed &&
-                !event.isMetaPressed
+                !event.isMetaPressed &&
+                (sendStatus == SEND || sendStatus == REPLY) &&
+                BaseInputConnection.getComposingSpanStart(binding.chatEt.editableText) < 0
             ) {
-                if (event.action == KeyEvent.ACTION_UP && (sendStatus == SEND || sendStatus == REPLY)) {
+                if (event.action == KeyEvent.ACTION_UP) {
                     clickSend()
                 }
                 return@OnKeyListener true

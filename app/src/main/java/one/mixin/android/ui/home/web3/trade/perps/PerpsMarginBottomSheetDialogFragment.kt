@@ -688,7 +688,6 @@ internal fun PerpsReductionInput(
     }
     fun updateInput(value: String) {
         textFieldState.setTextAndPlaceCursorAtEnd(value)
-        onInputChanged(value)
     }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current

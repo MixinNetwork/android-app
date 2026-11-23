@@ -241,7 +241,7 @@ private fun SpotTradeExampleCard(
         calculateMarketPrice(usdtToken, btcToken)
     }
     var isPriceDisplayReversed by remember(limitStrategy) { mutableStateOf(false) }
-    var strategy by remember(limitStrategy) { mutableStateOf(limitStrategy ?: LimitStrategy.BuyLow) }
+    var strategy by rememberSaveable(limitStrategy) { mutableStateOf(limitStrategy ?: LimitStrategy.BuyLow) }
     var payAmount by rememberSaveable(limitStrategy, strategy) {
         mutableStateOf(defaultPayAmount(limitStrategy, strategy))
     }

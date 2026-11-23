@@ -91,6 +91,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.referral.PendingReferralStore
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
@@ -174,6 +175,8 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
+import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
+import one.mixin.android.ui.common.profile.ReferralBindPreviewBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
@@ -338,6 +341,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         super.onResume()
         if (!::binding.isInitialized) return
         isBottomNavigationGlassEnabled = isGlassBottomNavigationEnabled()
+        maybeShowPendingReferral()
     }
 
     private fun updateBottomNavigationStyle() {
@@ -391,6 +395,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
 
         if (!Session.checkToken()) {
+            forwardOneLinkIfNeeded(intent)
             run {
                 startActivity(Intent(this, LandingActivity::class.java))
                 finish()
@@ -399,12 +404,14 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
 
         if (Session.getAccount()?.fullName.isNullOrBlank()) {
+            forwardOneLinkIfNeeded(intent)
             InitializeActivity.showSetupName(this)
             finish()
             return
         }
 
         if (Session.getAccount()?.hasPin == false) {
+            forwardOneLinkIfNeeded(intent)
             InitializeActivity.showSetupPin(this)
             finish()
             return
@@ -560,6 +567,16 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             checkUpdate()
         }
 
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                PendingReferralStore.pendingCodeFlow.collect { code ->
+                    if (code != null) {
+                        maybeShowPendingReferral()
+                    }
+                }
+            }
+        }
+
         jobManager.addJobInBackground(SyncOutputJob())
         jobManager.addJobInBackground(RefreshDappJob())
         jobManager.addJobInBackground(RestoreTransactionJob())
@@ -616,8 +633,31 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         dialog.onDismissCallback = { success, _ ->
             if (success) {
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                maybeShowPendingReferral()
             }
         }
+    }
+
+    private fun forwardOneLinkIfNeeded(intent: Intent?) {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) return
+        val oneLinkUrl = intent?.dataString?.takeIf(PendingReferralStore::isOneLinkUrl) ?: return
+        AppsFlyerLib.getInstance().performDeepLinking(oneLinkUrl, false)
+    }
+
+    private fun maybeShowPendingReferral() {
+        if (!::binding.isInitialized || isFinishing || isDestroyed || supportFragmentManager.isStateSaved) return
+        if (!Session.checkToken() || !Session.hasSafe() || Session.getAccount()?.hasPin != true) return
+        if (MixinApplication.get().isAppAuthShown()) return
+        if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) || hasPendingImportMnemonic(this)) return
+        if (findLoginPinGate() != null) return
+        if (supportFragmentManager.findFragmentByTag(CheckRegisterBottomSheetDialogFragment.TAG) != null) return
+        if (supportFragmentManager.findFragmentByTag(InputReferralBottomSheetDialogFragment.TAG) != null) return
+        if (supportFragmentManager.findFragmentByTag(ReferralBindPreviewBottomSheetDialogFragment.TAG) != null) return
+
+        val code = PendingReferralStore.get(this) ?: return
+        InputReferralBottomSheetDialogFragment
+            .newInstance(defaultValue = code, clearPendingOnDismiss = true)
+            .show(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
     }
 
     private suspend fun openPendingMnemonicNext(pin: String? = null): Boolean {
@@ -1028,6 +1068,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         handlerCode(intent)
     }
 
@@ -1711,8 +1752,12 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     override fun onKeyShortcut(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_F && event?.isCtrlPressed == true) {
+            val hasOverlay =
+                supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG) != null ||
+                    supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG) != null ||
+                    supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG) != null
             val conversationListFragment = findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)
-            if (conversationListFragment != null && conversationListFragment.isAdded && conversationListFragment.isVisible) {
+            if (!hasOverlay && conversationListFragment != null && conversationListFragment.isAdded && conversationListFragment.isVisible) {
                 conversationListFragment.openSearch()
                 return true
             }
@@ -1721,7 +1766,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
+        if (keyCode == KeyEvent.KEYCODE_ESCAPE && event != null && !event.isCanceled && event.hasNoModifiers()) {
             val conversationListFragment = findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)
             val hasOverlay =
                 supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG) != null ||

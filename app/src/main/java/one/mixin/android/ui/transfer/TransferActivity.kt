@@ -238,6 +238,10 @@ class TransferActivity : BaseActivity() {
         binding.titleView.leftIb.setOnClickListener {
             onBackPressed()
         }
+        setupTransfer()
+    }
+
+    private fun withLocalNetworkPermission(action: () -> Unit) {
         if (Build.VERSION.SDK_INT >= 37 &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) != PackageManager.PERMISSION_GRANTED
         ) {
@@ -246,14 +250,13 @@ class TransferActivity : BaseActivity() {
                 .autoDispose(destroyScope)
                 .subscribe { granted ->
                     if (granted) {
-                        setupTransfer()
+                        action()
                     } else {
                         openPermissionSetting()
-                        finish()
                     }
                 }
         } else {
-            setupTransfer()
+            action()
         }
     }
 
@@ -431,10 +434,14 @@ class TransferActivity : BaseActivity() {
                 }
         }
         intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
-            handleCommand(this)
+            withLocalNetworkPermission {
+                handleCommand(this)
+            }
         }
         intent.getStringExtra(ARGS_QR_CODE_CONTENT)?.let { qrCodeContent ->
-            connectToQrCodeContent(qrCodeContent)
+            withLocalNetworkPermission {
+                connectToQrCodeContent(qrCodeContent)
+            }
         }
     }
 
@@ -496,70 +503,72 @@ class TransferActivity : BaseActivity() {
                     .show()
                 return@setOnClickListener
             }
-            when (argsStatus) {
-                ARGS_TRANSFER_TO_PHONE -> {
-                    lifecycleScope.launch {
-                        transferServer.startServer(selectConversation, selectDate) { transferCommandData ->
-                            lifecycleScope.launch(Dispatchers.Main) {
-                                val qrCode =
-                                    gson.toJson(transferCommandData)
-                                        .base64Encode()
-                                        .run {
-                                            "$DEVICE_TRANSFER?data=$this"
-                                        }
-                                        .generateQRCode(240.dp).first
-                                binding.qr.setImageBitmap(qrCode)
-                                binding.qrFl.fadeIn()
-                                binding.initLl.isVisible = false
-                                binding.waitingLl.isVisible = false
+            withLocalNetworkPermission {
+                when (argsStatus) {
+                    ARGS_TRANSFER_TO_PHONE -> {
+                        lifecycleScope.launch {
+                            transferServer.startServer(selectConversation, selectDate) { transferCommandData ->
+                                lifecycleScope.launch(Dispatchers.Main) {
+                                    val qrCode =
+                                        gson.toJson(transferCommandData)
+                                            .base64Encode()
+                                            .run {
+                                                "$DEVICE_TRANSFER?data=$this"
+                                            }
+                                            .generateQRCode(240.dp).first
+                                    binding.qr.setImageBitmap(qrCode)
+                                    binding.qrFl.fadeIn()
+                                    binding.initLl.isVisible = false
+                                    binding.waitingLl.isVisible = false
+                                }
                             }
                         }
                     }
-                }
 
-                ARGS_TRANSFER_TO_PC -> {
-                    if (this@TransferActivity.status.value != TransferStatus.CREATED) {
-                        if (chatWebSocket.connected) {
-                            pushRequest()
-                        } else {
-                            alertDialogBuilder()
-                                .setTitle(getString(R.string.Unable_connect_desktop))
-                                .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                .show()
-                        }
-                    }
-                }
-
-                ARGS_RESTORE_FROM_PC -> {
-                    if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE) {
-                        if (chatWebSocket.connected) {
-                            pullRequest()
-                        } else {
-                            alertDialogBuilder()
-                                .setTitle(getString(R.string.Unable_connect_desktop))
-                                .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                .show()
-                        }
-                    }
-                }
-
-                ARGS_RESTORE_FROM_PHONE -> {
-                    RxPermissions(this)
-                        .request(Manifest.permission.CAMERA)
-                        .autoDispose(stopScope)
-                        .subscribe { granted ->
-                            if (granted) {
-                                getScanResult.launch(
-                                    Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true),
-                                )
+                    ARGS_TRANSFER_TO_PC -> {
+                        if (this@TransferActivity.status.value != TransferStatus.CREATED) {
+                            if (chatWebSocket.connected) {
+                                pushRequest()
                             } else {
-                                openPermissionSetting()
+                                alertDialogBuilder()
+                                    .setTitle(getString(R.string.Unable_connect_desktop))
+                                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                        dialog.dismiss()
+                                    }
+                                    .show()
                             }
                         }
+                    }
+
+                    ARGS_RESTORE_FROM_PC -> {
+                        if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE) {
+                            if (chatWebSocket.connected) {
+                                pullRequest()
+                            } else {
+                                alertDialogBuilder()
+                                    .setTitle(getString(R.string.Unable_connect_desktop))
+                                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                        dialog.dismiss()
+                                    }
+                                    .show()
+                            }
+                        }
+                    }
+
+                    ARGS_RESTORE_FROM_PHONE -> {
+                        RxPermissions(this)
+                            .request(Manifest.permission.CAMERA)
+                            .autoDispose(stopScope)
+                            .subscribe { granted ->
+                                if (granted) {
+                                    getScanResult.launch(
+                                        Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true),
+                                    )
+                                } else {
+                                    openPermissionSetting()
+                                }
+                            }
+                    }
                 }
             }
         }

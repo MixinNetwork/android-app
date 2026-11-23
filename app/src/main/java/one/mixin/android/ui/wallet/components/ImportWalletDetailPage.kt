@@ -132,7 +132,7 @@ fun ImportWalletDetailPage(
         mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
     val walletNameState = rememberTextFieldState()
     val walletName = walletNameState.text.toString()
-    var hasInitializedWalletName by remember(showWalletNameInput) { mutableStateOf(false) }
+    var hasInitializedWalletName by rememberSaveable(showWalletNameInput) { mutableStateOf(false) }
 
     LaunchedEffect(defaultWalletName, showWalletNameInput) {
         if (showWalletNameInput && !hasInitializedWalletName && !defaultWalletName.isNullOrBlank()) {

@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -145,7 +146,14 @@ private fun WalletMultiSelectScreen(
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     var query by rememberSaveable { mutableStateOf("") }
 
-    val selectedWalletIds = remember { mutableStateListOf<String>().apply { addAll(initialSelectedIds) } }
+    val selectedWalletIds = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { mutableStateListOf<String>().apply { addAll(it) } },
+        ),
+    ) {
+        mutableStateListOf<String>().apply { addAll(initialSelectedIds) }
+    }
     var privacySelected by rememberSaveable { mutableStateOf(initialPrivacySelected) }
 
     val walletItems = remember(wallets, query) {

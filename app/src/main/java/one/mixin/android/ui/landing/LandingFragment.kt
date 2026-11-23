@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -95,10 +96,15 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
                 // Keep the indicator clear of the bottom buttons on short windows
                 val available = binding.createTv.top - params.bottomMargin - indicatorParams.topMargin -
                     binding.featureIndicator.height - 16.dp
-                val target = minOf((height * percent).toInt(), available).coerceAtLeast(0)
-                if (params.height != target) {
-                    params.height = target
-                    binding.featurePager.layoutParams = params
+                if (available <= 0) {
+                    binding.featurePager.isVisible = false
+                } else {
+                    binding.featurePager.isVisible = true
+                    val target = minOf((height * percent).toInt(), available).coerceAtLeast(1)
+                    if (params.height != target) {
+                        params.height = target
+                        binding.featurePager.layoutParams = params
+                    }
                 }
             }
         }

@@ -48,7 +48,7 @@ import java.math.BigDecimal
 
 @Composable
 fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (Alert) -> Unit) {
-    var expand by rememberSaveable { mutableStateOf(initiallyExpanded) }
+    var expand by rememberSaveable(alertGroup.coinId) { mutableStateOf(initiallyExpanded) }
     val viewModel = hiltViewModel<AlertViewModel>()
     val alerts by viewModel.alertsByCoinId(alertGroup.coinId).collectAsState(initial = emptyList())
     val rotationState by animateFloatAsState(targetValue = if (expand) 0f else -180f, label = "")

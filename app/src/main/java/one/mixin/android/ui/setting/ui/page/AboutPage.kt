@@ -5,14 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,8 +71,7 @@ fun AboutPage() {
         remember { mutableStateOf(preferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)) }
 
     Scaffold(
-        containerColor = MixinAppTheme.colors.background,
-        contentWindowInsets = WindowInsets(0),
+        backgroundColor = MixinAppTheme.colors.background,
         topBar = {
             val context = LocalContext.current
             MixinTopAppBar(
@@ -85,11 +83,7 @@ fun AboutPage() {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.About),
-                            fontSize = 18.sp,
-                            color = MixinAppTheme.colors.textPrimary,
-                        )
+                        Text(text = stringResource(id = R.string.About))
                         VersionName()
                     }
                 },
