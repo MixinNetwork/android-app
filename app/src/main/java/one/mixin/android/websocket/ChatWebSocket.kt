@@ -32,6 +32,7 @@ import one.mixin.android.job.RefreshOffsetJob
 import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
+import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.FLOOD_THREAD
 import one.mixin.android.util.GzipException
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -79,6 +80,10 @@ class ChatWebSocket(
 
     @Synchronized
     fun connect() {
+        if (MixinApplication.get().isOldVersion()) {
+            disconnect()
+            return
+        }
         if (client == null) {
             connected = false
             homeUrl =
@@ -149,6 +154,9 @@ class ChatWebSocket(
                 },
                 object : TransactionCallbackError {
                     override fun error(data: BlazeMessage?) {
+                        if (data?.error?.code == OLD_VERSION || MixinApplication.get().isOldVersion()) {
+                            return
+                        }
                         sendPendingMessage()
                     }
                 },
@@ -192,6 +200,15 @@ class ChatWebSocket(
                         handleReceiveMessage(blazeMessage)
                     }
                 } else {
+                    if (blazeMessage.error.code == OLD_VERSION) {
+                        if (transactions[blazeMessage.id] != null) {
+                            transactions[blazeMessage.id]!!.error.error(blazeMessage)
+                            transactions.remove(blazeMessage.id)
+                        }
+                        MixinApplication.get().gotoOldVersionAlert()
+                        disconnect()
+                        return@launch
+                    }
                     if (transactions[blazeMessage.id] != null) {
                         transactions[blazeMessage.id]!!.error.error(blazeMessage)
                         transactions.remove(blazeMessage.id)
@@ -228,6 +245,11 @@ class ChatWebSocket(
         reason: String,
     ) {
         connected = false
+        if (MixinApplication.get().isOldVersion()) {
+            disconnect()
+            webSocket.cancel()
+            return
+        }
         if (code == failCode) {
             closeInternal(code)
             jobManager.stop()
@@ -235,7 +257,7 @@ class ChatWebSocket(
                 connectTimer =
                     Observable.interval(2000, TimeUnit.MILLISECONDS).subscribe(
                         {
-                            if (MixinApplication.appContext.networkConnected() && Session.checkToken()) {
+                            if (!MixinApplication.get().isOldVersion() && MixinApplication.appContext.networkConnected() && Session.checkToken()) {
                                 connect()
                             }
                         },
@@ -261,7 +283,7 @@ class ChatWebSocket(
         }
         Timber.e(t, "WebSocket onFailure $homeUrl")
         if (client != null) {
-            if (t is ClientErrorException && t.code == AUTHENTICATION) {
+            if (MixinApplication.get().isOldVersion() || (t is ClientErrorException && (t.code == AUTHENTICATION || t.code == OLD_VERSION))) {
                 closeInternal(quitCode)
             } else {
                 onClosed(webSocket, failCode, "OK")

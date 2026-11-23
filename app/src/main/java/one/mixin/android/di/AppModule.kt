@@ -45,6 +45,7 @@ import one.mixin.android.Constants.DNS
 import one.mixin.android.Constants.RouteConfig.REFERRAL_API_URL
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
@@ -210,6 +211,9 @@ object AppModule {
         builder.dns(DNS)
         // Interceptor
         builder.addInterceptor { chain ->
+            if (MixinApplication.get().isOldVersion()) {
+                throw ClientErrorException(OLD_VERSION)
+            }
             val requestId = UUID.randomUUID().toString()
             val sourceRequest = chain.request()
             val request =
@@ -536,6 +540,9 @@ object AppModule {
                     addNetworkInterceptor(interceptor)
                 }
                 addInterceptor { chain ->
+                    if (MixinApplication.get().isOldVersion()) {
+                        throw ClientErrorException(OLD_VERSION)
+                    }
                     val sourceRequest = chain.request()
                     val b = sourceRequest.newBuilder()
                     b.addHeader("User-Agent", API_UA)
@@ -579,6 +586,9 @@ object AppModule {
                     addNetworkInterceptor(interceptor)
                 }
                 addInterceptor { chain ->
+                    if (MixinApplication.get().isOldVersion()) {
+                        throw ClientErrorException(OLD_VERSION)
+                    }
                     val sourceRequest = chain.request()
                     val b = sourceRequest.newBuilder()
                     b.addHeader("User-Agent", API_UA)
@@ -622,6 +632,9 @@ object AppModule {
                     addNetworkInterceptor(interceptor)
                 }
                 addInterceptor { chain ->
+                    if (MixinApplication.get().isOldVersion()) {
+                        throw ClientErrorException(OLD_VERSION)
+                    }
                     val sourceRequest = chain.request()
                     val b = sourceRequest.newBuilder()
                     b.addHeader("User-Agent", API_UA)
@@ -665,6 +678,9 @@ object AppModule {
                     addNetworkInterceptor(interceptor)
                 }
                 addInterceptor { chain ->
+                    if (MixinApplication.get().isOldVersion()) {
+                        throw ClientErrorException(OLD_VERSION)
+                    }
                     val sourceRequest = chain.request()
                     val b = sourceRequest.newBuilder()
                     b.addHeader("User-Agent", API_UA)

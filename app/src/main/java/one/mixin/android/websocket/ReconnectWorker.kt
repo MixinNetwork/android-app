@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import one.mixin.android.MixinApplication
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.BlazeMessageService.Companion.ACTION_ACTIVITY_PAUSE
 import one.mixin.android.worker.BaseWork
@@ -17,7 +18,7 @@ class ReconnectWorker @AssistedInject constructor(
     ) : BaseWork(context, parameters) {
 
     override suspend fun onRun(): Result {
-        if (chatWebSocket.connected) {
+        if (MixinApplication.get().isOldVersion() || chatWebSocket.connected) {
             return Result.success()
         }
         BlazeMessageService.startService(context, ACTION_ACTIVITY_PAUSE)

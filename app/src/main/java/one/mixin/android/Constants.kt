@@ -70,6 +70,7 @@ object Constants {
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_RANDOM = "pref_random"
         const val PREF_WRONG_TIME = "pref_wrong_time"
+        const val PREF_OLD_VERSION_CODE = "pref_old_version_code"
         const val PREF_RESTORE = "pref_restore"
         const val PREF_RECALL_SHOW = "pref_recall_show"
         const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"

@@ -180,7 +180,7 @@ open class ErrorHandler {
                     SERVER, INSUFFICIENT_POOL -> {
                         toast(getString(R.string.error_server_5xx_code, code))
                     }
-                    TIME_INACCURATE -> { }
+                    TIME_INACCURATE, OLD_VERSION -> { }
                     else -> {
                         toast(getString(R.string.error_unknown_with_code, code))
                     }
