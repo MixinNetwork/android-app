@@ -33,6 +33,7 @@ class MediaOverlayDialog(
     private val keepScreenOn: Boolean = false,
     private val hideFloatingViews: Boolean = true,
     private val onDispatchTouchEvent: ((MotionEvent) -> Unit)? = null,
+    private val onHostDestroy: (() -> Unit)? = null,
     private val onBackRequest: () -> Unit,
 ) : ComponentDialog(hostActivity, R.style.AppTheme_MediaOverlay) {
 
@@ -165,6 +166,7 @@ class MediaOverlayDialog(
         val observer =
             object : DefaultLifecycleObserver {
                 override fun onDestroy(owner: LifecycleOwner) {
+                    onHostDestroy?.invoke()
                     if (isShowing) {
                         super@MediaOverlayDialog.dismiss()
                     }

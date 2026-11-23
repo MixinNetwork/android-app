@@ -43,7 +43,6 @@ internal class OverlayMediaPagerAdapter(
     private val context: Context,
     private val onDismissListener: MediaDismissLayout.OnDismissListener,
     private val listener: MediaPagerAdapterListener,
-    private val onOutsideTap: () -> Unit,
     private val initialMessageId: String? = null,
     private val initialPlaceholderProvider: (() -> Drawable?)? = null,
 ) : SafePagingDataAdapter<MessageItem, MediaPagerHolder>(MessageItem.DIFF_CALLBACK) {
@@ -69,7 +68,7 @@ internal class OverlayMediaPagerAdapter(
                 VideoHolder(layout, listener)
             }
             else -> {
-                layout.addView(createPhotoView(parent, onOutsideTap))
+                layout.addView(createPhotoView(parent))
                 layout.addView(circleProgress)
                 PhotoHolder(layout)
             }
@@ -128,7 +127,6 @@ internal class OverlayTranscriptPagerAdapter(
     private val context: Context,
     private val onDismissListener: MediaDismissLayout.OnDismissListener,
     private val listener: TranscriptMediaPagerAdapterListener,
-    private val onOutsideTap: () -> Unit,
     private val initialMessageId: String? = null,
     private val initialPlaceholderProvider: (() -> Drawable?)? = null,
 ) : RecyclerView.Adapter<TranscriptMediaPagerHolder>() {
@@ -161,7 +159,7 @@ internal class OverlayTranscriptPagerAdapter(
                 TranscriptVideoHolder(layout, listener)
             }
             else -> {
-                layout.addView(createPhotoView(parent, onOutsideTap))
+                layout.addView(createPhotoView(parent))
                 layout.addView(circleProgress)
                 TranscriptPhotoHolder(layout)
             }
@@ -247,10 +245,8 @@ private fun createLargeImageView(parent: ViewGroup): LargeImageView =
 
 private fun createPhotoView(
     parent: ViewGroup,
-    onOutsideTap: () -> Unit,
 ): PhotoView =
     PhotoView(parent.context).apply {
-        setOnOutsidePhotoTapListener { onOutsideTap() }
         layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT,

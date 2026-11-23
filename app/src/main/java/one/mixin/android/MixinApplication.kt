@@ -67,6 +67,7 @@ import one.mixin.android.ui.conversation.location.useOpenStreetMap
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
+import one.mixin.android.ui.media.pager.overlay.MediaViewerOverlay
 import one.mixin.android.ui.player.FloatingPlayer
 import one.mixin.android.ui.player.MusicActivity
 import one.mixin.android.ui.player.MusicService
@@ -540,7 +541,7 @@ open class MixinApplication :
         activity: Activity,
         recreate: Boolean,
     ) {
-        if (activity is MediaPagerActivity || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
+        if (activity is MediaPagerActivity || MediaViewerOverlay.isShowing() || activity is CallActivity || activity is MusicActivity || activity is WebActivity || activity is AppAuthActivity) {
             FloatingWebClip.getInstance(activity.isNightMode()).hide()
             FloatingPlayer.getInstance(activity.isNightMode()).hide()
         } else if (activity !is LandingActivity && activity !is InitializeActivity) {

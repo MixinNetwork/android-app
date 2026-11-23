@@ -117,8 +117,9 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
-import one.mixin.android.vo.appCardMediaCoverUrl
+import one.mixin.android.vo.appCardCoverUrl
 import one.mixin.android.vo.isAppCard
+import one.mixin.android.vo.isAppCardWithMediaCover
 import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
@@ -304,7 +305,6 @@ class MediaViewerOverlay private constructor(
                         context = activity,
                         onDismissListener = this,
                         listener = conversationPagerListener,
-                        onOutsideTap = { toggleImageChrome() },
                         initialMessageId = initialMessageId,
                         initialPlaceholderProvider = initialPlaceholder,
                     )
@@ -316,7 +316,6 @@ class MediaViewerOverlay private constructor(
                         context = activity,
                         onDismissListener = this,
                         listener = transcriptPagerListener,
-                        onOutsideTap = { toggleImageChrome() },
                         initialMessageId = initialMessageId,
                         initialPlaceholderProvider = initialPlaceholder,
                     )
@@ -448,6 +447,12 @@ class MediaViewerOverlay private constructor(
             messageItem.loadVideoOrLive {
                 VideoPlayer.player().start()
             }
+        }
+
+        if (messageItem.isAppCard() && (mode.mediaSource == MediaSource.SharedMedia || !messageItem.isAppCardWithMediaCover())) {
+            checkOrientation()
+            firstLoad = false
+            return
         }
 
         val excludeLive = mode.mediaSource == MediaSource.SharedMedia
@@ -676,7 +681,7 @@ class MediaViewerOverlay private constructor(
                 binding.lockTv.post(hideLockRunnable)
 
                 val currentId = getCurrentMessageId(position)
-                if (currentId != null && currentId != hiddenMessageId) {
+                if (!isOpeningTransition && currentId != null && currentId != hiddenMessageId) {
                     // Restore previous thumbnail so the underlying list stays intact when peeking via drag
                     val newLocation = thumbProvider?.findThumbLocation(currentId)
                     hideSourceForMessage(currentId, newLocation)
@@ -684,13 +689,13 @@ class MediaViewerOverlay private constructor(
 
                 when (mode) {
                     is Mode.Conversation -> {
-                        if (downloadMedia(position)) return
                         val messageItem = getConversationItem(position) ?: return
                         updateTopBarForConversation(messageItem)
                         if (VideoPlayer.player().mId != messageItem.messageId && !pipVideoView.shown) {
                             VideoPlayer.player().stop()
                             VideoPlayer.player().pause()
                         }
+                        if (downloadMedia(position)) return
                         if (messageItem.isVideo() || messageItem.isLive()) {
                             checkPip(messageItem.messageId)
                             loadConversationVideoMessage(messageItem)
@@ -967,7 +972,9 @@ class MediaViewerOverlay private constructor(
         SensorOrientationChangeNotifier.reset()
         dataJob?.cancel()
         overlayScope.cancel()
-        currentOverlay = null
+        if (currentOverlay === this) {
+            currentOverlay = null
+        }
         dialog.dismiss()
     }
 
@@ -1352,7 +1359,7 @@ class MediaViewerOverlay private constructor(
         item: MessageItem,
         reencodeUnsupported: Boolean,
     ): File? {
-        val coverUrl = item.appCardMediaCoverUrl()
+        val coverUrl = item.appCardCoverUrl()
         if (coverUrl != null) {
             return try {
                 val loader = activity.imageLoader
@@ -1414,7 +1421,7 @@ class MediaViewerOverlay private constructor(
             try {
                 outFile.copyFromInputStream(FileInputStream(file))
             } finally {
-                if (item.appCardMediaCoverUrl() != null) {
+                if (item.appCardCoverUrl() != null) {
                     file.delete()
                 }
             }
@@ -1801,6 +1808,8 @@ class MediaViewerOverlay private constructor(
 
         @Volatile
         private var currentOverlay: MediaViewerOverlay? = null
+
+        fun isShowing(): Boolean = currentOverlay?.let { !it.hasDismissed && it.dialog.isShowing } == true
 
         fun showConversation(
             activity: FragmentActivity,

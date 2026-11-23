@@ -31,6 +31,7 @@ class AvatarViewerOverlay private constructor(
             hostActivity = activity,
             keepScreenOn = false,
             hideFloatingViews = false,
+            onHostDestroy = { finishDismiss() },
             onBackRequest = { dismissWithAnimation(0f) },
         )
 
@@ -149,9 +150,6 @@ class AvatarViewerOverlay private constructor(
             },
         )
         photoView.setOnClickListener {
-            toggleChrome()
-        }
-        photoView.setOnOutsidePhotoTapListener {
             toggleChrome()
         }
 
@@ -332,9 +330,13 @@ class AvatarViewerOverlay private constructor(
         if (hasDismissed) return
         hasDismissed = true
         isClosing = true
+        binding.backgroundView.animate().cancel()
+        binding.topBar.animate().cancel()
         binding.transitionView.clearAndHide()
         initialThumb?.setSourceVisible?.invoke(true)
-        currentOverlay = null
+        if (currentOverlay === this) {
+            currentOverlay = null
+        }
         dialog.dismiss()
     }
 
