@@ -1,5 +1,7 @@
 package one.mixin.android.extension
 
+import android.Manifest
+import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioDeviceInfo
@@ -25,7 +27,8 @@ import org.robolectric.util.ReflectionHelpers
 class AudioSwitchDeviceQueryTest {
     @Test
     fun refreshQueriesEachDeviceListOnceAndKeepsBluetoothPriority() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        shadowOf(context).grantPermissions(Manifest.permission.BLUETOOTH_CONNECT)
         val manager = context.getSystemService(AudioManager::class.java)
         val audio = Shadow.extract<CountingAudioManager>(manager)
         val speaker = AudioDeviceInfoBuilder.newBuilder().setType(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER).build()

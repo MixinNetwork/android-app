@@ -118,7 +118,7 @@ private fun MemberRenewOptionsSheet(
         Spacer(modifier = Modifier.height(10.dp))
         WalletBuyOptionItem(
             iconRes = R.drawable.ic_member_renew_crypto,
-            title = stringResource(R.string.Crypto),
+            title = stringResource(R.string.membership_renew_option_crypto),
             description = stringResource(R.string.membership_renew_option_crypto_desc),
             outlined = true,
             onClick = onCrypto,

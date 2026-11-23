@@ -1,6 +1,5 @@
 package one.mixin.android.ui.conversation.holder
 
-import android.content.res.ColorStateList
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import one.mixin.android.R
@@ -14,6 +13,7 @@ class SecretHolder constructor(val binding: ItemChatSecretBinding) : BaseViewHol
         expireIn: Long,
         isSecret: Boolean,
         isGroup: Boolean,
+        canEdit: Boolean,
         hasSelect: Boolean,
         onItemListener: MessageAdapter.OnItemListener,
     ) {
@@ -30,26 +30,28 @@ class SecretHolder constructor(val binding: ItemChatSecretBinding) : BaseViewHol
         binding.disappearingInfo.apply {
             text = if (enabled) {
                 context.getString(
-                    if (isGroup) R.string.group_disappearing_message_enabled_hint else R.string.chat_disappearing_message_enabled_hint,
+                    if (isGroup && !canEdit) R.string.group_disappearing_message_enabled_read_only else if (isGroup) R.string.group_disappearing_message_enabled_editable else R.string.chat_disappearing_message_enabled_editable,
                     toTimeInterval(expireIn),
                 )
             } else {
                 context.getString(
-                    if (isGroup) R.string.group_disappearing_message_disabled_hint else R.string.chat_disappearing_message_disabled_hint,
+                    if (isGroup && !canEdit) R.string.group_disappearing_message_disabled_read_only else if (isGroup) R.string.group_disappearing_message_disabled_editable else R.string.chat_disappearing_message_disabled_editable,
                 )
             }
-            backgroundTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    context,
-                    if (enabled) {
-                        R.color.disappearing_message_background
-                    } else if (isNightMode) {
-                        R.color.bgGrayNight
-                    } else {
-                        R.color.disappearing_message_disabled_background
-                    },
-                ),
+            val start = paddingStart
+            val top = paddingTop
+            val end = paddingEnd
+            val bottom = paddingBottom
+            setBackgroundResource(
+                if (enabled) {
+                    R.drawable.chat_bubble_disappearing
+                } else if (isNightMode) {
+                    R.drawable.chat_bubble_disappearing_off_night
+                } else {
+                    R.drawable.chat_bubble_disappearing_off
+                },
             )
+            setPaddingRelative(start, top, end, bottom)
             setTextColor(
                 ContextCompat.getColor(
                     context,

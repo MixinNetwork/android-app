@@ -85,9 +85,11 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.EOFException
 import java.io.File
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.Float.min
+import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketException
 import java.nio.ByteBuffer
@@ -130,6 +132,7 @@ class TransferClient
         lateinit var aesKey: SecretKeySpec
 
         companion object {
+            private const val CONNECT_TIMEOUT_MS = 60_000
             private const val MAX_FILE_SIZE = 5242880 // 5M
         }
 
@@ -170,6 +173,7 @@ class TransferClient
             commandData: TransferCommand,
             secretBytes: ByteArray,
             authorization: TransferAuthorization,
+            onConnectionFailed: () -> Unit = {},
         ) =
             withContext(SINGLE_SOCKET_THREAD) {
                 try {
@@ -185,7 +189,14 @@ class TransferClient
                     aesKey = SecretKeySpec(secretBytes.sliceArray(0..31), "AES")
                     NetworkUtils.printWifiInfo(MixinApplication.appContext)
                     status.value = TransferStatus.CONNECTING
-                    val socket = Socket(ip, port)
+                    val socket = Socket()
+                    try {
+                        socket.connect(InetSocketAddress(ip, port), CONNECT_TIMEOUT_MS)
+                    } catch (e: IOException) {
+                        socket.close()
+                        onConnectionFailed()
+                        throw e
+                    }
                     this@TransferClient.socket = socket
                     status.value = TransferStatus.WAITING_FOR_VERIFICATION
                     // send connect command

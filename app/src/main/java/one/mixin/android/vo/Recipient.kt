@@ -8,6 +8,7 @@ import kotlinx.parcelize.Parcelize
 
 interface Recipient
 
+@Parcelize
 data class AddressItem(
     @ColumnInfo(name = "address_id")
     @SerializedName("address_id")
@@ -27,7 +28,10 @@ data class AddressItem(
     @ColumnInfo(name = "tag")
     @SerializedName("tag")
     val tag: String?,
-) : Recipient {
+    @ColumnInfo(name = "chain_id")
+    @SerializedName("chain_id")
+    val chainId: String = "",
+) : Recipient, Parcelable {
     companion object {
         val DIFF_CALLBACK =
             object : DiffUtil.ItemCallback<AddressItem>() {
@@ -89,6 +93,16 @@ data class UserItem(
     }
 }
 
+fun Address.toAddressItem(iconUrl: String? = null) = AddressItem(
+    id = addressId,
+    label = label,
+    iconUrl = iconUrl,
+    chainUrl = iconUrl,
+    destination = destination,
+    tag = tag,
+    chainId = chainId,
+)
+
 fun AddressItem.displayAddress(): String {
     return if (!tag.isNullOrEmpty()) {
         "$destination:$tag"
@@ -99,5 +113,9 @@ fun AddressItem.displayAddress(): String {
 
 fun AddressItem.formatAddress(): String {
     val address = displayAddress()
-    return address.substring(0, 3) + "..." + address.substring(address.length - 3, address.length)
+    return if (address.length <= 6) {
+        address
+    } else {
+        address.substring(0, 3) + "..." + address.substring(address.length - 3, address.length)
+    }
 }

@@ -159,12 +159,13 @@ class TransferServer
             monthsAgo: Int?,
             createdSuccessCallback: (TransferCommand) -> Unit,
         ) = withContext(SINGLE_SOCKET_THREAD) {
+            var listener: ServerSocket? = null
             try {
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 secretBytes = TransferCipher.generateKey()
                 protocol = TransferProtocol(serializationJson, secretBytes, true)
-                val serverSocket = createSocket(port = Random.nextInt(1024, 1124))
-                this@TransferServer.serverSocket = serverSocket
+                listener = createSocket(port = Random.nextInt(1024, 1124))
+                serverSocket = listener
                 status.value = TransferStatus.CREATED
                 code = secureRandom.nextInt(1_000_000)
                 this@TransferServer.conversationIds = conversationIds
@@ -182,8 +183,12 @@ class TransferServer
                 status.value = TransferStatus.WAITING_FOR_CONNECTION
                 val socket =
                     withContext(ACCEPT_SINGLE_THREAD) {
-                        serverSocket.accept()
+                        listener.accept()
                     }
+                if (listener.isClosed) {
+                    socket.close()
+                    return@withContext
+                }
                 this@TransferServer.socket = socket
                 status.value = TransferStatus.WAITING_FOR_VERIFICATION
 
@@ -197,6 +202,7 @@ class TransferServer
                     exit()
                 }
             } catch (e: Exception) {
+                if (listener?.isClosed == true) return@withContext
                 if (status.value != TransferStatus.FINISHED && !(status.value == TransferStatus.INITIALIZING && e is SocketException)) {
                     status.value = TransferStatus.ERROR
                 }
@@ -204,6 +210,19 @@ class TransferServer
                 exit()
                 Timber.e(e)
             }
+        }
+
+        suspend fun cancelWaiting(): Boolean = withContext(SINGLE_SOCKET_THREAD) {
+            val listener = serverSocket ?: return@withContext false
+            if (status.value != TransferStatus.WAITING_FOR_CONNECTION && status.value != TransferStatus.WAITING_FOR_VERIFICATION) {
+                return@withContext false
+            }
+            listener.close()
+            serverSocket = null
+            socket?.close()
+            socket = null
+            status.value = TransferStatus.INITIALIZING
+            true
         }
 
         private fun createSocket(port: Int): ServerSocket {

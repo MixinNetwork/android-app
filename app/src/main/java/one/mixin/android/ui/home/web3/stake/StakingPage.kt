@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -69,8 +70,11 @@ fun StakingPage(
                     .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                items(stakeAccounts.size) { i ->
-                    val sa = stakeAccounts[i]
+                items(
+                    items = stakeAccounts,
+                    key = { it.pubkey },
+                    contentType = { "stake_account" },
+                ) { sa ->
                     StakeAccountItem(
                         stakeAccount = sa,
                         activations[sa.pubkey],

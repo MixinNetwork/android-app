@@ -223,6 +223,7 @@ private fun PerpsMarketCategories(
         items(
             items = PerpsMarketCategory.entries,
             key = PerpsMarketCategory::name,
+            contentType = { if (it == PerpsMarketCategory.WATCHLIST) "watchlist_chip" else "category_chip" },
         ) { category ->
             if (category == PerpsMarketCategory.WATCHLIST) {
                 WatchlistCategoryChip(
@@ -309,6 +310,7 @@ private fun PerpsMarketListContent(
                 items(
                     items = state.visibleMarkets,
                     key = PerpsMarket::marketId,
+                    contentType = { "perps_market_row" },
                 ) { market ->
                     val isFavored = state.isFavorite(market.marketId)
                     PerpsMarketListItem(
@@ -365,6 +367,7 @@ private fun PerpsMarketRecommendations(
         gridItems(
             items = state.recommendations,
             key = PerpsMarket::marketId,
+            contentType = { "recommendation_card" },
         ) { market ->
             MarketRecommendationCard(
                 entry =
@@ -378,7 +381,11 @@ private fun PerpsMarketRecommendations(
                 onSelect = { onRecommendationSelected(market) },
             )
         }
-        item(span = { GridItemSpan(maxLineSpan) }) {
+        item(
+            key = "add_to_watchlist",
+            span = { GridItemSpan(maxLineSpan) },
+            contentType = "add_to_watchlist",
+        ) {
             Box(
                 modifier =
                     Modifier

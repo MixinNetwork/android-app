@@ -361,6 +361,35 @@ class TransferActivity : BaseActivity() {
                     ).sessionId
             }
         }
+        if (argsStatus == ARGS_TRANSFER_TO_PC || argsStatus == ARGS_RESTORE_FROM_PC) {
+            RxBus.listen(TransferCommand::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(destroyScope)
+                .subscribe { command ->
+                    if (command.action == TransferCommandAction.CANCEL.value) {
+                        transferSessionManager.cancelSession(activeSessionId)
+                        pairingDialog?.dismiss()
+                        pairingDialog = null
+                        lifecycleScope.launch {
+                            if (argsStatus == ARGS_RESTORE_FROM_PC) {
+                                if (status.value == TransferStatus.WAITING_MESSAGE) {
+                                    status.value = TransferStatus.INITIALIZING
+                                } else if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.INITIALIZING) {
+                                    transferClient.cancelAndExit()
+                                } else {
+                                    status.value = TransferStatus.INITIALIZING
+                                }
+                                toast(R.string.Canceled)
+                            } else if (status.value == TransferStatus.WAITING_MESSAGE) {
+                                status.value = TransferStatus.INITIALIZING
+                                toast(R.string.Canceled)
+                            } else if (transferServer.cancelWaiting()) {
+                                toast(R.string.Canceled)
+                            }
+                        }
+                    }
+                }
+        }
     }
 
     private val argsStatus by lazy {
@@ -372,6 +401,8 @@ class TransferActivity : BaseActivity() {
 
     private fun initView() {
         binding.titleView.isVisible = true
+        binding.initLl.isVisible = true
+        binding.waitingLl.isVisible = false
         binding.pbFl.isVisible = false
         binding.selectLl.isVisible = true
         binding.conversationRl.setOnClickListener {
@@ -577,7 +608,6 @@ class TransferActivity : BaseActivity() {
 
     private var transferDisposable: Disposable? = null
     private var transferSpeedDisposable: Disposable? = null
-    private var transferCommandDisposable: Disposable? = null
     private var transferControlDisposable: Disposable? = null
 
     override fun onStart() {
@@ -609,36 +639,6 @@ class TransferActivity : BaseActivity() {
                         }
                     }
         }
-
-        if (transferCommandDisposable == null) {
-            transferCommandDisposable =
-                RxBus.listen(TransferCommand::class.java)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDispose(destroyScope)
-                    .subscribe {
-                        if (argsStatus == ARGS_TRANSFER_TO_PC || argsStatus == ARGS_RESTORE_FROM_PC) {
-                            if (it.action == TransferCommandAction.CANCEL.value) {
-                                transferSessionManager.cancelSession(activeSessionId)
-                                pairingDialog?.dismiss()
-                                pairingDialog = null
-                                if (argsStatus == ARGS_RESTORE_FROM_PC &&
-                                    status.value != TransferStatus.FINISHED &&
-                                    status.value != TransferStatus.INITIALIZING
-                                ) {
-                                    transferClient.cancelAndExit()
-                                } else if (argsStatus == ARGS_TRANSFER_TO_PC &&
-                                    status.value != TransferStatus.FINISHED
-                                ) {
-                                    transferServer.exit()
-                                    status.value = TransferStatus.INITIALIZING
-                                } else {
-                                    status.value = TransferStatus.INITIALIZING
-                                }
-                            }
-                        }
-                    }
-        }
-
         if (transferControlDisposable == null) {
             transferControlDisposable =
                 RxBus.listen(IncomingTransferControlEvent::class.java)
@@ -682,6 +682,7 @@ class TransferActivity : BaseActivity() {
     private suspend fun connect(
         transferCommandData: TransferCommand,
         authorization: TransferAuthorization,
+        onConnectionFailed: () -> Unit = {},
     ) {
         val ip = requireNotNull(transferCommandData.ip)
         val port = requireNotNull(transferCommandData.port)
@@ -696,6 +697,7 @@ class TransferActivity : BaseActivity() {
             ),
             key = key,
             authorization = authorization,
+            onConnectionFailed = onConnectionFailed,
         )
     }
 
@@ -705,19 +707,18 @@ class TransferActivity : BaseActivity() {
         transferCommand: TransferCommand,
         key: ByteArray,
         authorization: TransferAuthorization,
+        onConnectionFailed: () -> Unit = {},
     ) {
-        transferClient.connectToServer(ip, port, transferCommand, key, authorization)
+        transferClient.connectToServer(ip, port, transferCommand, key, authorization, onConnectionFailed)
     }
 
     override fun onStop() {
         super.onStop()
         transferDisposable?.dispose()
         transferSpeedDisposable?.dispose()
-        transferCommandDisposable?.dispose()
         transferControlDisposable?.dispose()
         transferDisposable = null
         transferSpeedDisposable = null
-        transferCommandDisposable = null
         transferControlDisposable = null
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
@@ -873,7 +874,11 @@ class TransferActivity : BaseActivity() {
                         return@setPositiveButton
                     }
                     lifecycleScope.launch {
-                        connect(command, authorization)
+                        connect(command, authorization) {
+                            if (argsStatus == ARGS_RESTORE_FROM_PC) {
+                                sendMessage(gson.toJson(TransferCommand(TransferCommandAction.CANCEL.value)))
+                            }
+                        }
                     }
                 }
                 .create()
