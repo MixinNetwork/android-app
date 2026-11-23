@@ -2081,6 +2081,7 @@
     <string name="free_inheritance_service">免费的财富传承服务</string>
     <string name="membership_benefit_free_inheritance_service">财富传承服务免费使用。</string>
     <string name="membership_renew_option_card_desc">使用 Google Pay、信用卡或借记卡续费会员。</string>
+    <string name="membership_renew_option_crypto">加密货币</string>
     <string name="membership_renew_option_crypto_desc">使用 USDT、USDC 或其他加密货币续费会员。</string>
     <string name="membership_benefit_paid_recovery_service">支付 %1$d Mixin Stars 使用资产恢复服务。</string>
     <string name="Invoice">票据</string>

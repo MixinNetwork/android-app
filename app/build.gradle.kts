@@ -16,9 +16,9 @@ apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 7
-val versionMinor = 1
-val versionPatch = 0
-val versionBuild = 3
+val versionMinor = 2
+val versionPatch = 1
+val versionBuild = 0
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
 val jetifierVersion = rootProject.extra["jetifierVersion"] as String
@@ -129,7 +129,11 @@ val billingVersion = rootProject.extra["billingVersion"] as String
 val includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false
 
 android {
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 2
+        }
+    }
     ndkVersion = androidNdkVersion
     namespace = "one.mixin.android"
     defaultConfig {
