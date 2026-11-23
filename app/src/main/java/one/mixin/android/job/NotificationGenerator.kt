@@ -20,6 +20,8 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
 import coil3.imageLoader
 import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
 import coil3.request.transformations
 import coil3.toBitmap
 import coil3.transform.CircleCropTransformation
@@ -29,7 +31,8 @@ import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.mainThread
+import one.mixin.android.extension.getUriForFile
+import one.mixin.android.extension.md5
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.supportsR
@@ -67,10 +70,13 @@ import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.picker.toTimeInterval
+import java.io.File
+import java.io.FileOutputStream
 
 const val KEY_REPLY = "key_reply"
 const val CONVERSATION_ID = "conversation_id"
 const val ENCRYPTED_CATEGORY = "encrypted_category"
+private const val BUBBLE_ICON_DIR = "bubble_icons"
 
 object NotificationGenerator : Injector() {
     private val notificationManager: NotificationManager by lazy {
@@ -505,33 +511,32 @@ object NotificationGenerator : Injector() {
                 .setStyle(messagingStyle)
         })
 
-        loadBitmap(context, conversation.iconUrl()) { bitmap ->
-            val resource =
-                bitmap ?: BitmapFactory.decodeResource(
-                    context.resources,
-                    if (conversation.isGroupConversation()) R.drawable.ic_group_place_holder else R.drawable.default_avatar,
-                )
-            notificationBuilder.setLargeIcon(resource)
-            notificationBuilder.setGroup(conversation.conversationId)
+        val bitmap = loadBitmap(context, conversation.iconUrl())
+        val resource =
+            bitmap ?: BitmapFactory.decodeResource(
+                context.resources,
+                if (conversation.isGroupConversation()) R.drawable.ic_group_place_holder else R.drawable.default_avatar,
+            )
+        notificationBuilder.setLargeIcon(resource)
+        notificationBuilder.setGroup(conversation.conversationId)
 
-            buildBubble(context, conversation, notificationBuilder, message, resource, person)
-            notificationManager.notify(conversationNotificationId(message.conversationId), notificationBuilder.build())
+        buildBubble(context, conversation, notificationBuilder, message, resource, person)
+        notificationManager.notify(conversationNotificationId(message.conversationId), notificationBuilder.build())
 
-            supportsNougat {
-                val summaryNotification =
-                    NotificationCompat.Builder(context, channelId)
-                        .setContentTitle(conversation.getConversationName())
-                        .setSmallIcon(R.drawable.ic_msg_default)
-                        .setStyle(
-                            NotificationCompat.InboxStyle()
-                                .addLine(conversation.content)
-                                .setSummaryText(conversation.getConversationName()),
-                        )
-                        .setGroup(conversation.conversationId)
-                        .setGroupSummary(true)
-                        .build()
-                notificationManager.notify(conversationSummaryNotificationId(conversation.conversationId), summaryNotification)
-            }
+        supportsNougat {
+            val summaryNotification =
+                NotificationCompat.Builder(context, channelId)
+                    .setContentTitle(conversation.getConversationName())
+                    .setSmallIcon(R.drawable.ic_msg_default)
+                    .setStyle(
+                        NotificationCompat.InboxStyle()
+                            .addLine(conversation.content)
+                            .setSummaryText(conversation.getConversationName()),
+                    )
+                    .setGroup(conversation.conversationId)
+                    .setGroupSummary(true)
+                    .build()
+            notificationManager.notify(conversationSummaryNotificationId(conversation.conversationId), summaryNotification)
         }
     }
 
@@ -548,7 +553,7 @@ object NotificationGenerator : Injector() {
             if (name.isBlank()) {
                 return@supportsR
             }
-            val icon = IconCompat.createWithBitmap(bitmap)
+            val shortcutIcon = IconCompat.createWithBitmap(bitmap)
             val shortcutIntent =
                 ConversationActivity.getShortcutIntent(
                     MixinApplication.appContext,
@@ -559,7 +564,7 @@ object NotificationGenerator : Injector() {
                 ShortcutInfoCompat.Builder(context, bubbleShortcutId(conversation.conversationId))
                     .setIntent(shortcutIntent)
                     .setLongLived(true)
-                    .setIcon(icon)
+                    .setIcon(shortcutIcon)
                     .setShortLabel(name).apply {
                         person?.let { setPerson(it) }
                     }
@@ -585,8 +590,9 @@ object NotificationGenerator : Injector() {
                         PendingIntent.FLAG_UPDATE_CURRENT
                     },
                 )
+            val bubbleIcon = createBubbleIcon(context, conversation.conversationId, bitmap)
             val bubbleMetadata =
-                NotificationCompat.BubbleMetadata.Builder(bubbleIntent, icon)
+                NotificationCompat.BubbleMetadata.Builder(bubbleIntent, bubbleIcon)
                     .setDesiredHeight(640.dp)
                     .setSuppressNotification(MixinApplication.conversationId == conversation.conversationId)
                     .setAutoExpandBubble(false)
@@ -595,44 +601,51 @@ object NotificationGenerator : Injector() {
         })
     }
 
-    private fun loadBitmap(
+    private fun createBubbleIcon(
         context: Context,
-        url: String?,
-        onComplete: (Bitmap?) -> Unit,
-    ) {
-        mainThread {
-            val height =
-                context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
-            val width =
-                context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width)
-
-            loadImageWithCoil(context, url, width, height, onComplete)
+        conversationId: String,
+        bitmap: Bitmap,
+    ): IconCompat {
+        val dir = File(context.cacheDir, BUBBLE_ICON_DIR)
+        if (!dir.exists() && !dir.mkdirs() && !dir.isDirectory) {
+            return IconCompat.createWithBitmap(bitmap)
+        }
+        val key = conversationId.md5()
+        val targetFile = File(dir, "$key.png")
+        var tempFile: File? = null
+        return try {
+            tempFile = File.createTempFile("$key-", ".tmp", dir)
+            val compressed =
+                FileOutputStream(tempFile).use { output ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
+                }
+            if (!compressed || !tempFile.renameTo(targetFile)) {
+                tempFile.delete()
+                return IconCompat.createWithBitmap(bitmap)
+            }
+            IconCompat.createWithContentUri(context.getUriForFile(targetFile))
+        } catch (_: Exception) {
+            tempFile?.delete()
+            IconCompat.createWithBitmap(bitmap)
         }
     }
 
-    private fun loadImageWithCoil(
+    private suspend fun loadBitmap(
         context: Context,
         url: String?,
-        width: Int,
-        height: Int,
-        onComplete: (Bitmap?) -> Unit,
-    ) {
-        val imageLoader = context.imageLoader
+    ): Bitmap? {
+        if (url.isNullOrBlank()) return null
+        val height =
+            context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
+        val width =
+            context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width)
         val request =
             ImageRequest.Builder(context)
                 .data(url)
                 .size(width, height)
+                .allowHardware(false)
                 .transformations(CircleCropTransformation())
-                .target(
-                    onSuccess = { image ->
-                        onComplete(image.toBitmap(width,height))
-                    },
-                    onError = {
-                        onComplete(null)
-                    },
-                )
                 .build()
-
-        imageLoader.enqueue(request)
+        return (context.imageLoader.execute(request) as? SuccessResult)?.image?.toBitmap(width, height)
     }
 }
