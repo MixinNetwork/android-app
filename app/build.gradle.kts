@@ -132,7 +132,11 @@ val billingVersion = rootProject.extra["billingVersion"] as String
 val includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false
 
 android {
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 2
+        }
+    }
     ndkVersion = androidNdkVersion
     namespace = "one.mixin.android"
     defaultConfig {
