@@ -191,6 +191,7 @@ class MediaViewerOverlay private constructor(
 
     private var initialIndex = 0
     private var firstLoad = true
+    private var hasSubmittedPagerData = false
     private var pendingConversationPosition: Int? = null
     private var isOpeningTransition = false
     private var isClosing = false
@@ -463,6 +464,7 @@ class MediaViewerOverlay private constructor(
             withContext(Dispatchers.IO) {
                 conversationRepository.indexMediaMessages(mode.conversationId, mode.messageId, excludeLive)
             }
+        hasSubmittedPagerData = false
         adapter.addOnPagesUpdatedListener {
             if (firstLoad) {
                 positionInitialConversationItem(mode, excludeLive)
@@ -489,7 +491,8 @@ class MediaViewerOverlay private constructor(
                 conversationRepository.getMediaMessagesPagingSource(mode.conversationId, excludeLive)
             },
         ).flow.collectLatest { pagingData ->
-            adapter.submitData(dialog.lifecycle, pagingData)
+            hasSubmittedPagerData = true
+            adapter.submitData(pagingData)
         }
     }
 
@@ -498,22 +501,45 @@ class MediaViewerOverlay private constructor(
         excludeLive: Boolean,
     ) {
         val adapter = conversationAdapter ?: return
-        if (!firstLoad || adapter.itemCount <= initialIndex) return
-        runCatching {
-            adapter.initialPos = initialIndex
-            val item = adapter.peek(initialIndex) ?: return
-            if (excludeLive || item.messageId == mode.messageId) {
-                binding.viewPager.setCurrentItem(initialIndex, false)
-                updateTopBarForConversation(item)
+        if (!firstLoad || !hasSubmittedPagerData || adapter.itemCount <= 0) return
+        val snapshot = adapter.snapshot()
+        val itemAtIndex = snapshot.getOrNull(initialIndex)
+        val targetIndex =
+            if (itemAtIndex?.messageId == mode.messageId) {
+                initialIndex
             } else {
-                overlayScope.launch {
-                    val total =
-                        withContext(Dispatchers.IO) {
-                            conversationRepository.countIndexMediaMessages(mode.conversationId, excludeLive)
-                        }
-                    reportEvent("Initial index not found, conversationId: ${mode.conversationId}, messageId: ${mode.messageId}, initialIndex: $initialIndex, total: $total")
+                snapshot.indexOfFirst { it?.messageId == mode.messageId }
+            }
+        if (targetIndex < 0) {
+            if (itemAtIndex == null) return
+            overlayScope.launch {
+                val total =
+                    withContext(Dispatchers.IO) {
+                        conversationRepository.countIndexMediaMessages(mode.conversationId, excludeLive)
+                    }
+                reportEvent("Initial index not found, conversationId: ${mode.conversationId}, messageId: ${mode.messageId}, initialIndex: $initialIndex, total: $total")
+            }
+            firstLoad = false
+            mode.initialItem?.let { initialItem ->
+                dataJob?.cancel()
+                adapter.initialPos = 0
+                adapter.submitData(dialog.lifecycle, PagingData.from(listOf(initialItem)))
+                binding.viewPager.setCurrentItem(0, false)
+                updateTopBarForConversation(initialItem)
+                if (initialItem.isAppCard()) {
+                    observeStandaloneMessage(mode.messageId)
                 }
             }
+            checkOrientation()
+            return
+        }
+        runCatching {
+            val targetItem = snapshot[targetIndex] ?: return
+            adapter.initialPos = targetIndex
+            if (binding.viewPager.currentItem != targetIndex) {
+                binding.viewPager.setCurrentItem(targetIndex, false)
+            }
+            updateTopBarForConversation(targetItem)
         }.onFailure {
             overlayScope.launch {
                 val total =
@@ -529,16 +555,20 @@ class MediaViewerOverlay private constructor(
 
     private suspend fun loadTranscriptData(mode: Mode.Transcript) {
         val adapter = transcriptAdapter ?: return
-        val index =
-            withContext(Dispatchers.IO) {
-                conversationRepository.indexTranscriptMediaMessages(mode.transcriptId, mode.messageId)
-            }
         val items =
             withContext(Dispatchers.IO) {
                 conversationRepository.getTranscriptMediaMessage(mode.transcriptId)
             }
         if (items.isEmpty()) return
-        val safeIndex = index.coerceIn(0, items.lastIndex)
+        val matchedIndex = items.indexOfFirst { it.messageId == mode.messageId }
+        val safeIndex =
+            if (matchedIndex >= 0) {
+                matchedIndex
+            } else {
+                withContext(Dispatchers.IO) {
+                    conversationRepository.indexTranscriptMediaMessages(mode.transcriptId, mode.messageId)
+                }.coerceIn(0, items.lastIndex)
+            }
         adapter.initialPos = safeIndex
         adapter.list = items
         binding.viewPager.setCurrentItem(safeIndex, false)

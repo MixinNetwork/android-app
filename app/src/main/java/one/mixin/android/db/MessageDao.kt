@@ -152,11 +152,12 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT count(1) FROM messages 
+        SELECT count(1) FROM messages m
         INDEXED BY index_messages_conversation_id_category
-        WHERE conversation_id = :conversationId
-        AND (category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA))
-        AND (created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
+        INNER JOIN users u ON m.user_id = u.user_id
+        WHERE m.conversation_id = :conversationId
+        AND (m.category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA_ALIAS))
+        AND (m.created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (m.created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND m.rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
     """,
     )
     suspend fun indexMediaMessages(
@@ -192,10 +193,12 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT count(1) FROM messages
-        WHERE conversation_id = :conversationId 
-        AND category IN ($IMAGES, $VIDEOS)
-        AND (created_at > (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)))
+        SELECT count(1) FROM messages m
+        INDEXED BY index_messages_conversation_id_category
+        INNER JOIN users u ON m.user_id = u.user_id
+        WHERE m.conversation_id = :conversationId
+        AND m.category IN ($IMAGES, $VIDEOS)
+        AND (m.created_at > (SELECT created_at FROM messages WHERE id = :messageId) OR (m.created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND m.rowid > (SELECT rowid FROM messages WHERE id = :messageId)))
         """,
     )
     suspend fun indexMediaMessagesExcludeLive(

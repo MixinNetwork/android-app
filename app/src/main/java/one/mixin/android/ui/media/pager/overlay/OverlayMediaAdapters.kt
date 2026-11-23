@@ -7,9 +7,11 @@ import android.util.LruCache
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
+import coil3.dispose
 import one.mixin.android.Constants.BIG_IMAGE_SIZE
 import one.mixin.android.R
 import one.mixin.android.extension.displayRatio
@@ -79,28 +81,37 @@ internal class OverlayMediaPagerAdapter(
         holder: MediaPagerHolder,
         position: Int,
     ) {
-        getItem(position)?.let { messageItem ->
-            (holder.itemView as? MediaDismissLayout)?.resetTransformImmediate()
-            holder.itemView.tag = "$PREFIX${messageItem.messageId}"
-            when (holder) {
-                is PhotoHolder -> {
-                    val placeholder =
-                        if (messageItem.messageId == initialMessageId) {
-                            initialPlaceholderProvider?.invoke()
-                        } else {
-                            null
-                        }
-                    holder.bind(messageItem, position == initialPos, listener, placeholder)
-                }
-                is LargeImageHolder -> {
-                    holder.bind(messageItem, position == initialPos, listener)
-                }
-                else -> {
-                    holder as VideoHolder
-                    holder.bind(messageItem, position == initialPos, videoStatusCache)
-                    messageItem.mediaStatus?.let {
-                        videoStatusCache.put(messageItem.messageId, it)
+        val messageItem = getItem(position)
+        if (messageItem == null) {
+            holder.itemView.tag = null
+            holder.itemView.findViewById<CircleProgress>(R.id.circle_progress)?.isVisible = false
+            if (holder is PhotoHolder) {
+                val imageView = (holder.itemView as? ViewGroup)?.getChildAt(0) as? PhotoView
+                imageView?.dispose()
+                imageView?.setImageDrawable(null)
+            }
+            return
+        }
+        (holder.itemView as? MediaDismissLayout)?.resetTransformImmediate()
+        holder.itemView.tag = "$PREFIX${messageItem.messageId}"
+        when (holder) {
+            is PhotoHolder -> {
+                val placeholder =
+                    if (messageItem.messageId == initialMessageId) {
+                        initialPlaceholderProvider?.invoke()
+                    } else {
+                        null
                     }
+                holder.bind(messageItem, position == initialPos, listener, placeholder)
+            }
+            is LargeImageHolder -> {
+                holder.bind(messageItem, position == initialPos, listener)
+            }
+            else -> {
+                holder as VideoHolder
+                holder.bind(messageItem, position == initialPos, videoStatusCache)
+                messageItem.mediaStatus?.let {
+                    videoStatusCache.put(messageItem.messageId, it)
                 }
             }
         }
