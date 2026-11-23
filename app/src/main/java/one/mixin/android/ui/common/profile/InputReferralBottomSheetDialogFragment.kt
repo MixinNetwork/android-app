@@ -2,6 +2,7 @@ package one.mixin.android.ui.common.profile
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -42,6 +43,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.referral.PendingReferralStore
 import one.mixin.android.api.response.referral.ReferralCodeInfo
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsTop
@@ -66,17 +68,27 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     companion object {
         const val TAG = "InputReferralBottomSheetDialogFragment"
         private const val ARG_DEFAULT_VALUE = "default_value"
+        private const val ARG_CLEAR_PENDING_ON_DISMISS = "clear_pending_on_dismiss"
 
-        fun newInstance(defaultValue: String = "") =
+        fun newInstance(
+            defaultValue: String = "",
+            clearPendingOnDismiss: Boolean = false,
+        ) =
             InputReferralBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DEFAULT_VALUE, defaultValue)
+                    putBoolean(ARG_CLEAR_PENDING_ON_DISMISS, clearPendingOnDismiss)
                 }
             }
     }
 
     var onConfirm: ((String) -> Unit)? = null
     var onDismissCallback: (() -> Unit)? = null
+
+    private var navigatedToPreview = false
+
+    private val shouldClearPending: Boolean
+        get() = arguments?.getBoolean(ARG_CLEAR_PENDING_ON_DISMISS, false) == true
 
     private val viewModel: BottomSheetViewModel by viewModels()
 
@@ -205,9 +217,15 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                                 val inviter = viewModel.refreshUser(info.inviterUserId)
                                                 uiState = UiState.Initial
                                                 if (inviter != null) {
+                                                    navigatedToPreview = true
                                                     this@InputReferralBottomSheetDialogFragment.dismiss()
                                                     ReferralBindPreviewBottomSheetDialogFragment
-                                                        .newInstance(code, inviter, info.inviteePercent)
+                                                        .newInstance(
+                                                            code = code,
+                                                            inviter = inviter,
+                                                            inviteePercent = info.inviteePercent,
+                                                            clearPendingOnResult = shouldClearPending,
+                                                        )
                                                         .showNow(parentFragmentManager, ReferralBindPreviewBottomSheetDialogFragment.TAG)
                                                 } else {
                                                     uiState = UiState.Failure(getString(R.string.Data_error))
@@ -290,6 +308,13 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     override fun onDestroyView() {
         behavior?.removeBottomSheetCallback(bottomSheetBehaviorCallback)
         super.onDestroyView()
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        if (shouldClearPending && !navigatedToPreview) {
+            context?.let(PendingReferralStore::clear)
+        }
     }
 
     override fun onDetach() {

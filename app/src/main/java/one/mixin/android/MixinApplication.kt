@@ -24,6 +24,8 @@ import com.bugsnag.android.Configuration as BugsnagConfiguration
 import com.appsflyer.AppsFlyerLib
 import com.appsflyer.share.AppsFlyerConversionListener
 import com.appsflyer.share.attribution.AppsFlyerRequestListener
+import com.appsflyer.share.deeplink.DeepLinkListener
+import com.appsflyer.share.deeplink.DeepLinkResult
 import com.google.android.gms.net.CronetProviderInstaller
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -41,6 +43,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
+import one.mixin.android.api.referral.PendingReferralStore
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.MixinSignalProtocolLogger
@@ -227,6 +230,35 @@ open class MixinApplication :
             return
         }
         AppsFlyerLib.getInstance().apply {
+            setDeepLinkTimeout(10_000L)
+            subscribeForDeepLink(
+                DeepLinkListener { result ->
+                    when (result.status) {
+                        DeepLinkResult.Status.FOUND -> {
+                            val deepLink = result.deepLink ?: return@DeepLinkListener
+                            Timber.d(
+                                "AppsFlyer UDL found: value=%s, sub1=%s, deferred=%s",
+                                deepLink.deepLinkValue,
+                                deepLink.getStringValue(PendingReferralStore.deepLinkSub1Key()),
+                                deepLink.isDeferred,
+                            )
+                            val referralCode = PendingReferralStore.extractCodeFromDeepLink(
+                                deepLinkValue = deepLink.deepLinkValue,
+                                deepLinkSub1 = deepLink.getStringValue(PendingReferralStore.deepLinkSub1Key()),
+                            )
+                            if (referralCode != null) {
+                                PendingReferralStore.save(this@MixinApplication, referralCode)
+                            }
+                        }
+                        DeepLinkResult.Status.NOT_FOUND -> {
+                            Timber.d("AppsFlyer UDL not found")
+                        }
+                        DeepLinkResult.Status.ERROR -> {
+                            Timber.e("AppsFlyer UDL error: %s", result.error)
+                        }
+                    }
+                },
+            )
             init(BuildConfig.APPSFLYER_DEV_KEY, object : AppsFlyerConversionListener {
                 override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
                     Timber.d("AppsFlyer Conversion Data: $conversionData")

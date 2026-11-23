@@ -2,12 +2,14 @@
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="sharedpref" path="appsflyer-data"/>
+        <exclude domain="sharedpref" path="pending_referral_prefs.xml"/>
         <exclude domain="sharedpref" path="keystore_*" />
         <exclude domain="sharedpref" path="encrypted_*" />
         <exclude domain="sharedpref" path="device_identity.xml" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="sharedpref" path="appsflyer-data"/>
+        <exclude domain="sharedpref" path="pending_referral_prefs.xml"/>
         <exclude domain="sharedpref" path="keystore_*" />
         <exclude domain="sharedpref" path="encrypted_*" />
         <exclude domain="sharedpref" path="device_identity.xml" />

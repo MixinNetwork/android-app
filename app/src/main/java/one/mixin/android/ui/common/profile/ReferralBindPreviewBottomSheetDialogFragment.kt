@@ -44,6 +44,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
+import one.mixin.android.api.referral.PendingReferralStore
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.getSafeAreaInsetsTop
@@ -70,17 +71,27 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
         private const val ARG_CODE: String = "arg_code"
         private const val ARG_INVITER: String = "arg_inviter"
         private const val ARG_PERCENT: String = "arg_percent"
+        private const val ARG_CLEAR_PENDING_ON_RESULT: String = "arg_clear_pending_on_result"
 
-        fun newInstance(code: String, inviter: User, inviteePercent: String): ReferralBindPreviewBottomSheetDialogFragment {
+        fun newInstance(
+            code: String,
+            inviter: User,
+            inviteePercent: String,
+            clearPendingOnResult: Boolean = false,
+        ): ReferralBindPreviewBottomSheetDialogFragment {
             return ReferralBindPreviewBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_CODE, code)
                     putParcelable(ARG_INVITER, inviter)
                     putString(ARG_PERCENT, inviteePercent)
+                    putBoolean(ARG_CLEAR_PENDING_ON_RESULT, clearPendingOnResult)
                 }
             }
         }
     }
+
+    private val shouldClearPending: Boolean
+        get() = arguments?.getBoolean(ARG_CLEAR_PENDING_ON_RESULT, false) == true
 
     private val viewModel: BottomSheetViewModel by viewModels()
 
@@ -286,10 +297,16 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
                     viewModel.bindReferral(code)
                 },
                 successBlock = {
+                    if (shouldClearPending) {
+                        context?.let(PendingReferralStore::clear)
+                    }
                     step = Step.Done
                     true
                 },
                 failureBlock = {
+                    if (shouldClearPending) {
+                        context?.let(PendingReferralStore::clear)
+                    }
                     errorInfo = requireContext().getMixinErrorStringByCode(it.errorCode, it.errorDescription)
                     step = Step.Error
                     true
@@ -312,6 +329,9 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
 
     override fun onDismiss(dialog: android.content.DialogInterface) {
         super.onDismiss(dialog)
+        if (shouldClearPending) {
+            context?.let(PendingReferralStore::clear)
+        }
         if (step == Step.Done) {
             onDoneAction?.invoke()
         }

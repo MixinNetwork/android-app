@@ -11,6 +11,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.referral.PendingReferralStore
 import one.mixin.android.extension.checkUserOrApp
 import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.toast
@@ -79,7 +80,17 @@ class UrlInterpreterActivity : BaseActivity() {
             return
         }
         if (Session.getAccount() == null) {
-            toast(R.string.Not_logged_in)
+            val referralCode = PendingReferralStore.extractCodeFromUrl(data.toString())
+            if (referralCode != null) {
+                PendingReferralStore.save(this, referralCode)
+                startActivity(
+                    Intent(this, MainActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    },
+                )
+            } else {
+                toast(R.string.Not_logged_in)
+            }
             finish()
             return
         }
