@@ -29,9 +29,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInWindow
@@ -87,7 +87,7 @@ fun AppCard(
     isWhite: Boolean = false,
     coverClick: (() -> Unit)? = null,
     mentionUserMap: Map<String, String> = emptyMap(),
-    coverHidden: Boolean = false,
+    coverAlpha: () -> Float = { 1f },
     onCoverPositioned: ((RectF) -> Unit)? = null,
     onCoverDrawableReady: ((Drawable?) -> Unit)? = null,
 ) {
@@ -115,6 +115,40 @@ fun AppCard(
                             if (isLast) 6.dp else 7.dp
                         } else 0.dp,
                     )
+            val coverTrailingModifier =
+                Modifier
+                    .wrapContentHeight()
+                    .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                    .graphicsLayer { alpha = coverAlpha() }
+                    .onGloballyPositioned { coords ->
+                        onCoverPositioned?.let { callback ->
+                            val bounds = coords.boundsInWindow()
+                            val winLoc = IntArray(2)
+                            val screenLoc = IntArray(2)
+                            hostView.getLocationInWindow(winLoc)
+                            hostView.getLocationOnScreen(screenLoc)
+                            val offsetX = (screenLoc[0] - winLoc[0]).toFloat()
+                            val offsetY = (screenLoc[1] - winLoc[1]).toFloat()
+                            callback(
+                                RectF(
+                                    bounds.left + offsetX,
+                                    bounds.top + offsetY,
+                                    bounds.right + offsetX,
+                                    bounds.bottom + offsetY,
+                                ),
+                            )
+                        }
+                    }
+                    .then(
+                        if (coverClick != null) {
+                            Modifier.clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                            ) { coverClick() }
+                        } else {
+                            Modifier
+                        },
+                    )
             if (!appCardData.coverUrl.isNullOrBlank()) {
                 val placeholderPainter = painterResource(id = R.drawable.bot_default)
                 AsyncImage(
@@ -128,38 +162,7 @@ fun AppCard(
                     },
                     modifier = coverModifierBase
                         .aspectRatio(1.0f)
-                        .wrapContentHeight()
-                        .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
-                        .alpha(if (coverHidden) 0f else 1f)
-                        .onGloballyPositioned { coords ->
-                            onCoverPositioned?.let { callback ->
-                                val bounds = coords.boundsInWindow()
-                                val winLoc = IntArray(2)
-                                val screenLoc = IntArray(2)
-                                hostView.getLocationInWindow(winLoc)
-                                hostView.getLocationOnScreen(screenLoc)
-                                val offsetX = (screenLoc[0] - winLoc[0]).toFloat()
-                                val offsetY = (screenLoc[1] - winLoc[1]).toFloat()
-                                callback(
-                                    RectF(
-                                        bounds.left + offsetX,
-                                        bounds.top + offsetY,
-                                        bounds.right + offsetX,
-                                        bounds.bottom + offsetY,
-                                    ),
-                                )
-                            }
-                        }
-                        .then(
-                            if (coverClick != null) {
-                                Modifier.clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                ) { coverClick() }
-                            } else {
-                                Modifier
-                            },
-                        ),
+                        .then(coverTrailingModifier),
                 )
             } else if (appCardData.cover != null) {
                 val thumbPainter = appCardData.cover.thumbnailDrawable?.let { rememberAsyncImagePainter(it) }
@@ -174,38 +177,7 @@ fun AppCard(
                     },
                     modifier = coverModifierBase
                         .aspectRatio(appCardData.cover.radio)
-                        .wrapContentHeight()
-                        .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
-                        .alpha(if (coverHidden) 0f else 1f)
-                        .onGloballyPositioned { coords ->
-                            onCoverPositioned?.let { callback ->
-                                val bounds = coords.boundsInWindow()
-                                val winLoc = IntArray(2)
-                                val screenLoc = IntArray(2)
-                                hostView.getLocationInWindow(winLoc)
-                                hostView.getLocationOnScreen(screenLoc)
-                                val offsetX = (screenLoc[0] - winLoc[0]).toFloat()
-                                val offsetY = (screenLoc[1] - winLoc[1]).toFloat()
-                                callback(
-                                    RectF(
-                                        bounds.left + offsetX,
-                                        bounds.top + offsetY,
-                                        bounds.right + offsetX,
-                                        bounds.bottom + offsetY,
-                                    ),
-                                )
-                            }
-                        }
-                        .then(
-                            if (coverClick != null) {
-                                Modifier.clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                ) { coverClick() }
-                            } else {
-                                Modifier
-                            },
-                        ),
+                        .then(coverTrailingModifier),
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))

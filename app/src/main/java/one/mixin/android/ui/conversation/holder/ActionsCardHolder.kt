@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ImageView
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import one.mixin.android.Constants.Colors.SELECT_COLOR
@@ -49,7 +50,14 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
             cornerRadii = MediaThumbLocation.topRadii(6.dp.toFloat()),
             drawable = drawableCopy,
             scaleType = ImageView.ScaleType.CENTER_CROP,
-            setSourceVisible = { visible -> coverHiddenState.value = !visible },
+            setSourceVisible = { visible ->
+                coverHiddenState.value = !visible
+                Snapshot.sendApplyNotifications()
+                binding.chatContentLayout.invalidate()
+                for (i in 0 until binding.chatContentLayout.childCount) {
+                    binding.chatContentLayout.getChildAt(i).invalidate()
+                }
+            },
         )
     }
     init {
@@ -148,7 +156,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                     }
                 },
                 mentionUserMap = mentionUserMap,
-                coverHidden = coverHiddenState.value,
+                coverAlpha = { if (coverHiddenState.value) 0f else 1f },
                 onCoverPositioned = { rect -> coverScreenRect = rect },
                 onCoverDrawableReady = { drawable -> coverDrawable = drawable },
             )
