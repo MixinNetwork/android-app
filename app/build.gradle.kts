@@ -134,7 +134,7 @@ val includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?
 android {
     compileSdk {
         version = release(37) {
-            minorApiLevel = 1
+            minorApiLevel = 2
         }
     }
     ndkVersion = androidNdkVersion
