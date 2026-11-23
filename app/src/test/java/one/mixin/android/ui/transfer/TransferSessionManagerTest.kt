@@ -1,5 +1,8 @@
 package one.mixin.android.ui.transfer
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import org.junit.Test
 import java.time.Instant
@@ -118,6 +121,82 @@ class TransferSessionManagerTest {
         assertFalse(manager.validateStartHandshake(auth2, accountId, accountId, otherPeerDeviceId))
         assertFalse(manager.isAuthorizationActiveForWrite(auth2, accountId))
         assertEquals(TransferSessionState.CANCELLED, manager.getSessionState(session2.sessionId))
+    }
+
+    @Test
+    fun `START without a device ID retains the peer confirmed in PUSH`() {
+        val manager = TransferSessionManager { 1_700_000_000_000L }
+        val session = manager.initiateSession(TransferDirection.RESTORE_FROM_PC, accountId, extensionSessionId)
+        val push = TransferCommand(TransferCommandAction.PUSH.value, deviceId = peerDeviceId)
+        assertTrue(manager.beginPairingConfirmation(session.sessionId, accountId, push.deviceId, 123456))
+        val auth = assertNotNull(manager.confirmAndConsumePairing(session.sessionId, accountId, push.deviceId))
+
+        val start = Json.decodeFromString<TransferCommand>("""{"action":"start"}""")
+        assertNull(start.deviceId)
+        assertTrue(manager.validateStartHandshake(auth, accountId, accountId, start.deviceId))
+        assertEquals(peerDeviceId, auth.expectedPeerDeviceId)
+        val outgoing = start.copy(deviceId = peerDeviceId)
+        assertTrue(Json.parseToJsonElement(Json.encodeToString(outgoing)).jsonObject.containsKey("device_id"))
+        assertEquals(peerDeviceId, Json.decodeFromString<TransferCommand>(Json.encodeToString(outgoing)).deviceId)
+        assertFalse(manager.validateStartHandshake(auth, accountId, accountId, otherPeerDeviceId))
+        assertFalse(manager.isAuthorizationActiveForWrite(auth, accountId))
+    }
+
+    @Test
+    fun `desktop cancellation only revokes a matching desktop session`() {
+        val manager = TransferSessionManager { 1_700_000_000_000L }
+        for (direction in listOf(TransferDirection.RESTORE_FROM_PHONE, TransferDirection.TRANSFER_TO_PHONE)) {
+            val session = manager.initiateSession(direction, accountId)
+            assertFalse(manager.cancelActiveSessionIfMatches(accountId, extensionSessionId))
+            assertFalse(manager.cancelActiveSessionIfMatches(accountId, null))
+            assertEquals(TransferSessionState.INITIATED, manager.getSessionState(session.sessionId))
+        }
+        val session = manager.initiateSession(TransferDirection.TRANSFER_TO_PC, accountId, extensionSessionId)
+        assertTrue(manager.beginSending(session.sessionId, accountId))
+        assertFalse(manager.cancelActiveSessionIfMatches(otherAccountId, extensionSessionId))
+        assertFalse(manager.cancelActiveSessionIfMatches(accountId, otherExtensionSessionId))
+        assertEquals(TransferSessionState.SENDING, manager.getSessionState(session.sessionId))
+        assertTrue(manager.cancelActiveSessionIfMatches(accountId, extensionSessionId))
+        assertFalse(manager.completeSession(session.sessionId))
+        assertEquals(TransferSessionState.CANCELLED, manager.getSessionState(session.sessionId))
+    }
+
+    @Test
+    fun `rejecting a desktop pull allows a fresh approval on the same screen`() {
+        val manager = TransferSessionManager { 1_700_000_000_000L }
+        val rejected = manager.initiateSession(TransferDirection.TRANSFER_TO_PC, accountId, extensionSessionId)
+        assertTrue(manager.beginPairingConfirmation(rejected.sessionId, accountId, peerDeviceId, null))
+        manager.cancelSession(rejected.sessionId)
+        val next = manager.initiateSession(TransferDirection.TRANSFER_TO_PC, accountId, extensionSessionId)
+        assertNull(manager.confirmAndConsumePairing(rejected.sessionId, accountId, peerDeviceId))
+        assertTrue(manager.canAcceptRemoteCommand(TransferCommandAction.PULL.value, accountId, extensionSessionId, accountId))
+        assertTrue(manager.beginPairingConfirmation(next.sessionId, accountId, peerDeviceId, null))
+        assertNotNull(manager.confirmAndConsumePairing(next.sessionId, accountId, peerDeviceId))
+        assertTrue(manager.beginSending(next.sessionId, accountId))
+    }
+
+    @Test
+    fun `sending authorization expires during transfer and is isolated between attempts`() {
+        var now = 1_700_000_000_000L
+        val manager = TransferSessionManager { now }
+        val first = manager.initiateSession(TransferDirection.TRANSFER_TO_PC, accountId, extensionSessionId, ttlMs = 1000L)
+        assertFalse(manager.beginSending(first.sessionId, otherAccountId))
+        assertTrue(manager.beginSending(first.sessionId, accountId))
+        assertFalse(manager.beginSending(first.sessionId, accountId))
+        now += 1001L
+        assertEquals(TransferSessionState.EXPIRED, manager.getSessionState(first.sessionId))
+        assertFalse(manager.completeSession(first.sessionId))
+
+        val second = manager.initiateSession(TransferDirection.TRANSFER_TO_PC, accountId, extensionSessionId)
+        assertNull(manager.getSessionState(first.sessionId))
+        manager.cancelSession(first.sessionId)
+        assertTrue(manager.canAcceptRemoteCommand(TransferCommandAction.PULL.value, accountId, extensionSessionId, accountId))
+        assertTrue(manager.beginPairingConfirmation(second.sessionId, accountId, peerDeviceId, null))
+        assertFalse(manager.beginSending(second.sessionId, accountId))
+        assertNotNull(manager.confirmAndConsumePairing(second.sessionId, accountId, peerDeviceId))
+        assertTrue(manager.beginSending(second.sessionId, accountId))
+        assertTrue(manager.completeSession(second.sessionId))
+        assertFalse(manager.cancelActiveSessionIfMatches(accountId, extensionSessionId))
     }
 
     @Test

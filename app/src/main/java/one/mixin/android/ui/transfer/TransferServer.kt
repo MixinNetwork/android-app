@@ -27,6 +27,7 @@ import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.event.DeviceTransferProgressEvent
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.getTimeMonthsAgo
 import one.mixin.android.extension.toUtcTime
 import one.mixin.android.session.Session
@@ -63,7 +64,7 @@ import one.mixin.android.vo.markAttachmentAsPending
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import timber.log.Timber
-import java.io.InputStream
+import java.io.FilterOutputStream
 import java.io.OutputStream
 import java.net.BindException
 import java.net.InetSocketAddress
@@ -95,6 +96,7 @@ class TransferServer
         val messageMentionDao: MessageMentionDao,
         val status: TransferStatusLiveData,
         private val serializationJson: Json,
+        private val transferSessionManager: TransferSessionManager,
     ) {
         private lateinit var protocol: TransferProtocol
         private val secureRandom = SecureRandom()
@@ -126,7 +128,7 @@ class TransferServer
 
         private var secretBytes: ByteArray = TransferCipher.generateKey()
 
-        suspend fun restartServer(createdSuccessCallback: (TransferCommand) -> Unit) =
+        suspend fun restartServer(sessionId: String, createdSuccessCallback: (TransferCommand) -> Unit) =
             withContext(SINGLE_SOCKET_THREAD) {
                 try {
                     quit = true
@@ -137,8 +139,7 @@ class TransferServer
                 } catch (e: Exception) {
                     Timber.e(e)
                 }
-                quit = false
-                startServer(conversationIds, monthsAgo, createdSuccessCallback)
+                startServer(sessionId, conversationIds, monthsAgo, createdSuccessCallback)
             }
 
         private var conversationIds: Collection<String>? = null
@@ -155,12 +156,15 @@ class TransferServer
         private var monthsAgoTimestamp: String? = null
 
         suspend fun startServer(
+            sessionId: String,
             conversationIds: Collection<String>?,
             monthsAgo: Int?,
             createdSuccessCallback: (TransferCommand) -> Unit,
         ) = withContext(SINGLE_SOCKET_THREAD) {
             var listener: ServerSocket? = null
             try {
+                check(transferSessionManager.beginSending(sessionId, Session.getAccountId()))
+                quit = false
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 secretBytes = TransferCipher.generateKey()
                 protocol = TransferProtocol(serializationJson, secretBytes, true)
@@ -178,6 +182,7 @@ class TransferServer
                         secretBytes.base64Encode(),
                         this@TransferServer.code,
                         userId = Session.getAccountId(),
+                        deviceId = MixinApplication.appContext.getStringDeviceId(),
                     ),
                 )
                 status.value = TransferStatus.WAITING_FOR_CONNECTION
@@ -197,32 +202,21 @@ class TransferServer
                     val inetAddr = remoteAddr.address
                     val ip = inetAddr.hostAddress
                     Timber.e("Connected to $ip")
-                    run(socket.getInputStream(), socket.getOutputStream())
+                    run(sessionId, socket)
                 } else {
                     exit()
                 }
             } catch (e: Exception) {
                 if (listener?.isClosed == true) return@withContext
-                if (status.value != TransferStatus.FINISHED && !(status.value == TransferStatus.INITIALIZING && e is SocketException)) {
+                if (transferSessionManager.getSessionState(sessionId) !in setOf(null, TransferSessionState.CANCELLED) &&
+                    status.value != TransferStatus.FINISHED && !(status.value == TransferStatus.INITIALIZING && e is SocketException)
+                ) {
                     status.value = TransferStatus.ERROR
                 }
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 exit()
                 Timber.e(e)
             }
-        }
-
-        suspend fun cancelWaiting(): Boolean = withContext(SINGLE_SOCKET_THREAD) {
-            val listener = serverSocket ?: return@withContext false
-            if (status.value != TransferStatus.WAITING_FOR_CONNECTION && status.value != TransferStatus.WAITING_FOR_VERIFICATION) {
-                return@withContext false
-            }
-            listener.close()
-            serverSocket = null
-            socket?.close()
-            socket = null
-            status.value = TransferStatus.INITIALIZING
-            true
         }
 
         private fun createSocket(port: Int): ServerSocket {
@@ -250,12 +244,32 @@ class TransferServer
         }
 
         private suspend fun run(
-            inputStream: InputStream,
-            outputStream: OutputStream,
+            sessionId: String,
+            socket: Socket,
         ) =
             withContext(Dispatchers.IO) {
+                fun requireActiveSession() {
+                    if (transferSessionManager.getSessionState(sessionId) != TransferSessionState.SENDING) {
+                        socket.close()
+                        throw SocketException("Transfer session is no longer active")
+                    }
+                }
+                val inputStream = socket.getInputStream()
+                val outputStream = object : FilterOutputStream(socket.getOutputStream()) {
+                    override fun write(b: Int) {
+                        requireActiveSession()
+                        out.write(b)
+                    }
+
+                    override fun write(b: ByteArray, off: Int, len: Int) {
+                        requireActiveSession()
+                        out.write(b, off, len)
+                    }
+                }
                 do {
-                    when (val result = protocol.read(inputStream)) {
+                    val result = protocol.read(inputStream)
+                    requireActiveSession()
+                    when (result) {
                         is TransferCommand -> {
                             if (result.action == TransferCommandAction.CONNECT.value) {
                                 if (status.value == TransferStatus.WAITING_FOR_VERIFICATION &&
@@ -278,6 +292,7 @@ class TransferServer
                                     exit()
                                 }
                             } else if (result.action == TransferCommandAction.FINISH.value) {
+                                check(transferSessionManager.completeSession(sessionId))
                                 RxBus.publish(DeviceTransferProgressEvent(100f))
                                 status.value = TransferStatus.FINISHED
                                 exit()
@@ -352,6 +367,7 @@ class TransferServer
                     TransferCommandAction.START.value,
                     total = totalCount(type, primaryId, assistanceId),
                     userId = Session.getAccountId(),
+                    deviceId = MixinApplication.appContext.getStringDeviceId(),
                 ),
             )
             RxBus.publish(DeviceTransferProgressEvent(0f))

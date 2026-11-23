@@ -521,16 +521,17 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         Timber.w(e, "Invalid device transfer command")
                         return
                     } ?: return
-                if (command.action == TransferCommandAction.CANCEL.value) {
+                val accepted = if (command.action == TransferCommandAction.CANCEL.value) {
                     transferSessionManager.cancelActiveSessionIfMatches(requireNotNull(accountId), data.sessionId)
-                    RxBus.publish(command)
-                } else if (transferSessionManager.canAcceptRemoteCommand(
+                } else {
+                    transferSessionManager.canAcceptRemoteCommand(
                         action = command.action,
                         senderUserId = data.userId,
                         senderSessionId = data.sessionId,
                         commandUserId = command.userId,
                     )
-                ) {
+                }
+                if (accepted) {
                     RxBus.publish(IncomingTransferControlEvent(command, data.userId, data.sessionId))
                 }
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {

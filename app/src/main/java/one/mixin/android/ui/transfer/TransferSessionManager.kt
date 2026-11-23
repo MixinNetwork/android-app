@@ -11,13 +11,16 @@ enum class TransferDirection {
     RESTORE_FROM_PHONE,
     RESTORE_FROM_PC,
     TRANSFER_TO_PHONE,
-    TRANSFER_TO_PC,
+    TRANSFER_TO_PC;
+
+    val isSending: Boolean get() = this == TRANSFER_TO_PHONE || this == TRANSFER_TO_PC
 }
 
 enum class TransferSessionState {
     INITIATED,
     AWAITING_PAIRING,
     CONSUMED,
+    SENDING,
     CANCELLED,
     EXPIRED,
     COMPLETED,
@@ -86,7 +89,7 @@ class TransferSessionManager(
         currentSession?.let { previous ->
             if (previous.state == TransferSessionState.INITIATED ||
                 previous.state == TransferSessionState.AWAITING_PAIRING ||
-                previous.state == TransferSessionState.CONSUMED
+                previous.state == TransferSessionState.CONSUMED || previous.state == TransferSessionState.SENDING
             ) {
                 previous.state = TransferSessionState.CANCELLED
             }
@@ -243,7 +246,7 @@ class TransferSessionManager(
         val normalizedRemoteDeviceId = remoteDeviceId?.takeIf { it.isNotBlank() }
         val expectedPeer = authorization.expectedPeerDeviceId
         if (expectedPeer != null) {
-            if (normalizedRemoteDeviceId != expectedPeer) {
+            if (remoteDeviceId != null && normalizedRemoteDeviceId != expectedPeer) {
                 session.state = TransferSessionState.CANCELLED
                 return false
             }
@@ -273,9 +276,21 @@ class TransferSessionManager(
     }
 
     @Synchronized
-    fun cancelSession(sessionId: String? = currentSession?.sessionId) {
+    fun beginSending(sessionId: String, accountId: String?): Boolean {
+        val session = currentSession ?: return false
+        expireIfNeeded(session)
+        if (session.sessionId != sessionId || session.accountId != accountId ||
+            !session.direction.isSending ||
+            (session.state != TransferSessionState.INITIATED && session.state != TransferSessionState.CONSUMED)
+        ) return false
+        session.state = TransferSessionState.SENDING
+        return true
+    }
+
+    @Synchronized
+    fun cancelSession(sessionId: String?) {
         val session = currentSession ?: return
-        if (sessionId == null || session.sessionId == sessionId) {
+        if (session.sessionId == sessionId) {
             if (session.state != TransferSessionState.COMPLETED) {
                 session.state = TransferSessionState.CANCELLED
             }
@@ -286,22 +301,26 @@ class TransferSessionManager(
     fun cancelActiveSessionIfMatches(
         accountId: String,
         extensionSessionId: String?,
-    ) {
-        val session = currentSession ?: return
-        if (session.accountId == accountId &&
-            (session.expectedExtensionSessionId == null || session.expectedExtensionSessionId == extensionSessionId) &&
+    ): Boolean {
+        val session = currentSession ?: return false
+        if ((session.direction == TransferDirection.RESTORE_FROM_PC || session.direction == TransferDirection.TRANSFER_TO_PC) &&
+            session.accountId == accountId && session.expectedExtensionSessionId != null &&
+            session.expectedExtensionSessionId == extensionSessionId &&
             session.state != TransferSessionState.COMPLETED
         ) {
             session.state = TransferSessionState.CANCELLED
+            return true
         }
+        return false
     }
 
     @Synchronized
-    fun completeSession(sessionId: String?) {
-        val session = currentSession ?: return
-        if (sessionId != null && session.sessionId == sessionId && session.state == TransferSessionState.CONSUMED) {
-            session.state = TransferSessionState.COMPLETED
-        }
+    fun completeSession(sessionId: String?): Boolean {
+        val session = currentSession ?: return false
+        expireIfNeeded(session)
+        if (session.sessionId != sessionId || (session.state != TransferSessionState.CONSUMED && session.state != TransferSessionState.SENDING)) return false
+        session.state = TransferSessionState.COMPLETED
+        return true
     }
 
     @Synchronized
@@ -313,8 +332,9 @@ class TransferSessionManager(
     }
 
     private fun expireIfNeeded(session: TransferSession) {
-        if ((session.state == TransferSessionState.INITIATED || session.state == TransferSessionState.AWAITING_PAIRING) &&
-            clock() > session.expiresAtMillis
+        if (clock() <= session.expiresAtMillis) return
+        if (session.state == TransferSessionState.INITIATED || session.state == TransferSessionState.AWAITING_PAIRING ||
+            session.state == TransferSessionState.SENDING || (session.state == TransferSessionState.CONSUMED && session.direction.isSending)
         ) {
             session.state = TransferSessionState.EXPIRED
         }

@@ -6,8 +6,6 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import one.mixin.android.MixinApplication
-import one.mixin.android.extension.getStringDeviceId
 
 @Parcelize
 @Serializable
@@ -51,12 +49,11 @@ data class TransferCommand(
     val version: Int = CURRENT_TRANSFER_VERSION,
     @SerializedName("device_id")
     @SerialName("device_id")
-    @EncodeDefault
-    val deviceId: String = MixinApplication.appContext.getStringDeviceId(),
+    val deviceId: String? = null,
     @SerialName("platform")
     @EncodeDefault
     @SerializedName("platform")
-    val platform: String = "Android",
+    val platform: String? = "Android",
 ) : Parcelable
 
 const val CURRENT_TRANSFER_VERSION = 3

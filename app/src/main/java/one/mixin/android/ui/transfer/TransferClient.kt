@@ -1,6 +1,7 @@
 package one.mixin.android.ui.transfer
 
 import android.app.Application
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -63,7 +64,6 @@ import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.util.NetworkUtils
 import one.mixin.android.util.SINGLE_SOCKET_THREAD
 import one.mixin.android.util.mention.parseMentionData
-import one.mixin.android.util.reportException
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
@@ -83,7 +83,6 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import timber.log.Timber
 import java.io.ByteArrayInputStream
-import java.io.EOFException
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -91,7 +90,6 @@ import java.io.OutputStream
 import java.lang.Float.min
 import java.net.InetSocketAddress
 import java.net.Socket
-import java.net.SocketException
 import java.nio.ByteBuffer
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -134,9 +132,18 @@ class TransferClient
         companion object {
             private const val CONNECT_TIMEOUT_MS = 60_000
             private const val MAX_FILE_SIZE = 5242880 // 5M
+
+            private val singleTransferThread by lazy {
+                Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_THREAD") }.asCoroutineDispatcher()
+            }
+
+            private val singleTransferFileThread by lazy {
+                Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_FILE_THREAD") }.asCoroutineDispatcher()
+            }
         }
 
         private var socket: Socket? = null
+        @Volatile
         private var quit = false
         private var receiveCount = 0L
         private var processCount = 0L
@@ -159,14 +166,6 @@ class TransferClient
             TransferInserter(appDatabase)
         }
 
-        private val singleTransferThread by lazy {
-            Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_THREAD") }.asCoroutineDispatcher()
-        }
-
-        private val singleTransferFileThread by lazy {
-            Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_FILE_THREAD") }.asCoroutineDispatcher()
-        }
-
         suspend fun connectToServer(
             ip: String,
             port: Int,
@@ -176,43 +175,39 @@ class TransferClient
             onConnectionFailed: () -> Unit = {},
         ) =
             withContext(SINGLE_SOCKET_THREAD) {
+                currentAuthorization = authorization
                 try {
-                    if (!transferSessionManager.isAuthorizationActiveForWrite(authorization, Session.getAccountId())) {
-                        Timber.w("Rejected transfer connect without active one-time authorization")
-                        status.value = TransferStatus.ERROR
-                        transferSessionManager.cancelSession(authorization.sessionId)
-                        return@withContext
-                    }
-                    currentAuthorization = authorization
-                    receivedFinish = false
+                    check(isWriteAuthorized()) { "Inactive transfer authorization" }
                     protocol = TransferProtocol(serializationJson, secretBytes)
                     aesKey = SecretKeySpec(secretBytes.sliceArray(0..31), "AES")
                     NetworkUtils.printWifiInfo(MixinApplication.appContext)
                     status.value = TransferStatus.CONNECTING
                     val socket = Socket()
-                    try {
-                        socket.connect(InetSocketAddress(ip, port), CONNECT_TIMEOUT_MS)
-                    } catch (e: IOException) {
-                        socket.close()
-                        onConnectionFailed()
-                        throw e
-                    }
                     this@TransferClient.socket = socket
+                    withContext(Dispatchers.IO) { socket.connect(InetSocketAddress(ip, port), CONNECT_TIMEOUT_MS) }
+                    check(isWriteAuthorized()) { "Transfer authorization revoked during connection" }
                     status.value = TransferStatus.WAITING_FOR_VERIFICATION
-                    // send connect command
                     sendCommand(socket.outputStream, commandData)
-                    launch(Dispatchers.IO) { listen(socket.inputStream, socket.outputStream) }
-                    launch(Dispatchers.IO) {
-                        for (byteArray in syncChannel) {
-                            writeBytes(byteArray)
+                    withContext(Dispatchers.IO) {
+                        launch {
+                            for (byteArray in syncChannel) writeBytes(byteArray)
+                        }
+                        try {
+                            listen(socket.inputStream, socket.outputStream, onConnectionFailed)
+                        } finally {
+                            syncChannel.close()
                         }
                     }
+                    if (receivedFinish) exit(true)
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     Timber.e(e)
-                    transferSessionManager.cancelSession(authorization.sessionId)
-                    if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
+                    if (!quit && transferSessionManager.getSessionState(authorization.sessionId) != TransferSessionState.CANCELLED) {
+                        if (startTime == 0L) onConnectionFailed()
                         status.value = TransferStatus.ERROR
                     }
+                    transferSessionManager.cancelSession(authorization.sessionId)
                     exit()
                 }
             }
@@ -222,59 +217,36 @@ class TransferClient
         private suspend fun listen(
             inputStream: InputStream,
             outputStream: OutputStream,
+            onConnectionFailed: () -> Unit,
         ) {
             do {
-                val result =
-                    try {
-                        protocol.read(inputStream)
-                    } catch (e: EOFException) {
-                        if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.PROCESSING && status.value != TransferStatus.ERROR) {
-                            status.value = TransferStatus.ERROR
-                            exit() // If it is not finished, exit.
-                        }
-                        quit = true
-                        Timber.e(e)
-                        NetworkUtils.printWifiInfo(MixinApplication.appContext)
-                        null
-                    } catch (e: Exception) {
-                        // Report exception and stop transfer
-                        quit = true
-                        if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.PROCESSING && status.value != TransferStatus.ERROR) {
-                            status.value = TransferStatus.ERROR
-                            exit()
-                        }
-                        Timber.e(e)
-                        reportException(e)
-                        null
-                    }
-                if (result == null) {
-                    continue
-                }
-                if (!isWriteAuthorized()) {
-                    abortUnauthorizedTransfer()
-                    return
+                val result = protocol.read(inputStream) ?: continue
+                if (!isWriteAuthorized()) throw IOException("Transfer authorization revoked")
+                if (startTime == 0L && (result !is TransferCommand || result.action != TransferCommandAction.START.value)) {
+                    throw IOException("Expected transfer START")
                 }
                 when (result) {
                     is TransferCommand -> {
                         when (result.action) {
                             TransferCommandAction.START.value -> {
-                                val remoteDeviceId: String? = result.deviceId
                                 if (result.version != CURRENT_TRANSFER_VERSION ||
                                     !transferSessionManager.validateStartHandshake(
                                         authorization = currentAuthorization,
                                         currentAccountId = Session.getAccountId(),
                                         remoteUserId = result.userId,
-                                        remoteDeviceId = remoteDeviceId,
+                                        remoteDeviceId = result.deviceId,
                                     )
                                 ) {
                                     Timber.e("Transfer handshake rejected")
-                                    abortUnauthorizedTransfer()
+                                    onConnectionFailed()
+                                    status.value = TransferStatus.ERROR
+                                    cancelAndExit()
                                     return
                                 }
                                 status.value = TransferStatus.SYNCING
                                 startTime = System.currentTimeMillis()
                                 this.total = result.total ?: 0L
-                                this.deviceId = remoteDeviceId
+                                this.deviceId = currentAuthorization?.expectedPeerDeviceId
                                 protocol.setCachePath(getAttachmentPath())
                                 Timber.e("Transfer start:$startTime total:$total")
                             }
@@ -292,8 +264,8 @@ class TransferClient
                                 status.value = TransferStatus.PROCESSING
                                 sendCommand(outputStream, TransferCommand(TransferCommandAction.FINISH.value))
                                 delay(100)
-                                exit(true)
                                 Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize $receiveCount / ${this.total} data")
+                                return
                             }
 
                             else -> {
@@ -357,11 +329,10 @@ class TransferClient
         }
 
         private fun abortUnauthorizedTransfer() {
-            quit = true
-            mutableList.clear()
-            transferSessionManager.cancelSession(currentAuthorization?.sessionId)
-            status.value = TransferStatus.ERROR
-            exit()
+            if (!quit && transferSessionManager.getSessionState(currentAuthorization?.sessionId) != TransferSessionState.CANCELLED) {
+                status.value = TransferStatus.ERROR
+            }
+            cancelAndExit()
         }
 
         private fun processJson(byteArray: ByteArray) {
@@ -508,8 +479,15 @@ class TransferClient
                         conversationExtDao.getAllConversationId().forEach { conversationId ->
                             conversationExtDao.refreshCountByConversationId(conversationId)
                         }
-                        processAttachmentFile(getAttachmentPath())
-                        transferSessionManager.completeSession(currentAuthorization?.sessionId)
+                        val folder = getAttachmentPath()
+                        try {
+                            processAttachmentFile(folder)
+                        } finally {
+                            folder.deleteRecursively()
+                        }
+                        if (transferSessionManager.completeSession(currentAuthorization?.sessionId)) {
+                            status.value = TransferStatus.FINISHED
+                        }
                     } else {
                         clearCacheDirectory()
                     }
@@ -525,9 +503,6 @@ class TransferClient
         fun cancelAndExit() {
             quit = true
             transferSessionManager.cancelSession(currentAuthorization?.sessionId)
-            if (status.value != TransferStatus.FINISHED) {
-                status.value = TransferStatus.ERROR
-            }
             exit(false)
         }
 
@@ -571,15 +546,8 @@ class TransferClient
             outputStream: OutputStream,
             command: TransferCommand,
         ) {
-            try {
-                protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, serializationJson.encodeToString(TransferCommand.serializer(), command))
-                outputStream.flush()
-            } catch (e: SocketException) {
-                exit()
-                if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.ERROR) {
-                    status.value = TransferStatus.ERROR
-                }
-            }
+            protocol.write(outputStream, TransferProtocol.TYPE_COMMAND, serializationJson.encodeToString(TransferCommand.serializer(), command))
+            outputStream.flush()
         }
 
         private val cacheSessionDirName by lazy {
@@ -659,7 +627,10 @@ class TransferClient
 
         private fun processAttachmentFile(folder: File) { // Processing attachment files
             folder.walkTopDown().forEach { f ->
-                if (status.value == TransferStatus.ERROR) return
+                if (status.value == TransferStatus.ERROR || !isWriteAuthorized()) {
+                    abortUnauthorizedTransfer()
+                    return
+                }
                 if (f.isFile && f.length() > 0) {
                     val messageId = f.name
                     if (messageId.isUUID()) {
@@ -708,10 +679,6 @@ class TransferClient
                         }
                     }
                 }
-            }
-            folder.deleteRecursively()
-            if (status.value != TransferStatus.ERROR) {
-                status.value = TransferStatus.FINISHED
             }
         }
 

@@ -18,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,6 +42,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.isConnectedToWiFi
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
@@ -67,7 +69,9 @@ import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import timber.log.Timber
+import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Provider
 
 @OptIn(ExperimentalSerializationApi::class)
 @AndroidEntryPoint
@@ -125,7 +129,9 @@ class TransferActivity : BaseActivity() {
     lateinit var transferServer: TransferServer
 
     @Inject
-    lateinit var transferClient: TransferClient
+    lateinit var transferClientProvider: Provider<TransferClient>
+
+    private var transferClient: TransferClient? = null
 
     @Inject
     lateinit var status: TransferStatusLiveData
@@ -283,13 +289,14 @@ class TransferActivity : BaseActivity() {
                                         dialog.dismiss()
                                         status.value = TransferStatus.INITIALIZING
                                         val accountId = Session.getAccountId() ?: return@setPositiveButton
-                                        activeSessionId =
+                                        val sessionId =
                                             transferSessionManager.initiateSession(
                                                 direction = TransferDirection.TRANSFER_TO_PHONE,
                                                 accountId = accountId,
                                             ).sessionId
+                                        activeSessionId = sessionId
                                         lifecycleScope.launch {
-                                            transferServer.restartServer { transferCommandData ->
+                                            transferServer.restartServer(sessionId) { transferCommandData ->
                                                 lifecycleScope.launch(Dispatchers.Main) {
                                                     val qrCode =
                                                         gson.toJson(transferCommandData)
@@ -350,45 +357,13 @@ class TransferActivity : BaseActivity() {
             }
         }
         if (argsStatus == ARGS_TRANSFER_TO_PC) {
-            val accountId = Session.getAccountId()
-            val extensionSessionId = Session.getExtensionSessionId()
-            if (!accountId.isNullOrBlank() && !extensionSessionId.isNullOrBlank()) {
-                activeSessionId =
-                    transferSessionManager.initiateSession(
-                        direction = TransferDirection.TRANSFER_TO_PC,
-                        accountId = accountId,
-                        expectedExtensionSessionId = extensionSessionId,
-                    ).sessionId
-            }
+            initiatePcTransferSession()
         }
         if (argsStatus == ARGS_TRANSFER_TO_PC || argsStatus == ARGS_RESTORE_FROM_PC) {
-            RxBus.listen(TransferCommand::class.java)
+            RxBus.listen(IncomingTransferControlEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
-                .subscribe { command ->
-                    if (command.action == TransferCommandAction.CANCEL.value) {
-                        transferSessionManager.cancelSession(activeSessionId)
-                        pairingDialog?.dismiss()
-                        pairingDialog = null
-                        lifecycleScope.launch {
-                            if (argsStatus == ARGS_RESTORE_FROM_PC) {
-                                if (status.value == TransferStatus.WAITING_MESSAGE) {
-                                    status.value = TransferStatus.INITIALIZING
-                                } else if (status.value != TransferStatus.FINISHED && status.value != TransferStatus.INITIALIZING) {
-                                    transferClient.cancelAndExit()
-                                } else {
-                                    status.value = TransferStatus.INITIALIZING
-                                }
-                                toast(R.string.Canceled)
-                            } else if (status.value == TransferStatus.WAITING_MESSAGE) {
-                                status.value = TransferStatus.INITIALIZING
-                                toast(R.string.Canceled)
-                            } else if (transferServer.cancelWaiting()) {
-                                toast(R.string.Canceled)
-                            }
-                        }
-                    }
-                }
+                .subscribe { handleIncomingControlEvent(it) }
         }
     }
 
@@ -453,13 +428,14 @@ class TransferActivity : BaseActivity() {
             when (argsStatus) {
                 ARGS_TRANSFER_TO_PHONE -> {
                     val accountId = Session.getAccountId() ?: return@setOnClickListener
-                    activeSessionId =
+                    val sessionId =
                         transferSessionManager.initiateSession(
                             direction = TransferDirection.TRANSFER_TO_PHONE,
                             accountId = accountId,
                         ).sessionId
+                    activeSessionId = sessionId
                     lifecycleScope.launch {
-                        transferServer.startServer(selectConversation, selectDate) { transferCommandData ->
+                        transferServer.startServer(sessionId, selectConversation, selectDate) { transferCommandData ->
                             lifecycleScope.launch(Dispatchers.Main) {
                                 val qrCode =
                                     gson.toJson(transferCommandData)
@@ -608,7 +584,6 @@ class TransferActivity : BaseActivity() {
 
     private var transferDisposable: Disposable? = null
     private var transferSpeedDisposable: Disposable? = null
-    private var transferControlDisposable: Disposable? = null
 
     override fun onStart() {
         super.onStart()
@@ -639,27 +614,35 @@ class TransferActivity : BaseActivity() {
                         }
                     }
         }
-        if (transferControlDisposable == null) {
-            transferControlDisposable =
-                RxBus.listen(IncomingTransferControlEvent::class.java)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDispose(destroyScope)
-                    .subscribe { event ->
-                        handleIncomingControlEvent(event)
-                    }
-        }
     }
 
     private fun handleIncomingControlEvent(event: IncomingTransferControlEvent) {
+        if (isFinishing || isDestroyed) return
         val command = event.command
         val accountId = Session.getAccountId() ?: return
         val sessionId = activeSessionId ?: return
+        if (command.action == TransferCommandAction.CANCEL.value) {
+            if (transferSessionManager.getSessionState(sessionId) != TransferSessionState.CANCELLED) return
+            pairingDialog?.dismiss()
+            pairingDialog = null
+            val previousStatus = status.value
+            if (previousStatus == TransferStatus.FINISHED || previousStatus == TransferStatus.ERROR) return
+            if (argsStatus == ARGS_RESTORE_FROM_PC) {
+                transferClient?.cancelAndExit()
+                transferClient = null
+            } else {
+                transferServer.exit()
+                initiatePcTransferSession()
+            }
+            status.value = TransferStatus.INITIALIZING
+            if (previousStatus != TransferStatus.INITIALIZING) toast(R.string.Canceled)
+            return
+        }
         when (argsStatus) {
             ARGS_RESTORE_FROM_PC -> {
                 if (command.action != TransferCommandAction.PUSH.value) return
                 if (!validateIncomingPushCommand(command, accountId, requireDeviceId = false)) return
-                val remoteDeviceId: String? = command.deviceId
-                if (!transferSessionManager.beginPairingConfirmation(sessionId, accountId, remoteDeviceId, command.code)) {
+                if (!transferSessionManager.beginPairingConfirmation(sessionId, accountId, command.deviceId, command.code)) {
                     toast(R.string.transfer_pairing_expired_or_cancelled)
                     status.value = TransferStatus.INITIALIZING
                     return
@@ -669,8 +652,7 @@ class TransferActivity : BaseActivity() {
 
             ARGS_TRANSFER_TO_PC -> {
                 if (command.action != TransferCommandAction.PULL.value) return
-                val remoteDeviceId: String? = command.deviceId
-                if (!transferSessionManager.beginPairingConfirmation(sessionId, accountId, remoteDeviceId, command.code)) {
+                if (!transferSessionManager.beginPairingConfirmation(sessionId, accountId, command.deviceId, command.code)) {
                     toast(R.string.transfer_pairing_expired_or_cancelled)
                     return
                 }
@@ -686,13 +668,22 @@ class TransferActivity : BaseActivity() {
     ) {
         val ip = requireNotNull(transferCommandData.ip)
         val port = requireNotNull(transferCommandData.port)
-        val key = requireNotNull(transferCommandData.secretKey).decodeBase64()
+        val key = try {
+            requireNotNull(transferCommandData.secretKey).decodeBase64()
+        } catch (e: IOException) {
+            Timber.w(e, "Invalid transfer key")
+            transferSessionManager.cancelSession(authorization.sessionId)
+            onConnectionFailed()
+            status.value = TransferStatus.ERROR
+            return
+        }
         connect(
             ip,
             port,
             TransferCommand(
                 TransferCommandAction.CONNECT.value,
                 code = transferCommandData.code,
+                deviceId = getStringDeviceId(),
                 userId = Session.getAccountId(),
             ),
             key = key,
@@ -709,17 +700,17 @@ class TransferActivity : BaseActivity() {
         authorization: TransferAuthorization,
         onConnectionFailed: () -> Unit = {},
     ) {
-        transferClient.connectToServer(ip, port, transferCommand, key, authorization, onConnectionFailed)
+        val client = transferClientProvider.get()
+        transferClient = client
+        client.connectToServer(ip, port, transferCommand, key, authorization, onConnectionFailed)
     }
 
     override fun onStop() {
         super.onStop()
         transferDisposable?.dispose()
         transferSpeedDisposable?.dispose()
-        transferControlDisposable?.dispose()
         transferDisposable = null
         transferSpeedDisposable = null
-        transferControlDisposable = null
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
@@ -727,13 +718,21 @@ class TransferActivity : BaseActivity() {
         dialog?.dismiss()
         pairingDialog?.dismiss()
         pairingDialog = null
-        if (status.value != TransferStatus.FINISHED) {
-            transferSessionManager.cancelSession(activeSessionId)
-            transferClient.cancelAndExit()
-        } else {
-            transferClient.exit(true)
+        val sessionState = activeSessionId?.let(transferSessionManager::getSessionState)
+        val pcTransferActive = when (sessionState) {
+            TransferSessionState.INITIATED -> status.value == TransferStatus.WAITING_MESSAGE
+            TransferSessionState.AWAITING_PAIRING, TransferSessionState.CONSUMED, TransferSessionState.SENDING -> true
+            else -> false
         }
-        transferServer.exit()
+        if ((argsStatus == ARGS_RESTORE_FROM_PC || argsStatus == ARGS_TRANSFER_TO_PC) && pcTransferActive) {
+            sendCancelToPc()
+        }
+        if (status.value != TransferStatus.FINISHED) transferSessionManager.cancelSession(activeSessionId)
+        if (argsStatus == ARGS_RESTORE_FROM_PHONE || argsStatus == ARGS_RESTORE_FROM_PC) {
+            if (status.value == TransferStatus.FINISHED) transferClient?.exit(true) else transferClient?.cancelAndExit()
+        } else {
+            transferServer.exit()
+        }
         status.value = TransferStatus.INITIALIZING
         super.onDestroy()
     }
@@ -791,10 +790,10 @@ class TransferActivity : BaseActivity() {
                 return@launch
             }
             if (!validateIncomingPushCommand(transferCommandData, accountId, requireDeviceId = true)) {
+                transferSessionManager.cancelSession(sessionId)
                 return@launch
             }
-            val remoteDeviceId: String? = transferCommandData.deviceId
-            if (!transferSessionManager.beginPairingConfirmation(sessionId, accountId, remoteDeviceId, transferCommandData.code)) {
+            if (!transferSessionManager.beginPairingConfirmation(sessionId, accountId, transferCommandData.deviceId, transferCommandData.code)) {
                 withContext(Dispatchers.Main) {
                     toast(R.string.transfer_pairing_expired_or_cancelled)
                 }
@@ -843,7 +842,7 @@ class TransferActivity : BaseActivity() {
     ) {
         if (isFinishing || isDestroyed) return
         pairingDialog?.dismiss()
-        val platformLabel: String = (command.platform as String?)?.takeIf { it.isNotBlank() } ?: getString(R.string.app_name)
+        val platformLabel: String = command.platform?.takeIf { it.isNotBlank() } ?: getString(R.string.app_name)
         val endpointLabel =
             command.code?.let { "#$it" }
                 ?: command.ip.orEmpty()
@@ -856,17 +855,17 @@ class TransferActivity : BaseActivity() {
                     dialog.dismiss()
                     pairingDialog = null
                     transferSessionManager.cancelSession(sessionId)
+                    if (argsStatus == ARGS_RESTORE_FROM_PC) sendCancelToPc()
                     status.value = TransferStatus.INITIALIZING
                 }
                 .setPositiveButton(R.string.Confirm) { dialog, _ ->
                     dialog.dismiss()
                     pairingDialog = null
-                    val remoteDeviceId: String? = command.deviceId
                     val authorization =
                         transferSessionManager.confirmAndConsumePairing(
                             sessionId = sessionId,
                             accountId = Session.getAccountId(),
-                            peerDeviceId = remoteDeviceId,
+                            peerDeviceId = command.deviceId,
                         )
                     if (authorization == null) {
                         toast(R.string.transfer_pairing_expired_or_cancelled)
@@ -876,7 +875,7 @@ class TransferActivity : BaseActivity() {
                     lifecycleScope.launch {
                         connect(command, authorization) {
                             if (argsStatus == ARGS_RESTORE_FROM_PC) {
-                                sendMessage(gson.toJson(TransferCommand(TransferCommandAction.CANCEL.value)))
+                                sendCancelToPc()
                             }
                         }
                     }
@@ -891,8 +890,8 @@ class TransferActivity : BaseActivity() {
     ) {
         if (isFinishing || isDestroyed) return
         pairingDialog?.dismiss()
-        val platformLabel: String = (command.platform as String?)?.takeIf { it.isNotBlank() } ?: "Desktop"
-        val deviceLabel: String = (command.deviceId as String?)?.takeIf { it.isNotBlank() } ?: platformLabel
+        val platformLabel = command.platform?.takeIf { it.isNotBlank() } ?: getString(R.string.desktop)
+        val deviceLabel = command.deviceId?.takeIf { it.isNotBlank() } ?: platformLabel
         pairingDialog =
             alertDialogBuilder()
                 .setTitle(R.string.transfer_pairing_confirm_title)
@@ -902,22 +901,23 @@ class TransferActivity : BaseActivity() {
                     dialog.dismiss()
                     pairingDialog = null
                     transferSessionManager.cancelSession(sessionId)
+                    sendCancelToPc()
+                    initiatePcTransferSession()
                 }
                 .setPositiveButton(R.string.Confirm) { dialog, _ ->
                     dialog.dismiss()
                     pairingDialog = null
-                    val remoteDeviceId: String? = command.deviceId
                     val authorization =
                         transferSessionManager.confirmAndConsumePairing(
                             sessionId = sessionId,
                             accountId = Session.getAccountId(),
-                            peerDeviceId = remoteDeviceId,
+                            peerDeviceId = command.deviceId,
                         )
                     if (authorization == null) {
                         toast(R.string.transfer_pairing_expired_or_cancelled)
                         return@setPositiveButton
                     }
-                    pushRequest()
+                    pushRequest(authorization.sessionId)
                 }
                 .create()
         pairingDialog?.show()
@@ -933,8 +933,12 @@ class TransferActivity : BaseActivity() {
     @Inject
     lateinit var participantDao: ParticipantDao
 
-    private fun sendMessage(content: String) =
-        lifecycleScope.launch(Dispatchers.IO) {
+    private fun sendCancelToPc() {
+        sendMessage(gson.toJson(TransferCommand(TransferCommandAction.CANCEL.value)), MixinApplication.get().applicationScope)
+    }
+
+    private fun sendMessage(content: String, scope: CoroutineScope = lifecycleScope) =
+        scope.launch(Dispatchers.IO) {
             try {
                 val accountId = Session.getAccountId() ?: return@launch
                 val sessionId = Session.getExtensionSessionId() ?: return@launch
@@ -980,27 +984,32 @@ class TransferActivity : BaseActivity() {
             gson.toJson(
                 TransferCommand(
                     TransferCommandAction.PULL.value,
+                    deviceId = getStringDeviceId(),
                 ),
             )
         status.value = TransferStatus.WAITING_MESSAGE
         sendMessage(encodeText)
     }
 
-    private fun pushRequest() {
-        val accountId = Session.getAccountId() ?: return
-        val extensionSessionId = Session.getExtensionSessionId()
-        if (extensionSessionId.isNullOrBlank()) {
+    private fun initiatePcTransferSession(): String? {
+        val accountId = Session.getAccountId() ?: return null
+        val extensionSessionId = Session.getExtensionSessionId()?.takeIf { it.isNotBlank() } ?: return null
+        val sessionId = transferSessionManager.initiateSession(
+            direction = TransferDirection.TRANSFER_TO_PC,
+            accountId = accountId,
+            expectedExtensionSessionId = extensionSessionId,
+        ).sessionId
+        activeSessionId = sessionId
+        return sessionId
+    }
+
+    private fun pushRequest(sessionId: String? = initiatePcTransferSession()) {
+        if (sessionId == null) {
             toast(R.string.Please_log_in_to_the_desktop_first)
             return
         }
-        activeSessionId =
-            transferSessionManager.initiateSession(
-                direction = TransferDirection.TRANSFER_TO_PC,
-                accountId = accountId,
-                expectedExtensionSessionId = extensionSessionId,
-            ).sessionId
         lifecycleScope.launch {
-            transferServer.startServer(selectConversation, selectDate) { transferData ->
+            transferServer.startServer(sessionId, selectConversation, selectDate) { transferData ->
                 val encodeText =
                     gson.toJson(
                         transferData,
