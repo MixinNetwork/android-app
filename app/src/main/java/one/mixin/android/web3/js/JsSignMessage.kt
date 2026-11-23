@@ -24,7 +24,10 @@ class JsSignMessage(
     val virtualSize: Int? = null, // UTXO chain vbytes
     val utxoChainId: String? = null,
     val broadcast: Boolean = false,
+    private val evmChainId: String? = null,
 ) : Parcelable {
+    val transactionChain get() = evmChainId?.let(::findChainByHexReference)
+
     companion object {
         const val TYPE_TYPED_MESSAGE = 0
         const val TYPE_PERSONAL_MESSAGE = 1
