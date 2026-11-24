@@ -404,7 +404,11 @@ class ConversationListFragment : LinkFragment() {
 
     fun openSearch() {
         if (isAdded) {
-            binding.searchBar.openSearch()
+            if (binding.searchBar.isOpen) {
+                binding.searchBar.focusSearch()
+            } else {
+                binding.searchBar.openSearch()
+            }
         }
     }
 

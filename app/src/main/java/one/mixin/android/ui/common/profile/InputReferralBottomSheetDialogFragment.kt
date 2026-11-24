@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.allCaps
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -26,11 +28,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -102,7 +105,7 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     override fun ComposeContent() {
         MixinAppTheme {
             val defaultValue = arguments?.getString(ARG_DEFAULT_VALUE) ?: ""
-            var input by rememberSaveable(defaultValue) { mutableStateOf(defaultValue) }
+            var input by rememberSaveable(defaultValue) { mutableStateOf(defaultValue.uppercase()) }
             var uiState by remember { mutableStateOf<UiState>(UiState.Initial) }
             val scope = rememberCoroutineScope()
 
@@ -150,8 +153,11 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             )
 
                             Spacer(Modifier.height(30.dp))
+                            val locale = LocalLocale.current
+                            val allCapsTransformation = remember(locale) { InputTransformation.allCaps(locale) }
                             MaterialInputField(
                                 value = input,
+                                inputTransformation = allCapsTransformation,
                                 onValueChange = {
                                     input = it.uppercase()
                                     if (uiState is UiState.Failure) {

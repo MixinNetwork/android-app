@@ -33,6 +33,22 @@ import kotlin.test.assertTrue
 @SuppressLint("RestrictedApi")
 class WindowExtensionTest {
     @Test
+    @Config(sdk = [30])
+    fun windowDimensionsUnwrapContextThemeWrapperOnApi30() {
+        val controller = Robolectric.buildActivity(FragmentActivity::class.java).setup()
+        try {
+            val activity = controller.get()
+            val context = ContextThemeWrapper(activity, 0)
+            val bounds = activity.windowManager.currentWindowMetrics.bounds
+            assertTrue(bounds.width() > 0 && bounds.height() > 0)
+            assertEquals(bounds.width(), context.windowWidth())
+            assertEquals(bounds.height(), context.windowHeight())
+        } finally {
+            controller.pause().stop().destroy()
+        }
+    }
+
+    @Test
     @Config(qualifiers = "w1000dp-h800dp-mdpi")
     fun narrowEmbeddedPanesUseContentWidthAndInvalidateCachedHolders() {
         val controller = Robolectric.buildActivity(FragmentActivity::class.java).setup()

@@ -65,7 +65,7 @@ private fun Context.windowMetricsContext(): Context {
         if (ctx is Activity || ctx is InputMethodService || ctx is Application) {
             return ctx
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && ctx.isUiContext) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ctx.isUiContext) {
             return ctx
         }
         ctx = ctx.baseContext

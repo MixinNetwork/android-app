@@ -43,12 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import one.mixin.android.Constants
 import one.mixin.android.R
 
@@ -98,30 +94,17 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    @OptIn(FlowPreview::class)
     @Composable
     override fun ComposeContent() {
         MixinAppTheme {
-            val searchQuery = remember { MutableStateFlow("") }
+            var query by rememberSaveable { mutableStateOf("") }
             val wallets by viewModel.walletsFlow.collectAsState()
             val allWallets by viewModel.allWalletsFlow.collectAsState()
-            LaunchedEffect(Unit) {
-                launch {
-                    searchQuery.collect { query ->
-                        if (query.isEmpty()) {
-                            viewModel.searchWallets(excludeWalletId ?: "", chainId ?: "", query)
-                        }
-                    }
+            LaunchedEffect(query, excludeWalletId, chainId) {
+                if (query.isNotEmpty()) {
+                    delay(150)
                 }
-                launch {
-                    searchQuery
-                        .debounce(150)
-                        .collect { query ->
-                            if (query.isNotEmpty()) {
-                                viewModel.searchWallets(excludeWalletId ?: "", chainId ?: "", query)
-                            }
-                        }
-                }
+                viewModel.searchWallets(excludeWalletId ?: "", chainId ?: "", query)
             }
 
             WalletListScreen(
@@ -129,11 +112,8 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 wallets = wallets,
                 allWallets = allWallets,
                 excludeWalletId = excludeWalletId,
-                onQueryChanged = { query ->
-                    lifecycleScope.launch {
-                        searchQuery.emit(query)
-                    }
-                },
+                query = query,
+                onQueryChanged = { query = it },
                 onWalletClick = { wallet ->
                     if (wallet != null && (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey))) {
                         NoKeyWarningBottomSheetDialogFragment.newInstance(wallet.toWeb3Wallet()).apply {
@@ -200,13 +180,13 @@ fun WalletListScreen(
     wallets: List<WalletItem>,
     allWallets: List<WalletItem>,
     excludeWalletId: String?,
+    query: String,
     onQueryChanged: (String) -> Unit,
     onWalletClick: (WalletItem?) -> Unit,
     onCancel: () -> Unit,
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
-    var query by rememberSaveable { mutableStateOf("") }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
@@ -259,10 +239,7 @@ fun WalletListScreen(
     ) {
         SearchBar(
             query = query,
-            onQueryChanged = {
-                query = it
-                onQueryChanged(it)
-            },
+            onQueryChanged = onQueryChanged,
             isSearching = false,
             onCancel = onCancel,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)

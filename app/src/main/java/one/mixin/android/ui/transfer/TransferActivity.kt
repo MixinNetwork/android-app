@@ -223,6 +223,8 @@ class TransferActivity : BaseActivity() {
 
     private var dialog: Dialog? = null
     private var retryDialog: Dialog? = null
+    private var localNetworkPermissionRequestInFlight = false
+    private val pendingLocalNetworkActions = ArrayDeque<() -> Unit>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -242,22 +244,36 @@ class TransferActivity : BaseActivity() {
     }
 
     private fun withLocalNetworkPermission(action: () -> Unit) {
-        if (Build.VERSION.SDK_INT >= 37 &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) != PackageManager.PERMISSION_GRANTED
+        if (Build.VERSION.SDK_INT < 37 ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) == PackageManager.PERMISSION_GRANTED
         ) {
-            RxPermissions(this)
-                .request(Manifest.permission.ACCESS_LOCAL_NETWORK)
-                .autoDispose(destroyScope)
-                .subscribe { granted ->
+            action()
+            return
+        }
+        pendingLocalNetworkActions.addLast(action)
+        if (localNetworkPermissionRequestInFlight) return
+        localNetworkPermissionRequestInFlight = true
+        RxPermissions(this)
+            .request(Manifest.permission.ACCESS_LOCAL_NETWORK)
+            .autoDispose(destroyScope)
+            .subscribe(
+                { granted ->
+                    localNetworkPermissionRequestInFlight = false
                     if (granted) {
-                        action()
+                        while (pendingLocalNetworkActions.isNotEmpty()) {
+                            pendingLocalNetworkActions.removeFirst().invoke()
+                        }
                     } else {
+                        pendingLocalNetworkActions.clear()
                         openPermissionSetting()
                     }
-                }
-        } else {
-            action()
-        }
+                },
+                { throwable ->
+                    localNetworkPermissionRequestInFlight = false
+                    pendingLocalNetworkActions.clear()
+                    Timber.e(throwable)
+                },
+            )
     }
 
     private fun setupTransfer() {
@@ -652,7 +668,9 @@ class TransferActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
-            handleCommand(this)
+            withLocalNetworkPermission {
+                handleCommand(this)
+            }
         }
     }
 

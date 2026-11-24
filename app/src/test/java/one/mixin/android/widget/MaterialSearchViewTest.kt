@@ -80,6 +80,31 @@ class MaterialSearchViewTest {
     }
 
     @Test
+    fun focusSearchPreservesActiveQueryAndClearButton() {
+        val searchView = createSearchView()
+        val searchEt = searchView.findViewById<EditText>(R.id.search_et)
+        val rightClear = searchView.findViewById<ImageButton>(R.id.right_clear)
+
+        searchView.openSearch()
+        advanceMainLooper(500L)
+        searchEt.setText("btc")
+        Thread.sleep(SEARCH_DEBOUNCE + 150L)
+        advanceMainLooper(50L)
+        assertTrue(rightClear.isVisible)
+        searchEt.setSelection(0)
+        searchEt.clearFocus()
+
+        searchView.focusSearch()
+        advanceMainLooper(500L)
+
+        assertTrue(searchView.isOpen)
+        assertEquals("btc", searchEt.text.toString())
+        assertEquals(3, searchEt.selectionStart)
+        assertTrue(rightClear.isVisible)
+        assertTrue(searchEt.hasFocus())
+    }
+
+    @Test
     fun closeSearchHidesRightClearAndIgnoresLateTextChanges() {
         val searchView = createSearchView()
         val searchEt = searchView.findViewById<EditText>(R.id.search_et)
