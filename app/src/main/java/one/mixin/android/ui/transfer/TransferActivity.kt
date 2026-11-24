@@ -1051,7 +1051,10 @@ class TransferActivity : BaseActivity() {
     lateinit var participantDao: ParticipantDao
 
     private fun sendCancelToPc() {
-        sendMessage(gson.toJson(TransferCommand(TransferCommandAction.CANCEL.value)), MixinApplication.get().applicationScope)
+        sendMessage(
+            gson.toJson(TransferCommand(TransferCommandAction.CANCEL.value, deviceId = getStringDeviceId())),
+            MixinApplication.get().applicationScope,
+        )
     }
 
     private fun sendMessage(content: String, scope: CoroutineScope = lifecycleScope) =

@@ -45,6 +45,7 @@ import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isUUID
@@ -262,7 +263,13 @@ class TransferClient
                                 }
                                 receivedFinish = true
                                 status.value = TransferStatus.PROCESSING
-                                sendCommand(outputStream, TransferCommand(TransferCommandAction.FINISH.value))
+                                sendCommand(
+                                    outputStream,
+                                    TransferCommand(
+                                        TransferCommandAction.FINISH.value,
+                                        deviceId = MixinApplication.appContext.getStringDeviceId(),
+                                    ),
+                                )
                                 delay(100)
                                 Timber.e("It takes a total of ${System.currentTimeMillis() - startTime} milliseconds to synchronize $receiveCount / ${this.total} data")
                                 return
@@ -293,7 +300,14 @@ class TransferClient
             if (quit || total <= 0 || status.value == TransferStatus.ERROR) return
             val progress = min((receiveCount++) / total.toFloat() * 100, 100f)
             if (lastProgress != progress && System.currentTimeMillis() - lastTime > 300) {
-                sendCommand(outputStream, TransferCommand(TransferCommandAction.PROGRESS.value, progress = progress))
+                sendCommand(
+                    outputStream,
+                    TransferCommand(
+                        TransferCommandAction.PROGRESS.value,
+                        progress = progress,
+                        deviceId = MixinApplication.appContext.getStringDeviceId(),
+                    ),
+                )
                 lastProgress = progress
                 lastTime = System.currentTimeMillis()
                 RxBus.publish(DeviceTransferProgressEvent(progress))

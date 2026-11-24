@@ -377,7 +377,10 @@ class TransferServer
         private fun sendFinish(outputStream: OutputStream) {
             writeCommand(
                 outputStream,
-                TransferCommand(TransferCommandAction.FINISH.value),
+                TransferCommand(
+                    TransferCommandAction.FINISH.value,
+                    deviceId = MixinApplication.appContext.getStringDeviceId(),
+                ),
             )
         }
 
