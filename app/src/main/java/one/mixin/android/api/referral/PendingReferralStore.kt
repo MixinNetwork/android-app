@@ -10,6 +10,7 @@ import java.util.Locale
 
 object PendingReferralStore {
     const val ONELINK_HOST = "mixin.onelink.me"
+    const val ONELINK_PATH_PREFIX = "/rlR3"
 
     private const val PREFS_NAME = "pending_referral_prefs"
     private const val KEY_CODE = "pending_referral_code"
@@ -112,8 +113,10 @@ object PendingReferralStore {
     fun isOneLinkUrl(rawUrl: String?): Boolean {
         val trimmed = rawUrl?.trim()?.takeIf { it.isNotEmpty() } ?: return false
         val uri = runCatching { URI(trimmed) }.getOrNull() ?: return false
+        val path = uri.path.orEmpty()
         return uri.scheme.equals("https", ignoreCase = true) &&
-            uri.host.equals(ONELINK_HOST, ignoreCase = true)
+            uri.host.equals(ONELINK_HOST, ignoreCase = true) &&
+            (path == ONELINK_PATH_PREFIX || path.startsWith("$ONELINK_PATH_PREFIX/"))
     }
 
     fun normalizeCode(raw: String?): String? =

@@ -55,13 +55,16 @@ class PendingReferralStoreTest {
     }
 
     @Test
-    fun isOneLinkUrl_matchesOnlyMixinOneLinkHttps() {
+    fun isOneLinkUrl_matchesOnlyMixinOneLinkReferralTemplateHttps() {
         assertTrue(
             PendingReferralStore.isOneLinkUrl(
-                "https://mixin.onelink.me/abcd?pid=referral&deep_link_value=referral&deep_link_sub1=CRMLSV",
+                "https://mixin.onelink.me/rlR3?af_xp=referral&pid=User_invite&c=Referral&deep_link_value=referral&deep_link_sub1=WLKETH",
             ),
         )
-        assertFalse(PendingReferralStore.isOneLinkUrl("http://mixin.onelink.me/abcd"))
+        assertTrue(PendingReferralStore.isOneLinkUrl("https://mixin.onelink.me/rlR3/shortId"))
+        assertFalse(PendingReferralStore.isOneLinkUrl("https://mixin.onelink.me/dHGb?pid=referral"))
+        assertFalse(PendingReferralStore.isOneLinkUrl("https://mixin.onelink.me/rlR3x"))
+        assertFalse(PendingReferralStore.isOneLinkUrl("http://mixin.onelink.me/rlR3"))
         assertFalse(PendingReferralStore.isOneLinkUrl("https://mixin.one/referrals/CRMLSV"))
         assertFalse(PendingReferralStore.isOneLinkUrl(null))
     }

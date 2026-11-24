@@ -85,7 +85,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="mixin.onelink.me" />
+                    android:host="mixin.onelink.me"
+                    android:pathPrefix="/rlR3" />
             </intent-filter>
 
             <meta-data
