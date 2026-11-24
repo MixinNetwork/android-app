@@ -31,16 +31,19 @@ class AvatarActivity : BaseActivity() {
     companion object {
         const val TAG = "AvatarActivity"
         const val ARGS_URL = "args_url"
+        const val ARGS_PLACEHOLDER = "args_placeholder"
 
         fun show(
             activity: Activity,
             url: String,
             view: View,
+            placeholder: Int = R.drawable.ic_avatar_place_holder,
         ) {
             refreshScreenshot(activity)
             val intent =
                 Intent(activity, AvatarActivity::class.java).apply {
                     putExtra(ARGS_URL, url)
+                    putExtra(ARGS_PLACEHOLDER, placeholder)
                 }
             val options =
                 ActivityOptions.makeSceneTransitionAnimation(
@@ -83,6 +86,9 @@ class AvatarActivity : BaseActivity() {
                 window.sharedElementEnterTransition = avatarTransform
                 startPostponedEnterTransition()
             }
+        }, onError = { _, _ ->
+            binding.avatar.setImageResource(intent.getIntExtra(ARGS_PLACEHOLDER, R.drawable.ic_avatar_place_holder))
+            startPostponedEnterTransition()
         })
 
         binding.rootView.setOnClickListener { finish() }
