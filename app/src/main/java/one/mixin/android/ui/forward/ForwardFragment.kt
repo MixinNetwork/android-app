@@ -764,7 +764,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 return@launch
             }
 
-            if (!MixinApplication.get().checkAndShowAppAuth(requireActivity())) {
+            if (!MixinApplication.get().appAuth.checkAndShow(requireActivity())) {
                 sendAndGo2Chat(cid)
             }
         }
@@ -855,7 +855,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         getEditorResult.launch(Pair(uri, getString(R.string.Share)))
 
         if (action is ForwardAction.System && action.conversationId != null) {
-            MixinApplication.get().checkAndShowAppAuth(requireActivity())
+            MixinApplication.get().appAuth.checkAndShow(requireActivity())
         }
     }
 

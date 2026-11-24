@@ -83,6 +83,10 @@ class UrlInterpreterActivity : BaseActivity() {
             finish()
             return
         }
+        if (MixinApplication.get().appAuth.checkAndShow(this)) {
+            finish()
+            return
+        }
 
         if (data.toString().startsWith("https://", true)) {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(data.toString(), LinkBottomSheetDialogFragment.FROM_EXTERNAL)

@@ -12,7 +12,7 @@ fun showAppAuthPrompt(
     callback: BiometricPrompt.AuthenticationCallback,
     subtitle: String = " ",
     description: String = " ",
-) {
+): BiometricPrompt {
     val biometricPromptInfo =
         BiometricPrompt.PromptInfo.Builder()
             .setTitle(title)
@@ -29,4 +29,5 @@ fun showAppAuthPrompt(
             .build()
     val biometricPrompt = BiometricPrompt(context, ContextCompat.getMainExecutor(context), callback)
     biometricPrompt.authenticate(biometricPromptInfo)
+    return biometricPrompt
 }

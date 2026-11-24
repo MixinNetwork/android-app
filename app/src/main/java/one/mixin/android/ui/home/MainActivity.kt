@@ -553,7 +553,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
         lifecycleScope.launch(Dispatchers.IO) {
             delay(10_000)
-            if (MixinApplication.get().isAppAuthShown()) {
+            if (MixinApplication.get().appAuth.isLocked) {
                 return@launch
             }
             checkUpdate()
