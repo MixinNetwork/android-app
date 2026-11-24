@@ -12,6 +12,7 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -88,8 +89,19 @@ internal constructor(
     private val _allWalletsFlow = MutableStateFlow<List<WalletItem>>(emptyList())
     val allWalletsFlow: StateFlow<List<WalletItem>> = _allWalletsFlow
 
+    private var loadAllWalletsJob: Job? = null
+    private var searchWalletsJob: Job? = null
+
+    fun loadAllWallets(excludeWalletId: String, chainId: String) {
+        loadAllWalletsJob?.cancel()
+        loadAllWalletsJob = viewModelScope.launch {
+            _allWalletsFlow.value = getWalletsExcluding(excludeWalletId, chainId, "")
+        }
+    }
+
     fun searchWallets(excludeWalletId: String, chainId: String, query: String) {
-        viewModelScope.launch {
+        searchWalletsJob?.cancel()
+        searchWalletsJob = viewModelScope.launch {
             val wallets = getWalletsExcluding(excludeWalletId, chainId, query)
             _walletsFlow.value = wallets
             // Update allWallets only when query is empty (no search)

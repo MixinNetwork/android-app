@@ -100,6 +100,9 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             var query by rememberSaveable { mutableStateOf("") }
             val wallets by viewModel.walletsFlow.collectAsState()
             val allWallets by viewModel.allWalletsFlow.collectAsState()
+            LaunchedEffect(excludeWalletId, chainId) {
+                viewModel.loadAllWallets(excludeWalletId ?: "", chainId ?: "")
+            }
             LaunchedEffect(query, excludeWalletId, chainId) {
                 if (query.isNotEmpty()) {
                     delay(150)
@@ -191,22 +194,36 @@ fun WalletListScreen(
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
-    val hasAll = remember(allWallets) { allWallets.any { it.isMixinSafe().not() && it.id != excludeWalletId } }
-    val hasSafe = remember(allWallets) { allWallets.any { it.safeChainId == chainId } }
-    val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
-    val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds || chainId in Constants.Web3UtxoChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
-    val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
-    var selectedCategory by rememberSaveable(hasAll, hasSafe, hasCreated, hasImported, hasWatch) {
-        mutableStateOf(
-            when {
-                hasAll -> null
-                hasSafe -> WalletCategory.MIXIN_SAFE.value
-                hasCreated -> WalletCategory.CLASSIC.value
-                hasImported -> "import"
-                hasWatch -> "watch"
-                else -> null
+    val hasAll = remember(allWallets, excludeWalletId) { allWallets.any { it.isMixinSafe().not() && it.id != excludeWalletId } }
+    val hasSafe = remember(allWallets, chainId) { allWallets.any { it.safeChainId == chainId } }
+    val hasImported = remember(allWallets, excludeWalletId) { allWallets.any { it.isImported() && excludeWalletId != it.id } }
+    val hasCreated = remember(allWallets, chainId, excludeWalletId) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds || chainId in Constants.Web3UtxoChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
+    val hasWatch = remember(allWallets) { allWallets.any { it.isWatch() } }
+    var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
+    var hasInitializedCategory by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(allWallets, hasAll, hasSafe, hasCreated, hasImported, hasWatch) {
+        if (allWallets.isEmpty()) return@LaunchedEffect
+        val isSelectedAvailable =
+            when (selectedCategory) {
+                null -> hasAll
+                WalletCategory.MIXIN_SAFE.value -> hasSafe
+                WalletCategory.CLASSIC.value -> hasCreated
+                "import" -> hasImported
+                "watch" -> hasWatch
+                else -> false
             }
-        )
+        if (!hasInitializedCategory || !isSelectedAvailable) {
+            selectedCategory =
+                when {
+                    hasAll -> null
+                    hasSafe -> WalletCategory.MIXIN_SAFE.value
+                    hasCreated -> WalletCategory.CLASSIC.value
+                    hasImported -> "import"
+                    hasWatch -> "watch"
+                    else -> null
+                }
+            hasInitializedCategory = true
+        }
     }
 
     val walletItems = remember(wallets, excludeWalletId, query, selectedCategory) {

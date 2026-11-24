@@ -73,6 +73,44 @@ import one.mixin.android.websocket.createPlainJsonParam
 import timber.log.Timber
 import javax.inject.Inject
 
+internal class LocalNetworkPermissionQueue {
+    private class PendingAction(
+        val cancellableByDesktop: Boolean,
+        val action: () -> Unit,
+    )
+
+    private var requestInFlight = false
+    private val pendingActions = ArrayDeque<PendingAction>()
+
+    fun enqueue(
+        cancellableByDesktop: Boolean = false,
+        action: () -> Unit,
+    ): Boolean {
+        pendingActions.addLast(PendingAction(cancellableByDesktop, action))
+        if (requestInFlight) return false
+        requestInFlight = true
+        return true
+    }
+
+    fun cancelPendingDesktopCommands(): Boolean = pendingActions.removeAll { it.cancellableByDesktop }
+
+    fun onPermissionResult(granted: Boolean) {
+        requestInFlight = false
+        if (granted) {
+            while (pendingActions.isNotEmpty()) {
+                pendingActions.removeFirst().action.invoke()
+            }
+        } else {
+            pendingActions.clear()
+        }
+    }
+
+    fun onPermissionError() {
+        requestInFlight = false
+        pendingActions.clear()
+    }
+}
+
 @OptIn(ExperimentalSerializationApi::class)
 @AndroidEntryPoint
 class TransferActivity : BaseActivity() {
@@ -223,8 +261,7 @@ class TransferActivity : BaseActivity() {
 
     private var dialog: Dialog? = null
     private var retryDialog: Dialog? = null
-    private var localNetworkPermissionRequestInFlight = false
-    private val pendingLocalNetworkActions = ArrayDeque<() -> Unit>()
+    private val localNetworkPermissionQueue = LocalNetworkPermissionQueue()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -243,34 +280,29 @@ class TransferActivity : BaseActivity() {
         setupTransfer()
     }
 
-    private fun withLocalNetworkPermission(action: () -> Unit) {
+    private fun withLocalNetworkPermission(
+        cancellableByDesktop: Boolean = false,
+        action: () -> Unit,
+    ) {
         if (Build.VERSION.SDK_INT < 37 ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) == PackageManager.PERMISSION_GRANTED
         ) {
             action()
             return
         }
-        pendingLocalNetworkActions.addLast(action)
-        if (localNetworkPermissionRequestInFlight) return
-        localNetworkPermissionRequestInFlight = true
+        if (!localNetworkPermissionQueue.enqueue(cancellableByDesktop, action)) return
         RxPermissions(this)
             .request(Manifest.permission.ACCESS_LOCAL_NETWORK)
             .autoDispose(destroyScope)
             .subscribe(
                 { granted ->
-                    localNetworkPermissionRequestInFlight = false
-                    if (granted) {
-                        while (pendingLocalNetworkActions.isNotEmpty()) {
-                            pendingLocalNetworkActions.removeFirst().invoke()
-                        }
-                    } else {
-                        pendingLocalNetworkActions.clear()
+                    localNetworkPermissionQueue.onPermissionResult(granted)
+                    if (!granted) {
                         openPermissionSetting()
                     }
                 },
                 { throwable ->
-                    localNetworkPermissionRequestInFlight = false
-                    pendingLocalNetworkActions.clear()
+                    localNetworkPermissionQueue.onPermissionError()
                     Timber.e(throwable)
                 },
             )
@@ -439,9 +471,10 @@ class TransferActivity : BaseActivity() {
                 .subscribe { command ->
                     if (command.action == TransferCommandAction.CANCEL.value) {
                         lifecycleScope.launch {
+                            val canceledPending = localNetworkPermissionQueue.cancelPendingDesktopCommands()
                             if (status.value == TransferStatus.WAITING_MESSAGE) {
                                 status.value = TransferStatus.INITIALIZING
-                            } else if (!transferServer.cancelWaiting()) {
+                            } else if (!transferServer.cancelWaiting() && !canceledPending) {
                                 return@launch
                             }
                             toast(R.string.Canceled)
@@ -450,7 +483,7 @@ class TransferActivity : BaseActivity() {
                 }
         }
         intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
-            withLocalNetworkPermission {
+            withLocalNetworkPermission(cancellableByDesktop = true) {
                 handleCommand(this)
             }
         }
@@ -668,7 +701,7 @@ class TransferActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
-            withLocalNetworkPermission {
+            withLocalNetworkPermission(cancellableByDesktop = true) {
                 handleCommand(this)
             }
         }
