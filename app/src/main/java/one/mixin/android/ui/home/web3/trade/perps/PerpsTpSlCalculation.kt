@@ -9,7 +9,7 @@ internal data class TpSlCalculationBasis(
     val entryPrice: BigDecimal,
     val margin: BigDecimal,
     val absoluteQuantity: BigDecimal,
-    val feeRate: BigDecimal = BigDecimal.ZERO,
+    val feeRate: BigDecimal,
 ) {
     fun pnlAt(targetPrice: BigDecimal, isLong: Boolean): TpSlPnlResult? {
         if (targetPrice <= BigDecimal.ZERO) return null
@@ -25,7 +25,7 @@ internal data class TpSlCalculationBasis(
         return TpSlPnlResult(signedPnl = signedPnl, signedRoiPercent = signedRoiPercent)
     }
 
-    fun priceAtPnl(netPnl: BigDecimal, isLong: Boolean): BigDecimal? {
+    fun priceAtPnl(netPnl: BigDecimal, isLong: Boolean, priceScale: Int): BigDecimal? {
         val denominator = absoluteQuantity.multiply(
             if (isLong) BigDecimal.ONE.subtract(feeRate) else BigDecimal.ONE.add(feeRate)
         )
@@ -35,12 +35,7 @@ internal data class TpSlCalculationBasis(
         } else {
             absoluteQuantity.multiply(entryPrice).multiply(BigDecimal.ONE.subtract(feeRate)).subtract(netPnl)
         }
-        return numerator.divide(denominator, TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-    }
-
-    fun takeProfitPriceBound(currentPrice: BigDecimal, isLong: Boolean): BigDecimal? {
-        val breakEvenPrice = priceAtPnl(BigDecimal.ZERO, isLong) ?: return null
-        return if (isLong) currentPrice.max(breakEvenPrice) else currentPrice.min(breakEvenPrice)
+        return numerator.divide(denominator, priceScale, if (isLong) RoundingMode.CEILING else RoundingMode.FLOOR)
     }
 
     fun zeroPriceRoiPercentCeiling(isLong: Boolean): BigDecimal {
@@ -64,8 +59,7 @@ internal fun resolveTpSlCalculationBasis(
     marginAmount: String,
     positionQuantity: String?,
     leverage: Int,
-    estimatedCloseFee: String? = null,
-    feeReferencePrice: String? = null,
+    feeRate: String? = null,
 ): TpSlCalculationBasis? {
     val margin = marginAmount.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
     val parsedEntry = entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
@@ -83,82 +77,25 @@ internal fun resolveTpSlCalculationBasis(
     } else {
         positionQuantity.toBigDecimalOrNull()?.abs()?.takeIf { it > BigDecimal.ZERO } ?: return null
     }
-    val feeRate = if (positionQuantity == null) {
-        BigDecimal.ZERO
-    } else {
-        perpsTpSlFeeRate(
-            estimatedCloseFee = estimatedCloseFee,
-            referencePrice = feeReferencePrice ?: currentPrice,
-            absoluteQuantity = absoluteQuantity,
-        )
-    }
-    return TpSlCalculationBasis(entry, margin, absoluteQuantity, feeRate)
-}
-
-private fun perpsTpSlFeeRate(
-    estimatedCloseFee: String?,
-    referencePrice: String?,
-    absoluteQuantity: BigDecimal,
-): BigDecimal {
-    val fee = estimatedCloseFee?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return BigDecimal.ZERO
-    val reference = referencePrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return BigDecimal.ZERO
-    val notional = reference.multiply(absoluteQuantity)
-    if (notional.signum() <= 0) return BigDecimal.ZERO
-    val rate = fee.divide(notional, TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-    if (rate.signum() <= 0 || rate >= BigDecimal.ONE) return BigDecimal.ZERO
-    return rate
+    val parsedFeeRate = feeRate?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO && it < BigDecimal.ONE } ?: return null
+    return TpSlCalculationBasis(entry, margin, absoluteQuantity, parsedFeeRate)
 }
 
 internal fun targetPriceForRoiPercent(
     basis: TpSlCalculationBasis,
     percentMagnitudeInput: String,
     isLong: Boolean,
-    isTakeProfit: Boolean,
+    isProfit: Boolean,
     priceScale: Int,
 ): String {
     val magnitude = percentMagnitudeInput.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return ""
-    val signedRoi = magnitude
-        .divide(BigDecimal(100), TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-        .let { if (isTakeProfit) it else it.negate() }
+    val signedRoi = magnitude.movePointLeft(2).let { if (isProfit) it else it.negate() }
     val netPnl = signedRoi.multiply(basis.margin)
-    val targetPrice = basis.priceAtPnl(netPnl, isLong) ?: return ""
-    if (targetPrice <= BigDecimal.ZERO) return ""
     val safeScale = priceScale.coerceAtLeast(0)
-    var roundedPrice = targetPrice.setScale(safeScale, RoundingMode.HALF_UP)
-    if (roundedPrice <= BigDecimal.ZERO) return ""
-    if (isTakeProfit && basis.pnlAt(roundedPrice, isLong)?.signedPnl?.signum() != 1) {
-        val tick = BigDecimal.ONE.movePointLeft(safeScale)
-        roundedPrice = if (isLong) roundedPrice.add(tick) else roundedPrice.subtract(tick)
-    }
+    val roundedPrice = basis.priceAtPnl(netPnl, isLong, safeScale) ?: return ""
     if (roundedPrice <= BigDecimal.ZERO) return ""
     return formatPerpsPriceInput(roundedPrice, safeScale)
 }
 
-internal fun resolveTpSlLiquidationBound(
-    serverLiquidationPrice: String?,
-    entryPrice: String,
-    currentPrice: String,
-    leverage: Int,
-    isLong: Boolean,
-): BigDecimal? {
-    if (!serverLiquidationPrice.isNullOrBlank()) {
-        return serverLiquidationPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
-    }
-    if (leverage <= 0) return null
-    val base = entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
-        ?: currentPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
-        ?: return null
-    val offset = BigDecimal.ONE.divide(BigDecimal(leverage), TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-    return base.multiply(if (isLong) BigDecimal.ONE.subtract(offset) else BigDecimal.ONE.add(offset))
-        .takeIf { it > BigDecimal.ZERO }
-}
-
-internal fun isStopBeyondLiquidation(
-    stopPrice: BigDecimal,
-    liquidationBound: BigDecimal?,
-    isLong: Boolean,
-): Boolean = when {
-    liquidationBound == null -> true
-    isLong -> stopPrice > liquidationBound
-    else -> stopPrice < liquidationBound
-}
+internal fun resolveTpSlLiquidationBound(serverLiquidationPrice: String?): BigDecimal? =
+    serverLiquidationPrice?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO }

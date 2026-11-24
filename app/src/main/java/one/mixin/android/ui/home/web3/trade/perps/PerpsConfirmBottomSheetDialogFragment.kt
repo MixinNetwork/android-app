@@ -116,6 +116,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_TAKE_PROFIT_PRICE = "args_take_profit_price"
         private const val ARGS_STOP_LOSS_PRICE = "args_stop_loss_price"
         private const val ARGS_LIQUIDATION_PRICE = "args_liquidation_price"
+        private const val ARGS_FEE_RATE = "args_fee_rate"
         private const val ARGS_PRICE_SCALE = "args_price_scale"
         private const val ARGS_PAY_URL = "args_pay_url"
         private const val ARGS_IS_ADD_POSITION = "args_is_add_position"
@@ -177,6 +178,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             isAddPosition: Boolean = false,
             isAddMargin: Boolean = false,
             marginBefore: String? = null,
+            feeRate: String? = null,
         ): PerpsConfirmBottomSheetDialogFragment {
             return PerpsConfirmBottomSheetDialogFragment().withArgs {
                 putString(ARGS_MARKET_SYMBOL, marketSymbol)
@@ -195,6 +197,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 putBoolean(ARGS_IS_ADD_POSITION, isAddPosition)
                 putBoolean(ARGS_IS_ADD_MARGIN, isAddMargin)
                 putString(ARGS_MARGIN_BEFORE, marginBefore)
+                putString(ARGS_FEE_RATE, feeRate)
             }
         }
     }
@@ -244,6 +247,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val takeProfitPrice by lazy { requireArguments().getString(ARGS_TAKE_PROFIT_PRICE).orEmpty() }
     private val stopLossPrice by lazy { requireArguments().getString(ARGS_STOP_LOSS_PRICE).orEmpty() }
     private val rawLiquidationPrice by lazy { requireArguments().getString(ARGS_LIQUIDATION_PRICE) }
+    private val feeRate by lazy { requireArguments().getString(ARGS_FEE_RATE) }
     private val priceScale by lazy { requireArguments().getInt(ARGS_PRICE_SCALE, 2) }
     private val isAddPosition by lazy { requireArguments().getBoolean(ARGS_IS_ADD_POSITION) }
     private val isAddMargin by lazy { requireArguments().getBoolean(ARGS_IS_ADD_MARGIN) }
@@ -416,6 +420,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         amount = amount,
                         tokenSymbol = tokenSymbol,
                         entryPrice = entryPrice,
+                        feeRate = feeRate,
                         entryFiatPrice = entryFiatPrice,
                         takeProfitPrice = takeProfitPrice,
                         takeProfitFiatPrice = takeProfitFiatPrice,
@@ -760,65 +765,51 @@ private fun calculateTpSlSubValue(
     entryPrice: String,
     leverage: Int,
     amount: String,
+    feeRate: String?,
     isLong: Boolean,
     isTakeProfit: Boolean,
 ): AnnotatedString? {
     val target = targetPrice.toBigDecimalOrNull() ?: return null
-    val entry = entryPrice.toBigDecimalOrNull() ?: return null
-    val margin = amount.toBigDecimalOrNull() ?: return null
-    if (entry <= BigDecimal.ZERO || target <= BigDecimal.ZERO) return null
-
-    val priceChangePercent = target.subtract(entry)
+    val basis = resolveTpSlCalculationBasis(
+        entryPrice = entryPrice,
+        currentPrice = entryPrice,
+        marginAmount = amount,
+        positionQuantity = null,
+        leverage = leverage,
+        feeRate = feeRate,
+    ) ?: return null
+    val pnl = basis.pnlAt(target, isLong) ?: return null
+    val priceChangePercent = target.subtract(basis.entryPrice)
         .multiply(BigDecimal(100))
-        .divide(entry, 2, RoundingMode.HALF_UP)
-
-    val absPriceChange = priceChangePercent.abs()
-    val pnlPercent = absPriceChange.multiply(BigDecimal(leverage))
-    val pnlAmount = margin.multiply(pnlPercent).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
-    val priceChangeStr = absPriceChange.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
-
+        .divide(basis.entryPrice, 16, RoundingMode.HALF_UP)
+    val priceChangeText = formatPerpsSignedPercent(priceChangePercent)
+    val amountText = formatPerpsSignedRawUsdDecimal(pnl.signedPnl)
+    val outcomeText = if (isTakeProfit) {
+        val pnlPercent = pnl.signedRoiPercent.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+        "$amountText ($pnlPercent%)"
+    } else {
+        amountText
+    }
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val profitColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-
-    val isPriceUp = if (isLong) isTakeProfit else !isTakeProfit
-    val priceChangeText = if (isPriceUp) {
-        "+$priceChangeStr%"
-    } else {
-        "-$priceChangeStr%"
+    val fullText = stringResource(R.string.price_change_tpsl, priceChangeText, outcomeText)
+    val outcomeColor = when {
+        pnl.signedPnl > BigDecimal.ZERO -> profitColor
+        pnl.signedPnl < BigDecimal.ZERO -> lossColor
+        else -> MixinAppTheme.colors.textAssist
     }
-
-    return if (isTakeProfit) {
-        val amountText = "+${formatPerpsRawUsdDecimal(pnlAmount)}"
-        val pnlPercentStr = pnlPercent.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
-        val outcomeText = "$amountText ($pnlPercentStr%)"
-        val fullText = stringResource(R.string.price_change_tpsl, priceChangeText, outcomeText)
-        buildAnnotatedString {
-            append(fullText)
-            val outcomeStart = fullText.indexOf(outcomeText)
-            if (outcomeStart >= 0) {
-                addStyle(
-                    style = SpanStyle(color = profitColor),
-                    start = outcomeStart,
-                    end = outcomeStart + outcomeText.length,
-                )
-            }
-        }
-    } else {
-        val amountText = "-${formatPerpsRawUsdDecimal(pnlAmount)}"
-        val fullText = stringResource(R.string.price_change_tpsl, priceChangeText, amountText)
-        buildAnnotatedString {
-            append(fullText)
-            val outcomeStart = fullText.indexOf(amountText)
-            if (outcomeStart >= 0) {
-                addStyle(
-                    style = SpanStyle(color = lossColor),
-                    start = outcomeStart,
-                    end = outcomeStart + amountText.length,
-                )
-            }
+    return buildAnnotatedString {
+        append(fullText)
+        val outcomeStart = fullText.indexOf(outcomeText)
+        if (outcomeStart >= 0) {
+            addStyle(
+                style = SpanStyle(color = outcomeColor),
+                start = outcomeStart,
+                end = outcomeStart + outcomeText.length,
+            )
         }
     }
 }
@@ -834,6 +825,7 @@ private fun PerpsConfirmDetails(
     tokenSymbol: String,
     entryPrice: String,
     entryFiatPrice: String,
+    feeRate: String?,
     takeProfitPrice: String,
     takeProfitFiatPrice: String?,
     stopLossPrice: String,
@@ -908,6 +900,7 @@ private fun PerpsConfirmDetails(
 
         takeProfitFiatPrice?.let { takeProfit ->
             val tpSubValue = calculateTpSlSubValue(
+                feeRate = feeRate,
                 targetPrice = takeProfitPrice,
                 entryPrice = entryPrice,
                 leverage = leverage,
@@ -928,6 +921,7 @@ private fun PerpsConfirmDetails(
 
         stopLossFiatPrice?.let { stopLoss ->
             val slSubValue = calculateTpSlSubValue(
+                feeRate = feeRate,
                 targetPrice = stopLossPrice,
                 entryPrice = entryPrice,
                 leverage = leverage,
@@ -1097,6 +1091,7 @@ private fun PerpsConfirmDetailsPreview(isAddMargin: Boolean) {
             amount = "25.00",
             tokenSymbol = "USDC",
             entryPrice = "65000",
+            feeRate = "0.001",
             entryFiatPrice = "$65,000.00",
             takeProfitPrice = if (isAddMargin) "" else "70000",
             takeProfitFiatPrice = if (isAddMargin) null else "$70,000.00",

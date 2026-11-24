@@ -27,6 +27,10 @@ data class PerpsMarket(
     @ColumnInfo(name = "quote_symbol")
     val quoteSymbol: String,
 
+    @SerializedName("fee_rate")
+    @ColumnInfo(name = "fee_rate", defaultValue = "''")
+    val feeRate: String = "",
+
     @SerializedName("mark_price")
     @ColumnInfo(name = "mark_price")
     val markPrice: String,
@@ -135,6 +139,7 @@ data class PerpsMarket(
 fun PerpsMarket.withDefaults(): PerpsMarket =
     copy(
         category = (category as String?) ?: "",
+        feeRate = (feeRate as String?) ?: "",
         tags = (tags as? List<*>)?.mapNotNull { it as? String }.orEmpty(),
         priceScale = priceScale.coerceAtLeast(0),
         fundingIntervalHours = fundingIntervalHours.coerceAtLeast(0),

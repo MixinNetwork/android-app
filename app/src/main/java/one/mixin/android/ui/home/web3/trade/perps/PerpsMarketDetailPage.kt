@@ -446,12 +446,11 @@ fun PerpsMarketDetailPage(
                             PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> currentPosition.takeProfitPrice.orEmpty()
                             PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> currentPosition.stopLossPrice.orEmpty()
                         }
-                        val currentPrice = currentPosition.markPrice.orEmpty().ifBlank { currentPosition.entryPrice }
                         val requestMarginAmount = currentPosition.margin ?: currentPosition.openPayAmount.orEmpty()
                         PerpsTpSlBottomSheetDialogFragment.newInstance(
                             mode = mode,
                             price = existingPrice,
-                            currentPrice = currentPrice,
+                            currentPrice = market?.last,
                             isLong = currentPosition.side.equals("long", ignoreCase = true),
                             marketIconUrl = currentPosition.iconUrl.orEmpty(),
                             marketSymbol = currentPosition.tokenSymbol ?: "",
@@ -460,10 +459,9 @@ fun PerpsMarketDetailPage(
                             entryPrice = currentPosition.entryPrice,
                             marketId = currentPosition.marketId,
                             priceScale = currentPosition.priceScale,
-                            liquidationPrice = currentPosition.liquidationPrice,
+                            liquidationPrice = resolveTpSlLiquidationBound(currentPosition.liquidationPrice) ?: return,
                             positionQuantity = currentPosition.quantity,
-                            estimatedCloseFee = currentPosition.estimatedCloseFee,
-                            feeReferencePrice = currentPosition.markPrice.orEmpty().ifBlank { currentPosition.entryPrice },
+                            feeRate = currentPosition.feeRate,
                         ).setOnApply { value ->
                             val normalizedValue = value?.trim().orEmpty()
                             if (normalizedValue == existingPrice) return@setOnApply
@@ -524,6 +522,7 @@ fun PerpsMarketDetailPage(
                     }
                     OpenPositionCard(
                         position = currentPosition,
+                        lastPrice = market?.last,
                         viewModel = viewModel,
                         onShare = {
                             onSharePosition(currentPosition)
@@ -1281,6 +1280,7 @@ private fun TimeFrameSelector(
 @Composable
 private fun OpenPositionCard(
     position: PerpsPositionItem,
+    lastPrice: String?,
     viewModel: PerpetualViewModel,
     onShare: () -> Unit,
 ) {
@@ -1328,13 +1328,12 @@ private fun OpenPositionCard(
             PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> position.takeProfitPrice.orEmpty()
             PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> position.stopLossPrice.orEmpty()
         }
-        val currentPrice = position.markPrice.orEmpty().ifBlank { position.entryPrice }
         val requestMarginAmount = position.margin ?: position.openPayAmount.orEmpty()
 
         PerpsTpSlBottomSheetDialogFragment.newInstance(
             mode = mode,
             price = existingPrice,
-            currentPrice = currentPrice,
+            currentPrice = lastPrice,
             isLong = isLong,
             marketIconUrl = position.iconUrl.orEmpty(),
             marketSymbol = position.tokenSymbol ?: "",
@@ -1343,10 +1342,9 @@ private fun OpenPositionCard(
             entryPrice = position.entryPrice,
             marketId = position.marketId,
             priceScale = position.priceScale,
-            liquidationPrice = position.liquidationPrice,
+            liquidationPrice = resolveTpSlLiquidationBound(position.liquidationPrice) ?: return,
             positionQuantity = position.quantity,
-            estimatedCloseFee = position.estimatedCloseFee,
-            feeReferencePrice = position.markPrice.orEmpty().ifBlank { position.entryPrice },
+            feeRate = position.feeRate,
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) {
