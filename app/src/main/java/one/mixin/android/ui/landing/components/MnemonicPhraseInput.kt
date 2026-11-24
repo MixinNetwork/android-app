@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -66,7 +67,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -937,8 +937,7 @@ fun InputBar(list: List<String>, callback: (String) -> Unit) {
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        items(list.size) { index ->
-            val word = list[index]
+        itemsIndexed(list, key = { index, word -> "$index:$word" }, contentType = { _, _ -> "word" }) { _, word ->
             Text(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))

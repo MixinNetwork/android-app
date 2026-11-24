@@ -40,12 +40,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -179,7 +179,10 @@ fun LimitOrderContent(
     }
     var outputText by rememberSaveable { mutableStateOf("") }
 
+    var expiryOption by remember { mutableStateOf(ExpiryOption.YEAR_1) }
+
     LaunchedEffect(lastOrderTime) {
+        expiryOption = ExpiryOption.YEAR_1
         inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
         outputText = ""
     }
@@ -196,12 +199,6 @@ fun LimitOrderContent(
     var limitOrders by remember { mutableStateOf<List<Order>>(emptyList()) }
     val displayedLimitOrders: List<Order> = remember(limitOrders) {
         limitOrders.take(MAX_DISPLAY_ORDER_COUNT)
-    }
-
-    var expiryOption by remember { mutableStateOf(ExpiryOption.YEAR_1) }
-
-    LaunchedEffect(lastOrderTime) {
-        expiryOption = ExpiryOption.YEAR_1
     }
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -235,7 +232,7 @@ fun LimitOrderContent(
         }
     }
 
-    val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
+    val rotation = animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
 
     fromToken?.let {
         val fromBalance = viewModel.tokenExtraFlow(it).collectAsStateWithLifecycle(it.balance).value
@@ -312,7 +309,7 @@ fun LimitOrderContent(
                                         }
                                         context.clickVibrate()
                                     }
-                                    .rotate(rotation),
+                                    .graphicsLayer { rotationZ = rotation.value },
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(

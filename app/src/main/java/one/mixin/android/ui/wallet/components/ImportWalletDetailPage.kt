@@ -32,7 +32,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -211,55 +210,41 @@ fun ImportWalletDetailPage(
         }
     }
 
-    val isInputValid by remember(mode, text, isEvmNetwork, isBitcoin, isPearl, isLitecoin, isSolana) {
-        derivedStateOf {
-            when (mode) {
-                WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
-                WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
-                    if (isEvmNetwork) {
-                        isEvmPrivateKeyValid(text)
-                    } else if (isBitcoin || isPearl) {
-                        isBitcoinPrivateKeyValid(text)
-                    } else if (isLitecoin) {
-                        runCatching { UtxoKeyGenerator.parseLitecoinPrivateKey(text) }.isSuccess
-                    } else if (isSolana) {
-                        isSolanaPrivateKeyValid(text)
-                    } else {
-                        false
-                    }
+    val isInputValid = remember(mode, text, isEvmNetwork, isBitcoin, isPearl, isLitecoin, isSolana) {
+        when (mode) {
+            WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
+            WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
+                if (isEvmNetwork) {
+                    isEvmPrivateKeyValid(text)
+                } else if (isBitcoin || isPearl) {
+                    isBitcoinPrivateKeyValid(text)
+                } else if (isLitecoin) {
+                    runCatching { UtxoKeyGenerator.parseLitecoinPrivateKey(text) }.isSuccess
+                } else if (isSolana) {
+                    isSolanaPrivateKeyValid(text)
+                } else {
+                    false
                 }
-                WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
-                    if (isEvmNetwork) {
-                        isEvmAddressValid(text)
-                    } else if (isBitcoin || isPearl || isLitecoin) {
-                        UtxoKeyGenerator.isAddressValid(text, currentChainId)
-                    } else if(isSolana) {
-                        isSolanaAddressValid(text)
-                    } else {
-                        false
-                    }
-                }
-                else -> false
             }
+            WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
+                if (isEvmNetwork) {
+                    isEvmAddressValid(text)
+                } else if (isBitcoin || isPearl || isLitecoin) {
+                    UtxoKeyGenerator.isAddressValid(text, currentChainId)
+                } else if(isSolana) {
+                    isSolanaAddressValid(text)
+                } else {
+                    false
+                }
+            }
+            else -> false
         }
     }
 
-    val showInvalidError by remember(text, isInputValid) {
-        derivedStateOf {
-            text.isNotEmpty() && !isInputValid
-        }
-    }
+    val showInvalidError = text.isNotEmpty() && !isInputValid
 
-    val showReimportMismatchError by remember(mode, isInputValid, isAddressMismatched) {
-        derivedStateOf {
-            mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY && text.isNotEmpty() && isInputValid && isAddressMismatched
-        }
-    }
-    val isWalletNameValid by remember(showWalletNameInput, walletName) {
-        derivedStateOf {
-            !showWalletNameInput || walletName.trim().isNotEmpty()
-        }
-    }
+    val showReimportMismatchError = mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY && text.isNotEmpty() && isInputValid && isAddressMismatched
+    val isWalletNameValid = !showWalletNameInput || walletName.trim().isNotEmpty()
 
     val isButtonEnabled = when (mode) {
         WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> isInputValid && !isAddressMismatched

@@ -73,7 +73,7 @@ fun AlertTypeBottom(
 
 
         LazyColumn {
-            items(AlertType.entries.toTypedArray()) { alertType ->
+            items(AlertType.entries, key = { it.name }, contentType = { "alert_type" }) { alertType ->
                 Spacer(Modifier.height(8.dp))
                 AlertSelectItem(
                     currentAlertType == alertType,

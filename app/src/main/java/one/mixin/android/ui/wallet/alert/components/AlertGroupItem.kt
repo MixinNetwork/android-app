@@ -51,7 +51,7 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
     var expand by rememberSaveable(alertGroup.coinId) { mutableStateOf(initiallyExpanded) }
     val viewModel = hiltViewModel<AlertViewModel>()
     val alerts by viewModel.alertsByCoinId(alertGroup.coinId).collectAsState(initial = emptyList())
-    val rotationState by animateFloatAsState(targetValue = if (expand) 0f else -180f, label = "")
+    val rotationState = animateFloatAsState(targetValue = if (expand) 0f else -180f, label = "")
     LocalContext.current
     Column {
         Box(
@@ -101,7 +101,7 @@ fun AlertGroupItem(alertGroup: AlertGroup, initiallyExpanded: Boolean, onEdit: (
                     }
                     Icon(
                         modifier = Modifier
-                            .graphicsLayer(rotationZ = rotationState)
+                            .graphicsLayer { rotationZ = rotationState.value }
                             .wrapContentSize()
                             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand },
                         painter = painterResource(id = R.drawable.ic_alert_arrow_down),
