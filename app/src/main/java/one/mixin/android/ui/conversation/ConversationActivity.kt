@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -49,6 +50,14 @@ class ConversationActivity : BlazeBaseActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         showConversation(intent)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_ESCAPE && event != null && !event.isCanceled && event.hasNoModifiers()) {
+            onBackPressedDispatcher.onBackPressed()
+            return true
+        }
+        return super.onKeyUp(keyCode, event)
     }
 
     override fun onBackPressedAtRoot(): Boolean {

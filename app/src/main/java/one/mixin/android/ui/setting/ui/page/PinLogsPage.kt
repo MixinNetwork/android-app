@@ -19,7 +19,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.computedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -122,7 +122,7 @@ private fun LogsList(
     val currentLoadMore by rememberUpdatedState(loadMore)
 
     val isLastItemVisible by remember(state) {
-        derivedStateOf {
+        computedStateOf {
             with(state.layoutInfo) {
                 totalItemsCount > 0 && visibleItemsInfo.lastOrNull()?.index == totalItemsCount - 1
             }

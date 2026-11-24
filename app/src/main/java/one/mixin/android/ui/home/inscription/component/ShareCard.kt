@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.inscription.component
 
 import android.graphics.Bitmap
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -21,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.asImageBitmap
@@ -159,19 +159,13 @@ fun DashedDivider(
     intervals: FloatArray = floatArrayOf(15.dp.value, 15.dp.value),
     modifier: Modifier
 ) {
-    Canvas(
-        modifier = modifier
-    ) {
-        val dividerHeight = thickness.toPx()
-        drawRoundRect(
-            color = color,
-            style = Stroke(
-                width = dividerHeight,
-                pathEffect = PathEffect.dashPathEffect(
-                    intervals = intervals,
-                    phase = phase
-                )
+    Spacer(
+        modifier = modifier.drawWithCache {
+            val stroke = Stroke(
+                width = thickness.toPx(),
+                pathEffect = PathEffect.dashPathEffect(intervals, phase),
             )
-        )
-    }
+            onDrawBehind { drawRoundRect(color = color, style = stroke) }
+        },
+    )
 }

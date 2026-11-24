@@ -20,11 +20,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -66,7 +67,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -82,6 +82,7 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -360,12 +361,21 @@ fun MnemonicPhraseInput(
                                         }
                                     } else {
                                         val text = inputs[index]
+                                        val wordFieldState = rememberSyncedTextFieldState(
+                                            value = text,
+                                            onValueChange = { newText ->
+                                                updateInputs(inputs.toMutableList().also { it[index] = newText })
+                                                currentText = newText
+                                            },
+                                            saveable = false,
+                                        )
                                         val textColor = if (index != focusIndex && text.isNotEmpty() && MnemonicCode.INSTANCE.wordList.contains(text).not()) {
                                             MixinAppTheme.colors.tipError
                                         } else {
                                             MixinAppTheme.colors.textMinor
                                         }
                                         BasicTextField(
+                                            state = wordFieldState,
                                             modifier = Modifier.onFocusChanged { focusState ->
                                                 focusIndex = if (focusState.isFocused) {
                                                     currentText = inputs[index]
@@ -374,12 +384,7 @@ fun MnemonicPhraseInput(
                                                     -1
                                                 }
                                             },
-                                            value = inputs[index],
-                                            onValueChange = { newText ->
-                                                updateInputs(inputs.toMutableList().also { it[index] = newText })
-                                                currentText = newText
-                                            },
-                                            singleLine = true,
+                                            lineLimits = TextFieldLineLimits.SingleLine,
                                             cursorBrush = SolidColor(MixinAppTheme.colors.accent),
                                             textStyle = LocalTextStyle.current.copy(
                                                 color = textColor,
@@ -390,24 +395,20 @@ fun MnemonicPhraseInput(
                                                 keyboardType = KeyboardType.Text,
                                                 imeAction = if (index == inputCount - 1) ImeAction.Done else ImeAction.Next
                                             ),
-                                            keyboardActions = KeyboardActions(
-                                                onNext = {
-                                                    if (index == inputCount - 1) {
-                                                        keyboardController?.hide()
-                                                        focusManager.moveFocus(FocusDirection.Right)
-                                                    } else if ((index + 1) % 3 == 0) {
+                                            onKeyboardAction = {
+                                                if (index != inputCount - 1) {
+                                                    if ((index + 1) % 3 == 0) {
                                                         focusManager.moveFocus(FocusDirection.Down)
                                                         focusManager.moveFocus(FocusDirection.Left)
                                                         focusManager.moveFocus(FocusDirection.Left)
                                                     } else {
                                                         focusManager.moveFocus(FocusDirection.Right)
                                                     }
-                                                },
-                                                onDone = {
+                                                } else {
                                                     val words = inputs.map { it.trim() }
                                                     validate?.invoke(words)?.let {
                                                         errorInfo = it
-                                                        return@KeyboardActions
+                                                        return@BasicTextField
                                                     }
                                                     when (state) {
                                                         MnemonicState.Input -> {
@@ -475,8 +476,8 @@ fun MnemonicPhraseInput(
                                                         }
                                                     }
                                                 }
-                                            ),
-                                            decorationBox = { innerTextField ->
+                                            },
+                                            decorator = { innerTextField ->
                                                 Row {
                                                     Text(
                                                         "${index + 1}",
@@ -936,8 +937,7 @@ fun InputBar(list: List<String>, callback: (String) -> Unit) {
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        items(list.size) { index ->
-            val word = list[index]
+        itemsIndexed(list, key = { index, word -> "$index:$word" }, contentType = { _, _ -> "word" }) { _, word ->
             Text(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))

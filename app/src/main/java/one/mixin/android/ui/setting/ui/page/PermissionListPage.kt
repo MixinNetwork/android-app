@@ -60,10 +60,10 @@ fun PermissionListPage(
         }
 
         LazyColumn {
-            items(scopes.value) { item ->
+            items(scopes.value, key = { it.source }, contentType = { "scope" }) { item ->
                 PermissionScopeItem(scope = item)
             }
-            item {
+            item(key = "footer", contentType = "footer") {
                 Footer(
                     auth = auth,
                     authViewModel = authViewModel,
@@ -84,7 +84,6 @@ private fun PermissionScopeItem(scope: Scope) {
                 .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.Center,
     ) {
-        val context = LocalContext.current
         Text(
             text = scope.name,
             overflow = TextOverflow.Ellipsis,

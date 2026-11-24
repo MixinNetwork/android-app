@@ -6,10 +6,13 @@ import android.Manifest
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.result.ActivityResultLauncher
+import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -69,6 +72,44 @@ import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import timber.log.Timber
 import javax.inject.Inject
+
+internal class LocalNetworkPermissionQueue {
+    private class PendingAction(
+        val cancellableByDesktop: Boolean,
+        val action: () -> Unit,
+    )
+
+    private var requestInFlight = false
+    private val pendingActions = ArrayDeque<PendingAction>()
+
+    fun enqueue(
+        cancellableByDesktop: Boolean = false,
+        action: () -> Unit,
+    ): Boolean {
+        pendingActions.addLast(PendingAction(cancellableByDesktop, action))
+        if (requestInFlight) return false
+        requestInFlight = true
+        return true
+    }
+
+    fun cancelPendingDesktopCommands(): Boolean = pendingActions.removeAll { it.cancellableByDesktop }
+
+    fun onPermissionResult(granted: Boolean) {
+        requestInFlight = false
+        if (granted) {
+            while (pendingActions.isNotEmpty()) {
+                pendingActions.removeFirst().action.invoke()
+            }
+        } else {
+            pendingActions.clear()
+        }
+    }
+
+    fun onPermissionError() {
+        requestInFlight = false
+        pendingActions.clear()
+    }
+}
 
 @OptIn(ExperimentalSerializationApi::class)
 @AndroidEntryPoint
@@ -220,6 +261,7 @@ class TransferActivity : BaseActivity() {
 
     private var dialog: Dialog? = null
     private var retryDialog: Dialog? = null
+    private val localNetworkPermissionQueue = LocalNetworkPermissionQueue()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -235,6 +277,38 @@ class TransferActivity : BaseActivity() {
         binding.titleView.leftIb.setOnClickListener {
             onBackPressed()
         }
+        setupTransfer()
+    }
+
+    private fun withLocalNetworkPermission(
+        cancellableByDesktop: Boolean = false,
+        action: () -> Unit,
+    ) {
+        if (Build.VERSION.SDK_INT < 37 ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) == PackageManager.PERMISSION_GRANTED
+        ) {
+            action()
+            return
+        }
+        if (!localNetworkPermissionQueue.enqueue(cancellableByDesktop, action)) return
+        RxPermissions(this)
+            .request(Manifest.permission.ACCESS_LOCAL_NETWORK)
+            .autoDispose(destroyScope)
+            .subscribe(
+                { granted ->
+                    localNetworkPermissionQueue.onPermissionResult(granted)
+                    if (!granted) {
+                        openPermissionSetting()
+                    }
+                },
+                { throwable ->
+                    localNetworkPermissionQueue.onPermissionError()
+                    Timber.e(throwable)
+                },
+            )
+    }
+
+    private fun setupTransfer() {
         initView()
 
         status.observe(this) { s ->
@@ -397,9 +471,10 @@ class TransferActivity : BaseActivity() {
                 .subscribe { command ->
                     if (command.action == TransferCommandAction.CANCEL.value) {
                         lifecycleScope.launch {
+                            val canceledPending = localNetworkPermissionQueue.cancelPendingDesktopCommands()
                             if (status.value == TransferStatus.WAITING_MESSAGE) {
                                 status.value = TransferStatus.INITIALIZING
-                            } else if (!transferServer.cancelWaiting()) {
+                            } else if (!transferServer.cancelWaiting() && !canceledPending) {
                                 return@launch
                             }
                             toast(R.string.Canceled)
@@ -408,10 +483,14 @@ class TransferActivity : BaseActivity() {
                 }
         }
         intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
-            handleCommand(this)
+            withLocalNetworkPermission(cancellableByDesktop = true) {
+                handleCommand(this)
+            }
         }
         intent.getStringExtra(ARGS_QR_CODE_CONTENT)?.let { qrCodeContent ->
-            connectToQrCodeContent(qrCodeContent)
+            withLocalNetworkPermission {
+                connectToQrCodeContent(qrCodeContent)
+            }
         }
     }
 
@@ -473,70 +552,72 @@ class TransferActivity : BaseActivity() {
                     .show()
                 return@setOnClickListener
             }
-            when (argsStatus) {
-                ARGS_TRANSFER_TO_PHONE -> {
-                    lifecycleScope.launch {
-                        transferServer.startServer(selectConversation, selectDate) { transferCommandData ->
-                            lifecycleScope.launch(Dispatchers.Main) {
-                                val qrCode =
-                                    gson.toJson(transferCommandData)
-                                        .base64Encode()
-                                        .run {
-                                            "$DEVICE_TRANSFER?data=$this"
-                                        }
-                                        .generateQRCode(240.dp).first
-                                binding.qr.setImageBitmap(qrCode)
-                                binding.qrFl.fadeIn()
-                                binding.initLl.isVisible = false
-                                binding.waitingLl.isVisible = false
+            withLocalNetworkPermission {
+                when (argsStatus) {
+                    ARGS_TRANSFER_TO_PHONE -> {
+                        lifecycleScope.launch {
+                            transferServer.startServer(selectConversation, selectDate) { transferCommandData ->
+                                lifecycleScope.launch(Dispatchers.Main) {
+                                    val qrCode =
+                                        gson.toJson(transferCommandData)
+                                            .base64Encode()
+                                            .run {
+                                                "$DEVICE_TRANSFER?data=$this"
+                                            }
+                                            .generateQRCode(240.dp).first
+                                    binding.qr.setImageBitmap(qrCode)
+                                    binding.qrFl.fadeIn()
+                                    binding.initLl.isVisible = false
+                                    binding.waitingLl.isVisible = false
+                                }
                             }
                         }
                     }
-                }
 
-                ARGS_TRANSFER_TO_PC -> {
-                    if (this@TransferActivity.status.value != TransferStatus.CREATED) {
-                        if (chatWebSocket.connected) {
-                            pushRequest()
-                        } else {
-                            alertDialogBuilder()
-                                .setTitle(getString(R.string.Unable_connect_desktop))
-                                .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                .show()
-                        }
-                    }
-                }
-
-                ARGS_RESTORE_FROM_PC -> {
-                    if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE) {
-                        if (chatWebSocket.connected) {
-                            pullRequest()
-                        } else {
-                            alertDialogBuilder()
-                                .setTitle(getString(R.string.Unable_connect_desktop))
-                                .setPositiveButton(R.string.Confirm) { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                .show()
-                        }
-                    }
-                }
-
-                ARGS_RESTORE_FROM_PHONE -> {
-                    RxPermissions(this)
-                        .request(Manifest.permission.CAMERA)
-                        .autoDispose(stopScope)
-                        .subscribe { granted ->
-                            if (granted) {
-                                getScanResult.launch(
-                                    Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true),
-                                )
+                    ARGS_TRANSFER_TO_PC -> {
+                        if (this@TransferActivity.status.value != TransferStatus.CREATED) {
+                            if (chatWebSocket.connected) {
+                                pushRequest()
                             } else {
-                                openPermissionSetting()
+                                alertDialogBuilder()
+                                    .setTitle(getString(R.string.Unable_connect_desktop))
+                                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                        dialog.dismiss()
+                                    }
+                                    .show()
                             }
                         }
+                    }
+
+                    ARGS_RESTORE_FROM_PC -> {
+                        if (this@TransferActivity.status.value != TransferStatus.WAITING_MESSAGE) {
+                            if (chatWebSocket.connected) {
+                                pullRequest()
+                            } else {
+                                alertDialogBuilder()
+                                    .setTitle(getString(R.string.Unable_connect_desktop))
+                                    .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                                        dialog.dismiss()
+                                    }
+                                    .show()
+                            }
+                        }
+                    }
+
+                    ARGS_RESTORE_FROM_PHONE -> {
+                        RxPermissions(this)
+                            .request(Manifest.permission.CAMERA)
+                            .autoDispose(stopScope)
+                            .subscribe { granted ->
+                                if (granted) {
+                                    getScanResult.launch(
+                                        Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true),
+                                    )
+                                } else {
+                                    openPermissionSetting()
+                                }
+                            }
+                    }
                 }
             }
         }
@@ -620,7 +701,9 @@ class TransferActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
-            handleCommand(this)
+            withLocalNetworkPermission(cancellableByDesktop = true) {
+                handleCommand(this)
+            }
         }
     }
 

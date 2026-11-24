@@ -43,7 +43,6 @@ val sqliteVersion = rootProject.extra["sqliteVersion"] as String
 val navigationVersion = rootProject.extra["navigationVersion"] as String
 val workManagerVersion = rootProject.extra["workManagerVersion"] as String
 val constraintLayoutVersion = rootProject.extra["constraintLayoutVersion"] as String
-val constraintLayoutComposeVersion = rootProject.extra["constraintLayoutComposeVersion"] as String
 val supportLibVersion = rootProject.extra["supportLibVersion"] as String
 val recyclerViewVersion = rootProject.extra["recyclerViewVersion"] as String
 val browserVersion = rootProject.extra["browserVersion"] as String
@@ -109,8 +108,6 @@ val balloonVersion = rootProject.extra["balloonVersion"] as String
 val markdownVersion = rootProject.extra["markdownVersion"] as String
 val bcVersion = rootProject.extra["bcVersion"] as String
 val jsonVersion = rootProject.extra["jsonVersion"] as String
-val composeVersion = rootProject.extra["composeVersion"] as String
-val accompanistVersion = rootProject.extra["accompanistVersion"] as String
 val sol4kVersion = rootProject.extra["sol4kVersion"] as String
 val protobufVersion = rootProject.extra["protobufVersion"] as String
 val kotsonVersion = rootProject.extra["kotsonVersion"] as String
@@ -142,7 +139,7 @@ android {
     defaultConfig {
         applicationId = "one.mixin.messenger"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName = "$versionMajor.$versionMinor.$versionPatch"
         multiDexEnabled = true
@@ -537,24 +534,20 @@ dependencies {
     implementation("com.github.komputing.khash:keccak-jvm:$keccakVersion")
 
     // compose
-    debugImplementation("androidx.compose.ui:ui-tooling:$composeVersion")
-    implementation("androidx.compose.ui:ui:$composeVersion")
-    implementation("androidx.compose.material:material:$composeVersion")
-    implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
-    implementation("androidx.compose.runtime:runtime:$composeVersion")
-    implementation("androidx.compose.runtime:runtime-livedata:$composeVersion")
-    implementation("androidx.compose.runtime:runtime-rxjava2:$composeVersion")
-    implementation("androidx.compose.foundation:foundation:$composeVersion")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material:material")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.runtime:runtime")
+    implementation("androidx.compose.runtime:runtime-livedata")
+    implementation("androidx.compose.runtime:runtime-rxjava2")
+    implementation("androidx.compose.foundation:foundation")
     implementation("androidx.paging:paging-compose:$pagingVersion")
     implementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
-    implementation("androidx.constraintlayout:constraintlayout-compose:$constraintLayoutComposeVersion")
     implementation("androidx.activity:activity-compose:$activityVersion")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
-
-    // accompanist
-    implementation("com.google.accompanist:accompanist-navigation-animation:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-pager-indicators:$accompanistVersion")
+    androidTestImplementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     // wallet connect && web3j
     implementation("org.web3j:core:$web3jVersion")

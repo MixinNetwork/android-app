@@ -26,6 +26,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -52,6 +54,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.defaultSharedPreferences
@@ -310,6 +313,7 @@ private fun MarketSearchBar(
     onQueryChanged: (String) -> Unit,
     onCancel: () -> Unit,
 ) {
+    val textFieldState = rememberSyncedTextFieldState(query, onQueryChanged)
     val focusRequester = androidx.compose.runtime.remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     LaunchedEffect(Unit) {
@@ -324,8 +328,7 @@ private fun MarketSearchBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BasicTextField(
-            value = query,
-            onValueChange = onQueryChanged,
+            state = textFieldState,
             modifier = Modifier
                 .weight(1f)
                 .height(40.dp)
@@ -337,9 +340,9 @@ private fun MarketSearchBar(
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
             ),
-            singleLine = true,
+            lineLimits = TextFieldLineLimits.SingleLine,
             cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-            decorationBox = { innerTextField ->
+            decorator = { innerTextField ->
                 Row(
                     modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -355,7 +358,7 @@ private fun MarketSearchBar(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.CenterStart,
                     ) {
-                        if (query.isEmpty()) {
+                        if (textFieldState.text.isEmpty()) {
                             Text(
                                 text = stringResource(R.string.Search),
                                 color = MixinAppTheme.colors.textAssist,
@@ -364,9 +367,9 @@ private fun MarketSearchBar(
                         }
                         innerTextField()
                     }
-                    if (query.isNotEmpty()) {
+                    if (textFieldState.text.isNotEmpty()) {
                         IconButton(
-                            onClick = { onQueryChanged("") },
+                            onClick = { textFieldState.clearText() },
                             modifier = Modifier.size(24.dp),
                         ) {
                             Icon(

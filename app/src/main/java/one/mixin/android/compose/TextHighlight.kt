@@ -29,7 +29,7 @@ fun HighlightStarLinkText(
     onClick: (link: String) -> Unit,
 ) {
     val annotatedString =
-        remember {
+        remember(source, links.toList(), highlightStyle) {
             buildAnnotatedString {
                 var start: Int
                 var end: Int
@@ -103,7 +103,7 @@ fun HighlightText(
     overflow: TextOverflow = TextOverflow.Clip,
 ) {
     val annotatedString =
-        remember {
+        remember(text, target, ignoreCase, highlightStyle) {
             buildAnnotatedString {
                 append(text)
 

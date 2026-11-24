@@ -347,7 +347,17 @@ fun SetupPinPage(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 columns = GridCells.Fixed(3),
                 content = {
-                    items(list.size) { index ->
+                    items(
+                        count = list.size,
+                        key = { list[it] },
+                        contentType = { index ->
+                            when (index) {
+                                9 -> "empty"
+                                11 -> "delete"
+                                else -> "digit"
+                            }
+                        },
+                    ) { index ->
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier =
