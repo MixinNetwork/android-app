@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -121,17 +122,18 @@ fun PerpsMarketItem(
 fun PerpsLeverageBadge(
     leverage: Int,
     modifier: Modifier = Modifier,
+    color: Color? = null,
 ) {
     Text(
         text = "${leverage}x",
         fontSize = 12.sp,
         fontWeight = FontWeight.W500,
-        color = MixinAppTheme.colors.textAssist,
+        color = color ?: MixinAppTheme.colors.textAssist,
         lineHeight = 14.sp,
         modifier =
             modifier
                 .clip(RoundedCornerShape(4.dp))
-                .background(MixinAppTheme.colors.marketBadgeBackground)
+                .background(color?.copy(alpha = 0.1f) ?: MixinAppTheme.colors.marketBadgeBackground)
                 .padding(horizontal = 3.dp, vertical = 1.dp),
     )
 }
