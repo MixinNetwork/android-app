@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.WindowManager
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -25,6 +24,7 @@ import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.ui.setting.FriendsNoBotFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.FlagSecureReason
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
@@ -70,6 +70,7 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
     @Inject
     lateinit var accountRepository: AccountRepository
 
+    private var flagSecureReason: FlagSecureReason? = null
     private val binding by viewBinding(FragmentVerifyPinBinding::bind)
 
     override fun onViewCreated(
@@ -77,7 +78,8 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        flagSecureReason?.detach()
+        flagSecureReason = FlagSecureReason(activity?.window) { true }.apply { attach() }
         binding.apply {
             closeIv.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             pin.setListener(this@VerifyFragment)
@@ -92,7 +94,8 @@ class VerifyFragment : BaseFragment(R.layout.fragment_verify_pin), PinView.OnPin
 
     override fun onDestroy() {
         super.onDestroy()
-        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        flagSecureReason?.detach()
+        flagSecureReason = null
     }
 
     override fun onUpdate(index: Int) {

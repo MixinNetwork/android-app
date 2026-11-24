@@ -2,17 +2,21 @@ package one.mixin.android.ui.auth
 
 import android.app.Activity
 import android.content.SharedPreferences
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.Constants.Account.PREF_APP_ENTER_BACKGROUND
 import one.mixin.android.extension.putLong
+import one.mixin.android.util.FlagSecureReason
 
 internal class AppAuthManager(
     private val preferences: SharedPreferences,
     private val elapsedRealtime: () -> Long = SystemClock::elapsedRealtime,
     private val currentTimeMillis: () -> Long = System::currentTimeMillis,
 ) {
+    private val secureReasons = mutableMapOf<Activity, FlagSecureReason>()
     private val startedActivities = mutableSetOf<Activity>()
     private val authActivities = mutableSetOf<Activity>()
     private val pendingTasks = mutableSetOf<Int>()
@@ -22,6 +26,27 @@ internal class AppAuthManager(
     @Volatile
     var isLocked = false
         private set
+
+    private val preferenceListener =
+        SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == null || key == PREF_APP_AUTH) {
+                invalidateSecureWindows()
+            }
+        }
+
+    init {
+        preferences.registerOnSharedPreferenceChangeListener(preferenceListener)
+    }
+
+    fun isEnabled(): Boolean = preferences.getInt(PREF_APP_AUTH, -1) != -1
+
+    fun onActivityCreated(activity: Activity) {
+        val reason = secureReasons.getOrPut(activity) {
+            FlagSecureReason(activity.window) { isEnabled() }
+        }
+        reason.attach()
+        reason.invalidate()
+    }
 
     fun onActivityStarted(activity: Activity) {
         startedActivities.add(activity)
@@ -52,6 +77,7 @@ internal class AppAuthManager(
     }
 
     fun onActivityDestroyed(activity: Activity) {
+        secureReasons.remove(activity)?.detach()
         startedActivities.remove(activity)
         authActivities.remove(activity)
         if (activity is AppAuthActivity) pendingTasks.remove(activity.taskId)
@@ -92,6 +118,17 @@ internal class AppAuthManager(
         preferences.putLong(PREF_APP_ENTER_BACKGROUND, 0)
         authActivities.forEach { it.finish() }
         authActivities.clear()
+    }
+
+    private fun invalidateSecureWindows() {
+        val mainLooper = Looper.getMainLooper()
+        if (Looper.myLooper() == mainLooper) {
+            secureReasons.values.toList().forEach(FlagSecureReason::invalidate)
+        } else {
+            Handler(mainLooper).post {
+                secureReasons.values.toList().forEach(FlagSecureReason::invalidate)
+            }
+        }
     }
 
     private fun lock() {

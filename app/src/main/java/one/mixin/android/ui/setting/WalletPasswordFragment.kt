@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -36,6 +35,7 @@ import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_TIP_BUNDLE
 import one.mixin.android.ui.tip.getTipBundle
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.FlagSecureReason
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
@@ -61,6 +61,7 @@ class WalletPasswordFragment :
         }
     }
 
+    private var flagSecureReason: FlagSecureReason? = null
     private val binding by viewBinding(FragmentWalletPasswordBinding::bind)
 
     private var step = STEP0
@@ -112,7 +113,8 @@ class WalletPasswordFragment :
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        flagSecureReason?.detach()
+        flagSecureReason = FlagSecureReason(activity?.window) { true }.apply { attach() }
         binding.apply {
             tipTv.inAnimation = rightInAnim
             tipTv.outAnimation = leftOutAnim
@@ -163,7 +165,8 @@ class WalletPasswordFragment :
 
     override fun onDestroyView() {
         super.onDestroyView()
-        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        flagSecureReason?.detach()
+        flagSecureReason = null
     }
 
     override fun onUpdate(index: Int) {

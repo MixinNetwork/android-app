@@ -459,6 +459,7 @@ open class MixinApplication :
         savedInstanceState: Bundle?,
     ) {
         createdActivities.add(activity)
+        appAuth.onActivityCreated(activity)
     }
 
     override fun onActivityStarted(activity: Activity) {

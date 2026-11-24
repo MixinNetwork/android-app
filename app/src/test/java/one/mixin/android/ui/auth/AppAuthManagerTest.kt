@@ -4,9 +4,12 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Looper
+import android.view.WindowManager
 import androidx.test.core.app.ApplicationProvider
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.Constants.Account.PREF_APP_ENTER_BACKGROUND
+import one.mixin.android.util.FlagSecureReason
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -214,6 +217,74 @@ class AppAuthManagerTest {
         manager.onActivityStarted(mainActivity)
         assertTrue(manager.isLocked)
         assertNotNull(shadowOf(mainActivity).nextStartedActivity)
+    }
+
+    @Test
+    fun flagSecureAppliedWhenAppAuthEnabledAndClearedWhenDisabled() {
+        configure(0)
+        val manager = manager()
+        val activity = activity()
+        manager.onActivityCreated(activity)
+        assertWindowSecure(activity, true)
+
+        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertWindowSecure(activity, false)
+
+        preferences.edit().putInt(PREF_APP_AUTH, 1).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertWindowSecure(activity, true)
+
+        preferences.edit().remove(PREF_APP_AUTH).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertWindowSecure(activity, false)
+    }
+
+    @Test
+    fun sharedWindowKeepsFlagSecureUntilAllReasonsDetach() {
+        configure(0)
+        val manager = manager()
+        val activity = activity()
+        manager.onActivityCreated(activity)
+        assertWindowSecure(activity, true)
+        val secondReason = FlagSecureReason(activity.window) { true }.apply { attach() }
+
+        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertWindowSecure(activity, true)
+
+        preferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        secondReason.detach()
+        assertWindowSecure(activity, true)
+
+        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertWindowSecure(activity, false)
+    }
+
+    @Test
+    fun destroyedActivityDetachesFlagSecureReasonAndIgnoresLaterChanges() {
+        configure(0)
+        val manager = manager()
+        val activity = activity()
+        manager.onActivityCreated(activity)
+        assertWindowSecure(activity, true)
+
+        manager.onActivityDestroyed(activity)
+        assertWindowSecure(activity, false)
+
+        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        preferences.edit().putInt(PREF_APP_AUTH, 1).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertWindowSecure(activity, false)
+    }
+
+    private fun assertWindowSecure(activity: Activity, expected: Boolean) {
+        val window = activity.window
+        assertEquals(expected, (window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0)
+        assertEquals(expected, FlagSecureReason.isSecured(window))
     }
 
     private fun configure(mode: Int, backgroundTime: Long = 0) {
