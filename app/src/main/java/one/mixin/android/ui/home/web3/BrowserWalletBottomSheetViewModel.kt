@@ -20,7 +20,12 @@ import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.preflightDappTransaction
 import org.sol4k.exception.RpcException
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -105,7 +110,14 @@ class BrowserWalletBottomSheetViewModel
             }
         }
 
-        suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
+        suspend fun preflightTransaction(message: JsSignMessage, chain: Chain, walletId: String, cachedTipGas: TipGas? = null) = withContext(Dispatchers.IO) {
+            preflightDappTransaction(
+                message, chain, if (chain == Chain.Solana) Web3Signer.solanaAddress else Web3Signer.evmAddress,
+                findToken = { web3Repository.web3TokenItemById(walletId, it) },
+                estimateFee = web3Repository::estimateFee,
+                cachedTipGas = cachedTipGas,
+            )
+        }
 
         suspend fun outputsByAddress(address: String, assetId: String): List<WalletOutput> = withContext(Dispatchers.IO) {
             web3Repository.outputsByAddress(address, assetId)
