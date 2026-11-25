@@ -28,6 +28,7 @@ import coil3.transform.CircleCropTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dp
@@ -520,8 +521,18 @@ object NotificationGenerator : Injector() {
         notificationBuilder.setLargeIcon(resource)
         notificationBuilder.setGroup(conversation.conversationId)
 
-        buildBubble(context, conversation, notificationBuilder, message, resource, person)
-        notificationManager.notify(conversationNotificationId(message.conversationId), notificationBuilder.build())
+        val bubbleIcon =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                createBubbleIcon(context, conversation.conversationId, resource)
+            } else {
+                IconCompat.createWithBitmap(resource)
+            }
+        // Shortcut publishing and notify() must not interleave with another conversation's,
+        // or a concurrent update can evict this conversation's bubble shortcut.
+        withContext(Dispatchers.Main) {
+            buildBubble(context, conversation, notificationBuilder, message, resource, bubbleIcon, person)
+            notificationManager.notify(conversationNotificationId(message.conversationId), notificationBuilder.build())
+        }
 
         supportsNougat {
             val summaryNotification =
@@ -546,6 +557,7 @@ object NotificationGenerator : Injector() {
         notificationBuilder: NotificationCompat.Builder,
         message: Message,
         bitmap: Bitmap,
+        bubbleIcon: IconCompat,
         person: Person? = null,
     ) {
         supportsR({
@@ -590,7 +602,6 @@ object NotificationGenerator : Injector() {
                         PendingIntent.FLAG_UPDATE_CURRENT
                     },
                 )
-            val bubbleIcon = createBubbleIcon(context, conversation.conversationId, bitmap)
             val bubbleMetadata =
                 NotificationCompat.BubbleMetadata.Builder(bubbleIntent, bubbleIcon)
                     .setDesiredHeight(640.dp)
