@@ -79,7 +79,9 @@ class BottomSheetInsetsTest {
             dialog.setCustomViewHeightSync(1000)
             val sheet = content.parent as View
             val scrim = sheet.parent as View
-            val originalFlags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            assertFalse(dialog.window!!.isFloating)
+            assertEquals(Color.TRANSPARENT, dialog.window!!.navigationBarColor)
+            val originalFlags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             var insets = WindowInsetsCompat.Builder()
                 .setInsets(WindowInsetsCompat.Type.statusBars(), Insets.of(0, 30, 0, 0))
                 .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.of(0, 0, 20, 24))

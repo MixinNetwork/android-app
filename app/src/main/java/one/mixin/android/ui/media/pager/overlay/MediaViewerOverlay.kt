@@ -83,14 +83,15 @@ import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isAutoRotate
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.realSize
 import one.mixin.android.extension.shareMedia
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.windowWidth
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
@@ -192,6 +193,8 @@ class MediaViewerOverlay private constructor(
     private var initialIndex = 0
     private var firstLoad = true
     private var hasSubmittedPagerData = false
+    private var isRetryingInitialPosition = false
+    private var initialPositionRetryCount = 0
     private var pendingConversationPosition: Int? = null
     private var isOpeningTransition = false
     private var isClosing = false
@@ -212,6 +215,7 @@ class MediaViewerOverlay private constructor(
     private var hiddenMessageId: String? = null
     private var hiddenSourceRestore: (() -> Unit)? = null
     private var dataJob: Job? = null
+    private var activeBottomSheet: BottomSheet? = null
     private var permissionAlert: AlertDialog? = null
 
     private val hostLifecycleObserver =
@@ -310,6 +314,14 @@ class MediaViewerOverlay private constructor(
                         listener = conversationPagerListener,
                         initialMessageId = initialMessageId,
                         initialPlaceholderProvider = initialPlaceholder,
+                        onVideoHolderBound = { holder, position, messageItem ->
+                            if (!hasDismissed && !isClosing && position == binding.viewPager.currentItem &&
+                                (messageItem.isVideo() || messageItem.isLive()) && VideoPlayer.player().mId == messageItem.messageId
+                            ) {
+                                holder.binding.playerView.player = VideoPlayer.player().player
+                                attachVideoControlVisibilityListener(messageItem.messageId)
+                            }
+                        },
                     )
                 binding.viewPager.adapter = conversationAdapter
             }
@@ -422,14 +434,12 @@ class MediaViewerOverlay private constructor(
 
     @SuppressLint("RestrictedApi")
     private fun loadData() {
-        dataJob?.cancel()
-        dataJob =
-            overlayScope.launch {
-                when (mode) {
-                    is Mode.Conversation -> loadConversationData(mode)
-                    is Mode.Transcript -> loadTranscriptData(mode)
-                }
+        overlayScope.launch {
+            when (mode) {
+                is Mode.Conversation -> loadConversationData(mode)
+                is Mode.Transcript -> loadTranscriptData(mode)
             }
+        }
     }
 
     private suspend fun loadConversationData(mode: Mode.Conversation) {
@@ -439,7 +449,7 @@ class MediaViewerOverlay private constructor(
                 ?: withContext(Dispatchers.IO) {
                     conversationRepository.getMediaMessage(mode.conversationId, mode.messageId)
                 }
-                ?: return
+                ?: return cleanupAndDismissImmediate()
 
         updateTopBarForConversation(messageItem)
         adapter.initialPos = 0
@@ -464,7 +474,6 @@ class MediaViewerOverlay private constructor(
             withContext(Dispatchers.IO) {
                 conversationRepository.indexMediaMessages(mode.conversationId, mode.messageId, excludeLive)
             }
-        hasSubmittedPagerData = false
         adapter.addOnPagesUpdatedListener {
             if (firstLoad) {
                 positionInitialConversationItem(mode, excludeLive)
@@ -479,20 +488,33 @@ class MediaViewerOverlay private constructor(
                 }
             }
         }
-        Pager(
-            config =
-                PagingConfig(
-                    pageSize = PAGE_SIZE,
-                    prefetchDistance = PAGE_SIZE * 2,
-                    enablePlaceholders = true,
-                ),
-            initialKey = initialIndex,
-            pagingSourceFactory = {
-                conversationRepository.getMediaMessagesPagingSource(mode.conversationId, excludeLive)
-            },
-        ).flow.collectLatest { pagingData ->
-            hasSubmittedPagerData = true
-            adapter.submitData(pagingData)
+        startConversationPager(mode, excludeLive, initialIndex)
+    }
+
+    private fun startConversationPager(
+        mode: Mode.Conversation,
+        excludeLive: Boolean,
+        startIndex: Int,
+    ) {
+        val adapter = conversationAdapter ?: return
+        dataJob?.cancel()
+        hasSubmittedPagerData = false
+        dataJob = overlayScope.launch {
+            Pager(
+                config =
+                    PagingConfig(
+                        pageSize = PAGE_SIZE,
+                        prefetchDistance = PAGE_SIZE * 2,
+                        enablePlaceholders = true,
+                    ),
+                initialKey = startIndex,
+                pagingSourceFactory = {
+                    conversationRepository.getMediaMessagesPagingSource(mode.conversationId, excludeLive)
+                },
+            ).flow.collectLatest { pagingData ->
+                hasSubmittedPagerData = true
+                adapter.submitData(pagingData)
+            }
         }
     }
 
@@ -501,7 +523,7 @@ class MediaViewerOverlay private constructor(
         excludeLive: Boolean,
     ) {
         val adapter = conversationAdapter ?: return
-        if (!firstLoad || !hasSubmittedPagerData || adapter.itemCount <= 0) return
+        if (!firstLoad || !hasSubmittedPagerData) return
         val snapshot = adapter.snapshot()
         val itemAtIndex = snapshot.getOrNull(initialIndex)
         val targetIndex =
@@ -511,28 +533,41 @@ class MediaViewerOverlay private constructor(
                 snapshot.indexOfFirst { it?.messageId == mode.messageId }
             }
         if (targetIndex < 0) {
-            if (itemAtIndex == null) return
+            if (isRetryingInitialPosition) return
+            isRetryingInitialPosition = true
             overlayScope.launch {
-                val total =
-                    withContext(Dispatchers.IO) {
-                        conversationRepository.countIndexMediaMessages(mode.conversationId, excludeLive)
-                    }
-                reportEvent("Initial index not found, conversationId: ${mode.conversationId}, messageId: ${mode.messageId}, initialIndex: $initialIndex, total: $total")
-            }
-            firstLoad = false
-            mode.initialItem?.let { initialItem ->
+                val currentItem = withContext(Dispatchers.IO) {
+                    conversationRepository.getMediaMessage(mode.conversationId, mode.messageId)
+                }
+                if (hasDismissed || !firstLoad) return@launch
+                if (currentItem == null) {
+                    cleanupAndDismissImmediate()
+                    return@launch
+                }
+                val updatedIndex = withContext(Dispatchers.IO) {
+                    conversationRepository.indexMediaMessages(mode.conversationId, mode.messageId, excludeLive)
+                }
+                if (hasDismissed || !firstLoad) return@launch
+                isRetryingInitialPosition = false
+                if (initialPositionRetryCount < 2) {
+                    initialPositionRetryCount++
+                    initialIndex = updatedIndex
+                    startConversationPager(mode, excludeLive, updatedIndex)
+                    return@launch
+                }
+                reportEvent("Initial index not found after retries, conversationId: ${mode.conversationId}, messageId: ${mode.messageId}, initialIndex: $initialIndex, updatedIndex: $updatedIndex")
+                firstLoad = false
                 dataJob?.cancel()
                 adapter.initialPos = 0
-                adapter.submitData(dialog.lifecycle, PagingData.from(listOf(initialItem)))
+                adapter.submitData(dialog.lifecycle, PagingData.from(listOf(currentItem)))
                 binding.viewPager.setCurrentItem(0, false)
-                updateTopBarForConversation(initialItem)
-                if (initialItem.isAppCard()) {
-                    observeStandaloneMessage(mode.messageId)
-                }
+                updateTopBarForConversation(currentItem)
+                if (currentItem.isAppCard()) observeStandaloneMessage(mode.messageId)
+                checkOrientation()
             }
-            checkOrientation()
             return
         }
+        isRetryingInitialPosition = false
         runCatching {
             val targetItem = snapshot[targetIndex] ?: return
             adapter.initialPos = targetIndex
@@ -719,15 +754,9 @@ class MediaViewerOverlay private constructor(
     }
 
     private fun observeStandaloneMessage(messageId: String) {
-        var sawMessage = false
         conversationRepository.findMessageItemByMessageId(messageId).observe(dialog) { item ->
             if (hasDismissed) return@observe
-            if (item != null) {
-                sawMessage = true
-                if (item.type == MessageCategory.MESSAGE_RECALL.name || !item.isAppCard()) {
-                    cleanupAndDismissImmediate()
-                }
-            } else if (sawMessage) {
+            if (item == null || item.type == MessageCategory.MESSAGE_RECALL.name || !item.isAppCard()) {
                 cleanupAndDismissImmediate()
             }
         }
@@ -1034,6 +1063,10 @@ class MediaViewerOverlay private constructor(
         binding.lockTv.removeCallbacks(hideLockRunnable)
         binding.viewPager.unregisterOnPageChangeCallback(onPageChangeCallback)
         activity.lifecycle.removeObserver(hostLifecycleObserver)
+        activeBottomSheet?.dismiss()
+        activeBottomSheet = null
+        permissionAlert?.dismiss()
+        permissionAlert = null
 
         restoreHiddenSource()
         if (orientationModified && !activity.isFinishing && !activity.isDestroyed) {
@@ -1100,7 +1133,7 @@ class MediaViewerOverlay private constructor(
 
     @Synchronized
     private fun changeOrientation(orientation: Int) {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) return
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O || activity.isInMultiWindowMode || !activity.isCompactWindow()) return
         orientationModified = true
         activity.requestedOrientation =
             when (orientation) {
@@ -1296,6 +1329,15 @@ class MediaViewerOverlay private constructor(
 
     // region Bottom menus & actions
 
+    private fun showActionBottomSheet(bottomSheet: BottomSheet) {
+        activeBottomSheet?.dismiss()
+        activeBottomSheet = bottomSheet
+        bottomSheet.setOnDismissListener {
+            if (activeBottomSheet === bottomSheet) activeBottomSheet = null
+        }
+        bottomSheet.show()
+    }
+
     private fun showConversationVideoBottom(messageItem: MessageItem) {
         val builder = BottomSheet.Builder(activity)
         val view = View.inflate(ContextThemeWrapper(activity, R.style.Custom), R.layout.view_drag_video_bottom, null)
@@ -1318,7 +1360,7 @@ class MediaViewerOverlay private constructor(
             bottomSheet.dismiss()
         }
         sheetBinding.cancel.setOnClickListener { bottomSheet.dismiss() }
-        bottomSheet.show()
+        showActionBottomSheet(bottomSheet)
     }
 
     private fun showConversationImageBottom(
@@ -1355,7 +1397,7 @@ class MediaViewerOverlay private constructor(
             bottomSheet.dismiss()
         }
         sheetBinding.cancel.setOnClickListener { bottomSheet.dismiss() }
-        bottomSheet.show()
+        showActionBottomSheet(bottomSheet)
     }
 
     private fun showTranscriptVideoBottom(messageItem: ChatHistoryMessageItem) {
@@ -1378,7 +1420,7 @@ class MediaViewerOverlay private constructor(
             bottomSheet.dismiss()
         }
         sheetBinding.cancel.setOnClickListener { bottomSheet.dismiss() }
-        bottomSheet.show()
+        showActionBottomSheet(bottomSheet)
     }
 
     private fun showTranscriptImageBottom(
@@ -1406,7 +1448,7 @@ class MediaViewerOverlay private constructor(
             bottomSheet.dismiss()
         }
         sheetBinding.cancel.setOnClickListener { bottomSheet.dismiss() }
-        bottomSheet.show()
+        showActionBottomSheet(bottomSheet)
     }
 
     private fun requestStoragePermissionIfNeeded(onGranted: () -> Unit) {
@@ -1674,11 +1716,11 @@ class MediaViewerOverlay private constructor(
         val rect = PipVideoView.getPipRect(videoAspectRatioLayout.aspectRatio)
         val isLandscape = activity.isLandscape()
         if (isLandscape) {
-            val screenHeight = activity.realSize().y
-            if (rect.width > screenHeight) {
+            val windowHeight = activity.windowHeight()
+            if (rect.width > windowHeight) {
                 val ratio = rect.width / rect.height
-                rect.height = screenHeight / ratio
-                rect.width = screenHeight.toFloat()
+                rect.height = windowHeight / ratio
+                rect.width = windowHeight.toFloat()
             }
         }
         val width = if (isLandscape) windowView.height else windowView.width

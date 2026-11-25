@@ -60,8 +60,10 @@ interface MessageDao : BaseDao<Message> {
         LEFT JOIN pin_messages pm ON m.id = pm.message_id
         LEFT JOIN expired_messages em ON m.id = em.message_id
         """
-        private const val APP_CARD_COVER_MEDIA = "category = 'APP_CARD' AND content LIKE '%\"cover_url\":\"%' AND content NOT LIKE '%\"cover_url\":\"\"%'"
-        private const val APP_CARD_COVER_MEDIA_ALIAS = "m.category = 'APP_CARD' AND m.content LIKE '%\"cover_url\":\"%' AND m.content NOT LIKE '%\"cover_url\":\"\"%'"
+        private const val NORMALIZED_CONTENT = "REPLACE(REPLACE(REPLACE(REPLACE(content, ' ', ''), char(9), ''), char(10), ''), char(13), '')"
+        private const val NORMALIZED_CONTENT_ALIAS = "REPLACE(REPLACE(REPLACE(REPLACE(m.content, ' ', ''), char(9), ''), char(10), ''), char(13), '')"
+        private const val APP_CARD_COVER_MEDIA = "category = 'APP_CARD' AND $NORMALIZED_CONTENT LIKE '%\"cover_url\":\"%' AND $NORMALIZED_CONTENT NOT LIKE '%\"cover_url\":\"\"%'"
+        private const val APP_CARD_COVER_MEDIA_ALIAS = "m.category = 'APP_CARD' AND $NORMALIZED_CONTENT_ALIAS LIKE '%\"cover_url\":\"%' AND $NORMALIZED_CONTENT_ALIAS NOT LIKE '%\"cover_url\":\"\"%'"
     }
 
     // Read SQL

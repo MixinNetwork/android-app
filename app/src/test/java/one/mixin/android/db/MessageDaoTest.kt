@@ -72,6 +72,20 @@ class MessageDaoTest {
                     content = """{"app_id":"app","cover_url":"https://example.com/cover-url.jpg","title":"cover url"}""",
                     createdAt = "2026-06-29T00:01:00Z",
                 ),
+                appCardMessage(
+                    id = "spaced-cover-app-card",
+                    conversationId = conversationId,
+                    userId = userId,
+                    content = """{"app_id":"app","cover_url": "https://example.com/spaced.jpg"}""",
+                    createdAt = "2026-06-29T00:01:10Z",
+                ),
+                appCardMessage(
+                    id = "blank-cover-app-card",
+                    conversationId = conversationId,
+                    userId = userId,
+                    content = """{"app_id":"app","cover_url": "   "}""",
+                    createdAt = "2026-06-29T00:01:20Z",
+                ),
                 imageMessage("target-image", conversationId, userId, "2026-06-29T00:02:00Z"),
                 appCardMessage(
                     id = "nested-cover-app-card",
@@ -91,14 +105,16 @@ class MessageDaoTest {
         )
 
         assertNotNull(messageDao.getMediaMessage(conversationId, "cover-url-app-card"))
+        assertNotNull(messageDao.getMediaMessage(conversationId, "spaced-cover-app-card"))
+        assertNull(messageDao.getMediaMessage(conversationId, "blank-cover-app-card"))
         assertNull(messageDao.getMediaMessage(conversationId, "empty-cover-app-card"))
         assertNull(messageDao.getMediaMessage(conversationId, "nested-cover-app-card"))
         assertEquals(
-            listOf("image-before", "cover-url-app-card", "target-image"),
+            listOf("image-before", "cover-url-app-card", "spaced-cover-app-card", "target-image"),
             messageDao.getMediaMessagesList(conversationId).map { it.messageId },
         )
-        assertEquals(2, messageDao.indexMediaMessages(conversationId, "target-image"))
-        assertEquals(3, messageDao.countIndexMediaMessages(conversationId))
+        assertEquals(3, messageDao.indexMediaMessages(conversationId, "target-image"))
+        assertEquals(4, messageDao.countIndexMediaMessages(conversationId))
     }
 
     @Test

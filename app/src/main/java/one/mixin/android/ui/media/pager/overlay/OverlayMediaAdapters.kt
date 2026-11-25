@@ -47,6 +47,7 @@ internal class OverlayMediaPagerAdapter(
     private val listener: MediaPagerAdapterListener,
     private val initialMessageId: String? = null,
     private val initialPlaceholderProvider: (() -> Drawable?)? = null,
+    private val onVideoHolderBound: ((VideoHolder, Int, MessageItem) -> Unit)? = null,
 ) : SafePagingDataAdapter<MessageItem, MediaPagerHolder>(MessageItem.DIFF_CALLBACK) {
 
     var initialPos: Int = 0
@@ -110,6 +111,7 @@ internal class OverlayMediaPagerAdapter(
             else -> {
                 holder as VideoHolder
                 holder.bind(messageItem, position == initialPos, videoStatusCache)
+                onVideoHolderBound?.invoke(holder, position, messageItem)
                 messageItem.mediaStatus?.let {
                     videoStatusCache.put(messageItem.messageId, it)
                 }
