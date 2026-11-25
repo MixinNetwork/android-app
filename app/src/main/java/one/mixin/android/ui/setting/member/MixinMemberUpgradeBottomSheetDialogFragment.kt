@@ -22,7 +22,7 @@ import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -111,7 +111,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialo
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(errorRes: Int) {

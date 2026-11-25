@@ -268,7 +268,7 @@ fun WCPinBoard(
                                         modifier = Modifier.height(20.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
-                                        items(6) { index ->
+                                        items(count = 6, key = { it }, contentType = { "pin_dot" }) { index ->
                                             val hasContent = index < pinCode.length
                                             AnimatedContent(
                                                 targetState = hasContent,
@@ -385,7 +385,17 @@ fun WCPinBoard(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     columns = GridCells.Fixed(3),
                                     content = {
-                                        items(list.size) { index ->
+                                        items(
+                                            count = list.size,
+                                            key = { list[it] },
+                                            contentType = { index ->
+                                                when (index) {
+                                                    9 -> "empty"
+                                                    11 -> "delete"
+                                                    else -> "digit"
+                                                }
+                                            },
+                                        ) { index ->
                                             Box(
                                                 contentAlignment = Alignment.Center,
                                                 modifier =

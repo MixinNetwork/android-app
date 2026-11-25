@@ -1,32 +1,12 @@
 package one.mixin.android.widget.gallery;
 
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_BEHIND;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
-
 import android.app.Activity;
 import android.content.Intent;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -42,34 +22,11 @@ public final class SelectionCreator {
     private final Gallery mGallery;
     private final SelectionSpec mSelectionSpec;
 
-    @IntDef({
-            SCREEN_ORIENTATION_UNSPECIFIED,
-            SCREEN_ORIENTATION_LANDSCAPE,
-            SCREEN_ORIENTATION_PORTRAIT,
-            SCREEN_ORIENTATION_USER,
-            SCREEN_ORIENTATION_BEHIND,
-            SCREEN_ORIENTATION_SENSOR,
-            SCREEN_ORIENTATION_NOSENSOR,
-            SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
-            SCREEN_ORIENTATION_SENSOR_PORTRAIT,
-            SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
-            SCREEN_ORIENTATION_REVERSE_PORTRAIT,
-            SCREEN_ORIENTATION_FULL_SENSOR,
-            SCREEN_ORIENTATION_USER_LANDSCAPE,
-            SCREEN_ORIENTATION_USER_PORTRAIT,
-            SCREEN_ORIENTATION_FULL_USER,
-            SCREEN_ORIENTATION_LOCKED
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    @interface ScreenOrientation {
-    }
-
     SelectionCreator(Gallery gallery, @NonNull Set<MimeType> mimeTypes, boolean mediaTypeExclusive) {
         mGallery = gallery;
         mSelectionSpec = SelectionSpec.getCleanInstance();
         mSelectionSpec.mimeTypeSet = mimeTypes;
         mSelectionSpec.mediaTypeExclusive = mediaTypeExclusive;
-        mSelectionSpec.orientation = SCREEN_ORIENTATION_UNSPECIFIED;
     }
 
     public SelectionCreator showSingleMediaType(boolean showSingleMediaType) {
@@ -128,11 +85,6 @@ public final class SelectionCreator {
 
     public SelectionCreator captureStrategy(CaptureStrategy captureStrategy) {
         mSelectionSpec.captureStrategy = captureStrategy;
-        return this;
-    }
-
-    public SelectionCreator restrictOrientation(@ScreenOrientation int orientation) {
-        mSelectionSpec.orientation = orientation;
         return this;
     }
 

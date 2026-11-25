@@ -40,6 +40,7 @@ fun initNativeLibs(context: Context) {
             if (destLocalFile.exists()) {
                 try {
                     Timber.d("Load local lib")
+                    destLocalFile.setReadOnly()
                     System.load(destLocalFile.absolutePath)
                     nativeLoadedList[i] = true
                     return@forEachIndexed
@@ -136,7 +137,8 @@ private fun loadFromZip(
     }
     destLocalFile.setReadable(true, false)
     destLocalFile.setExecutable(true, false)
-    destLocalFile.setWritable(true)
+    // Android 17 refuses to load writable native libraries
+    destLocalFile.setReadOnly()
 
     try {
         System.load(destLocalFile.absolutePath)

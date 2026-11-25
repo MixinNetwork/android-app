@@ -275,6 +275,10 @@ class TransferActivity : BaseActivity() {
         binding.titleView.leftIb.setOnClickListener {
             onBackPressed()
         }
+        setupTransfer()
+    }
+
+    private fun setupTransfer() {
         initView()
 
         status.observe(this) { s ->

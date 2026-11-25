@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
@@ -53,6 +54,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.checkBalance
 
@@ -179,12 +181,13 @@ private fun Input(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     val interactionSource = remember { MutableInteractionSource() }
-    BasicTextField(
+    val textFieldState = rememberSyncedTextFieldState(
         value = text,
-        onValueChange = {
-            onInputChanged?.invoke(it)
-        },
-        maxLines = 1,
+        onValueChange = { onInputChanged?.invoke(it) },
+    )
+    BasicTextField(
+        state = textFieldState,
+        lineLimits = TextFieldLineLimits.SingleLine,
         modifier =
         Modifier
             .fillMaxWidth()
@@ -203,60 +206,60 @@ private fun Input(
             textAlign = TextAlign.Start,
         ),
         cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-    ) { innerTextField ->
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp)
-                .border(1.dp, color = MixinAppTheme.colors.backgroundDark, RoundedCornerShape(12.dp))
-                .padding(16.dp, 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            innerTextField()
-            Spacer(modifier = Modifier.width(10.dp))
-            Spacer(modifier = Modifier.weight(1f))
+        decorator = { innerTextField ->
             Row(
-                modifier = Modifier.wrapContentWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp)
+                    .border(1.dp, color = MixinAppTheme.colors.backgroundDark, RoundedCornerShape(12.dp))
+                    .padding(16.dp, 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = "SOL",
-                    style =
-                    TextStyle(
-                        fontWeight = FontWeight.W400,
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 16.sp,
-                    ),
-                )
+                innerTextField()
                 Spacer(modifier = Modifier.width(10.dp))
-                Box(
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                        .border(1.dp, color = MixinAppTheme.colors.textMinor, RoundedCornerShape(16.dp))
-                        .clickable(
-                            interactionSource = interactionSource,
-                            indication = null,
-                        ) {
-                            onMax.invoke()
-                        }
-                        .padding(8.dp, 4.dp),
+                Spacer(modifier = Modifier.weight(1f))
+                Row(
+                    modifier = Modifier.wrapContentWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                        text = stringResource(id = R.string.balance_max),
+                        text = "SOL",
                         style =
                         TextStyle(
                             fontWeight = FontWeight.W400,
-                            color = MixinAppTheme.colors.textPrimary,
-                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 16.sp,
                         ),
                     )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .wrapContentHeight()
+                            .border(1.dp, color = MixinAppTheme.colors.textMinor, RoundedCornerShape(16.dp))
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null,
+                            ) {
+                                onMax.invoke()
+                            }
+                            .padding(8.dp, 4.dp),
+                    ) {
+                        Text(
+                            modifier = Modifier.align(Alignment.CenterEnd),
+                            text = stringResource(id = R.string.balance_max),
+                            style =
+                            TextStyle(
+                                fontWeight = FontWeight.W400,
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 14.sp,
+                            ),
+                        )
+                    }
                 }
             }
-
-        }
-    }
+        },
+    )
 }
 
 @Composable
