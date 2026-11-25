@@ -654,10 +654,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         if (supportFragmentManager.findFragmentByTag(InputReferralBottomSheetDialogFragment.TAG) != null) return
         if (supportFragmentManager.findFragmentByTag(ReferralBindPreviewBottomSheetDialogFragment.TAG) != null) return
 
-        val code = PendingReferralStore.get(this) ?: return
+        val code = PendingReferralStore.getForPostSignUp(this) ?: return
         InputReferralBottomSheetDialogFragment
-            .newInstance(defaultValue = code, clearPendingOnDismiss = true)
-            .show(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+            .newInstance(defaultValue = code, isPostSignUp = true)
+            .showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
     }
 
     private suspend fun openPendingMnemonicNext(pin: String? = null): Boolean {
@@ -1097,6 +1097,12 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             clearCodeAfterConsume(intent, ConversationEmbedding.EXTRA_CONVERSATION)
             binding.bottomNav.selectedItemId = R.id.nav_chat
             ConversationEmbedding.conversationIntent(this, extras)?.let(::startActivity)
+            return
+        }
+        if (intent.action == Intent.ACTION_VIEW && PendingReferralStore.isOneLinkUrl(intent.dataString)) {
+            // The referral code is saved by the AppsFlyer deep link listener; stay on the home tab.
+            intent.data = null
+            binding.bottomNav.selectedItemId = R.id.nav_chat
             return
         }
         if (intent.hasExtra(SCAN)) {

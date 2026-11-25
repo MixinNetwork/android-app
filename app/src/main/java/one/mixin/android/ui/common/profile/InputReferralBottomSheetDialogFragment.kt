@@ -68,16 +68,16 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     companion object {
         const val TAG = "InputReferralBottomSheetDialogFragment"
         private const val ARG_DEFAULT_VALUE = "default_value"
-        private const val ARG_CLEAR_PENDING_ON_DISMISS = "clear_pending_on_dismiss"
+        private const val ARG_IS_POST_SIGN_UP = "is_post_sign_up"
 
         fun newInstance(
             defaultValue: String = "",
-            clearPendingOnDismiss: Boolean = false,
+            isPostSignUp: Boolean = false,
         ) =
             InputReferralBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_DEFAULT_VALUE, defaultValue)
-                    putBoolean(ARG_CLEAR_PENDING_ON_DISMISS, clearPendingOnDismiss)
+                    putBoolean(ARG_IS_POST_SIGN_UP, isPostSignUp)
                 }
             }
     }
@@ -87,8 +87,8 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     private var navigatedToPreview = false
 
-    private val shouldClearPending: Boolean
-        get() = arguments?.getBoolean(ARG_CLEAR_PENDING_ON_DISMISS, false) == true
+    private val isPostSignUp: Boolean
+        get() = arguments?.getBoolean(ARG_IS_POST_SIGN_UP, false) == true
 
     private val viewModel: BottomSheetViewModel by viewModels()
 
@@ -155,7 +155,7 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         ) {
                             Spacer(Modifier.height(30.dp))
                             Text(
-                                text = stringResource(R.string.apply_referral_code),
+                                text = stringResource(if (isPostSignUp) R.string.referred_by_a_friend else R.string.apply_referral_code),
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.W600,
                                 color = MixinAppTheme.colors.textPrimary,
@@ -224,7 +224,7 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                                             code = code,
                                                             inviter = inviter,
                                                             inviteePercent = info.inviteePercent,
-                                                            clearPendingOnResult = shouldClearPending,
+                                                            clearPendingOnResult = isPostSignUp,
                                                         )
                                                         .showNow(parentFragmentManager, ReferralBindPreviewBottomSheetDialogFragment.TAG)
                                                 } else {
@@ -248,7 +248,7 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
                                 Spacer(Modifier.height(12.dp))
                                 Text(
-                                    text = stringResource(R.string.Later),
+                                    text = stringResource(if (isPostSignUp) R.string.Cancel else R.string.Later),
                                     color = MixinAppTheme.colors.accent,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.W500,
@@ -312,7 +312,7 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        if (shouldClearPending && !navigatedToPreview) {
+        if (isPostSignUp && !navigatedToPreview && activity?.isChangingConfigurations != true) {
             context?.let(PendingReferralStore::clear)
         }
     }

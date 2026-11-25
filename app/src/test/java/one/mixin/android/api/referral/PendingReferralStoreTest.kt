@@ -68,4 +68,13 @@ class PendingReferralStoreTest {
         assertFalse(PendingReferralStore.isOneLinkUrl("https://mixin.one/referrals/CRMLSV"))
         assertFalse(PendingReferralStore.isOneLinkUrl(null))
     }
+
+    @Test
+    fun isOneLinkUrl_ignoresCaseAndWhitespaceAndRejectsOtherTemplates() {
+        assertTrue(PendingReferralStore.isOneLinkUrl("  HTTPS://Mixin.OneLink.me/rlR3?deep_link_value=referral "))
+        assertFalse(PendingReferralStore.isOneLinkUrl("https://mixin.onelink.me/"))
+        assertFalse(PendingReferralStore.isOneLinkUrl("https://mixin.onelink.me/rlr3"))
+        assertFalse(PendingReferralStore.isOneLinkUrl("mixin://mixin.onelink.me/rlR3"))
+        assertFalse(PendingReferralStore.isOneLinkUrl(""))
+    }
 }

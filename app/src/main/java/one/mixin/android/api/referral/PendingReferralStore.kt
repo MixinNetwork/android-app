@@ -15,6 +15,7 @@ object PendingReferralStore {
     private const val PREFS_NAME = "pending_referral_prefs"
     private const val KEY_CODE = "pending_referral_code"
     private const val KEY_SAVED_AT = "pending_referral_saved_at"
+    private const val KEY_SIGN_UP_PENDING = "pending_referral_sign_up_pending"
     private const val EXPIRY_MILLIS = 7L * 24 * 60 * 60 * 1000
     private const val DEEP_LINK_VALUE_REFERRAL = "referral"
     private const val DEEP_LINK_SUB1 = "deep_link_sub1"
@@ -23,6 +24,9 @@ object PendingReferralStore {
 
     private val _pendingCodeFlow = MutableStateFlow<String?>(null)
     val pendingCodeFlow: StateFlow<String?> = _pendingCodeFlow.asStateFlow()
+
+    // True from the first home session after sign-up until the process ends.
+    private var postSignUpSessionActive = false
 
     fun deepLinkSub1Key(): String = DEEP_LINK_SUB1
 
@@ -38,6 +42,29 @@ object PendingReferralStore {
         }
         _pendingCodeFlow.value = code
         return true
+    }
+
+    fun markSignUpCompleted(context: Context) {
+        prefs(context).edit {
+            putBoolean(KEY_SIGN_UP_PENDING, true)
+        }
+    }
+
+    fun getForPostSignUp(
+        context: Context,
+        nowMs: Long = System.currentTimeMillis(),
+    ): String? {
+        val sharedPrefs = prefs(context)
+        if (sharedPrefs.getBoolean(KEY_SIGN_UP_PENDING, false)) {
+            sharedPrefs.edit { remove(KEY_SIGN_UP_PENDING) }
+            postSignUpSessionActive = true
+        }
+        if (!postSignUpSessionActive) return null
+        return get(context, nowMs)
+    }
+
+    internal fun endPostSignUpSessionForTest() {
+        postSignUpSessionActive = false
     }
 
     fun get(
@@ -67,6 +94,7 @@ object PendingReferralStore {
         prefs(context).edit {
             clear()
         }
+        postSignUpSessionActive = false
         _pendingCodeFlow.value = null
     }
 

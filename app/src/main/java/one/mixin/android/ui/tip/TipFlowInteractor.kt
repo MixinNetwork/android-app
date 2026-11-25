@@ -19,6 +19,7 @@ import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.referral.PendingReferralStore
 import one.mixin.android.api.request.RegisterRequest
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.TipConfig
@@ -307,6 +308,9 @@ class TipFlowInteractor @Inject internal constructor(
             }
         }
         if (shouldOpenMainActivity) {
+            if (tipBundle.tipType == TipType.Create) {
+                PendingReferralStore.markSignUpCompleted(context)
+            }
             if (!openNextAfterPin(context, tipBundle.tipType == TipType.Create, pin)) {
                 val reason = context.getString(R.string.Save_failure)
                 tipBundle.pin = null

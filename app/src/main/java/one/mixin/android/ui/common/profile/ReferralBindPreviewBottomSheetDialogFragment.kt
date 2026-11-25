@@ -329,7 +329,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
 
     override fun onDismiss(dialog: android.content.DialogInterface) {
         super.onDismiss(dialog)
-        if (shouldClearPending) {
+        if (shouldClearPending && activity?.isChangingConfigurations != true) {
             context?.let(PendingReferralStore::clear)
         }
         if (step == Step.Done) {
