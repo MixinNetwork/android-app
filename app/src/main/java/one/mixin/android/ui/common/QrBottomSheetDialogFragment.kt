@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
-import android.view.WindowManager
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
@@ -37,6 +36,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.shareMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
+import one.mixin.android.util.FlagSecureReason
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.toUser
@@ -72,17 +72,20 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
 
     private val binding by viewBinding(FragmentQrBottomSheetBinding::inflate)
+    private var flagSecureReason: FlagSecureReason? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         return super.onCreateDialog(savedInstanceState).apply {
             if (type == TYPE_MNEMONIC_QR) {
-                window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                flagSecureReason?.detach()
+                flagSecureReason = FlagSecureReason(window) { true }.apply { attach() }
             }
         }
     }
 
     override fun onDestroyView() {
-        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        flagSecureReason?.detach()
+        flagSecureReason = null
         super.onDestroyView()
     }
 

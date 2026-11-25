@@ -23,12 +23,14 @@ import android.view.animation.DecelerateInterpolator
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Job
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.backgroundDrawable
 import one.mixin.android.extension.displayMetrics
 import one.mixin.android.extension.enableWideColorGamutIfSupported
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.isTablet
+import one.mixin.android.util.FlagSecureReason
 import one.mixin.android.util.avoidBottomSheetFolds
 import kotlin.math.abs
 
@@ -44,6 +46,7 @@ class MixinBottomSheetDialog(
     }
 
     private var foldJob: Job? = null
+    private var appAuthSecureReason: FlagSecureReason? = null
 
     private var startAnimationRunnable: Runnable? = null
     private var curSheetAnimation: AnimatorSet? = null
@@ -53,6 +56,13 @@ class MixinBottomSheetDialog(
 
     private lateinit var container: View
     private lateinit var sheetContainer: View
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (appAuthSecureReason == null) {
+            appAuthSecureReason = MixinApplication.appAuthOrNull()?.attachSecureWindow(window)
+        }
+    }
 
     override fun setContentView(view: View) {
         super.setContentView(view)
@@ -79,6 +89,9 @@ class MixinBottomSheetDialog(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        if (appAuthSecureReason == null) {
+            appAuthSecureReason = MixinApplication.appAuthOrNull()?.attachSecureWindow(window)
+        }
         context.takeIf { it.isExpandedSheetScreen() }?.findFragmentActivityOrNull()?.let { activity ->
             findViewById<View>(com.google.android.material.R.id.container)?.let { container ->
                 foldJob?.cancel()
@@ -92,6 +105,8 @@ class MixinBottomSheetDialog(
     }
 
     override fun onDetachedFromWindow() {
+        MixinApplication.appAuthOrNull()?.detachSecureWindow(appAuthSecureReason)
+        appAuthSecureReason = null
         foldJob?.cancel()
         foldJob = null
         super.onDetachedFromWindow()
@@ -243,6 +258,7 @@ internal class AdaptiveBottomSheetDialog(
     private val centerOnExpandedScreen: Boolean = false,
 ) : BottomSheetDialog(context, theme) {
     private var foldJob: Job? = null
+    private var appAuthSecureReason: FlagSecureReason? = null
     var isCentered = false
         private set
     private var closing = false
@@ -263,6 +279,9 @@ internal class AdaptiveBottomSheetDialog(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (appAuthSecureReason == null) {
+            appAuthSecureReason = MixinApplication.appAuthOrNull()?.attachSecureWindow(window)
+        }
         window?.enableWideColorGamutIfSupported()
         originalWindowAnimations = window?.attributes?.windowAnimations ?: 0
         if (centerOnExpandedScreen && context.isExpandedSheetScreen()) {
@@ -272,6 +291,9 @@ internal class AdaptiveBottomSheetDialog(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        if (appAuthSecureReason == null) {
+            appAuthSecureReason = MixinApplication.appAuthOrNull()?.attachSecureWindow(window)
+        }
         applyBottomSheetContainerInsets()
         if (!context.isExpandedSheetScreen()) return
         val activity = context.findFragmentActivityOrNull() ?: return
@@ -397,6 +419,8 @@ internal class AdaptiveBottomSheetDialog(
     }
 
     override fun onDetachedFromWindow() {
+        MixinApplication.appAuthOrNull()?.detachSecureWindow(appAuthSecureReason)
+        appAuthSecureReason = null
         sheet?.removeOnLayoutChangeListener(layoutListener)
         coordinator?.removeOnLayoutChangeListener(layoutListener)
         coordinator?.viewTreeObserver?.removeOnPreDrawListener(preDrawListener)

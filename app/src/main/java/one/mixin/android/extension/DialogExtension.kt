@@ -6,11 +6,49 @@ import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.view.Window
 import androidx.annotation.ArrayRes
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.util.FlagSecureReason
+
+private class SecureMaterialAlertDialogBuilder(
+    context: Context,
+    overrideThemeResId: Int,
+) : MaterialAlertDialogBuilder(context, overrideThemeResId) {
+    override fun create(): AlertDialog {
+        return super.create().also { dialog ->
+            val window = dialog.window ?: return@also
+            val originalCallback = window.callback ?: return@also
+            var reason: FlagSecureReason? = null
+            window.callback =
+                object : Window.Callback by originalCallback {
+                    override fun onContentChanged() {
+                        originalCallback.onContentChanged()
+                        if (reason == null) {
+                            reason = MixinApplication.appAuthOrNull()?.attachSecureWindow(window)
+                        }
+                    }
+
+                    override fun onAttachedToWindow() {
+                        originalCallback.onAttachedToWindow()
+                        if (reason == null) {
+                            reason = MixinApplication.appAuthOrNull()?.attachSecureWindow(window)
+                        }
+                    }
+
+                    override fun onDetachedFromWindow() {
+                        MixinApplication.appAuthOrNull()?.detachSecureWindow(reason)
+                        reason = null
+                        originalCallback.onDetachedFromWindow()
+                    }
+                }
+        }
+    }
+}
 
 fun Fragment.singleChoice(
     title: CharSequence? = null,
@@ -25,7 +63,7 @@ fun Context.singleChoice(
     checkedItem: Int,
     onClick: (DialogInterface, Int) -> Unit,
 ) {
-    MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
+    SecureMaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
         setTitle(title)
         setSingleChoiceItems(itemsId, checkedItem, onClick)
         setPositiveButton(android.R.string.cancel) { dialog, _ ->
@@ -49,7 +87,7 @@ fun Context.multiChoice(
     canceledOnTouchOutside: Boolean = true,
     onClick: (DialogInterface, Int, Boolean) -> Unit,
 ) {
-    MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
+    SecureMaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
         setTitle(title)
         setMultiChoiceItems(itemsId, checkedItems, onClick)
         setPositiveButton(android.R.string.cancel) { dialog, _ ->
@@ -69,7 +107,7 @@ fun Context.alert(
     message: CharSequence,
     title: CharSequence? = null,
 ): MaterialAlertDialogBuilder {
-    return MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
+    return SecureMaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
         if (title != null) {
             setTitle(title)
         }
@@ -82,7 +120,7 @@ fun Fragment.alertDialogBuilder(overrideThemeResId: Int = R.style.MixinAlertDial
 }
 
 fun Context.alertDialogBuilder(overrideThemeResId: Int = R.style.MixinAlertDialogTheme): AlertDialog.Builder {
-    return MaterialAlertDialogBuilder(this, overrideThemeResId)
+    return SecureMaterialAlertDialogBuilder(this, overrideThemeResId)
 }
 
 fun Fragment.indeterminateProgressDialog(

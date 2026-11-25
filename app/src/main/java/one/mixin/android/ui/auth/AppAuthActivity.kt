@@ -6,10 +6,12 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.widget.RelativeLayout
 import androidx.activity.addCallback
+import androidx.activity.viewModels
 import androidx.biometric.BiometricPrompt
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
 import com.mattprecious.swirl.SwirlView
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -23,14 +25,23 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 
+class AppAuthViewModel : ViewModel() {
+    var clearWhenPinSuccess: Boolean = false
+    var pendingPinUnlock: Boolean = false
+}
+
 @AndroidEntryPoint
 class AppAuthActivity : BaseActivity() {
     companion object {
+        private const val STATE_CLEAR_WHEN_PIN_SUCCESS = "clear_when_pin_success"
+        private const val STATE_PENDING_PIN_UNLOCK = "pending_pin_unlock"
+
         fun show(activity: Activity) {
             Intent(activity, AppAuthActivity::class.java).apply {
                 data = if (activity is UrlInterpreterActivity) activity.intent.data else null
@@ -42,24 +53,27 @@ class AppAuthActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAppAuthBinding
 
-    private var biometricPrompt: BiometricPrompt? = null
+    private val viewModel: AppAuthViewModel by viewModels()
 
-    private var clearWhenPinSuccess = false
+    private var biometricPrompt: BiometricPrompt? = null
 
     private var promptGeneration = 0
     private var promptActive = false
     private var promptScheduled = false
     private var retryPromptOnResume = false
     private var authenticated = false
-    private var pendingPinUnlock = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
         updateLayout()
-        clearWhenPinSuccess = savedInstanceState?.getBoolean("clear_when_pin_success") ?: false
-        pendingPinUnlock = savedInstanceState?.getBoolean("pending_pin_unlock") ?: false
+        if (savedInstanceState != null) {
+            viewModel.clearWhenPinSuccess =
+                viewModel.clearWhenPinSuccess || savedInstanceState.getBoolean(STATE_CLEAR_WHEN_PIN_SUCCESS)
+            viewModel.pendingPinUnlock =
+                viewModel.pendingPinUnlock || savedInstanceState.getBoolean(STATE_PENDING_PIN_UNLOCK)
+        }
         onBackPressedDispatcher.addCallback(this) {
             moveTaskToBack(true)
         }
@@ -90,8 +104,8 @@ class AppAuthActivity : BaseActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (pendingPinUnlock && !authenticated && !isFinishing) {
-            pendingPinUnlock = false
+        if (viewModel.pendingPinUnlock && !authenticated && !isFinishing) {
+            viewModel.pendingPinUnlock = false
             applyPinSuccessUnlock()
             return
         }
@@ -122,8 +136,8 @@ class AppAuthActivity : BaseActivity() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean("clear_when_pin_success", clearWhenPinSuccess)
-        outState.putBoolean("pending_pin_unlock", pendingPinUnlock)
+        outState.putBoolean(STATE_CLEAR_WHEN_PIN_SUCCESS, viewModel.clearWhenPinSuccess)
+        outState.putBoolean(STATE_PENDING_PIN_UNLOCK, viewModel.pendingPinUnlock)
         super.onSaveInstanceState(outState)
     }
 
@@ -134,7 +148,6 @@ class AppAuthActivity : BaseActivity() {
 
     private fun schedulePrompt(delayMs: Long = 100) {
         if (promptActive || authenticated || isFinishing) return
-        if (supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) != null) return
         binding.swirl.removeCallbacks(showPromptRunnable)
         promptScheduled = true
         binding.swirl.postDelayed(showPromptRunnable, delayMs)
@@ -143,7 +156,8 @@ class AppAuthActivity : BaseActivity() {
     private fun showPrompt() {
         promptScheduled = false
         if (promptActive || authenticated || isFinishing) return
-        if (supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) != null) return
+        val pinDialog = supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG)
+        if (pinDialog != null && !pinDialog.isRemoving) return
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 retryPromptOnResume = true
@@ -178,21 +192,24 @@ class AppAuthActivity : BaseActivity() {
         generation == promptGeneration && promptActive && !isFinishing && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
 
     private fun applyPinSuccessUnlock() {
-        if (clearWhenPinSuccess) {
+        if (authenticated || isFinishing) return
+        if (viewModel.clearWhenPinSuccess) {
             defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
         }
+        toast(R.string.Successful)
         finishAndCheckNeed2GoUrlInterpreter()
     }
 
     private fun bindPinVerification(dialog: VerifyBottomSheetDialogFragment) {
+        dialog.disableToast = true
         dialog.setOnPinSuccess {
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 applyPinSuccessUnlock()
             } else {
-                pendingPinUnlock = true
+                viewModel.pendingPinUnlock = true
             }
         }.setOnResult { success ->
-            if (!success && !authenticated && !pendingPinUnlock) {
+            if (!success && !authenticated && !viewModel.pendingPinUnlock) {
                 schedulePrompt()
             }
         }
@@ -260,10 +277,14 @@ class AppAuthActivity : BaseActivity() {
                 moveTaskToBack(true)
             }
             BiometricPrompt.ERROR_CANCELED -> {
-                retryPromptOnResume = true
+                if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    schedulePrompt(1000)
+                } else {
+                    retryPromptOnResume = true
+                }
             }
             BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_HW_NOT_PRESENT, BiometricPrompt.ERROR_HW_UNAVAILABLE -> {
-                clearWhenPinSuccess = true
+                viewModel.clearWhenPinSuccess = true
                 showError(errString)
             }
             BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> showError(errString)

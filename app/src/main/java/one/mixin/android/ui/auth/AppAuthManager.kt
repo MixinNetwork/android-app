@@ -2,9 +2,16 @@ package one.mixin.android.ui.auth
 
 import android.app.Activity
 import android.content.SharedPreferences
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.view.View
+import android.view.Window
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.Constants.Account.PREF_APP_ENTER_BACKGROUND
@@ -16,7 +23,16 @@ internal class AppAuthManager(
     private val elapsedRealtime: () -> Long = SystemClock::elapsedRealtime,
     private val currentTimeMillis: () -> Long = System::currentTimeMillis,
 ) {
-    private val secureReasons = mutableMapOf<Activity, FlagSecureReason>()
+    private class TrackedDialog(
+        val host: FragmentActivity,
+        val window: Window,
+        val reason: FlagSecureReason,
+    )
+
+    private val secureReasons = mutableSetOf<FlagSecureReason>()
+    private val activitySecureReasons = mutableMapOf<Activity, FlagSecureReason>()
+    private val fragmentCallbacks = mutableMapOf<FragmentActivity, FragmentManager.FragmentLifecycleCallbacks>()
+    private val dialogFragmentReasons = mutableMapOf<DialogFragment, TrackedDialog>()
     private val startedActivities = mutableSetOf<Activity>()
     private val authActivities = mutableSetOf<Activity>()
     private val pendingTasks = mutableSetOf<Int>()
@@ -40,12 +56,79 @@ internal class AppAuthManager(
 
     fun isEnabled(): Boolean = preferences.getInt(PREF_APP_AUTH, -1) != -1
 
-    fun onActivityCreated(activity: Activity) {
-        val reason = secureReasons.getOrPut(activity) {
-            FlagSecureReason(activity.window) { isEnabled() }
-        }
+    fun attachSecureWindow(window: Window?): FlagSecureReason? {
+        if (window == null) return null
+        val reason = FlagSecureReason(window) { isEnabled() }
+        secureReasons.add(reason)
         reason.attach()
-        reason.invalidate()
+        return reason
+    }
+
+    fun detachSecureWindow(reason: FlagSecureReason?) {
+        if (reason == null) return
+        secureReasons.remove(reason)
+        reason.detach()
+    }
+
+    fun onActivityCreated(activity: Activity) {
+        val reason = activitySecureReasons[activity]
+        if (reason == null) {
+            attachSecureWindow(activity.window)?.let { activitySecureReasons[activity] = it }
+        } else {
+            reason.invalidate()
+        }
+        if (activity is FragmentActivity && activity !in fragmentCallbacks) {
+            val callback =
+                object : FragmentManager.FragmentLifecycleCallbacks() {
+                    override fun onFragmentViewCreated(
+                        fm: FragmentManager,
+                        f: Fragment,
+                        v: View,
+                        savedInstanceState: Bundle?,
+                    ) {
+                        syncDialogFragmentWindow(activity, f)
+                    }
+
+                    @Deprecated("Deprecated in Java")
+                    override fun onFragmentActivityCreated(
+                        fm: FragmentManager,
+                        f: Fragment,
+                        savedInstanceState: Bundle?,
+                    ) {
+                        syncDialogFragmentWindow(activity, f)
+                    }
+
+                    override fun onFragmentStarted(
+                        fm: FragmentManager,
+                        f: Fragment,
+                    ) {
+                        syncDialogFragmentWindow(activity, f)
+                    }
+
+                    override fun onFragmentViewDestroyed(
+                        fm: FragmentManager,
+                        f: Fragment,
+                    ) {
+                        detachDialogFragmentWindow(f)
+                    }
+
+                    override fun onFragmentDestroyed(
+                        fm: FragmentManager,
+                        f: Fragment,
+                    ) {
+                        detachDialogFragmentWindow(f)
+                    }
+
+                    override fun onFragmentDetached(
+                        fm: FragmentManager,
+                        f: Fragment,
+                    ) {
+                        detachDialogFragmentWindow(f)
+                    }
+                }
+            fragmentCallbacks[activity] = callback
+            activity.supportFragmentManager.registerFragmentLifecycleCallbacks(callback, true)
+        }
     }
 
     fun onActivityStarted(activity: Activity) {
@@ -77,7 +160,18 @@ internal class AppAuthManager(
     }
 
     fun onActivityDestroyed(activity: Activity) {
-        secureReasons.remove(activity)?.detach()
+        activitySecureReasons.remove(activity)?.let(::detachSecureWindow)
+        if (activity is FragmentActivity) {
+            fragmentCallbacks.remove(activity)?.let(activity.supportFragmentManager::unregisterFragmentLifecycleCallbacks)
+            val iterator = dialogFragmentReasons.entries.iterator()
+            while (iterator.hasNext()) {
+                val tracked = iterator.next().value
+                if (tracked.host === activity) {
+                    iterator.remove()
+                    detachSecureWindow(tracked.reason)
+                }
+            }
+        }
         startedActivities.remove(activity)
         authActivities.remove(activity)
         if (activity is AppAuthActivity) pendingTasks.remove(activity.taskId)
@@ -120,13 +214,38 @@ internal class AppAuthManager(
         authActivities.clear()
     }
 
+    private fun syncDialogFragmentWindow(
+        host: FragmentActivity,
+        fragment: Fragment,
+    ) {
+        if (fragment !is DialogFragment) return
+        val window = fragment.dialog?.window ?: return
+        val existing = dialogFragmentReasons[fragment]
+        if (existing != null) {
+            if (existing.window === window) {
+                existing.reason.invalidate()
+                return
+            }
+            dialogFragmentReasons.remove(fragment)
+            detachSecureWindow(existing.reason)
+        }
+        attachSecureWindow(window)?.let { reason ->
+            dialogFragmentReasons[fragment] = TrackedDialog(host, window, reason)
+        }
+    }
+
+    private fun detachDialogFragmentWindow(fragment: Fragment) {
+        if (fragment !is DialogFragment) return
+        dialogFragmentReasons.remove(fragment)?.reason?.let(::detachSecureWindow)
+    }
+
     private fun invalidateSecureWindows() {
         val mainLooper = Looper.getMainLooper()
         if (Looper.myLooper() == mainLooper) {
-            secureReasons.values.toList().forEach(FlagSecureReason::invalidate)
+            secureReasons.toList().forEach(FlagSecureReason::invalidate)
         } else {
             Handler(mainLooper).post {
-                secureReasons.values.toList().forEach(FlagSecureReason::invalidate)
+                secureReasons.toList().forEach(FlagSecureReason::invalidate)
             }
         }
     }

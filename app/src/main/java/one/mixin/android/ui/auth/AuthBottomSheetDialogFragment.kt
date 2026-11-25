@@ -6,10 +6,10 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +49,7 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.FlagSecureReason
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.msg
@@ -114,19 +115,35 @@ class AuthBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
     private var errorContent by mutableStateOf("")
     private var savedScopes: List<String>? = null
+    private var pinSecure = false
+    private var flagSecureReason: FlagSecureReason? = null
+
+    private fun setPinSecure(secure: Boolean) {
+        pinSecure = secure
+        flagSecureReason?.invalidate()
+    }
 
     init {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 snapshotFlow { step }.collect { value ->
-                    if (value == AuthStep.INPUT) {
-                        dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                    } else {
-                        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                    }
+                    setPinSecure(value == AuthStep.INPUT)
                 }
             }
         }
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return super.onCreateDialog(savedInstanceState).also { createdDialog ->
+            flagSecureReason?.detach()
+            flagSecureReason = FlagSecureReason(createdDialog.window) { pinSecure }.apply { attach() }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        flagSecureReason?.detach()
+        flagSecureReason = null
     }
 
     @Composable
@@ -357,7 +374,7 @@ class AuthBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
             }
 
             override fun showPin() {
-                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                setPinSecure(true)
             }
 
             override fun onCancel() {}

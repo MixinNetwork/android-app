@@ -142,6 +142,9 @@ open class MixinApplication :
 
         fun get(): MixinApplication = appContext as MixinApplication
 
+        internal fun appAuthOrNull(): AppAuthManager? =
+            if (::appContext.isInitialized) (appContext as? MixinApplication)?.appAuth else null
+
         private const val CLOSE_SCOPE_TIMEOUT_MILLIS = 3_000L
     }
 
