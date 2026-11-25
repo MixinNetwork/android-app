@@ -19,6 +19,7 @@ import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.os.PowerManager
@@ -1766,6 +1767,38 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.sortAction()
     }
 
+    override fun onKeyShortcut(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_F && event?.isCtrlPressed == true) {
+            val hasOverlay =
+                supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG) != null ||
+                    supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG) != null ||
+                    supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG) != null
+            val conversationListFragment = findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)
+            if (!hasOverlay && conversationListFragment != null && conversationListFragment.isAdded && conversationListFragment.isVisible) {
+                conversationListFragment.openSearch()
+                return true
+            }
+        }
+        return super.onKeyShortcut(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_ESCAPE && event != null && !event.isCanceled && event.hasNoModifiers()) {
+            val conversationListFragment = findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)
+            val hasOverlay =
+                supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG) != null ||
+                    supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG) != null ||
+                    supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG) != null ||
+                    (conversationListFragment != null && conversationListFragment.isAdded && (conversationListFragment.isOpen() || conversationListFragment.containerDisplay()))
+            if (hasOverlay) {
+                @Suppress("DEPRECATION")
+                onBackPressed()
+                return true
+            }
+        }
+        return super.onKeyUp(keyCode, event)
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         val searchMessageFragment =
@@ -1867,7 +1900,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
         fun show(context: Context) {
             Intent(context, MainActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }.run {
                 context.startActivity(this)
             }
@@ -1876,7 +1909,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         fun getSingleIntent(context: Context): Intent {
             return Intent(context, MainActivity::class.java).apply {
                 addCategory(Intent.CATEGORY_LAUNCHER)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }
         }
 

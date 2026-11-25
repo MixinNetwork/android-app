@@ -173,7 +173,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         TipGas(currentChain.chainId, gasLimit, maxFeePerGas, maxPriorityFeePerGas)
     }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: typedDataChain ?: Web3Signer.currentChain
+        token?.getChainFromName() ?: signMessage.transactionChain ?: typedDataChain ?: Web3Signer.currentChain
     }
     // Typed data is signed for its domain's chain, which the page shows;
     // null for other messages, or typed data that names no supported chain.
@@ -402,7 +402,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         Web3Signer.evmAddress,
                         transaction,
                         currentTipGas,
-                        chain = token?.getChainFromName()
+                        chain = chain
                     ) { _ ->
                         val nonce = rpc.nonceAt(currentChain.assetId, Web3Signer.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
                         return@ethPreviewTransaction nonce
@@ -486,8 +486,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     settleSuccess("")
                 } else if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
-                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
-                    val pair = Web3Signer.ethSignTransaction(priv, transaction, tipGas!!, chain = token?.getChainFromName()) { address ->
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, currentChain.assetId)
+                    val pair = Web3Signer.ethSignTransaction(priv, transaction, tipGas!!, chain = currentChain) { address ->
                         val nonce = rpc.nonceAt(currentChain.assetId, address) ?: throw IllegalArgumentException("failed to get nonce")
                         return@ethSignTransaction nonce
                     }

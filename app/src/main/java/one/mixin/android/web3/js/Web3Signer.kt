@@ -251,9 +251,9 @@ object Web3Signer {
             else -> null
         }
 
-    fun useEvm() {
+    fun useEvm(chain: Chain = evmChainAfter(currentChain, lastEvmChain)) {
         address = evmAddress
-        currentChain = evmChainAfter(currentChain, lastEvmChain)
+        currentChain = chain
         currentNetwork = JsSignerNetwork.Ethereum.name
         persist()
     }

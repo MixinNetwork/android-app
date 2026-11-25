@@ -93,11 +93,9 @@ private fun AuthorizationsList(
                 }
             }
         }
+    val navigationController = LocalSettingNav.current
     LazyColumn {
-        items(filteredData, key = {
-            listOf(it.app.appId, keyword)
-        }) { item ->
-            val navigationController = LocalSettingNav.current
+        items(filteredData, key = { it.app.appId }, contentType = { "authentication" }) { item ->
             AuthenticationItem(item.app, keyword) {
                 navigationController.authorizationPermissions(item)
             }

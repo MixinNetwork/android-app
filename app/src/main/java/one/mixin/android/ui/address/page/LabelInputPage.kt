@@ -11,28 +11,32 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -48,10 +52,10 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.openUrl
-import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
@@ -60,6 +64,8 @@ import one.mixin.android.vo.safe.TokenItem
 fun LabelInputPage(
     token: TokenItem?,
     web3Token: Web3TokenItem?,
+    networkName: String,
+    networkIconUrl: String?,
     address: String,
     memo: String?,
     contentText: String = "",
@@ -70,7 +76,13 @@ fun LabelInputPage(
     val context = LocalContext.current
     val clipboard = LocalClipboard.current
     val coroutineScope = rememberCoroutineScope()
-    var label by remember(contentText) { mutableStateOf(contentText) }
+    val labelState = rememberTextFieldState(initialText = contentText)
+    LaunchedEffect(contentText) {
+        if (labelState.text.toString() != contentText) {
+            labelState.setTextAndPlaceCursorAtEnd(contentText)
+        }
+    }
+    val label = labelState.text.toString()
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
         awaitFrame()
@@ -102,7 +114,7 @@ fun LabelInputPage(
                 .padding(horizontal = 16.dp)
         ) {
             Column(modifier = Modifier.imePadding()) {
-                TokenInfoHeader(token = token, web3Token = web3Token)
+                Spacer(modifier = Modifier.height(10.dp))
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -112,27 +124,13 @@ fun LabelInputPage(
                             cornerRadius = 8.dp
                         ),
                 ) {
-                    OutlinedTextField(
-                        value = label,
-                        onValueChange = { label = it },
+                    BasicTextField(
+                        state = labelState,
                         modifier = Modifier
+                            .fillMaxWidth()
                             .height(120.dp)
                             .focusRequester(focusRequester),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            backgroundColor = Color.Transparent,
-                            textColor = MixinAppTheme.colors.textPrimary,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedBorderColor = Color.Transparent,
-                            cursorColor = MixinAppTheme.colors.textBlue
-                        ),
-                        placeholder = {
-                            Text(
-                                text = stringResource(R.string.withdrawal_label_placeholder),
-                                color = MixinAppTheme.colors.textAssist,
-                                fontSize = 14.sp,
-                                lineHeight = 20.sp
-                            )
-                        },
+                        cursorBrush = SolidColor(MixinAppTheme.colors.textBlue),
                         textStyle = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 20.sp,
@@ -142,14 +140,30 @@ fun LabelInputPage(
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
                         ),
-                        minLines = 3,
-                        maxLines = 3
+                        lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 3, maxHeightInLines = 3),
+                        decorator = { innerTextField ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
+                            ) {
+                                if (label.isEmpty()) {
+                                    Text(
+                                        text = stringResource(R.string.withdrawal_label_placeholder),
+                                        color = MixinAppTheme.colors.textAssist,
+                                        fontSize = 14.sp,
+                                        lineHeight = 20.sp
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        },
                     )
 
                     if (label.isNotBlank()) {
                         IconButton(
                             onClick = {
-                                label = ""
+                                labelState.clearText()
                             }, modifier = Modifier.align(Alignment.BottomEnd)
                         ) {
                             Icon(
@@ -164,7 +178,7 @@ fun LabelInputPage(
                                 onClick = {
                                     coroutineScope.launch {
                                         clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
-                                            label = it
+                                            labelState.setTextAndPlaceCursorAtEnd(it)
                                         }
                                     }
                                 }
@@ -190,32 +204,13 @@ fun LabelInputPage(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp)
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(address, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, textAlign = TextAlign.End)
-                }
-                if (memo.isNullOrBlank().not()) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Text(
-                            stringResource(if (token?.assetId == RIPPLE_CHAIN_ID) R.string.Tag else R.string.Memo),
-                            color = MixinAppTheme.colors.textAssist,
-                            fontSize = 14.sp, lineHeight = 17.sp
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(memo, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, textAlign = TextAlign.End)
-                    }
-                }
+                AddressInfoRows(
+                    networkName = networkName,
+                    networkIconUrl = networkIconUrl,
+                    address = address,
+                    memoTitle = if (token?.assetId == RIPPLE_CHAIN_ID) R.string.Tag else R.string.Memo,
+                    memo = memo,
+                )
 
                 Spacer(modifier = Modifier.weight(1f))
 
@@ -249,6 +244,46 @@ fun LabelInputPage(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
+        }
+    }
+}
+
+@Composable
+internal fun AddressInfoRows(
+    networkName: String,
+    networkIconUrl: String?,
+    address: String,
+    memoTitle: Int,
+    memo: String?,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.network), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp)
+            Spacer(modifier = Modifier.weight(1f))
+            CoilImage(networkIconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(18.dp).clip(CircleShape))
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(networkName, color = MixinAppTheme.colors.textMinor, fontSize = 14.sp, lineHeight = 17.sp)
+        }
+        Row(verticalAlignment = Alignment.Top) {
+            Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp)
+            Spacer(modifier = Modifier.width(68.dp))
+            Text(address, modifier = Modifier.weight(1f), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp, lineHeight = 17.sp, textAlign = TextAlign.End)
+        }
+        if (memo.isNullOrBlank().not()) {
+            Row(verticalAlignment = Alignment.Top) {
+                Text(
+                    stringResource(memoTitle),
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 14.sp, lineHeight = 17.sp
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(memo, modifier = Modifier.weight(1f), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp, lineHeight = 17.sp, textAlign = TextAlign.End)
+            }
         }
     }
 }

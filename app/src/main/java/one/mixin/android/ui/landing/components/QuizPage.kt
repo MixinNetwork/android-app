@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,7 +55,7 @@ fun QuizPage(
 ) {
     val context = LocalContext.current
     val whatIsPinUrl = stringResource(R.string.What_is_Pin_url)
-    var selectedOption by remember { mutableStateOf(-1) }
+    var selectedOption by rememberSaveable { mutableStateOf(-1) }
     var isCorrectAnswer by remember { mutableStateOf(false) }
 
         PageScaffold(

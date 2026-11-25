@@ -85,10 +85,6 @@ class GalleryActivity :
         binding = ActivityGalleryBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (mSpec.needOrientationRestriction()) {
-            requestedOrientation = mSpec.orientation
-        }
-
         if (mSpec.capture) {
             mMediaStoreCompat = MediaStoreCompat(this)
             if (mSpec.captureStrategy == null) {

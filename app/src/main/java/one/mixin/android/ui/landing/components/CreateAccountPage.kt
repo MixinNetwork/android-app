@@ -6,10 +6,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -25,8 +27,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.widget.components.MaterialWindowButton
@@ -75,53 +75,49 @@ fun CreateAccountPage(
 @Composable
 fun CreateItem(@DrawableRes iconId: Int, @StringRes titleId: Int, @StringRes subTitleId: Int, @StringRes highlightTextId: Int, onClick: () -> Unit, highlightClick: (String) -> Unit) {
     val shape = RoundedCornerShape(8.dp)
-    ConstraintLayout(
+    Row(
         modifier = Modifier
-            .clip(
-                shape
-            )
+            .clip(shape)
             .clickable(onClick = onClick)
             .fillMaxWidth()
             .background(MixinAppTheme.colors.background)
             .border(1.dp, MixinAppTheme.colors.borderColor, shape)
-            .padding(vertical = 20.dp)
+            .padding(20.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        val (starIcon, title, subtitle, endIcon) = createRefs()
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Icon(
+                painter = painterResource(iconId),
+                contentDescription = null,
+                tint = Color.Unspecified,
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    stringResource(titleId),
+                    lineHeight = 16.sp,
+                    fontWeight = FontWeight.W600,
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 16.sp,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                HighlightedTextWithClick(
+                    stringResource(subTitleId, stringResource(highlightTextId)),
+                    modifier = Modifier.fillMaxWidth(),
+                    stringResource(highlightTextId),
+                    textAlign = TextAlign.Start,
+                    onTextClick = highlightClick,
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(20.dp))
         Icon(
-            modifier = Modifier.constrainAs(starIcon) {
-                top.linkTo(parent.top)
-                start.linkTo(parent.start, 20.dp)
-            },
-            painter = painterResource(iconId),
-            contentDescription = null,
-            tint = Color.Unspecified
-        )
-        Icon(
-            modifier = Modifier.constrainAs(endIcon) {
-                top.linkTo(parent.top)
-                end.linkTo(parent.end, 20.dp)
-                bottom.linkTo(parent.bottom)
-            },
             painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
-            tint = Color.Unspecified
-        )
-        Text(
-            stringResource(titleId), modifier = Modifier.constrainAs(title) {
-                top.linkTo(starIcon.top)
-                start.linkTo(starIcon.end, 16.dp)
-            },
-            lineHeight = 16.sp,
-            fontWeight = FontWeight.W600, color = MixinAppTheme.colors.textPrimary, fontSize = 16.sp
-        )
-        HighlightedTextWithClick(
-            stringResource(subTitleId, stringResource(highlightTextId)),
-            modifier = Modifier.constrainAs(subtitle) {
-                top.linkTo(title.bottom, 8.dp)
-                linkTo(title.start, endIcon.start, endMargin = 20.dp, bias = 0f)
-                width = Dimension.fillToConstraints
-            }, stringResource(highlightTextId),
-            textAlign = TextAlign.Start, onTextClick = highlightClick
+            tint = Color.Unspecified,
         )
     }
 }

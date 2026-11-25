@@ -75,23 +75,32 @@ class NavigationController() {
                 .add(R.id.container_search, searchFragment, SearchFragment.TAG)
                 .commitAllowingStateLoss()
         } else {
-            searchFragment.view?.isVisible = true
-            searchFragment.view?.animate()?.alpha(1f)?.start()
+            searchFragment.view?.let { view ->
+                view.animate().setListener(null).cancel()
+                view.isVisible = true
+                view.animate().alpha(1f).start()
+            }
         }
     }
 
     fun hideSearch(fragmentManager: FragmentManager) {
-        val f = fragmentManager.findFragmentByTag(SearchFragment.TAG)
-        f?.view?.animate()?.apply {
+        val f = fragmentManager.findFragmentByTag(SearchFragment.TAG) ?: return
+        val view = f.view
+        if (view == null) {
+            fragmentManager.beginTransaction().remove(f).commitAllowingStateLoss()
+            return
+        }
+        view.animate().setListener(null).cancel()
+        view.animate().apply {
             setListener(
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         setListener(null)
-                        f.view?.isVisible = false
+                        view.isVisible = false
                     }
                 },
             )
-        }?.alpha(0f)?.start()
+        }.alpha(0f).start()
     }
 
     fun removeSearch(fragmentManager: FragmentManager) {

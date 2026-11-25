@@ -59,7 +59,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.wc.SigningWalletPrecheck
@@ -369,7 +369,7 @@ class WalletConnectPayBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     }
 
     override fun getBottomSheetHeight(view: View): Int =
-        requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
 
     override fun showError(error: String) {}
 

@@ -202,7 +202,11 @@ fun AuthBottomSheetDialogCompose(
                                 .background(MixinAppTheme.colors.backgroundWindow)
                                 .verticalScrollbar(state, color = Color(0x99E5E7EB)),
                     ) {
-                        items(scopes) { scope ->
+                        items(
+                            items = scopes,
+                            key = { it.source },
+                            contentType = { "scope_item" },
+                        ) { scope ->
                             ScopeCheckLayout(scope, savedScopes.contains(scope)) { checked ->
                                 if (checked) {
                                     savedScopes.add(scope)
@@ -283,7 +287,11 @@ fun ScopesContent(
                             .clip(shape = RoundedCornerShape(8.dp))
                             .background(MixinAppTheme.colors.backgroundWindow),
                 ) {
-                    items(scopeItems) { scope ->
+                    items(
+                        items = scopeItems,
+                        key = { it.source },
+                        contentType = { "scope_item" },
+                    ) { scope ->
                         ScopeCheckLayout(scope, scopes.contains(scope)) { checked ->
                             if (checked) {
                                 scopes.add(scope)

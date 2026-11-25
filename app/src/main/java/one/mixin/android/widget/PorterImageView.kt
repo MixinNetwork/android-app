@@ -11,8 +11,8 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
-import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.screenWidth
+import one.mixin.android.extension.windowHeight
+import one.mixin.android.extension.windowWidth
 import timber.log.Timber
 
 abstract class PorterImageView : AppCompatImageView {
@@ -82,7 +82,7 @@ abstract class PorterImageView : AppCompatImageView {
         oldh: Int = 0,
     ) {
         val sizeChanged = width != oldw || height != oldh
-        val isValid = width > 0 && height > 0 && width < context.screenWidth() && height < context.screenHeight()
+        val isValid = width > 0 && height > 0 && width < context.windowWidth() && height < context.windowHeight()
         if (isValid && (maskCanvas == null || sizeChanged)) {
             maskCanvas = Canvas()
             maskBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)

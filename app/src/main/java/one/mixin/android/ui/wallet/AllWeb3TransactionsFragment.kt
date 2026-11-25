@@ -45,6 +45,9 @@ import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_GOOD_AND_UN
 import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_MASK
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.AddressItem
+import one.mixin.android.vo.Recipient
+import one.mixin.android.vo.toAddressItem
 import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.web3.details.navigateToWeb3Transaction
 import one.mixin.android.web3.details.openWeb3AssetTransactions
@@ -53,7 +56,7 @@ import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
 @AndroidEntryPoint
-class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_transactions) {
+class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_transactions), MultiSelectRecipientsListBottomSheetDialogFragment.DataProvider {
     companion object {
         const val TAG = "AllTransactionsFragment"
         const val ARGS_TOKEN = "args_token"
@@ -159,7 +162,13 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_a
             filterAsset.setOnClickListener {
                 selectAsset()
             }
-            filterUser.isVisible = false
+            filterUser.setOnClickListener {
+                filterUser.open()
+                multiSelectRecipientsListBottomSheetDialogFragment.showNow(
+                    parentFragmentManager,
+                    MultiSelectRecipientsListBottomSheetDialogFragment.TAG,
+                )
+            }
             filterReputation.setOnClickListener {
                 val builder = BottomSheet.Builder(requireActivity())
                 val viewBinding = ViewReputationBottomBinding.inflate(
@@ -227,6 +236,10 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_a
         binding.apply {
             filterType.updateWeb3TokenFilterType(filterParams.tokenFilterType)
             filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
+            filterUser.updateUsers(
+                R.string.Opponents,
+                filterParams.addresses ?: filterParams.address?.let { listOf(it.toAddressItem()) },
+            )
             filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
             filterReputation.updateLevel(getString(R.string.Reputation), filterParams.level)
             titleView.setSubTitle(
@@ -413,5 +426,26 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_a
                     return filterParams.tokenItems ?: emptyList()
                 }
             })
+    }
+
+    private val multiSelectRecipientsListBottomSheetDialogFragment by lazy {
+        MultiSelectRecipientsListBottomSheetDialogFragment.newInstance(addressOnly = true)
+            .setDateProvider(this@AllWeb3TransactionsFragment)
+            .setOnMultiSelectUserListener(object : MultiSelectRecipientsListBottomSheetDialogFragment.OnMultiSelectRecipientListener {
+                override fun onRecipientSelect(users: List<Recipient>?) {
+                    binding.filterUser.close()
+                    filterParams.addresses = users?.filterIsInstance<AddressItem>()?.takeIf { it.isNotEmpty() }
+                    filterParams.address = null
+                    loadFilter()
+                }
+
+                override fun onDismiss() {
+                    binding.filterUser.close()
+                }
+            })
+    }
+
+    override fun getCurrentRecipients(): List<Recipient> {
+        return filterParams.addresses ?: filterParams.address?.let { listOf(it.toAddressItem()) } ?: emptyList()
     }
 }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -18,6 +19,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLandingBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
@@ -83,6 +85,7 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         binding.featurePager.adapter = LandingFeatureAdapter(features)
         binding.featurePager.offscreenPageLimit = features.size
         
+        var lastIndicatorHeight = 0
         binding.root.addOnLayoutChangeListener { _, _, top, _, bottom, _, _, _, _ ->
             val height = bottom - top
             if (height > 0) {
@@ -90,10 +93,25 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
                 val basePercent = if (heightDp <= 700) 0.35f else 0.48f
                 val percent = basePercent + 156f / heightDp
                 val params = binding.featurePager.layoutParams as ConstraintLayout.LayoutParams
-                if (params.matchConstraintPercentHeight != percent) {
-                    params.matchConstraintPercentHeight = percent
-                    params.height = 0
-                    binding.featurePager.layoutParams = params
+                val indicatorParams = binding.featureIndicator.layoutParams as ConstraintLayout.LayoutParams
+                // Keep the indicator clear of the bottom buttons on short windows
+                val indicatorHeight = binding.featureIndicator.height.takeIf { it > 0 }
+                    ?.also { lastIndicatorHeight = it }
+                    ?: lastIndicatorHeight.takeIf { it > 0 }
+                    ?: resources.getDimensionPixelSize(R.dimen.landing_indicator_dot_size)
+                val available = binding.createTv.top - params.bottomMargin - indicatorParams.topMargin -
+                    indicatorHeight - 16.dp
+                if (available <= 0) {
+                    binding.featurePager.isVisible = false
+                    binding.featureIndicator.isVisible = false
+                } else {
+                    binding.featurePager.isVisible = true
+                    binding.featureIndicator.isVisible = true
+                    val target = minOf((height * percent).toInt(), available).coerceAtLeast(1)
+                    if (params.height != target) {
+                        params.height = target
+                        binding.featurePager.layoutParams = params
+                    }
                 }
             }
         }
@@ -144,15 +162,15 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         binding.featureIndicator.getTabAt(binding.featurePager.currentItem)?.customView?.isSelected = true
         binding.featureIndicator.addOnTabSelectedListener(
             object : TabLayout.OnTabSelectedListener {
-                override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+                override fun onTabSelected(tab: TabLayout.Tab) {
                     tab.customView?.isSelected = true
                 }
 
-                override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+                override fun onTabUnselected(tab: TabLayout.Tab) {
                     tab.customView?.isSelected = false
                 }
 
-                override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+                override fun onTabReselected(tab: TabLayout.Tab) {
                 }
             }
         )

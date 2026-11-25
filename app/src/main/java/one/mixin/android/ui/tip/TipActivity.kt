@@ -12,7 +12,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_SHOULD_WATCH
 import one.mixin.android.ui.tip.TipFragment.Companion.ARGS_TIP_BUNDLE
 import one.mixin.android.util.viewBinding
@@ -54,7 +56,13 @@ class TipActivity : BaseActivity() {
     private val binding by viewBinding(ActivityContactBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        val hasAccount = Session.getAccount() != null
+        super.onCreate(if (hasAccount) savedInstanceState else null)
+        if (!hasAccount) {
+            LandingActivity.show(this)
+            finish()
+            return
+        }
         setContentView(binding.root)
         val tipBundle = intent.getTipBundle()
         val shouldWatch = intent.getBooleanExtra(ARGS_SHOULD_WATCH, false)

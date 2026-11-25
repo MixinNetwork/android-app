@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -37,10 +38,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Cyan
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -315,7 +316,7 @@ fun ParsedTxPreview(
                     }
                 }
                 val viewDetails = remember { mutableStateOf(false) }
-                val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
+                val rotation = animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
                 if (solanaTxSource != null && !solanaTxSource.isInnerTx()) {
                     Row(
                         modifier = Modifier
@@ -327,7 +328,7 @@ fun ParsedTxPreview(
                             painter = painterResource(R.drawable.ic_play_arrow),
                             modifier = Modifier
                                 .size(24.dp, 24.dp)
-                                .rotate(rotation),
+                                .graphicsLayer { rotationZ = rotation.value },
                             contentDescription = null,
                             tint = MixinAppTheme.colors.accent,
                         )
@@ -591,8 +592,12 @@ private fun Instructions(
     LazyColumn(
         modifier = Modifier.height(200.dp)
     ) {
-        items(instructions.size) { i ->
-            Instruction(instruction = instructions[i])
+        itemsIndexed(
+            items = instructions,
+            key = { index, _ -> index },
+            contentType = { _, _ -> "instruction" },
+        ) { _, instruction ->
+            Instruction(instruction = instruction)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }

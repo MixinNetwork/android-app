@@ -49,16 +49,12 @@ fun PriceInfo(
     exchangeRate: BigDecimal,
     onPriceExpired: () -> Unit
 ) {
-    var isPriceReverse by remember {
+    var isPriceReverse by remember(fromToken.assetId, toToken?.assetId) {
         mutableStateOf(
-            false
+            fromToken.assetId in Constants.AssetId.usdcAssets || fromToken.assetId in Constants.AssetId.usdtAssets
         )
     }
     var quoteCountDown by remember { mutableFloatStateOf(0f) }
-
-    LaunchedEffect("${fromToken.assetId}-${toToken?.assetId}") {
-        isPriceReverse = fromToken.assetId in Constants.AssetId.usdcAssets || fromToken.assetId in Constants.AssetId.usdtAssets
-    }
 
     LaunchedEffect("${fromToken.assetId}-${toToken?.assetId}-${exchangeRate}") {
         while (isActive) {

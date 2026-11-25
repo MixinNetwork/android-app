@@ -34,8 +34,12 @@ class CollectionActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val collection = intent.getParcelableExtraCompat(ARGS_COLLECTION, SafeCollection::class.java)
+        if (collection == null) {
+            finish()
+            return
+        }
         setContentView(R.layout.activity_contact)
-        val collection = intent.getParcelableExtraCompat(ARGS_COLLECTION, SafeCollection::class.java)!!
         jobManager.addJobInBackground(SyncInscriptionCollectionJob(collection.collectionHash))
         supportFragmentManager.beginTransaction().add(
             R.id.container,
