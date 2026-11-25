@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 
 @Composable
 fun SearchTextField(
@@ -32,9 +35,9 @@ fun SearchTextField(
     backgroundColor: Color = MixinAppTheme.colors.backgroundWindow,
     hint: String = stringResource(R.string.Search),
 ) {
+    val textFieldState = rememberSyncedTextFieldState(value, onValueChange)
     BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
+        state = textFieldState,
         modifier = modifier
             .background(
                 backgroundColor,
@@ -45,9 +48,9 @@ fun SearchTextField(
             fontSize = 14.sp,
             color = MixinAppTheme.colors.textPrimary
         ),
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
         cursorBrush = SolidColor(MixinAppTheme.colors.textBlue),
-        decorationBox = { innerTextField ->
+        decorator = { innerTextField ->
             Row(
                 modifier = Modifier
                     .padding(horizontal = 12.dp)
@@ -66,7 +69,7 @@ fun SearchTextField(
                         .padding(horizontal = 8.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    if (value.isEmpty()) {
+                    if (textFieldState.text.isEmpty()) {
                         Text(
                             hint,
                             color = MixinAppTheme.colors.textAssist,
@@ -75,9 +78,9 @@ fun SearchTextField(
                     }
                     innerTextField()
                 }
-                if (value.isNotEmpty()) {
+                if (textFieldState.text.isNotEmpty()) {
                     IconButton(
-                        onClick = { onValueChange("") },
+                        onClick = { textFieldState.clearText() },
                         modifier = Modifier.size(16.dp)
                     ) {
                         Icon(

@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.google.gson.Gson
 import com.reown.walletkit.client.Wallet
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -133,19 +134,20 @@ fun SessionRequestPage(
 
 
     LaunchedEffect(Unit) {
-        try {
-            val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
-            walletName = wallet?.name?.takeIf { it.isNotEmpty() } ?: commonWallet
-        } catch (e: Exception) {
-            walletName = commonWallet
+        launch {
+            try {
+                val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)
+                walletName = wallet?.name?.takeIf { it.isNotEmpty() } ?: commonWallet
+            } catch (e: Exception) {
+                walletName = commonWallet
+            }
         }
-    }
-
-    LaunchedEffect(Unit) {
-        try {
-            chainToken = viewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId = chain.assetId)
-        } catch (e: Exception) {
-            Timber.e(e)
+        launch {
+            try {
+                chainToken = viewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId = chain.assetId)
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
         }
     }
 

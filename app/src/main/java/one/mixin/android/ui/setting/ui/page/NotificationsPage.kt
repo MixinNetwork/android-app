@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Scaffold
@@ -38,10 +39,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -432,15 +431,7 @@ private fun EditDialog(
     text: String = "",
     onConfirm: (String) -> Unit = {},
 ) {
-    val inputText =
-        remember {
-            mutableStateOf(
-                TextFieldValue(
-                    text = text,
-                    selection = TextRange(text.length),
-                ),
-            )
-        }
+    val inputState = rememberTextFieldState(initialText = text)
     Column(
         modifier =
             Modifier
@@ -478,8 +469,7 @@ private fun EditDialog(
         }
 
         BasicTextField(
-            value = inputText.value,
-            onValueChange = { inputText.value = it },
+            state = inputState,
             modifier =
                 Modifier
                     .fillMaxWidth()
@@ -496,27 +486,32 @@ private fun EditDialog(
                     color = MixinAppTheme.colors.textPrimary,
                 ),
             cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-        ) { innerTextField ->
-            Box(contentAlignment = Alignment.CenterStart) {
-                innerTextField()
-                if (text.isEmpty()) {
-                    Text(
-                        text = hint,
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textAssist,
+            decorator = { innerTextField ->
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Box(
+                        modifier = Modifier.align(Alignment.CenterStart),
+                        contentAlignment = Alignment.CenterStart,
+                    ) {
+                        innerTextField()
+                        if (inputState.text.isEmpty()) {
+                            Text(
+                                text = hint,
+                                fontSize = 14.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                            )
+                        }
+                    }
+                    Box(
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomCenter)
+                                .height(1.5.dp)
+                                .fillMaxWidth()
+                                .background(color = if (hasFocus) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist),
                     )
                 }
-            }
-            Box(contentAlignment = Alignment.BottomCenter) {
-                Box(
-                    modifier =
-                        Modifier
-                            .height(1.5.dp)
-                            .fillMaxWidth()
-                            .background(color = if (hasFocus) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist),
-                )
-            }
-        }
+            },
+        )
 
         Row {
             Spacer(Modifier.weight(1f))
@@ -536,7 +531,7 @@ private fun EditDialog(
             TextButton(onClick = {
                 keyboardController?.hide()
                 onClose()
-                onConfirm(inputText.value.text)
+                onConfirm(inputState.text.toString())
             }) {
                 Text(
                     text = stringResource(R.string.Save),

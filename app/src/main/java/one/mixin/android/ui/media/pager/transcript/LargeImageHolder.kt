@@ -7,7 +7,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.screenWidth
+import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.toBitmap
 import one.mixin.android.extension.toBytes
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
@@ -59,8 +59,8 @@ class LargeImageHolder(itemView: View) : MediaPagerHolder(itemView) {
                 mediaPagerAdapterListener.onCircleProgressClick(messageItem)
             }
         }
-        if (messageItem.mediaWidth!! < context.screenWidth()) {
-            imageView.scale = (context.screenWidth().toFloat() / messageItem.mediaWidth)
+        if (messageItem.mediaWidth!! < context.windowWidth()) {
+            imageView.scale = (context.windowWidth().toFloat() / messageItem.mediaWidth)
         }
         if (needPostTransition) {
             ViewCompat.setTransitionName(imageView, "transition")

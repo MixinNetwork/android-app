@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -26,9 +27,11 @@ import kotlinx.coroutines.Job
 
 @AndroidEntryPoint
 class ConversationActivity : BlazeBaseActivity() {
+    private var suppressHomeFallbackOnFinish = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (ConversationEmbedding.routeRootConversation(this)) return
+        if (ConversationEmbedding.routeRootConversation(this) { suppressHomeFallbackOnFinish = true }) return
         setContentView(R.layout.activity_chat)
         if (savedInstanceState == null) {
             if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
@@ -49,8 +52,25 @@ class ConversationActivity : BlazeBaseActivity() {
         showConversation(intent)
     }
 
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_ESCAPE && event != null && !event.isCanceled && event.hasNoModifiers()) {
+            onBackPressedDispatcher.onBackPressed()
+            return true
+        }
+        return super.onKeyUp(keyCode, event)
+    }
+
+    override fun onBackPressedAtRoot(): Boolean {
+        if (!shouldReturnToMainOnExit(isTaskRoot, Session.checkToken(), suppressHomeFallbackOnFinish)) {
+            return false
+        }
+        finish()
+        return true
+    }
+
     override fun finish() {
-        if (intent.getBooleanExtra(ARGS_SHORTCUT, false)) {
+        if (shouldReturnToMainOnExit(isTaskRoot, Session.checkToken(), suppressHomeFallbackOnFinish)) {
+            suppressHomeFallbackOnFinish = true
             MainActivity.show(this)
         }
         super.finish()
@@ -102,6 +122,12 @@ class ConversationActivity : BlazeBaseActivity() {
     companion object {
         private const val ARGS_FAST_SHOW = "args_fast_show"
         const val ARGS_SHORTCUT = "args_shortcut"
+
+        internal fun shouldReturnToMainOnExit(
+            isTaskRoot: Boolean,
+            hasSession: Boolean,
+            suppressHomeFallback: Boolean,
+        ): Boolean = !suppressHomeFallback && hasSession && isTaskRoot
 
         fun fastShow(
             context: Context,

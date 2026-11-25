@@ -94,9 +94,7 @@ private fun ConnectionList(
             }
         }
     LazyColumn {
-        items(filteredData, key = {
-            listOf(it.index, keyword)
-        }) { item ->
+        items(filteredData, key = { it.index }, contentType = { "connection" }) { item ->
             ConnectionItem(item, keyword) {
                 toDetails.invoke(item.index)
             }

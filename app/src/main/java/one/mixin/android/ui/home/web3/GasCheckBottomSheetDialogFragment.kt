@@ -271,7 +271,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
     private val toAddress: String? by lazy { requireArguments().getString(ARGS_TO_ADDRESS) }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: Web3Signer.currentChain
+        token?.getChainFromName() ?: signMessage.transactionChain ?: Web3Signer.currentChain
     }
 
     private val viewModel by viewModels<BrowserWalletBottomSheetViewModel>()

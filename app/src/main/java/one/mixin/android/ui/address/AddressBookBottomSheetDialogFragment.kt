@@ -104,6 +104,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             val addresses by addressFlow.collectAsStateWithLifecycle(initialValue = null)
             val addressBookState by viewModel.addressBookState.collectAsStateWithLifecycle()
             val chains = addressBookState?.chains.orEmpty()
+            val chainMap = remember(chains) { chains.associateBy { it.chainId } }
             // Common wallets only show the networks they support, the privacy wallet shows all
             val walletChainIds = addressBookState?.walletChainIds
             val networks = remember(addressBookState) {
@@ -152,7 +153,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 }
                 Row(
                     modifier = Modifier
-                        .padding(start = 20.dp, top = 16.dp, bottom = 8.dp)
+                        .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 8.dp)
                         .clip(RoundedCornerShape(24.dp))
                         .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor, cornerRadius = 24.dp)
                         .clickable {
@@ -168,16 +169,23 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (selectedChainIds.size == 1) {
-                        AddressBookNetwork(selectedChainIds.first(), chains.firstOrNull { it.chainId == selectedChainIds.first() }, MixinAppTheme.colors.textPrimary)
+                        AddressBookNetwork(selectedChainIds.first(), chainMap[selectedChainIds.first()], MixinAppTheme.colors.textPrimary)
                     } else {
                         if (selectedChainIds.size > 1) {
-                            Row(horizontalArrangement = Arrangement.spacedBy((-4).dp)) {
-                                selectedChainIds.take(2).forEach { chainId ->
-                                    CoilImage(
-                                        chains.firstOrNull { it.chainId == chainId }?.iconUrl,
-                                        R.drawable.ic_avatar_place_holder,
-                                        Modifier.size(16.dp).clip(CircleShape),
-                                    )
+                            Row(horizontalArrangement = Arrangement.spacedBy((-10).dp)) {
+                                selectedChainIds.take(MAX_NETWORK_FILTER_ICONS).forEach { chainId ->
+                                    Box(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .background(MixinAppTheme.colors.background, CircleShape)
+                                            .padding(1.dp),
+                                    ) {
+                                        CoilImage(
+                                            chainMap[chainId]?.iconUrl,
+                                            R.drawable.ic_avatar_place_holder,
+                                            Modifier.size(18.dp).clip(CircleShape),
+                                        )
+                                    }
                                 }
                             }
                             Spacer(Modifier.width(4.dp))
@@ -185,8 +193,11 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         Text(
                             if (selectedChainIds.isEmpty()) stringResource(R.string.All_Networks)
                             else stringResource(R.string.number_of_networks, selectedChainIds.size),
+                            modifier = Modifier.weight(1f, fill = false),
                             color = MixinAppTheme.colors.textPrimary,
                             fontSize = 14.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                     Spacer(Modifier.width(6.dp))
@@ -214,8 +225,8 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        items(filteredAddresses, key = { it.addressId }) { address ->
-                            AddressBookCardWithDelete(address, chains.firstOrNull { it.chainId == address.chainId }, onClick = {
+                        items(filteredAddresses, key = { it.addressId }, contentType = { "address" }) { address ->
+                            AddressBookCardWithDelete(address, chainMap[address.chainId], onClick = {
                                 requireView().hideKeyboard()
                                 WalletActivity.showAddressBookDetail(requireActivity(), address, walletId)
                             }, onDelete = {
@@ -263,6 +274,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
 
     companion object {
         const val TAG = "AddressBookBottomSheetDialogFragment"
+        private const val MAX_NETWORK_FILTER_ICONS = 10
 
         fun newInstance(walletId: String?) = AddressBookBottomSheetDialogFragment().withArgs {
             putString(WalletActivity.ARGS_WALLET_ID, walletId)

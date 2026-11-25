@@ -871,6 +871,7 @@
     <string name="free_inheritance_service">Perkhidmatan Pewarisan Percuma</string>
     <string name="membership_benefit_free_inheritance_service">Gunakan perkhidmatan pewarisan secara percuma.</string>
     <string name="membership_renew_option_card_desc">Gunakan Google Pay, kad kredit atau debit untuk memperbaharui pelan anda.</string>
+    <string name="membership_renew_option_crypto">Kripto</string>
     <string name="membership_renew_option_crypto_desc">Gunakan USDT, USDC atau kripto lain untuk memperbaharui pelan anda.</string>
     <string name="changed_disappearing_message_settings_read_only">%1$s menukar tetapan mesej menghilang. Ketik untuk mengetahui lebih lanjut.</string>
     <string name="changed_disappearing_message_settings_editable">%1$s menukar tetapan mesej menghilang. Ketik untuk menukar tetapan atau mengetahui lebih lanjut.</string>

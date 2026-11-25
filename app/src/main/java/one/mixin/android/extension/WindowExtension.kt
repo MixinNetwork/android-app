@@ -1,7 +1,11 @@
 package one.mixin.android.extension
 
+import android.app.Activity
+import android.app.Application
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageManager
+import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.view.WindowInsets
 import android.view.View
@@ -55,11 +59,25 @@ fun WindowInsets.getSystemWindowRight(): Int {
     }
 }
 
+private fun Context.windowMetricsContext(): Context {
+    var ctx = this
+    while (ctx is ContextWrapper) {
+        if (ctx is Activity || ctx is InputMethodService || ctx is Application) {
+            return ctx
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ctx.isUiContext) {
+            return ctx
+        }
+        ctx = ctx.baseContext
+    }
+    return applicationContext ?: this
+}
+
 fun Context.windowWidth(): Int =
-    WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(this).bounds.width()
+    WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(windowMetricsContext()).bounds.width()
 
 fun Context.windowHeight(): Int =
-    WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(this).bounds.height()
+    WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(windowMetricsContext()).bounds.height()
 
 fun RecyclerView.refreshHoldersOnWidthChange() {
     var wasCompact = context.isCompactMessageWindow()
@@ -112,6 +130,6 @@ internal fun Context.isPhoneLandscape(): Boolean {
 
 // The current window's short side, so phones in either orientation and a folded cover screen stay compact.
 fun Context.isCompactWindow(): Boolean {
-    val bounds = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(this).bounds
+    val bounds = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(windowMetricsContext()).bounds
     return minOf(bounds.width(), bounds.height()) / resources.displayMetrics.density < 600f
 }

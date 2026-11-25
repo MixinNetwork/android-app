@@ -17,6 +17,7 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.widget.TooltipCompat
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
@@ -34,7 +35,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
 import one.mixin.android.extension.withAlpha
@@ -72,9 +73,7 @@ class MaterialSearchView : FrameLayout {
         initSearchView()
     }
 
-    private val containerHeight by lazy {
-        context.screenHeight() * 0.7f
-    }
+    private fun containerHeight(): Int = (context.windowHeight() * 0.7f).toInt()
 
     @Suppress("unused")
     val currentQuery: String
@@ -143,10 +142,26 @@ class MaterialSearchView : FrameLayout {
     }
 
     @SuppressLint("CheckResult")
+    private fun updateContainerHeight() {
+        (binding.containerCircle.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight = containerHeight()
+        binding.containerShadow.layoutParams.height = context.windowHeight()
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        if (h != oldh) {
+            updateContainerHeight()
+        }
+    }
+
     private fun initSearchView() {
-        (binding.containerCircle.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight =
-            containerHeight.toInt()
-        binding.containerShadow.layoutParams.height = context.screenHeight()
+        updateContainerHeight()
+        TooltipCompat.setTooltipText(binding.searchIb, context.getString(R.string.Search))
+        TooltipCompat.setTooltipText(binding.scanIb, context.getString(R.string.Scan))
+        TooltipCompat.setTooltipText(binding.newChat, context.getString(R.string.new_chat))
+        TooltipCompat.setTooltipText(binding.addIb, context.getString(R.string.Add))
+        TooltipCompat.setTooltipText(binding.rightClear, context.getString(R.string.Clear))
+        TooltipCompat.setTooltipText(binding.backIb, context.getString(R.string.Close))
         binding.containerShadow.setOnClickListener {
             hideContainer()
         }
@@ -274,6 +289,17 @@ class MaterialSearchView : FrameLayout {
         binding.logoLayout.alpha = fastFadeOut
         binding.backIb.isVisible = fastFadeIn > 0f
         binding.backIb.alpha = fastFadeIn
+    }
+
+    fun focusSearch() {
+        if (!isOpen) {
+            openSearch()
+            return
+        }
+        binding.searchEt.isVisible = true
+        binding.searchEt.requestFocus()
+        binding.searchEt.setSelection(binding.searchEt.text?.length ?: 0)
+        binding.searchEt.showKeyboard()
     }
 
     fun openSearch() {

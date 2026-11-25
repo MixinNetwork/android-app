@@ -25,7 +25,7 @@ import one.mixin.android.databinding.FragmentPinCheckBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.tip.exception.TipNetworkException
@@ -191,14 +191,14 @@ class PinCheckDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        val displaySize = requireContext().realSize()
+        val windowWidth = requireContext().windowWidth()
         if (requireContext().isExpandedSheetScreen()) {
-            dialog?.window?.setLayout(minOf(displaySize.x, 420.dp), WRAP_CONTENT)
+            dialog?.window?.setLayout(minOf(windowWidth, 420.dp), WRAP_CONTENT)
             dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             dialog?.window?.setGravity(Gravity.CENTER)
             return
         } else {
-            dialog?.window?.setLayout(displaySize.x, MATCH_PARENT)
+            dialog?.window?.setLayout(windowWidth, MATCH_PARENT)
             dialog?.window?.setBackgroundDrawableResource(R.drawable.bg_transparent_dialog)
             dialog?.window?.setGravity(Gravity.BOTTOM)
         }
