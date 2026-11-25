@@ -45,9 +45,13 @@ fun SearchTextField(
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    BasicTextField(
+    val textFieldState = rememberSyncedTextFieldState(
         value = text.value,
         onValueChange = { text.value = it },
+    )
+
+    BasicTextField(
+        state = textFieldState,
         modifier =
             Modifier
                 .fillMaxWidth()
@@ -70,28 +74,29 @@ fun SearchTextField(
                 color = MixinAppTheme.colors.textPrimary,
             ),
         cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-    ) { innerTextField ->
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(modifier = Modifier.width(16.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_search),
-                tint = MixinAppTheme.colors.textAssist,
-                contentDescription = null,
-            )
-            Box(modifier = Modifier.width(8.dp))
-            Box(contentAlignment = Alignment.CenterStart) {
-                innerTextField()
-                if (text.value.isEmpty()) {
-                    Text(
-                        text = hint,
-                        fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                    )
+        decorator = { innerTextField ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(modifier = Modifier.width(16.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_search),
+                    tint = MixinAppTheme.colors.textAssist,
+                    contentDescription = null,
+                )
+                Box(modifier = Modifier.width(8.dp))
+                Box(contentAlignment = Alignment.CenterStart) {
+                    innerTextField()
+                    if (textFieldState.text.isEmpty()) {
+                        Text(
+                            text = hint,
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                        )
+                    }
                 }
+                Box(modifier = Modifier.width(16.dp))
             }
-            Box(modifier = Modifier.width(16.dp))
-        }
-    }
+        },
+    )
 }

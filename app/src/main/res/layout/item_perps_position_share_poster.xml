@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<one.mixin.android.widget.gallery.internal.ui.widget.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/poster_root"
@@ -8,8 +8,9 @@
 
     <LinearLayout
         android:id="@+id/top_card"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="335dp"
+        android:layout_height="335dp"
+        android:layout_gravity="center"
         android:background="@drawable/bg_perps_position_share_card_loss"
         android:clipToOutline="true"
         android:orientation="vertical">
@@ -52,11 +53,11 @@
                 android:includeFontPadding="false"
                 android:maxLines="1"
                 android:textColor="@color/white"
-                android:textSize="32sp"
+                android:textSize="32dp"
                 android:textStyle="bold"
-                app:autoSizeMaxTextSize="32sp"
-                app:autoSizeMinTextSize="16sp"
-                app:autoSizeStepGranularity="1sp"
+                app:autoSizeMaxTextSize="32dp"
+                app:autoSizeMinTextSize="16dp"
+                app:autoSizeStepGranularity="1dp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintEnd_toStartOf="@id/trend_image"
                 app:layout_constraintHorizontal_bias="0"
@@ -73,19 +74,32 @@
                 app:layout_constraintTop_toBottomOf="@id/pnl_tv"
                 tools:text="@string/PnL" />
 
+            <androidx.constraintlayout.helper.widget.Flow
+                android:id="@+id/tag_flow"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                app:constraint_referenced_ids="asset_icon,side_tag_tv,leverage_tag_tv"
+                app:flow_horizontalBias="0"
+                app:flow_horizontalGap="8dp"
+                app:flow_horizontalStyle="packed"
+                app:flow_verticalAlign="center"
+                app:flow_verticalGap="6dp"
+                app:flow_wrapMode="chain"
+                app:layout_constraintEnd_toStartOf="@id/trend_image"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/pnl_tv" />
+
             <one.mixin.android.widget.CircleImageView
                 android:id="@+id/asset_icon"
                 android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginTop="8dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/pnl_tv" />
+                android:layout_height="20dp" />
 
             <TextView
                 android:id="@+id/side_tag_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
                 android:background="@drawable/bg_perps_share_tag"
                 android:gravity="center"
                 android:includeFontPadding="false"
@@ -94,17 +108,13 @@
                 android:textColor="@color/white"
                 android:paddingTop="3dp"
                 android:paddingBottom="3dp"
-                android:textSize="12sp"
-                app:layout_constraintStart_toEndOf="@id/asset_icon"
-                app:layout_constraintTop_toTopOf="@id/asset_icon"
-                app:layout_constraintBottom_toBottomOf="@id/asset_icon"
+                android:textSize="12dp"
                 tools:text="做多 ETH" />
 
             <TextView
                 android:id="@+id/leverage_tag_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:background="@drawable/bg_perps_share_tag"
                 android:gravity="center"
                 android:includeFontPadding="false"
@@ -113,10 +123,7 @@
                 android:paddingTop="3dp"
                 android:paddingBottom="3dp"
                 android:textColor="@color/white"
-                android:textSize="12sp"
-                app:layout_constraintStart_toEndOf="@id/side_tag_tv"
-                app:layout_constraintTop_toTopOf="@id/side_tag_tv"
-                app:layout_constraintBottom_toBottomOf="@id/side_tag_tv"
+                android:textSize="12dp"
                 tools:text="40x" />
 
             <LinearLayout
@@ -128,7 +135,7 @@
                 android:orientation="vertical"
                 app:layout_constraintEnd_toStartOf="@id/trend_image"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/asset_icon">
+                app:layout_constraintTop_toBottomOf="@id/tag_flow">
 
                 <TextView
                     android:id="@+id/entry_label_tv"
@@ -137,7 +144,7 @@
                     android:includeFontPadding="false"
                     android:text="@string/Entry_Price"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="12dp" />
 
                 <TextView
                     android:id="@+id/entry_value_tv"
@@ -146,7 +153,7 @@
                     android:layout_marginTop="2dp"
                     android:includeFontPadding="false"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="14dp"
                     android:textFontWeight="600"
                     tools:text="$45,328.6" />
 
@@ -158,7 +165,7 @@
                     android:includeFontPadding="false"
                     android:text="@string/perps_current_price"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="12dp" />
 
                 <TextView
                     android:id="@+id/latest_value_tv"
@@ -167,7 +174,7 @@
                     android:layout_marginTop="2dp"
                     android:includeFontPadding="false"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="14dp"
                     android:textFontWeight="600"
                     android:layout_marginBottom="8dp"
                     tools:text="$3,412.23" />
@@ -184,6 +191,8 @@
                 android:src="@drawable/ic_perps_position_share_loss_classic"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintHeight_max="135dp"
+                app:layout_constraintVertical_bias="1"
                 app:layout_constraintTop_toTopOf="@id/pnl_tv"
                 android:layout_marginTop="26dp"
                 android:layout_marginEnd="16dp"
@@ -216,7 +225,7 @@
                     android:includeFontPadding="false"
                     android:text="@string/Mixin"
                     android:textColor="@color/white"
-                    android:textSize="16sp"
+                    android:textSize="16dp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -228,7 +237,7 @@
                     android:includeFontPadding="false"
                     android:text="@string/share_desc"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="12dp" />
             </LinearLayout>
 
             <FrameLayout
@@ -254,4 +263,4 @@
             </FrameLayout>
         </RelativeLayout>
     </LinearLayout>
-</one.mixin.android.widget.gallery.internal.ui.widget.SquareFrameLayout>
+</FrameLayout>

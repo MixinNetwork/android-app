@@ -330,7 +330,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             binding.countryCodeEt.setText(country.dialCode)
         }
         binding.mobileTv.setText(getString(R.string.Confirm_your_mobile_number))
-        binding.mobileEt.setText(parsedPhoneNumber.nationalNumber.toString())
+        binding.mobileEt.setText(phoneUtil.getNationalSignificantNumber(parsedPhoneNumber))
         binding.countryIconIv.isEnabled = false
         binding.countryCodeEt.isEnabled = false
         binding.mobileEt.isEnabled = false

@@ -26,7 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,7 +55,7 @@ fun CollectionPage(collectionHash: String, click: (InscriptionItem) -> Unit, onD
     val viewModel = hiltViewModel<CollectionViewModel>()
     val collectibles by viewModel.inscriptionItemsFlowByCollectionHash(collectionHash).collectAsState(initial = emptyList())
     val collection by viewModel.collectionFlowByHash(collectionHash).collectAsState(initial = null)
-    val text = remember { mutableStateOf("") }
+    val text = rememberSaveable { mutableStateOf("") }
 
     val hint = stringResource(id = R.string.search_placeholder_inscription)
 
@@ -164,7 +164,7 @@ fun CollectionPage(collectionHash: String, click: (InscriptionItem) -> Unit, onD
                 }
             } else {
                 LazyColumn {
-                    items(filteredCollectibles) { collectible ->
+                    items(filteredCollectibles, key = { it.inscriptionHash }, contentType = { "collectible" }) { collectible ->
                         CollectionItem(collection?.name ?: "", collectible, click)
                     }
                 }

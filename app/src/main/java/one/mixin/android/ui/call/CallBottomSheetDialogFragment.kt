@@ -49,7 +49,6 @@ import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -883,12 +882,8 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             RxPermissions(this)
                 .request(Manifest.permission.BLUETOOTH_CONNECT)
-                .autoDispose(stopScope).subscribe({ granted ->
-                    if (granted) {
-                        callback.invoke()
-                    } else {
-                        context?.openPermissionSetting()
-                    }
+                .autoDispose(stopScope).subscribe({
+                    callback.invoke()
                 }, {
                     reportException(it)
                 })

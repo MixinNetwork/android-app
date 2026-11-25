@@ -17,7 +17,7 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendMessageJob
@@ -92,7 +92,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = view
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
-            setCustomViewHeight(requireContext().realSize().y * 2 / 3)
+            setCustomViewHeight(requireContext().windowHeight() * 2 / 3)
         }
         val inGroupCallUsers = callState.getUsers(conversationId)
 

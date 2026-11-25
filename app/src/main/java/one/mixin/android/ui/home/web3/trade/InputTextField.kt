@@ -16,14 +16,13 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -35,11 +34,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -51,6 +48,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
@@ -150,23 +148,10 @@ fun InputContent(
             }
         }
         val interactionSource = remember { MutableInteractionSource() }
-        var textFieldValue by remember {
-            mutableStateOf(
-                TextFieldValue(
-                    text = text,
-                    selection = TextRange(text.length)
-                )
-            )
-        }
-
-        LaunchedEffect(text) {
-            if (textFieldValue.text != text) {
-                textFieldValue = TextFieldValue(
-                    text = text,
-                    selection = TextRange(text.length)
-                )
-            }
-        }
+        val textFieldState = rememberSyncedTextFieldState(
+            value = text,
+            onValueChange = { onInputChanged?.invoke(it) },
+        )
 
         Column(modifier = Modifier.fillMaxWidth()) {
             Row(
@@ -180,15 +165,13 @@ fun InputContent(
                 ) {
                     // Always render BasicTextField to keep focus
                     BasicTextField(
-                        value = textFieldValue,
-                        onValueChange = {
-                            if (!isTradeInputDecimalAllowed(it.text, maxDecimalPlaces)) {
-                                return@BasicTextField
+                        state = textFieldState,
+                        inputTransformation = InputTransformation {
+                            if (!isTradeInputDecimalAllowed(asCharSequence().toString(), maxDecimalPlaces)) {
+                                revertAllChanges()
                             }
-                            textFieldValue = it
-                            onInputChanged?.invoke(it.text)
                         },
-                        maxLines = 1,
+                        lineLimits = TextFieldLineLimits.SingleLine,
                         modifier = Modifier
                             .fillMaxWidth()
                             .focusRequester(focusRequester)
@@ -201,9 +184,9 @@ fun InputContent(
                             .alpha(if (inlineEndCompose != null) 0f else 1f),
                         textStyle = TextStyle(
                             fontSize = when {
-                                textFieldValue.text.length <= 15 -> inputFontSize
+                                textFieldState.text.length <= 15 -> inputFontSize
                                 else -> {
-                                    val excess = textFieldValue.text.length - 15
+                                    val excess = textFieldState.text.length - 15
                                     val reduction = excess * 2
                                     (inputFontSize.value - reduction).coerceAtLeast(16f).sp
                                 }
@@ -217,7 +200,7 @@ fun InputContent(
                         interactionSource = interactionSource,
                     )
 
-                    if (textFieldValue.text.isEmpty() && text.isEmpty() && inlineEndCompose == null) {
+                    if (textFieldState.text.isEmpty() && text.isEmpty() && inlineEndCompose == null) {
                         AutoSizeText(
                             text = "0",
                             color = MixinAppTheme.colors.textRemarks,

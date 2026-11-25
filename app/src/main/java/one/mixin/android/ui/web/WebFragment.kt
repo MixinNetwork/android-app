@@ -138,6 +138,7 @@ import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.tip.wc.internal.evmChainList
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
@@ -500,6 +501,7 @@ class WebFragment : BaseFragment() {
     private var customView: View? = null
     private var customViewCallback: WebChromeClient.CustomViewCallback? = null
     private var originalSystemUiVisibility = 0
+    private var originalOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
@@ -638,6 +640,7 @@ class WebFragment : BaseFragment() {
                     customView = view
                     customViewCallback = callback
                     originalSystemUiVisibility = requireActivity().window.decorView.systemUiVisibility
+                    originalOrientation = requireActivity().requestedOrientation
 
                     binding.customViewContainer.addView(view)
                     binding.customViewContainer.isVisible = true
@@ -654,7 +657,6 @@ class WebFragment : BaseFragment() {
                     requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
                 }
 
-                @SuppressLint("SourceLockedOrientationActivity")
                 override fun onHideCustomView() {
                     if (customView == null) {
                         return
@@ -669,7 +671,7 @@ class WebFragment : BaseFragment() {
                     customView = null
 
                     requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
-                    requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    requireActivity().requestedOrientation = originalOrientation
 
                     customViewCallback?.onCustomViewHidden()
                     customViewCallback = null
@@ -1385,7 +1387,6 @@ class WebFragment : BaseFragment() {
 
     var titleColor: Int = Color.WHITE
 
-    @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
         webView.stopLoading()
         when {
@@ -1412,9 +1413,9 @@ class WebFragment : BaseFragment() {
         unregisterForContextMenu(webView)
         binding.webLl.removeView(webView)
         processor.close()
-        if (requireActivity().requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+        if (customView != null) {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
-            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            requireActivity().requestedOrientation = originalOrientation
         }
         super.onDestroyView()
         _binding = null
@@ -2057,10 +2058,16 @@ class WebFragment : BaseFragment() {
                 val method = DAppMethod.fromValue(obj.getString("name"))
                 val network = obj.getString("network")
                 if (!isValidJavaScriptCallback(network)) return
+                val pageChainId = obj.optString("chainId")
                 if (network == Web3Signer.JsSignerNetwork.Solana.name) {
                     Web3Signer.useSolana()
                 } else {
-                    Web3Signer.useEvm()
+                    val chain = evmChainList.firstOrNull { it.hexReference == pageChainId }
+                    if (chain == null) {
+                        onWalletActionError(id, WalletErrorCode.UNRECOGNIZED_CHAIN, "Unrecognized EVM chain")
+                        return
+                    }
+                    Web3Signer.useEvm(chain)
                 }
                 if (isAddressEmpty(network, id)) {
                     return
@@ -2137,7 +2144,8 @@ class WebFragment : BaseFragment() {
                         onWalletActionError(id, WalletErrorCode.INVALID_PARAMS, "Transaction sender does not match the selected account")
                         return
                     }
-                    signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
+                    val tx = WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data)
+                    onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = tx, evmChainId = pageChainId))
                 }
 
                 DAppMethod.SIGNRAWTRANSACTION -> {
@@ -2173,13 +2181,6 @@ class WebFragment : BaseFragment() {
                 return true
             }
             return false
-        }
-
-        private fun signTransaction(
-            callbackId: Long,
-            wcEthereumTransaction: WCEthereumTransaction,
-        ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
         }
 
         private fun signRawTransaction(

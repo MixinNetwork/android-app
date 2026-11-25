@@ -790,6 +790,9 @@
     <string name="search_hint">資産, 連絡先とメッセージ</string>
     <string name="SEARCH_MESSAGES">メッセージを検索</string>
     <string name="search_placeholder_address">ラベル、アドレス</string>
+    <string name="address_book_search_hint">名前、アドレス</string>
+    <string name="address_book_no_records">記録がありません</string>
+    <string name="address_book_no_records_found">該当する記録が見つかりません</string>
     <string name="search_placeholder_asset">名前、シンボル</string>
     <string name="search_placeholder_number">Mixin ID または電話番号を検索</string>
     <plurals name="search_related_message" tools:ignore="UnusedQuantity">
@@ -1090,6 +1093,7 @@
     <string name="free_inheritance_service">無料相続サービス</string>
     <string name="membership_benefit_free_inheritance_service">相続サービスを無料でご利用ください。</string>
     <string name="membership_renew_option_card_desc">Google Pay、クレジットカードまたはデビットカードでプランを更新します。</string>
+    <string name="membership_renew_option_crypto">仮想通貨</string>
     <string name="membership_renew_option_crypto_desc">USDT、USDC、またはその他の仮想通貨でプランを更新します。</string>
     <string name="mnemonic_login_security_title">Mixinにインポートしても安全ですか？</string>
     <string name="mobile_number_description">アカウントに紐づけられた携帯電話番号です</string>
@@ -1196,13 +1200,18 @@
     <string name="perps_include_pnl">損益を含む</string>
     <string name="perps_position_amount">ポジション金額</string>
     <string name="perps_margin_amount">証拠金額</string>
-    <string name="changed_disappearing_message_settings_hint">%1$sが消えるメッセージの設定を変更しました。タップして消えるメッセージの設定を開きます。</string>
-    <string name="disable_disappearing_message_hint">%1$sが消えるメッセージを無効にしました。タップして消えるメッセージの設定を開きます。</string>
-    <string name="set_disappearing_message_time_to_hint">%1$sが消えるメッセージの有効時間を%2$sに設定しました。タップして消えるメッセージの設定を開きます。</string>
-    <string name="group_disappearing_message_enabled_hint">このグループの消えるメッセージの有効時間は%1$sに設定されています。タップして変更するか、詳細をご確認ください。</string>
-    <string name="group_disappearing_message_disabled_hint">このグループでは消えるメッセージが有効になっていません。タップして設定するか、詳細をご確認ください。</string>
-    <string name="chat_disappearing_message_enabled_hint">このチャットの消えるメッセージの有効時間は%1$sに設定されています。タップして変更するか、詳細をご確認ください。</string>
-    <string name="chat_disappearing_message_disabled_hint">このチャットでは消えるメッセージが有効になっていません。タップして設定するか、詳細をご確認ください。</string>
+    <string name="changed_disappearing_message_settings_read_only">%1$sが消えるメッセージの設定を変更しました。タップして詳細をご確認ください。</string>
+    <string name="changed_disappearing_message_settings_editable">%1$sが消えるメッセージの設定を変更しました。タップして設定を変更するか、詳細をご確認ください。</string>
+    <string name="disable_disappearing_message_read_only">%1$sが消えるメッセージを無効にしました。タップして詳細をご確認ください。</string>
+    <string name="disable_disappearing_message_editable">%1$sが消えるメッセージを無効にしました。タップして設定を変更するか、詳細をご確認ください。</string>
+    <string name="set_disappearing_message_time_to_read_only">%1$sが消えるメッセージの有効時間を%2$sに設定しました。タップして詳細をご確認ください。</string>
+    <string name="set_disappearing_message_time_to_editable">%1$sが消えるメッセージの有効時間を%2$sに設定しました。タップして設定を変更するか、詳細をご確認ください。</string>
+    <string name="group_disappearing_message_enabled_read_only">このグループの消えるメッセージの有効時間は%1$sに設定されています。タップして詳細をご確認ください。</string>
+    <string name="group_disappearing_message_enabled_editable">このグループの消えるメッセージの有効時間は%1$sに設定されています。タップして設定を変更するか、詳細をご確認ください。</string>
+    <string name="group_disappearing_message_disabled_read_only">このグループでは消えるメッセージが有効になっていません。タップして詳細をご確認ください。</string>
+    <string name="group_disappearing_message_disabled_editable">このグループでは消えるメッセージが有効になっていません。タップして設定を変更するか、詳細をご確認ください。</string>
+    <string name="chat_disappearing_message_enabled_editable">このチャットの消えるメッセージの有効時間は%1$sに設定されています。タップして設定を変更するか、詳細をご確認ください。</string>
+    <string name="chat_disappearing_message_disabled_editable">このチャットでは消えるメッセージが有効になっていません。タップして設定を変更するか、詳細をご確認ください。</string>
     <string name="perps_funding_payments">資金調達料</string>
     <string name="perps_funding_payments_description">このポジションを開いてから受け取った、または支払った資金調達料の累計です。緑色（プラス）は資金調達料を受け取ったことを、赤色（マイナス）は資金調達料を支払ったことを示します。</string>
     <string name="perps_margin_description">証拠金は、ポジションに割り当てる担保です。その取引で損失を被る可能性のある最大額を表します。</string>
@@ -1225,6 +1234,10 @@
     <string name="Select_asset">表示する資産を選択してください</string>
     <string name="Select_market_item">表示するマーケットを選択してください</string>
     <string name="Select_explore_item">開く項目を選択してください</string>
+    <string name="All_Networks">すべてのネットワーク</string>
+    <string name="Last_Updated">最終更新</string>
+    <string name="Last_Updated_at">最終更新: %1$s</string>
+    <string name="number_of_networks">%1$d ネットワーク</string>
     <string name="Trade_Simple">スワップ</string>
     <string name="Trade_Advanced">指値</string>
     <string name="Trade_Pro">Pro</string>

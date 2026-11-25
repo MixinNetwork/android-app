@@ -211,24 +211,26 @@ internal fun MarketListRowFrame(
     var completedFavoriteAnimationIntentId by remember(stableId) { mutableStateOf<Int?>(null) }
     var favoriteRequestPending by remember(stableId) { mutableStateOf(false) }
     var favoriteRequestResult by remember(stableId) { mutableStateOf<Boolean?>(null) }
-    LaunchedEffect(
-        isFavored,
-        favoriteAnimationIntent,
-        favoriteRequestResult,
-        completedFavoriteAnimationIntentId,
-    ) {
-        val intent = favoriteAnimationIntent ?: return@LaunchedEffect
-        if (
-            shouldClearFavoriteAnimationIntent(
-                intent = intent,
-                requestResult = favoriteRequestResult,
-                isFavored = isFavored,
-                completedIntentId = completedFavoriteAnimationIntentId,
-            )
+    if (favoriteAnimationIntent != null) {
+        LaunchedEffect(
+            isFavored,
+            favoriteAnimationIntent,
+            favoriteRequestResult,
+            completedFavoriteAnimationIntentId,
         ) {
-            favoriteAnimationIntent = null
-            favoriteRequestPending = false
-            favoriteRequestResult = null
+            val intent = favoriteAnimationIntent ?: return@LaunchedEffect
+            if (
+                shouldClearFavoriteAnimationIntent(
+                    intent = intent,
+                    requestResult = favoriteRequestResult,
+                    isFavored = isFavored,
+                    completedIntentId = completedFavoriteAnimationIntentId,
+                )
+            ) {
+                favoriteAnimationIntent = null
+                favoriteRequestPending = false
+                favoriteRequestResult = null
+            }
         }
     }
     Row(
@@ -290,6 +292,20 @@ internal fun MarketListRowFrame(
     }
 }
 
+private val MarketPriceAutoSize =
+    TextAutoSize.StepBased(
+        minFontSize = 8.sp,
+        maxFontSize = 14.sp,
+        stepSize = 0.5.sp,
+    )
+
+private val MarketChangeAutoSize12 =
+    TextAutoSize.StepBased(
+        minFontSize = 8.sp,
+        maxFontSize = 12.sp,
+        stepSize = 0.5.sp,
+    )
+
 @Composable
 internal fun RowScope.MarketPriceText(text: String) {
     BasicText(
@@ -303,12 +319,7 @@ internal fun RowScope.MarketPriceText(text: String) {
             ),
         maxLines = 1,
         softWrap = false,
-        autoSize =
-            TextAutoSize.StepBased(
-                minFontSize = 8.sp,
-                maxFontSize = 14.sp,
-                stepSize = 0.5.sp,
-            ),
+        autoSize = MarketPriceAutoSize,
         modifier = Modifier.weight(1f),
     )
 }
@@ -559,6 +570,20 @@ internal fun MarketChangeColumn(
         } else {
             if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
         }
+    val changeAutoSize =
+        if (fontSize == 12.sp) {
+            MarketChangeAutoSize12
+        } else if (fontSize == 14.sp) {
+            MarketPriceAutoSize
+        } else {
+            remember(fontSize) {
+                TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = fontSize,
+                    stepSize = 0.5.sp,
+                )
+            }
+        }
     if (sparkline.isNullOrBlank()) {
         Box(
             modifier = modifier.height(36.dp),
@@ -574,12 +599,7 @@ internal fun MarketChangeColumn(
                     ),
                 maxLines = 1,
                 softWrap = false,
-                autoSize =
-                    TextAutoSize.StepBased(
-                        minFontSize = 8.sp,
-                        maxFontSize = fontSize,
-                        stepSize = 0.5.sp,
-                    ),
+                autoSize = changeAutoSize,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -589,7 +609,7 @@ internal fun MarketChangeColumn(
             horizontalAlignment = Alignment.End,
         ) {
             val context = LocalContext.current
-            var previousPainter by remember { mutableStateOf<Painter?>(null) }
+            var previousPainter by remember(sparklineCacheKey) { mutableStateOf<Painter?>(null) }
             val sparklineRequest =
                 remember(context, sparkline, sparklineCacheKey) {
                     marketSparklineRequest(context, sparkline, sparklineCacheKey)
@@ -617,12 +637,7 @@ internal fun MarketChangeColumn(
                     ),
                 maxLines = 1,
                 softWrap = false,
-                autoSize =
-                    TextAutoSize.StepBased(
-                        minFontSize = 8.sp,
-                        maxFontSize = fontSize,
-                        stepSize = 0.5.sp,
-                    ),
+                autoSize = changeAutoSize,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

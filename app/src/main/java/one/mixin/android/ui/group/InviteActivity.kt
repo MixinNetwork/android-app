@@ -27,7 +27,12 @@ class InviteActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val extras = intent.extras
+        if (extras == null || extras.getString(ARGS_ID).isNullOrBlank()) {
+            finish()
+            return
+        }
         setContentView(R.layout.activity_contact)
-        replaceFragment(InviteFragment.newInstance(intent.extras!!), R.id.container, InviteFragment.TAG)
+        replaceFragment(InviteFragment.newInstance(extras), R.id.container, InviteFragment.TAG)
     }
 }

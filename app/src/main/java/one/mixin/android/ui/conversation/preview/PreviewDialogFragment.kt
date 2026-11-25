@@ -35,8 +35,8 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.screenWidth
+import one.mixin.android.extension.windowHeight
+import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.observeTabletopFold
@@ -69,19 +69,23 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
 
     private var mixinPlayer: MixinPlayer? = null
 
+    override fun onStart() {
+        super.onStart()
+        if (currentState) {
+            mixinPlayer?.start()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         dialog?.window?.apply {
             setBackgroundDrawable(ColorDrawable(0x00000000))
             setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
         }
-        if (currentState) {
-            mixinPlayer?.start()
-        }
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onStop() {
+        super.onStop()
         currentState = mixinPlayer?.isPlaying() == true
         mixinPlayer?.pause()
     }
@@ -291,8 +295,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
                 if (!requireContext().isExpandedSheetScreen()) {
                     val ratio = width / height.toFloat()
                     val lp = videoBinding.dialogVideoTexture.layoutParams
-                    val screenWidth = requireContext().screenWidth()
-                    val screenHeight = requireContext().screenHeight()
+                    val screenWidth = requireContext().windowWidth()
+                    val screenHeight = requireContext().windowHeight()
                     if (screenWidth / ratio > screenHeight) {
                         lp.height = screenHeight
                         lp.width = (screenHeight * ratio).toInt()

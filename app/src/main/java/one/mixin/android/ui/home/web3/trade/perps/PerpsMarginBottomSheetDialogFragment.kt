@@ -25,6 +25,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -108,6 +111,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
@@ -674,13 +678,17 @@ internal fun PerpsReductionInput(
     onPercentageSelected: ((BigDecimal) -> Unit)? = null,
     autoFocus: Boolean = true,
 ) {
-    var textFieldValue by remember(isPercentage) { mutableStateOf(TextFieldValue(input, TextRange(input.length))) }
-    LaunchedEffect(input) {
-        textFieldValue = syncPerpsMarginInput(textFieldValue, input)
+    val textFieldState = rememberSyncedTextFieldState(
+        value = input,
+        onValueChange = onInputChanged,
+    )
+    LaunchedEffect(isPercentage) {
+        if (textFieldState.text.toString() != input) {
+            textFieldState.setTextAndPlaceCursorAtEnd(input)
+        }
     }
     fun updateInput(value: String) {
-        textFieldValue = TextFieldValue(value, TextRange(value.length))
-        onInputChanged(value)
+        textFieldState.setTextAndPlaceCursorAtEnd(value)
     }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -694,8 +702,12 @@ internal fun PerpsReductionInput(
         inputValue <= BigDecimal.ZERO -> MixinAppTheme.colors.textRemarks
         else -> MixinAppTheme.colors.textPrimary
     }
+    val inputTextStyle = TextStyle(fontSize = 36.sp, lineHeight = 40.sp, platformStyle = PlatformTextStyle(includeFontPadding = false), fontWeight = FontWeight.W600, color = inputColor, textAlign = TextAlign.Center)
     val textMeasurer = rememberTextMeasurer()
     val placeholder = "0"
+    val inputWidth = with(LocalDensity.current) {
+        textMeasurer.measure(input.ifEmpty { placeholder }, style = inputTextStyle, softWrap = false).size.width.toDp() + 2.dp
+    }
     LaunchedEffect(Unit) {
         if (autoFocus) {
             focusRequester.requestFocus()
@@ -728,48 +740,34 @@ internal fun PerpsReductionInput(
             ) {
                 Icon(painterResource(R.drawable.ic_perps_minus), stringResource(R.string.perps_reduce_action), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
             }
-            BoxWithConstraints(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                val shown = input.ifEmpty { placeholder }
-                val sign = if (isPercentage) "%" else PERPS_USD_SYMBOL
-                val fontSize = marginInputFontSize(shown + sign, maxWidth, textMeasurer, LocalDensity.current)
-                val inputTextStyle = TextStyle(
-                    fontSize = fontSize,
-                    lineHeight = (fontSize.value * 40f / 36f).sp,
-                    platformStyle = PlatformTextStyle(includeFontPadding = false),
-                    fontWeight = FontWeight.W600,
-                    color = inputColor,
-                    textAlign = TextAlign.Center,
+            Row(modifier = Modifier.weight(1f, fill = false), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                if (!isPercentage) Text(PERPS_USD_SYMBOL, style = inputTextStyle)
+                BasicTextField(
+                    state = textFieldState,
+                    inputTransformation = InputTransformation {
+                        val text = asCharSequence().toString()
+                        val valid = text.length <= 40 &&
+                            text.all { it in '0'..'9' || (decimalPlaces > 0 && it == '.') } &&
+                            text.count { it == '.' } <= 1 &&
+                            text.substringAfter('.', "").length <= decimalPlaces
+                        if (!valid) {
+                            revertAllChanges()
+                        }
+                    },
+                    enabled = enabled,
+                    lineLimits = TextFieldLineLimits.SingleLine,
+                    modifier = Modifier.widthIn(min = 20.dp, max = 160.dp).width(inputWidth).focusRequester(focusRequester),
+                    textStyle = inputTextStyle,
+                    keyboardOptions = KeyboardOptions(keyboardType = if (decimalPlaces == 0) KeyboardType.Number else KeyboardType.Decimal),
+                    cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+                    decorator = { field ->
+                        Box(contentAlignment = Alignment.Center) {
+                            if (textFieldState.text.isEmpty()) Text(placeholder, style = inputTextStyle)
+                            field()
+                        }
+                    },
                 )
-                val inputWidth = with(LocalDensity.current) {
-                    textMeasurer.measure(shown, style = inputTextStyle, softWrap = false).size.width.toDp() + 2.dp
-                }
-                Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                    if (!isPercentage) Text(sign, style = inputTextStyle)
-                    BasicTextField(
-                        value = textFieldValue,
-                        onValueChange = { value ->
-                            val text = value.text
-                            if (text.length <= 40 && text.all { it in '0'..'9' || (decimalPlaces > 0 && it == '.') } && text.count { it == '.' } <= 1 &&
-                                text.substringAfter('.', "").length <= decimalPlaces) {
-                                textFieldValue = value
-                                if (text != input) onInputChanged(text)
-                            }
-                        },
-                        enabled = enabled,
-                        singleLine = true,
-                        modifier = Modifier.widthIn(min = 20.dp).width(inputWidth).focusRequester(focusRequester),
-                        textStyle = inputTextStyle,
-                        keyboardOptions = KeyboardOptions(keyboardType = if (decimalPlaces == 0) KeyboardType.Number else KeyboardType.Decimal),
-                        cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-                        decorationBox = { field ->
-                            Box(contentAlignment = Alignment.Center) {
-                                if (input.isEmpty()) Text(placeholder, style = inputTextStyle)
-                                field()
-                            }
-                        },
-                    )
-                    if (isPercentage) Text(sign, style = inputTextStyle)
-                }
+                if (isPercentage) Text("%", style = inputTextStyle)
             }
             IconButton(
                 onClick = { updateInput(formatInput((inputValue + BigDecimal.ONE).min(maximum))) },
@@ -880,26 +878,6 @@ internal fun PerpsReductionInput(
 
 internal fun syncPerpsMarginInput(value: TextFieldValue, input: String): TextFieldValue =
     if (value.text == input) value else TextFieldValue(input, TextRange(input.length))
-
-private fun marginInputFontSize(text: String, maxWidth: Dp, measurer: TextMeasurer, density: Density): TextUnit {
-    var size = 36f
-    while (size > 12f) {
-        val width = with(density) {
-            measurer.measure(
-                text,
-                style = TextStyle(
-                    fontSize = size.sp,
-                    fontWeight = FontWeight.W600,
-                    platformStyle = PlatformTextStyle(includeFontPadding = false),
-                ),
-                softWrap = false,
-            ).size.width.toDp() + 12.dp
-        }
-        if (width <= maxWidth) break
-        size -= 1f
-    }
-    return size.sp
-}
 
 @Preview(name = "100%", widthDp = 360, heightDp = 560, locale = "zh")
 @Composable
