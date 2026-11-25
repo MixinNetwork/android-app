@@ -163,7 +163,15 @@ class TransferServer
         ) = withContext(SINGLE_SOCKET_THREAD) {
             var listener: ServerSocket? = null
             try {
-                check(transferSessionManager.beginSending(sessionId, Session.getAccountId()))
+                if (!transferSessionManager.beginSending(sessionId, Session.getAccountId(), Session.getExtensionSessionId())) {
+                    val state = transferSessionManager.getSessionState(sessionId)
+                    if ((state == TransferSessionState.CANCELLED || state == TransferSessionState.EXPIRED) &&
+                        status.value != TransferStatus.FINISHED
+                    ) {
+                        status.value = TransferStatus.INITIALIZING
+                    }
+                    return@withContext
+                }
                 quit = false
                 NetworkUtils.printWifiInfo(MixinApplication.appContext)
                 secretBytes = TransferCipher.generateKey()
@@ -273,8 +281,15 @@ class TransferServer
                         is TransferCommand -> {
                             if (result.action == TransferCommandAction.CONNECT.value) {
                                 if (status.value == TransferStatus.WAITING_FOR_VERIFICATION &&
-                                    result.code == code &&
-                                    result.userId == Session.getAccountId()
+                                    transferSessionManager.validateServerConnect(
+                                        sessionId = sessionId,
+                                        currentAccountId = Session.getAccountId(),
+                                        currentExtensionSessionId = Session.getExtensionSessionId(),
+                                        remoteUserId = result.userId,
+                                        remoteDeviceId = result.deviceId,
+                                        receivedCode = result.code,
+                                        expectedCode = code,
+                                    )
                                 ) {
                                     Timber.e("Verification passed, start transmission")
                                     status.value = TransferStatus.VERIFICATION_COMPLETED
@@ -288,10 +303,19 @@ class TransferServer
                                     }
                                 } else {
                                     Timber.e("Validation failed, close")
+                                    transferSessionManager.cancelSession(sessionId)
                                     status.value = TransferStatus.ERROR
                                     exit()
                                 }
                             } else if (result.action == TransferCommandAction.FINISH.value) {
+                                if (status.value != TransferStatus.VERIFICATION_COMPLETED &&
+                                    status.value != TransferStatus.SYNCING
+                                ) {
+                                    transferSessionManager.cancelSession(sessionId)
+                                    status.value = TransferStatus.ERROR
+                                    exit()
+                                    continue
+                                }
                                 check(transferSessionManager.completeSession(sessionId))
                                 RxBus.publish(DeviceTransferProgressEvent(100f))
                                 status.value = TransferStatus.FINISHED

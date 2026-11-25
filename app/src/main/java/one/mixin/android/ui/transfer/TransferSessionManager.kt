@@ -33,6 +33,8 @@ data class TransferSession(
     val expectedExtensionSessionId: String?,
     val createdAtMillis: Long,
     val expiresAtMillis: Long,
+    val transferTtlMs: Long = TransferSessionManager.DEFAULT_TRANSFER_TTL_MS,
+    var transferExpiresAtMillis: Long? = null,
     var boundPeerDeviceId: String? = null,
     var boundPairingCode: Int? = null,
     var state: TransferSessionState = TransferSessionState.INITIATED,
@@ -67,6 +69,7 @@ class TransferSessionManager(
 
     companion object {
         const val DEFAULT_PAIRING_TTL_MS = 5 * 60 * 1000L
+        const val DEFAULT_TRANSFER_TTL_MS = 2 * 60 * 60 * 1000L
         const val DEFAULT_MESSAGE_MAX_AGE_MS = 5 * 60 * 1000L
         private const val FUTURE_CLOCK_SKEW_MS = 2 * 60 * 1000L
     }
@@ -79,9 +82,11 @@ class TransferSessionManager(
         accountId: String,
         expectedExtensionSessionId: String? = null,
         ttlMs: Long = DEFAULT_PAIRING_TTL_MS,
+        transferTtlMs: Long = DEFAULT_TRANSFER_TTL_MS,
     ): TransferSession {
         require(accountId.isNotBlank()) { "Account ID must not be blank" }
         require(ttlMs > 0L) { "Session TTL must be positive" }
+        require(transferTtlMs > 0L) { "Transfer TTL must be positive" }
         if (direction == TransferDirection.RESTORE_FROM_PC || direction == TransferDirection.TRANSFER_TO_PC) {
             require(!expectedExtensionSessionId.isNullOrBlank()) { "Desktop extension session ID is required" }
         }
@@ -104,6 +109,7 @@ class TransferSessionManager(
                 expectedExtensionSessionId = expectedExtensionSessionId,
                 createdAtMillis = now,
                 expiresAtMillis = now + ttlMs,
+                transferTtlMs = transferTtlMs,
             )
         currentSession = session
         return session
@@ -276,14 +282,79 @@ class TransferSessionManager(
     }
 
     @Synchronized
-    fun beginSending(sessionId: String, accountId: String?): Boolean {
+    fun getBoundExtensionSessionId(sessionId: String?): String? {
+        val session = currentSession ?: return null
+        if (sessionId != null && session.sessionId != sessionId) return null
+        return session.expectedExtensionSessionId
+    }
+
+    @Synchronized
+    fun beginSending(
+        sessionId: String,
+        accountId: String?,
+        currentExtensionSessionId: String? = null,
+    ): Boolean {
         val session = currentSession ?: return false
         expireIfNeeded(session)
         if (session.sessionId != sessionId || session.accountId != accountId ||
             !session.direction.isSending ||
             (session.state != TransferSessionState.INITIATED && session.state != TransferSessionState.CONSUMED)
         ) return false
+        if (session.direction == TransferDirection.TRANSFER_TO_PC) {
+            if (session.expectedExtensionSessionId.isNullOrBlank() ||
+                session.expectedExtensionSessionId != currentExtensionSessionId
+            ) {
+                session.state = TransferSessionState.CANCELLED
+                return false
+            }
+        }
         session.state = TransferSessionState.SENDING
+        session.transferExpiresAtMillis = null
+        return true
+    }
+
+    @Synchronized
+    fun validateServerConnect(
+        sessionId: String?,
+        currentAccountId: String?,
+        currentExtensionSessionId: String?,
+        remoteUserId: String?,
+        remoteDeviceId: String?,
+        receivedCode: Int?,
+        expectedCode: Int,
+    ): Boolean {
+        if (sessionId.isNullOrBlank() || currentAccountId.isNullOrBlank()) return false
+        val session = currentSession ?: return false
+        if (session.sessionId != sessionId) return false
+        expireIfNeeded(session)
+        if (session.state != TransferSessionState.SENDING) return false
+        if (session.accountId != currentAccountId) {
+            session.state = TransferSessionState.CANCELLED
+            return false
+        }
+        if (session.direction == TransferDirection.TRANSFER_TO_PC) {
+            if (session.expectedExtensionSessionId.isNullOrBlank() ||
+                session.expectedExtensionSessionId != currentExtensionSessionId
+            ) {
+                session.state = TransferSessionState.CANCELLED
+                return false
+            }
+        }
+        if (receivedCode != expectedCode || remoteUserId != session.accountId) {
+            session.state = TransferSessionState.CANCELLED
+            return false
+        }
+        val normalizedRemoteDeviceId = remoteDeviceId?.takeIf { it.isNotBlank() }
+        val expectedPeer = session.boundPeerDeviceId
+        if (expectedPeer != null) {
+            if (remoteDeviceId != null && normalizedRemoteDeviceId != expectedPeer) {
+                session.state = TransferSessionState.CANCELLED
+                return false
+            }
+        } else if (normalizedRemoteDeviceId != null) {
+            session.boundPeerDeviceId = normalizedRemoteDeviceId
+        }
+        session.transferExpiresAtMillis = clock() + session.transferTtlMs
         return true
     }
 
@@ -332,7 +403,13 @@ class TransferSessionManager(
     }
 
     private fun expireIfNeeded(session: TransferSession) {
-        if (clock() <= session.expiresAtMillis) return
+        val deadline =
+            if (session.state == TransferSessionState.SENDING && session.transferExpiresAtMillis != null) {
+                session.transferExpiresAtMillis!!
+            } else {
+                session.expiresAtMillis
+            }
+        if (clock() <= deadline) return
         if (session.state == TransferSessionState.INITIATED || session.state == TransferSessionState.AWAITING_PAIRING ||
             session.state == TransferSessionState.SENDING || (session.state == TransferSessionState.CONSUMED && session.direction.isSending)
         ) {

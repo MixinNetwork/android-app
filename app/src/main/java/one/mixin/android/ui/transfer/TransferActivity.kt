@@ -72,9 +72,19 @@ import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import timber.log.Timber
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Provider
+
+internal const val TRANSFER_SECRET_KEY_BYTES = 64
+
+internal fun decodeTransferSecretKey(secretKey: String?): ByteArray? {
+    if (secretKey.isNullOrBlank()) return null
+    return try {
+        secretKey.decodeBase64().takeIf { it.size == TRANSFER_SECRET_KEY_BYTES }
+    } catch (_: Exception) {
+        null
+    }
+}
 
 internal class LocalNetworkPermissionQueue {
     private class PendingAction(
@@ -205,6 +215,7 @@ class TransferActivity : BaseActivity() {
         action: () -> Unit,
     ) {
         if (Build.VERSION.SDK_INT < 37 ||
+            applicationInfo.targetSdkVersion < 37 ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) == PackageManager.PERMISSION_GRANTED
         ) {
             action()
@@ -513,7 +524,16 @@ class TransferActivity : BaseActivity() {
                     .show()
                 return@setOnClickListener
             }
-            withLocalNetworkPermission {
+            val expectedSessionId = activeSessionId
+            val cancellableByDesktop = argsStatus == ARGS_TRANSFER_TO_PC || argsStatus == ARGS_RESTORE_FROM_PC
+            withLocalNetworkPermission(cancellableByDesktop = cancellableByDesktop) {
+                if (cancellableByDesktop &&
+                    expectedSessionId != null &&
+                    (activeSessionId != expectedSessionId ||
+                        transferSessionManager.getSessionState(expectedSessionId) == TransferSessionState.CANCELLED)
+                ) {
+                    return@withLocalNetworkPermission
+                }
                 when (argsStatus) {
                     ARGS_TRANSFER_TO_PHONE -> {
                         val accountId = Session.getAccountId() ?: return@withLocalNetworkPermission
@@ -545,7 +565,7 @@ class TransferActivity : BaseActivity() {
                     ARGS_TRANSFER_TO_PC -> {
                         if (this@TransferActivity.status.value != TransferStatus.CREATED) {
                             if (chatWebSocket.connected) {
-                                pushRequest()
+                                pushRequest(initiatePcTransferSession())
                             } else {
                                 alertDialogBuilder()
                                     .setTitle(getString(R.string.Unable_connect_desktop))
@@ -759,15 +779,14 @@ class TransferActivity : BaseActivity() {
     ) {
         val ip = requireNotNull(transferCommandData.ip)
         val port = requireNotNull(transferCommandData.port)
-        val key = try {
-            requireNotNull(transferCommandData.secretKey).decodeBase64()
-        } catch (e: IOException) {
-            Timber.w(e, "Invalid transfer key")
-            transferSessionManager.cancelSession(authorization.sessionId)
-            onConnectionFailed()
-            status.value = TransferStatus.ERROR
-            return
-        }
+        val key =
+            decodeTransferSecretKey(transferCommandData.secretKey) ?: run {
+                Timber.w("Invalid transfer key")
+                transferSessionManager.cancelSession(authorization.sessionId)
+                onConnectionFailed()
+                status.value = TransferStatus.ERROR
+                return
+            }
         connect(
             ip,
             port,
@@ -857,6 +876,12 @@ class TransferActivity : BaseActivity() {
                     }
                     return@launch
                 }
+            if (transferCommandData == null) {
+                withContext(Dispatchers.Main) {
+                    toast(R.string.Data_error)
+                }
+                return@launch
+            }
             val accountId = Session.getAccountId()
             val sessionId = activeSessionId
             if (accountId.isNullOrBlank() || sessionId.isNullOrBlank()) {
@@ -918,7 +943,7 @@ class TransferActivity : BaseActivity() {
         if (command.ip.isNullOrBlank() ||
             port == null ||
             port !in 1..65535 ||
-            command.secretKey.isNullOrBlank() ||
+            decodeTransferSecretKey(command.secretKey) == null ||
             command.code == null ||
             (requireDeviceId && remoteDeviceId.isNullOrBlank())
         ) {
@@ -947,7 +972,7 @@ class TransferActivity : BaseActivity() {
                     dialog.dismiss()
                     pairingDialog = null
                     transferSessionManager.cancelSession(sessionId)
-                    if (argsStatus == ARGS_RESTORE_FROM_PC) sendCancelToPc()
+                    if (argsStatus == ARGS_RESTORE_FROM_PC) sendCancelToPc(sessionId)
                     status.value = TransferStatus.INITIALIZING
                 }
                 .setPositiveButton(R.string.Confirm) { dialog, _ ->
@@ -959,7 +984,7 @@ class TransferActivity : BaseActivity() {
                             val state = transferSessionManager.getSessionState(sessionId)
                             if (state == TransferSessionState.AWAITING_PAIRING || state == TransferSessionState.EXPIRED) {
                                 transferSessionManager.cancelSession(sessionId)
-                                if (argsStatus == ARGS_RESTORE_FROM_PC) sendCancelToPc()
+                                if (argsStatus == ARGS_RESTORE_FROM_PC) sendCancelToPc(sessionId)
                                 status.value = TransferStatus.INITIALIZING
                             }
                         },
@@ -979,7 +1004,7 @@ class TransferActivity : BaseActivity() {
                         lifecycleScope.launch {
                             connect(command, authorization) {
                                 if (argsStatus == ARGS_RESTORE_FROM_PC) {
-                                    sendCancelToPc()
+                                    sendCancelToPc(authorization.sessionId)
                                 }
                             }
                         }
@@ -1006,7 +1031,7 @@ class TransferActivity : BaseActivity() {
                     dialog.dismiss()
                     pairingDialog = null
                     transferSessionManager.cancelSession(sessionId)
-                    sendCancelToPc()
+                    sendCancelToPc(sessionId)
                     initiatePcTransferSession()
                 }
                 .setPositiveButton(R.string.Confirm) { dialog, _ ->
@@ -1018,7 +1043,7 @@ class TransferActivity : BaseActivity() {
                             val state = transferSessionManager.getSessionState(sessionId)
                             if (state == TransferSessionState.AWAITING_PAIRING || state == TransferSessionState.EXPIRED) {
                                 transferSessionManager.cancelSession(sessionId)
-                                sendCancelToPc()
+                                sendCancelToPc(sessionId)
                                 initiatePcTransferSession()
                             }
                         },
@@ -1037,7 +1062,11 @@ class TransferActivity : BaseActivity() {
                             }
                             return@withLocalNetworkPermission
                         }
-                        pushRequest(authorization.sessionId)
+                        pushRequest(
+                            sessionId = authorization.sessionId,
+                            expectedAccountId = authorization.expectedAccountId,
+                            expectedExtensionSessionId = authorization.expectedExtensionSessionId,
+                        )
                     }
                 }
                 .create()
@@ -1054,18 +1083,29 @@ class TransferActivity : BaseActivity() {
     @Inject
     lateinit var participantDao: ParticipantDao
 
-    private fun sendCancelToPc() {
+    private fun sendCancelToPc(sessionId: String? = activeSessionId) {
+        val boundExtensionSessionId = transferSessionManager.getBoundExtensionSessionId(sessionId) ?: return
         sendMessage(
             gson.toJson(TransferCommand(TransferCommandAction.CANCEL.value, deviceId = getStringDeviceId())),
             MixinApplication.get().applicationScope,
+            targetExtensionSessionId = boundExtensionSessionId,
         )
     }
 
-    private fun sendMessage(content: String, scope: CoroutineScope = lifecycleScope) =
+    private fun sendMessage(
+        content: String,
+        scope: CoroutineScope = lifecycleScope,
+        targetAccountId: String? = null,
+        targetExtensionSessionId: String? = null,
+    ) =
         scope.launch(Dispatchers.IO) {
             try {
-                val accountId = Session.getAccountId() ?: return@launch
-                val sessionId = Session.getExtensionSessionId() ?: return@launch
+                val currentAccountId = Session.getAccountId() ?: return@launch
+                if (targetAccountId != null && currentAccountId != targetAccountId) return@launch
+                val currentExtensionSessionId = Session.getExtensionSessionId() ?: return@launch
+                if (targetExtensionSessionId != null && currentExtensionSessionId != targetExtensionSessionId) return@launch
+                val accountId = targetAccountId ?: currentAccountId
+                val sessionId = targetExtensionSessionId ?: currentExtensionSessionId
                 val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
                 val plainText =
                     gson.toJson(
@@ -1112,33 +1152,69 @@ class TransferActivity : BaseActivity() {
                 ),
             )
         status.value = TransferStatus.WAITING_MESSAGE
-        sendMessage(encodeText)
+        sendMessage(
+            encodeText,
+            targetAccountId = accountId,
+            targetExtensionSessionId = extensionSessionId,
+        )
     }
 
-    private fun initiatePcTransferSession(): String? {
+    private fun initiatePcTransferSession(): TransferSession? {
         val accountId = Session.getAccountId() ?: return null
         val extensionSessionId = Session.getExtensionSessionId()?.takeIf { it.isNotBlank() } ?: return null
-        val sessionId = transferSessionManager.initiateSession(
-            direction = TransferDirection.TRANSFER_TO_PC,
-            accountId = accountId,
-            expectedExtensionSessionId = extensionSessionId,
-        ).sessionId
-        activeSessionId = sessionId
-        return sessionId
+        val session =
+            transferSessionManager.initiateSession(
+                direction = TransferDirection.TRANSFER_TO_PC,
+                accountId = accountId,
+                expectedExtensionSessionId = extensionSessionId,
+            )
+        activeSessionId = session.sessionId
+        return session
     }
 
-    private fun pushRequest(sessionId: String? = initiatePcTransferSession()) {
-        if (sessionId == null) {
+    private fun pushRequest(session: TransferSession?) {
+        pushRequest(
+            sessionId = session?.sessionId,
+            expectedAccountId = session?.accountId,
+            expectedExtensionSessionId = session?.expectedExtensionSessionId,
+        )
+    }
+
+    private fun pushRequest(
+        sessionId: String?,
+        expectedAccountId: String?,
+        expectedExtensionSessionId: String?,
+    ) {
+        if (sessionId.isNullOrBlank() || expectedAccountId.isNullOrBlank() || expectedExtensionSessionId.isNullOrBlank()) {
             toast(R.string.Please_log_in_to_the_desktop_first)
+            return
+        }
+        if (Session.getAccountId() != expectedAccountId || Session.getExtensionSessionId() != expectedExtensionSessionId) {
+            transferSessionManager.cancelSession(sessionId)
+            toast(R.string.transfer_pairing_expired_or_cancelled)
+            initiatePcTransferSession()
             return
         }
         lifecycleScope.launch {
             transferServer.startServer(sessionId, selectConversation, selectDate) { transferData ->
-                val encodeText =
-                    gson.toJson(
-                        transferData,
-                    )
-                sendMessage(encodeText)
+                if (Session.getAccountId() != expectedAccountId || Session.getExtensionSessionId() != expectedExtensionSessionId) {
+                    transferSessionManager.cancelSession(sessionId)
+                    transferServer.exit()
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        if (!isFinishing && !isDestroyed) {
+                            toast(R.string.transfer_pairing_expired_or_cancelled)
+                            status.value = TransferStatus.INITIALIZING
+                            initiatePcTransferSession()
+                        }
+                    }
+                    return@startServer
+                }
+                val encodeText = gson.toJson(transferData)
+                sendMessage(
+                    encodeText,
+                    targetAccountId = expectedAccountId,
+                    targetExtensionSessionId = expectedExtensionSessionId,
+                )
             }
         }
     }

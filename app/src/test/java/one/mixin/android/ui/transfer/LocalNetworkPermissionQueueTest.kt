@@ -79,4 +79,14 @@ class LocalNetworkPermissionQueueTest {
         assertFalse(denied)
         assertTrue(queue.enqueue { })
     }
+
+    @Test
+    fun desktopCancelDropsCancellableStartActionBeforePermissionGrant() {
+        val queue = LocalNetworkPermissionQueue()
+        var started = false
+        assertTrue(queue.enqueue(cancellableByDesktop = true) { started = true })
+        assertTrue(queue.cancelPendingDesktopCommands())
+        assertFalse(queue.onPermissionResult(granted = true))
+        assertFalse(started)
+    }
 }

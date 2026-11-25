@@ -52,6 +52,7 @@ import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.moveTo
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.insertOrReplaceMessageFts4
+import one.mixin.android.job.AsyncProcessTransferAttachmentFileJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.transfer.status.TransferStatus
@@ -133,6 +134,7 @@ class TransferClient
         companion object {
             private const val CONNECT_TIMEOUT_MS = 60_000
             private const val MAX_FILE_SIZE = 5242880 // 5M
+            private const val ATTACHMENT_DIR_NAME = "attachment"
 
             private val singleTransferThread by lazy {
                 Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_THREAD") }.asCoroutineDispatcher()
@@ -160,6 +162,7 @@ class TransferClient
         private var deviceId: String? = null
         private var currentAuthorization: TransferAuthorization? = null
         private var receivedFinish = false
+        private var hasCommittedMessages = false
 
         private val syncChannel = Channel<ByteArray>()
 
@@ -419,6 +422,7 @@ class TransferClient
                 TransferDataType.TRANSCRIPT_MESSAGE.value -> {
                     val transcriptMessage = serializationJson.decodeFromJsonElement<TranscriptMessage>(transferData.data)
                     transferInserter.insertIgnore(transcriptMessage)
+                    hasCommittedMessages = true
                 }
 
                 TransferDataType.MESSAGE.value -> {
@@ -426,18 +430,14 @@ class TransferClient
                     if (messageDao.findMessageIdById(message.messageId) == null) {
                         mutableList.add(message)
                         if (mutableList.size >= 1000) {
-                            transferInserter.insertMessages(mutableList)
-                            mutableList.clear()
+                            flushMessages()
                         }
                         ftsDatabase.insertOrReplaceMessageFts4(message)
                     }
                 }
 
                 TransferDataType.MESSAGE_MENTION.value -> {
-                    if (mutableList.isNotEmpty()) {
-                        transferInserter.insertMessages(mutableList)
-                        mutableList.clear()
-                    }
+                    flushMessages()
                     val messageMention =
                         serializationJson.decodeFromJsonElement<TransferMessageMention>(transferData.data).let {
                             val messageContent =
@@ -450,10 +450,7 @@ class TransferClient
                 }
 
                 TransferDataType.EXPIRED_MESSAGE.value -> {
-                    if (mutableList.isNotEmpty()) {
-                        transferInserter.insertMessages(mutableList)
-                        mutableList.clear()
-                    }
+                    flushMessages()
                     val expiredMessage =
                         serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
                     transferInserter.insertIgnore(expiredMessage)
@@ -467,6 +464,13 @@ class TransferClient
             byteArrayInputStream.close()
         }
 
+        private fun flushMessages() {
+            if (mutableList.isEmpty()) return
+            transferInserter.insertMessages(mutableList)
+            hasCommittedMessages = true
+            mutableList.clear()
+        }
+
         private var isFinal = false
 
         private fun finalWork() {
@@ -475,15 +479,15 @@ class TransferClient
                 currentOutputStream?.close()
                 currentOutputStream = null
                 if (receivedFinish && status.value != TransferStatus.ERROR && isWriteAuthorized()) {
-                    transferInserter.insertMessages(mutableList)
-                    mutableList.clear()
+                    flushMessages()
                     currentFile?.let { file ->
                         processDataFile(file)
                     }
                     if (mutableList.isNotEmpty() && isWriteAuthorized()) {
-                        transferInserter.insertMessages(mutableList)
+                        flushMessages()
+                    } else {
+                        mutableList.clear()
                     }
-                    mutableList.clear()
                     if (isWriteAuthorized()) {
                         // Final db work
                         conversationDao.getAllConversationId().forEach { conversationId ->
@@ -494,21 +498,34 @@ class TransferClient
                             conversationExtDao.refreshCountByConversationId(conversationId)
                         }
                         val folder = getAttachmentPath()
-                        try {
-                            processAttachmentFile(folder)
-                        } finally {
-                            folder.deleteRecursively()
-                        }
-                        if (transferSessionManager.completeSession(currentAuthorization?.sessionId)) {
+                        val attachmentsProcessed =
+                            try {
+                                processAttachmentFile(folder)
+                            } catch (e: Exception) {
+                                Timber.e(e)
+                                false
+                            }
+                        if (attachmentsProcessed && transferSessionManager.completeSession(currentAuthorization?.sessionId)) {
+                            clearCacheDirectory()
                             status.value = TransferStatus.FINISHED
+                        } else {
+                            preserveOrClearStagedAttachments()
+                            transferSessionManager.cancelSession(currentAuthorization?.sessionId)
+                            if (!quit &&
+                                status.value != TransferStatus.ERROR &&
+                                transferSessionManager.getSessionState(currentAuthorization?.sessionId) != TransferSessionState.CANCELLED
+                            ) {
+                                status.value = TransferStatus.ERROR
+                            }
                         }
                     } else {
-                        clearCacheDirectory()
+                        preserveOrClearStagedAttachments()
+                        transferSessionManager.cancelSession(currentAuthorization?.sessionId)
                     }
                 } else {
                     mutableList.clear()
                     transferSessionManager.cancelSession(currentAuthorization?.sessionId)
-                    clearCacheDirectory()
+                    preserveOrClearStagedAttachments()
                 }
                 isFinal = true
             }
@@ -520,9 +537,39 @@ class TransferClient
             exit(false)
         }
 
+        private fun clearStagedDataFiles() {
+            try {
+                val cacheDir = cacheDirPath()
+                if (!cacheDir.exists()) return
+                cacheDir.listFiles()?.forEach { child ->
+                    if (child.name != ATTACHMENT_DIR_NAME) {
+                        child.deleteRecursively()
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
+
+        private fun preserveOrClearStagedAttachments() {
+            clearStagedDataFiles()
+            val attachmentDir = File(cacheDirPath(), ATTACHMENT_DIR_NAME)
+            val sameAccount = Session.getAccountId() == currentAuthorization?.expectedAccountId
+            val hasStagedFiles =
+                attachmentDir.exists() && attachmentDir.walkTopDown().any { it.isFile && it.length() > 0 }
+            if (hasCommittedMessages && sameAccount && hasStagedFiles) {
+                jobManager.addJobInBackground(AsyncProcessTransferAttachmentFileJob(attachmentDir))
+            } else {
+                clearCacheDirectory()
+            }
+        }
+
         private fun clearCacheDirectory() {
             try {
-                cachePath.deleteRecursively()
+                val cacheDir = cacheDirPath()
+                if (cacheDir.exists()) {
+                    cacheDir.deleteRecursively()
+                }
             } catch (e: Exception) {
                 Timber.e(e)
             }
@@ -568,14 +615,17 @@ class TransferClient
             currentAuthorization?.sessionId ?: UUID.randomUUID().toString()
         }
 
+        private fun cacheDirPath(): File =
+            File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}$cacheSessionDirName")
+
         private val cachePath by lazy {
-            File("${(context.externalCacheDir ?: context.cacheDir).absolutePath}${File.separator}$cacheSessionDirName").apply {
+            cacheDirPath().apply {
                 this.mkdirs()
             }
         }
 
         private fun getAttachmentPath(): File {
-            return File("${cachePath.absolutePath}${File.separator}attachment").also {
+            return File("${cachePath.absolutePath}${File.separator}$ATTACHMENT_DIR_NAME").also {
                 it.mkdirs()
             }
         }
@@ -639,11 +689,10 @@ class TransferClient
             }
         }
 
-        private fun processAttachmentFile(folder: File) { // Processing attachment files
+        private fun processAttachmentFile(folder: File): Boolean { // Processing attachment files
             folder.walkTopDown().forEach { f ->
                 if (status.value == TransferStatus.ERROR || !isWriteAuthorized()) {
-                    abortUnauthorizedTransfer()
-                    return
+                    return false
                 }
                 if (f.isFile && f.length() > 0) {
                     val messageId = f.name
@@ -694,6 +743,7 @@ class TransferClient
                     }
                 }
             }
+            return true
         }
 
         private fun byteArrayToInt(byteArray: ByteArray): Int {

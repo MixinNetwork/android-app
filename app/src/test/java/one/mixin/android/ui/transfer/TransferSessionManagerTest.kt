@@ -2,6 +2,7 @@ package one.mixin.android.ui.transfer
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import org.junit.Test
@@ -152,7 +153,7 @@ class TransferSessionManagerTest {
             assertEquals(TransferSessionState.INITIATED, manager.getSessionState(session.sessionId))
         }
         val session = manager.initiateSession(TransferDirection.TRANSFER_TO_PC, accountId, extensionSessionId)
-        assertTrue(manager.beginSending(session.sessionId, accountId))
+        assertTrue(manager.beginSending(session.sessionId, accountId, extensionSessionId))
         assertFalse(manager.cancelActiveSessionIfMatches(otherAccountId, extensionSessionId))
         assertFalse(manager.cancelActiveSessionIfMatches(accountId, otherExtensionSessionId))
         assertEquals(TransferSessionState.SENDING, manager.getSessionState(session.sessionId))
@@ -172,7 +173,7 @@ class TransferSessionManagerTest {
         assertTrue(manager.canAcceptRemoteCommand(TransferCommandAction.PULL.value, accountId, extensionSessionId, accountId))
         assertTrue(manager.beginPairingConfirmation(next.sessionId, accountId, peerDeviceId, null))
         assertNotNull(manager.confirmAndConsumePairing(next.sessionId, accountId, peerDeviceId))
-        assertTrue(manager.beginSending(next.sessionId, accountId))
+        assertTrue(manager.beginSending(next.sessionId, accountId, extensionSessionId))
     }
 
     @Test
@@ -180,9 +181,9 @@ class TransferSessionManagerTest {
         var now = 1_700_000_000_000L
         val manager = TransferSessionManager { now }
         val first = manager.initiateSession(TransferDirection.TRANSFER_TO_PC, accountId, extensionSessionId, ttlMs = 1000L)
-        assertFalse(manager.beginSending(first.sessionId, otherAccountId))
-        assertTrue(manager.beginSending(first.sessionId, accountId))
-        assertFalse(manager.beginSending(first.sessionId, accountId))
+        assertFalse(manager.beginSending(first.sessionId, otherAccountId, extensionSessionId))
+        assertTrue(manager.beginSending(first.sessionId, accountId, extensionSessionId))
+        assertFalse(manager.beginSending(first.sessionId, accountId, extensionSessionId))
         now += 1001L
         assertEquals(TransferSessionState.EXPIRED, manager.getSessionState(first.sessionId))
         assertFalse(manager.completeSession(first.sessionId))
@@ -192,11 +193,109 @@ class TransferSessionManagerTest {
         manager.cancelSession(first.sessionId)
         assertTrue(manager.canAcceptRemoteCommand(TransferCommandAction.PULL.value, accountId, extensionSessionId, accountId))
         assertTrue(manager.beginPairingConfirmation(second.sessionId, accountId, peerDeviceId, null))
-        assertFalse(manager.beginSending(second.sessionId, accountId))
+        assertFalse(manager.beginSending(second.sessionId, accountId, extensionSessionId))
         assertNotNull(manager.confirmAndConsumePairing(second.sessionId, accountId, peerDeviceId))
-        assertTrue(manager.beginSending(second.sessionId, accountId))
+        assertTrue(manager.beginSending(second.sessionId, accountId, extensionSessionId))
         assertTrue(manager.completeSession(second.sessionId))
         assertFalse(manager.cancelActiveSessionIfMatches(accountId, extensionSessionId))
+    }
+
+    @Test
+    fun `verified sending session outlives pairing ttl and uses bounded transfer ttl`() {
+        var now = 1_700_000_000_000L
+        val manager = TransferSessionManager { now }
+
+        for (direction in listOf(TransferDirection.TRANSFER_TO_PHONE, TransferDirection.TRANSFER_TO_PC)) {
+            val extSessionId = if (direction == TransferDirection.TRANSFER_TO_PC) extensionSessionId else null
+            val session = manager.initiateSession(direction, accountId, extSessionId, ttlMs = 5_000L, transferTtlMs = 20_000L)
+            assertTrue(manager.beginSending(session.sessionId, accountId, extSessionId))
+
+            now += 4_500L
+            assertTrue(
+                manager.validateServerConnect(
+                    sessionId = session.sessionId,
+                    currentAccountId = accountId,
+                    currentExtensionSessionId = extSessionId,
+                    remoteUserId = accountId,
+                    remoteDeviceId = peerDeviceId,
+                    receivedCode = 4242,
+                    expectedCode = 4242,
+                ),
+            )
+
+            // Past original pairing TTL (4500 + 1000 > 5000) still active during transfer
+            now += 1_000L
+            assertEquals(TransferSessionState.SENDING, manager.getSessionState(session.sessionId))
+
+            // Still active just before transfer TTL expires
+            now += 18_500L
+            assertEquals(TransferSessionState.SENDING, manager.getSessionState(session.sessionId))
+
+            // Expires once bounded transfer TTL elapses
+            now += 501L
+            assertEquals(TransferSessionState.EXPIRED, manager.getSessionState(session.sessionId))
+            assertFalse(manager.completeSession(session.sessionId))
+        }
+    }
+
+    @Test
+    fun `beginSending and validateServerConnect reject desktop relink, wrong code, and peer mismatch`() {
+        val manager = TransferSessionManager { 1_700_000_000_000L }
+
+        val relinkedBeforeStart = manager.initiateSession(TransferDirection.TRANSFER_TO_PC, accountId, extensionSessionId)
+        assertEquals(extensionSessionId, manager.getBoundExtensionSessionId(relinkedBeforeStart.sessionId))
+        assertFalse(manager.beginSending(relinkedBeforeStart.sessionId, accountId, otherExtensionSessionId))
+        assertEquals(TransferSessionState.CANCELLED, manager.getSessionState(relinkedBeforeStart.sessionId))
+        // Bound extension session stays accessible for cancellation even after session is cancelled
+        assertEquals(extensionSessionId, manager.getBoundExtensionSessionId(relinkedBeforeStart.sessionId))
+
+        val relinkedBeforeConnect = manager.initiateSession(TransferDirection.TRANSFER_TO_PC, accountId, extensionSessionId)
+        assertTrue(manager.beginPairingConfirmation(relinkedBeforeConnect.sessionId, accountId, peerDeviceId, null))
+        assertNotNull(manager.confirmAndConsumePairing(relinkedBeforeConnect.sessionId, accountId, peerDeviceId))
+        assertTrue(manager.beginSending(relinkedBeforeConnect.sessionId, accountId, extensionSessionId))
+        assertFalse(
+            manager.validateServerConnect(
+                sessionId = relinkedBeforeConnect.sessionId,
+                currentAccountId = accountId,
+                currentExtensionSessionId = otherExtensionSessionId,
+                remoteUserId = accountId,
+                remoteDeviceId = peerDeviceId,
+                receivedCode = 1111,
+                expectedCode = 1111,
+            ),
+        )
+        assertEquals(TransferSessionState.CANCELLED, manager.getSessionState(relinkedBeforeConnect.sessionId))
+
+        val wrongPeer = manager.initiateSession(TransferDirection.TRANSFER_TO_PC, accountId, extensionSessionId)
+        assertTrue(manager.beginPairingConfirmation(wrongPeer.sessionId, accountId, peerDeviceId, null))
+        assertNotNull(manager.confirmAndConsumePairing(wrongPeer.sessionId, accountId, peerDeviceId))
+        assertTrue(manager.beginSending(wrongPeer.sessionId, accountId, extensionSessionId))
+        assertFalse(
+            manager.validateServerConnect(
+                sessionId = wrongPeer.sessionId,
+                currentAccountId = accountId,
+                currentExtensionSessionId = extensionSessionId,
+                remoteUserId = accountId,
+                remoteDeviceId = otherPeerDeviceId,
+                receivedCode = 1111,
+                expectedCode = 1111,
+            ),
+        )
+        assertEquals(TransferSessionState.CANCELLED, manager.getSessionState(wrongPeer.sessionId))
+    }
+
+    @Test
+    fun `decodeTransferSecretKey accepts 64-byte base64 and rejects malformed or short keys`() {
+        val validKey = ByteArray(TRANSFER_SECRET_KEY_BYTES) { it.toByte() }
+        val decoded = decodeTransferSecretKey(validKey.base64Encode())
+        assertNotNull(decoded)
+        assertTrue(validKey.contentEquals(decoded))
+
+        assertNull(decodeTransferSecretKey(null))
+        assertNull(decodeTransferSecretKey(""))
+        assertNull(decodeTransferSecretKey("   "))
+        assertNull(decodeTransferSecretKey("not-valid-base64!!!"))
+        assertNull(decodeTransferSecretKey(ByteArray(32) { it.toByte() }.base64Encode()))
     }
 
     @Test
