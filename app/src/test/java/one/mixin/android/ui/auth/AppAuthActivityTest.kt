@@ -68,6 +68,8 @@ class AppAuthActivityTest {
         if (lifecycle.currentState == Lifecycle.State.STARTED) controller.stop()
         controller.destroy()
         ReflectionHelpers.setStaticField(MixinApplication::class.java, "appContext", previousContext)
+        ShadowBiometricPrompt.reset()
+        ShadowToast.reset()
     }
 
     @Test
