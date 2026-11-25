@@ -44,6 +44,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -518,6 +519,18 @@ class MediaViewerOverlay private constructor(
         }
     }
 
+    private fun showSingleConversationItem(item: MessageItem) {
+        val adapter = conversationAdapter ?: return
+        firstLoad = false
+        dataJob?.cancel()
+        adapter.initialPos = 0
+        adapter.submitData(dialog.lifecycle, PagingData.from(listOf(item)))
+        binding.viewPager.setCurrentItem(0, false)
+        updateTopBarForConversation(item)
+        if (item.isAppCard()) observeStandaloneMessage(item.messageId)
+        checkOrientation()
+    }
+
     private fun positionInitialConversationItem(
         mode: Mode.Conversation,
         excludeLive: Boolean,
@@ -539,9 +552,22 @@ class MediaViewerOverlay private constructor(
                 val currentItem = withContext(Dispatchers.IO) {
                     conversationRepository.getMediaMessage(mode.conversationId, mode.messageId)
                 }
+                // SQL cover matching can miss escaped JSON that Gson decodes, so show it as a single image.
+                val standaloneItem =
+                    if (currentItem == null) {
+                        withContext(Dispatchers.IO) {
+                            conversationRepository.findMessageItemById(mode.conversationId, mode.messageId)
+                        }?.takeIf { it.isAppCardWithMediaCover() }
+                    } else {
+                        null
+                    }
                 if (hasDismissed || !firstLoad) return@launch
                 if (currentItem == null) {
-                    cleanupAndDismissImmediate()
+                    if (standaloneItem == null) {
+                        cleanupAndDismissImmediate()
+                    } else {
+                        showSingleConversationItem(standaloneItem)
+                    }
                     return@launch
                 }
                 val updatedIndex = withContext(Dispatchers.IO) {
@@ -556,14 +582,7 @@ class MediaViewerOverlay private constructor(
                     return@launch
                 }
                 reportEvent("Initial index not found after retries, conversationId: ${mode.conversationId}, messageId: ${mode.messageId}, initialIndex: $initialIndex, updatedIndex: $updatedIndex")
-                firstLoad = false
-                dataJob?.cancel()
-                adapter.initialPos = 0
-                adapter.submitData(dialog.lifecycle, PagingData.from(listOf(currentItem)))
-                binding.viewPager.setCurrentItem(0, false)
-                updateTopBarForConversation(currentItem)
-                if (currentItem.isAppCard()) observeStandaloneMessage(mode.messageId)
-                checkOrientation()
+                showSingleConversationItem(currentItem)
             }
             return
         }
@@ -1329,11 +1348,15 @@ class MediaViewerOverlay private constructor(
 
     // region Bottom menus & actions
 
-    private fun showActionBottomSheet(bottomSheet: BottomSheet) {
+    private fun showActionBottomSheet(
+        bottomSheet: BottomSheet,
+        onDismiss: (() -> Unit)? = null,
+    ) {
         activeBottomSheet?.dismiss()
         activeBottomSheet = bottomSheet
         bottomSheet.setOnDismissListener {
             if (activeBottomSheet === bottomSheet) activeBottomSheet = null
+            onDismiss?.invoke()
         }
         bottomSheet.show()
     }
@@ -1397,7 +1420,20 @@ class MediaViewerOverlay private constructor(
             bottomSheet.dismiss()
         }
         sheetBinding.cancel.setOnClickListener { bottomSheet.dismiss() }
-        showActionBottomSheet(bottomSheet)
+        if (!item.isAppCard()) {
+            showActionBottomSheet(bottomSheet)
+            return
+        }
+        // Close the sheet if the app card is recalled or deleted while it is open.
+        val source = conversationRepository.findMessageItemByMessageId(item.messageId)
+        val observer =
+            Observer<MessageItem?> { latest ->
+                if (latest == null || latest.type == MessageCategory.MESSAGE_RECALL.name || !latest.isAppCard()) {
+                    bottomSheet.dismiss()
+                }
+            }
+        source.observeForever(observer)
+        showActionBottomSheet(bottomSheet) { source.removeObserver(observer) }
     }
 
     private fun showTranscriptVideoBottom(messageItem: ChatHistoryMessageItem) {
