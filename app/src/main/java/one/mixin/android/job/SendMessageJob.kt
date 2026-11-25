@@ -4,6 +4,7 @@ import com.birbit.android.jobqueue.Params
 import com.google.gson.JsonParseException
 import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
 import one.mixin.android.Constants.MAX_THUMB_IMAGE_LENGTH
+import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
@@ -78,7 +79,7 @@ open class SendMessageJob(
 
     override fun onAdded() {
         super.onAdded()
-        if (chatWebSocket.connected) {
+        if (chatWebSocket.connected && !MixinApplication.get().isOldVersion()) {
             jobManager.start()
         }
         if (message.isCall()) {

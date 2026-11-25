@@ -50,6 +50,7 @@ import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.di.NetworkDispatcherRegistry
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enableWideColorGamutIfSupported
 import one.mixin.android.extension.getStackTraceInfo
@@ -125,6 +126,7 @@ open class MixinApplication :
     interface NetworkRuntimeEntryPoint {
         fun getChatWebSocket(): ChatWebSocket
         fun getOkHttpClient(): OkHttpClient
+        fun getNetworkDispatcherRegistry(): NetworkDispatcherRegistry
     }
 
     @EntryPoint
@@ -370,12 +372,10 @@ open class MixinApplication :
             val networkRuntime = getNetworkRuntime()
             networkRuntime.getChatWebSocket().disconnect()
             networkRuntime.getOkHttpClient().dispatcher.cancelAll()
+            networkRuntime.getNetworkDispatcherRegistry().cancelAll()
         }
         runCatching {
-            getJobManager().apply {
-                cancelAllJob()
-                stop()
-            }
+            getJobManager().stop()
         }
         runCatching {
             WorkManager.getInstance(this).apply {
@@ -520,7 +520,20 @@ open class MixinApplication :
         createdActivities.add(activity)
     }
 
+    internal fun shouldRedirectToOldVersionAlert(activity: Activity): Boolean {
+        return isOldVersion() &&
+            !(activity is InitializeActivity && activity.intent?.getBooleanExtra(InitializeActivity.OLD_VERSION, false) == true)
+    }
+
     override fun onActivityStarted(activity: Activity) {
+        if (shouldRedirectToOldVersionAlert(activity)) {
+            if (activity !is AppAuthActivity) {
+                activityReferences += 1
+            }
+            InitializeActivity.showOldVersionAlert(activity)
+            activity.finish()
+            return
+        }
         if (activity !is AppAuthActivity) {
             activityReferences += 1
         } else {
@@ -532,7 +545,7 @@ open class MixinApplication :
             }
             appAuthShown = true
         }
-        if (activityReferences == 1 && activity !is AppAuthActivity && !isActivityChangingConfigurations) {
+        if (activityReferences == 1 && activity !is AppAuthActivity && !isActivityChangingConfigurations && !isOldVersion()) {
             checkAndShowAppAuth(activity)
         }
     }
@@ -618,6 +631,9 @@ open class MixinApplication :
     }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
+        if (isOldVersion()) {
+            return false
+        }
         val appAuth = defaultSharedPreferences.getInt(PREF_APP_AUTH, -1)
         if (appAuth != -1) {
             if (appAuth == 0) {

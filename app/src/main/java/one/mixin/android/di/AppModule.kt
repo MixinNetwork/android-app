@@ -25,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
+import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -126,12 +127,25 @@ import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
 import java.util.Locale
 import java.util.UUID
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.inject.Singleton
 import kotlin.math.abs
 
 internal fun referralAcceptLanguage(locale: Locale = Locale.getDefault()): String = locale.toLanguageTag()
+
+class NetworkDispatcherRegistry {
+    private val dispatchers = CopyOnWriteArraySet<Dispatcher>()
+
+    fun register(dispatcher: Dispatcher) {
+        dispatchers.add(dispatcher)
+    }
+
+    fun cancelAll() {
+        dispatchers.forEach { it.cancelAll() }
+    }
+}
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [(BaseDbModule::class)])
@@ -196,10 +210,15 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideNetworkDispatcherRegistry(): NetworkDispatcherRegistry = NetworkDispatcherRegistry()
+
+    @Singleton
+    @Provides
     fun provideOkHttp(
         resolver: ContentResolver,
         httpLoggingInterceptor: HttpLoggingInterceptor?,
         engine: CronetEngine?,
+        dispatcherRegistry: NetworkDispatcherRegistry,
     ): OkHttpClient {
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(10, TimeUnit.SECONDS)
@@ -309,7 +328,7 @@ object AppModule {
         if (engine != null) {
             builder.addInterceptor(MixinCronetInterceptor.newBuilder(engine).build())
         }
-        return builder.build()
+        return builder.build().also { dispatcherRegistry.register(it.dispatcher) }
     }
 
     @Singleton
@@ -451,7 +470,11 @@ object AppModule {
         @Suppress("INFERRED_INVISIBLE_RETURN_TYPE_WARNING")
         val scheduler: Scheduler = FrameworkJobSchedulerService.createSchedulerFor(app.applicationContext, MyJobService::class.java)
         builder.scheduler(scheduler)
-        return MixinJobManager(builder.build())
+        return MixinJobManager(builder.build()).apply {
+            if ((app as? MixinApplication)?.isOldVersion() == true) {
+                stop()
+            }
+        }
     }
 
     private fun Throwable.findMissingAccountScopeException(): MissingAccountScopeException? {
@@ -528,6 +551,7 @@ object AppModule {
         resolver: ContentResolver,
         httpLoggingInterceptor: HttpLoggingInterceptor?,
         @ApplicationContext appContext: Context,
+        dispatcherRegistry: NetworkDispatcherRegistry,
     ): RouteService {
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(15, TimeUnit.SECONDS)
@@ -557,7 +581,7 @@ object AppModule {
                     val request = b.build()
                     return@addInterceptor chain.proceed(request)
                 }
-            }.build()
+            }.build().also { dispatcherRegistry.register(it.dispatcher) }
         val retrofit =
             Retrofit.Builder()
                 .baseUrl(ROUTE_BOT_URL)
@@ -574,6 +598,7 @@ object AppModule {
         resolver: ContentResolver,
         httpLoggingInterceptor: HttpLoggingInterceptor?,
         @ApplicationContext appContext: Context,
+        dispatcherRegistry: NetworkDispatcherRegistry,
     ): ReferralService {
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(15, TimeUnit.SECONDS)
@@ -603,7 +628,7 @@ object AppModule {
                     val request = b.build()
                     return@addInterceptor chain.proceed(request)
                 }
-            }.build()
+            }.build().also { dispatcherRegistry.register(it.dispatcher) }
         val retrofit =
             Retrofit.Builder()
                 .baseUrl(REFERRAL_API_URL)
@@ -620,6 +645,7 @@ object AppModule {
         resolver: ContentResolver,
         httpLoggingInterceptor: HttpLoggingInterceptor?,
         @ApplicationContext appContext: Context,
+        dispatcherRegistry: NetworkDispatcherRegistry,
     ): CashService {
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(15, TimeUnit.SECONDS)
@@ -649,7 +675,7 @@ object AppModule {
                     val request = b.build()
                     return@addInterceptor chain.proceed(request)
                 }
-            }.build()
+            }.build().also { dispatcherRegistry.register(it.dispatcher) }
         val retrofit =
             Retrofit.Builder()
                 .baseUrl(CASH_URL)
@@ -666,6 +692,7 @@ object AppModule {
         resolver: ContentResolver,
         httpLoggingInterceptor: HttpLoggingInterceptor?,
         @ApplicationContext appContext: Context,
+        dispatcherRegistry: NetworkDispatcherRegistry,
     ): EarnService {
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(15, TimeUnit.SECONDS)
@@ -695,7 +722,7 @@ object AppModule {
                     val request = b.build()
                     return@addInterceptor chain.proceed(request)
                 }
-            }.build()
+            }.build().also { dispatcherRegistry.register(it.dispatcher) }
         val retrofit =
             Retrofit.Builder()
                 .baseUrl(EARN_URL)

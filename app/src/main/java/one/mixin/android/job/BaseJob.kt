@@ -439,6 +439,9 @@ abstract class BaseJob(params: Params) : Job(params) {
         if (throwable is MissingAccountScopeException) {
             return false
         }
+        if (throwable is ClientErrorException) {
+            return throwable.shouldRetry()
+        }
         if (throwable is SocketTimeoutException) {
             return true
         }
@@ -451,13 +454,10 @@ abstract class BaseJob(params: Params) : Job(params) {
         return (throwable as? ServerErrorException)?.shouldRetry()
             ?: (throwable as? ExpiredTokenException)?.shouldRetry()
             ?: (
-                (throwable as? ClientErrorException)?.shouldRetry()
+                (throwable as? NetworkException)?.shouldRetry()
                     ?: (
-                        (throwable as? NetworkException)?.shouldRetry()
-                            ?: (
-                                (throwable as? WebSocketException)?.shouldRetry()
-                                    ?: ((throwable as? LocalJobException)?.shouldRetry() ?: false)
-                            )
+                        (throwable as? WebSocketException)?.shouldRetry()
+                            ?: ((throwable as? LocalJobException)?.shouldRetry() ?: false)
                     )
             )
     }

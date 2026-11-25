@@ -17,6 +17,7 @@ import one.mixin.android.extension.getDeviceId
 import one.mixin.android.util.ErrorHandler.Companion.BAD_DATA
 import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
+import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
@@ -125,32 +126,12 @@ abstract class MixinJob(
             blazeMessage.params.conversation_checksum = jobSenderKey.getCheckSum(it)
         }
         val bm = chatWebSocket.sendMessage(blazeMessage)
-        if (bm == null) {
-            SystemClock.sleep(SLEEP_MILLIS)
-            throw WebSocketException()
-        } else if (bm.error != null) {
-            when (bm.error.code) {
-                CONVERSATION_CHECKSUM_INVALID_ERROR -> {
-                    blazeMessage.params?.conversation_id?.let {
-                        jobSenderKey.syncConversation(it)
-                    }
-                    throw ChecksumException()
-                }
-                FORBIDDEN -> {
-                    return true
-                }
-                BAD_DATA -> {
-                    reportException(IllegalArgumentException("$blazeMessage, $bm"))
-                    return true
-                }
-                else -> {
-                    SystemClock.sleep(SLEEP_MILLIS)
-                    Timber.e("$blazeMessage, $bm")
-                    throw NetworkException()
-                }
-            }
-        }
-        return true
+        return handleDeliverResponse(
+            blazeMessage = blazeMessage,
+            bm = bm,
+            onChecksumInvalid = { conversationId -> jobSenderKey.syncConversation(conversationId) },
+            onSleep = { SystemClock.sleep(SLEEP_MILLIS) },
+        )
     }
 
     protected fun sendNoKeyMessage(
@@ -224,4 +205,39 @@ abstract class MixinJob(
     }
 
     internal abstract fun cancel()
+}
+
+internal fun handleDeliverResponse(
+    blazeMessage: BlazeMessage,
+    bm: BlazeMessage?,
+    onChecksumInvalid: (String) -> Unit,
+    onSleep: () -> Unit,
+): Boolean {
+    if (bm == null) {
+        onSleep()
+        throw WebSocketException()
+    } else if (bm.error != null) {
+        when (bm.error.code) {
+            CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                blazeMessage.params?.conversation_id?.let(onChecksumInvalid)
+                throw ChecksumException()
+            }
+            OLD_VERSION -> {
+                throw WebSocketException()
+            }
+            FORBIDDEN -> {
+                return true
+            }
+            BAD_DATA -> {
+                reportException(IllegalArgumentException("$blazeMessage, $bm"))
+                return true
+            }
+            else -> {
+                onSleep()
+                Timber.e("$blazeMessage, $bm")
+                throw NetworkException()
+            }
+        }
+    }
+    return true
 }
