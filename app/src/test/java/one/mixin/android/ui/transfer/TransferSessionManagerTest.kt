@@ -239,6 +239,35 @@ class TransferSessionManagerTest {
     }
 
     @Test
+    fun `late CONNECT after long preparation still passes within a fresh connect window`() {
+        var now = 1_700_000_000_000L
+        val manager = TransferSessionManager { now }
+        val session = manager.initiateSession(TransferDirection.TRANSFER_TO_PHONE, accountId)
+        // Preparation consumes almost the whole pairing TTL
+        now += TransferSessionManager.DEFAULT_PAIRING_TTL_MS - 1_000L
+        assertTrue(manager.beginSending(session.sessionId, accountId))
+
+        now += 10_000L
+        assertTrue(
+            manager.validateServerConnect(
+                sessionId = session.sessionId,
+                currentAccountId = accountId,
+                currentExtensionSessionId = null,
+                remoteUserId = accountId,
+                remoteDeviceId = peerDeviceId,
+                receivedCode = 4242,
+                expectedCode = 4242,
+            ),
+        )
+        assertEquals(TransferSessionState.SENDING, manager.getSessionState(session.sessionId))
+
+        val unconnected = manager.initiateSession(TransferDirection.TRANSFER_TO_PHONE, accountId)
+        assertTrue(manager.beginSending(unconnected.sessionId, accountId))
+        now += TransferSessionManager.DEFAULT_PAIRING_TTL_MS + 1L
+        assertEquals(TransferSessionState.EXPIRED, manager.getSessionState(unconnected.sessionId))
+    }
+
+    @Test
     fun `beginSending and validateServerConnect reject desktop relink, wrong code, and peer mismatch`() {
         val manager = TransferSessionManager { 1_700_000_000_000L }
 

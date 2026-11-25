@@ -309,7 +309,9 @@ class TransferSessionManager(
             }
         }
         session.state = TransferSessionState.SENDING
-        session.transferExpiresAtMillis = null
+        // Restart the pairing window so a slow preparation does not eat into the wait for the peer's CONNECT
+        session.transferExpiresAtMillis =
+            maxOf(session.expiresAtMillis, clock() + (session.expiresAtMillis - session.createdAtMillis))
         return true
     }
 
