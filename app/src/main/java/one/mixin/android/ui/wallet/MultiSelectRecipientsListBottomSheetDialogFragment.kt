@@ -50,16 +50,25 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
         const val POS_EMPTY = 2
         const val POS_EMPTY_USER = 3
         const val LIMIT = 10
+        private const val ARGS_ADDRESS_ONLY = "args_address_only"
 
-        fun newInstance(user: UserItem? = null): MultiSelectRecipientsListBottomSheetDialogFragment {
+        fun newInstance(
+            user: UserItem? = null,
+            addressOnly: Boolean = false,
+        ): MultiSelectRecipientsListBottomSheetDialogFragment {
             return MultiSelectRecipientsListBottomSheetDialogFragment().withArgs {
                 putParcelable(ARGS_USER, user)
+                putBoolean(ARGS_ADDRESS_ONLY, addressOnly)
             }
         }
     }
 
     private val userItem by lazy {
         requireArguments().getParcelableCompat(ARGS_USER, UserItem::class.java)
+    }
+
+    private val addressOnly by lazy {
+        arguments?.getBoolean(ARGS_ADDRESS_ONLY, false) == true
     }
 
     private val binding by viewBinding(FragmentSelectListBottomSheetBinding::inflate)
@@ -78,9 +87,19 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
 
     private val groupAdapter: SelectedUserAdapter by lazy {
         SelectedUserAdapter { item ->
-            selectedRecipients.remove(item)
-            userAdapter.notifyItemChanged(userAdapter.currentList.indexOf(item))
-            addressesAdapter.notifyItemChanged(addressesAdapter.currentList.indexOf(item))
+            if (item is AddressItem) {
+                selectedRecipients.removeAll { it is AddressItem && it.id == item.id }
+                val index = addressesAdapter.currentList.indexOfFirst { it.id == item.id }
+                if (index >= 0) {
+                    addressesAdapter.notifyItemChanged(index)
+                }
+            } else {
+                selectedRecipients.remove(item)
+                val index = userAdapter.currentList.indexOf(item)
+                if (index >= 0) {
+                    userAdapter.notifyItemChanged(index)
+                }
+            }
             groupAdapter.notifyDataSetChanged()
         }
     }
@@ -103,6 +122,8 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
         dataProvider?.let { provider ->
             selectedRecipients.clear()
             selectedRecipients.addAll(provider.getCurrentRecipients())
+            groupAdapter.checkedUsers = selectedRecipients
+            groupAdapter.notifyDataSetChanged()
         }
         binding.ph.doOnPreDraw {
             binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -112,25 +133,37 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }
-        when (type) {
-            SnapshotType.all -> {
-                binding.radioAddress.isVisible = true
-                binding.radioUser.isVisible = true
-            }
-            SnapshotType.snapshot -> {
-                binding.radioAddress.isVisible = false
-                binding.radioUser.isChecked = true
-                binding.radioUser.isVisible = true
-                selectedRecipients.removeAll{
-                    it is AddressItem
+        if (addressOnly) {
+            binding.radioAddress.isVisible = true
+            binding.radioAddress.isChecked = true
+            binding.radioUser.isVisible = false
+            selectedRecipients.removeAll { it is UserItem }
+        } else {
+            when (type) {
+                SnapshotType.all -> {
+                    binding.radioAddress.isVisible = true
+                    binding.radioUser.isVisible = true
+                    if (selectedRecipients.isNotEmpty() && selectedRecipients.all { it is AddressItem }) {
+                        binding.radioAddress.isChecked = true
+                    } else {
+                        binding.radioUser.isChecked = true
+                    }
                 }
-            }
-            else -> {
-                binding.radioAddress.isVisible = true
-                binding.radioAddress.isChecked = true
-                binding.radioUser.isVisible = false
-                selectedRecipients.removeAll{
-                    it is UserItem
+                SnapshotType.snapshot -> {
+                    binding.radioAddress.isVisible = false
+                    binding.radioUser.isChecked = true
+                    binding.radioUser.isVisible = true
+                    selectedRecipients.removeAll {
+                        it is AddressItem
+                    }
+                }
+                else -> {
+                    binding.radioAddress.isVisible = true
+                    binding.radioAddress.isChecked = true
+                    binding.radioUser.isVisible = false
+                    selectedRecipients.removeAll {
+                        it is UserItem
+                    }
                 }
             }
         }
@@ -173,23 +206,29 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
                     }
                 }
             addressesAdapter.callback =
-                object :WalletSearchAddressCallback {
+                object : WalletSearchAddressCallback {
                     override fun onAddressClick(address: AddressItem) {
                         binding.searchEt.hideKeyboard()
-                        if (selectedRecipients.contains(address)) {
-                            selectedRecipients.remove(address)
-                        } else {
+                        val removed = selectedRecipients.removeAll { it is AddressItem && it.id == address.id }
+                        if (!removed) {
                             selectedRecipients.add(address)
                         }
-                        addressesAdapter.notifyItemChanged(addressesAdapter.currentList.indexOf(address))
+                        val index = addressesAdapter.currentList.indexOfFirst { it.id == address.id }
+                        if (index >= 0) {
+                            addressesAdapter.notifyItemChanged(index)
+                        }
                         groupAdapter.checkedUsers = selectedRecipients
                         groupAdapter.notifyDataSetChanged()
-                        selectRv.scrollToPosition(selectedRecipients.size - 1)
+                        if (!removed && selectedRecipients.isNotEmpty()) {
+                            selectRv.scrollToPosition(selectedRecipients.size - 1)
+                        }
                     }
                 }
-            depositTitle.setText(R.string.No_users)
+            depositTitle.setText(if (addressOnly) R.string.address_book_no_records else R.string.No_users)
             depositTv.isVisible = false
-            searchEt.setHint(getString(R.string.search_placeholder_app))
+            val isAddressTab = binding.radioGroup.checkedRadioButtonId == R.id.radio_address
+            rvVa.displayedChild = if (isAddressTab) POS_ADDRESS_RV else POS_USER_RV
+            searchEt.setHint(getString(if (isAddressTab) R.string.search_placeholder_address else R.string.search_placeholder_app))
             disposable =
                 searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
@@ -235,13 +274,36 @@ class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialo
             }
 
         bottomViewModel.allAddresses()
-            .observe(this) {
-                defaultAddress = it
+            .observe(this) { list ->
+                val selectedIds = selectedRecipients.filterIsInstance<AddressItem>().mapTo(HashSet()) { it.id }
+                val deduplicated = list
+                    .groupBy { Triple(it.chainId, it.destination, it.tag) }
+                    .values
+                    .map { group -> group.firstOrNull { it.id in selectedIds } ?: group.first() }
+                defaultAddress = deduplicated
+                var changed = false
+                for (i in selectedRecipients.indices) {
+                    val existing = selectedRecipients[i] as? AddressItem ?: continue
+                    val matched = deduplicated.firstOrNull { it.id == existing.id }
+                        ?: deduplicated.firstOrNull {
+                            it.chainId == existing.chainId && it.destination == existing.destination && it.tag == existing.tag
+                        }
+                    if (matched != null && matched != existing) {
+                        selectedRecipients[i] = matched
+                        changed = true
+                    }
+                }
+                if (changed) {
+                    groupAdapter.checkedUsers = selectedRecipients
+                    groupAdapter.notifyDataSetChanged()
+                }
                 if (binding.searchEt.et.text.isNullOrBlank()) {
                     addressesAdapter.submitList(defaultAddress)
                 }
                 if (defaultAddress.isEmpty() && binding.radioGroup.checkedRadioButtonId == R.id.radio_address) {
                     binding.rvVa.displayedChild = POS_EMPTY
+                } else if (binding.searchEt.et.text.isNullOrBlank() && binding.radioGroup.checkedRadioButtonId == R.id.radio_address) {
+                    binding.rvVa.displayedChild = POS_ADDRESS_RV
                 }
             }
     }

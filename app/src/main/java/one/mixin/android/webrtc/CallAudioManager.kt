@@ -1,15 +1,12 @@
 package one.mixin.android.webrtc
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
-import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import one.mixin.android.R
 import one.mixin.android.extension.AudioDevice
@@ -57,7 +54,7 @@ class CallAudioManager(
     }
 
     private fun initAudioSwitch() {
-        if (!initAudioSwitch && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED)) {
+        if (!initAudioSwitch) {
             initAudioSwitch = true
             audioSwitch.start { audioDevices, selectedAudioDevice ->
                 Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")

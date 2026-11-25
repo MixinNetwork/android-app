@@ -7,7 +7,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_TITLE
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentPermissionBinding
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
@@ -91,7 +91,7 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val miniHeight by lazy {
-        requireContext().realSize().y / 2
+        requireContext().windowHeight() / 2
     }
 
     private var isHandle: Boolean = false

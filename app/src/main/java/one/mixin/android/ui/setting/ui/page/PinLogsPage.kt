@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting.ui.page
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -18,10 +19,12 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.computedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -115,29 +118,41 @@ private fun LogsList(
     loadMore: () -> Unit,
 ) {
     val state = rememberLazyListState()
+    val context = LocalContext.current
+    val currentLoadMore by rememberUpdatedState(loadMore)
 
-    val isLastItemVisible =
-        with(state.layoutInfo) {
-            visibleItemsInfo.lastOrNull()?.index == totalItemsCount - 1
+    val isLastItemVisible by remember(state) {
+        computedStateOf {
+            with(state.layoutInfo) {
+                totalItemsCount > 0 && visibleItemsInfo.lastOrNull()?.index == totalItemsCount - 1
+            }
         }
+    }
 
-    if (isLastItemVisible) {
-        loadMore()
+    LaunchedEffect(isLastItemVisible, logs.size) {
+        if (isLastItemVisible) {
+            currentLoadMore()
+        }
     }
 
     LazyColumn(state = state) {
-        items(logs) { log ->
-            LogItem(log = log)
+        items(
+            items = logs,
+            key = { it.logId },
+            contentType = { "pin_log" },
+        ) { log ->
+            LogItem(log = log, context = context)
         }
     }
 }
 
 @Composable
-private fun LogItem(log: LogResponse) {
-    val context = LocalContext.current
-
+private fun LogItem(
+    log: LogResponse,
+    context: Context,
+) {
     val description =
-        remember(log.code) {
+        remember(log.code, context) {
             PinLogsFragment.getLogDescription(context, log.code)
         }
 

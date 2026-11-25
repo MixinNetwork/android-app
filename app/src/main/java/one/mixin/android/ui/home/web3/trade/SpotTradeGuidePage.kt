@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -85,7 +86,7 @@ fun SpotTradeGuidePage(
         stringResource(R.string.Trade_Advanced),
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
-    var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
+    var selectedTab by rememberSaveable(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
 
     Column(
         modifier = Modifier
@@ -240,8 +241,8 @@ private fun SpotTradeExampleCard(
         calculateMarketPrice(usdtToken, btcToken)
     }
     var isPriceDisplayReversed by remember(limitStrategy) { mutableStateOf(false) }
-    var strategy by remember(limitStrategy) { mutableStateOf(limitStrategy ?: LimitStrategy.BuyLow) }
-    var payAmount by remember(limitStrategy, strategy) {
+    var strategy by rememberSaveable(limitStrategy) { mutableStateOf(limitStrategy ?: LimitStrategy.BuyLow) }
+    var payAmount by rememberSaveable(limitStrategy, strategy) {
         mutableStateOf(defaultPayAmount(limitStrategy, strategy))
     }
     var limitPriceOffset by remember(limitStrategy, strategy) { mutableStateOf(BigDecimal.ZERO) }

@@ -14,16 +14,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import one.mixin.android.ui.home.web3.components.InscriptionState
+
+private class ShareCardSize(var size: IntSize = IntSize.Zero)
 
 @Composable
 fun SharePage(
@@ -36,7 +37,7 @@ fun SharePage(
     onSave: (size: IntSize, bottomSize: IntSize) -> Unit,
     onShare: (size: IntSize, bottomSize: IntSize) -> Unit
 ) {
-    val targetSize = remember { mutableStateOf(IntSize.Zero) }
+    val targetSize = remember { ShareCardSize() }
     Box(
         modifier = Modifier
             .background(Color(0xB3000000))
@@ -59,8 +60,8 @@ fun SharePage(
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color.White)
                     .wrapContentHeight()
-                    .onGloballyPositioned { coordinates ->
-                        targetSize.value = coordinates.size
+                    .onSizeChanged { size ->
+                        targetSize.size = size
                     }, qrcode = qrcode, inscriptionHash, value, inScreenshot
             ) {
                 onClose()
@@ -70,9 +71,9 @@ fun SharePage(
                 .clip(RoundedCornerShape(8.dp))
                 .background(Color.White)
                 .padding(16.dp), onShare = { bottomSize ->
-                onShare(targetSize.value, bottomSize)
+                onShare(targetSize.size, bottomSize)
             }, onCopy = onCopy, onSave = { bottomSize ->
-                onSave(targetSize.value, bottomSize)
+                onSave(targetSize.size, bottomSize)
             })
         }
     }

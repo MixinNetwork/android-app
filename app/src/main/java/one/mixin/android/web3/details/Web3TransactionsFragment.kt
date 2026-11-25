@@ -45,7 +45,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
@@ -214,7 +214,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 bottomCard.post {
                     bottomCard.isVisible = true
                     val remainingHeight =
-                        requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
+                        requireContext().windowHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
                     bottomRl.updateLayoutParams {
                         height = remainingHeight
                     }

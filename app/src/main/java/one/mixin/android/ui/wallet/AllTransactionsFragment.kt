@@ -43,6 +43,7 @@ import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.SnapshotItem
@@ -50,6 +51,7 @@ import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
+import one.mixin.android.vo.toAddressItem
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -59,12 +61,15 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
         const val ARGS_USER = "args_user"
         const val ARGS_TOKEN = "args_token"
         const val PENDING_TYPE = "pending_type"
+        const val ARGS_ADDRESS = "args_address"
+        const val ARGS_ADDRESS_ICON_URL = "args_address_icon_url"
 
-        fun newInstance(user: UserItem? = null, tokenItem: TokenItem? = null, pendingType: Boolean = false): AllTransactionsFragment {
+        fun newInstance(user: UserItem? = null, tokenItem: TokenItem? = null, pendingType: Boolean = false, address: Address? = null): AllTransactionsFragment {
             return AllTransactionsFragment().withArgs {
                 putParcelable(ARGS_USER, user)
                 putParcelable(ARGS_TOKEN, tokenItem)
                 putBoolean(PENDING_TYPE, pendingType)
+                putParcelable(ARGS_ADDRESS, address)
             }
         }
     }
@@ -87,10 +92,13 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
 
     private val filterParams by lazy {
         val type = if (pendingType) SnapshotType.pending else SnapshotType.all
+        val addressIconUrl = requireArguments().getString(ARGS_ADDRESS_ICON_URL)
+        val initialAddress = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java)?.toAddressItem(addressIconUrl)
+        val initialRecipients = listOfNotNull(userItem, initialAddress).takeIf { it.isNotEmpty() }
         FilterParams(
             type = type,
-            recipients = userItem?.let { listOf(it) },
-            tokenItems = tokenItem?.let { listOf(it) }
+            recipients = initialRecipients,
+            tokenItems = tokenItem?.let { listOf(it) },
         )
     }
 
@@ -334,7 +342,8 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
             .setOnMultiSelectUserListener(object : MultiSelectRecipientsListBottomSheetDialogFragment.OnMultiSelectRecipientListener {
                 override fun onRecipientSelect(users: List<Recipient>?) {
                     binding.filterUser.close()
-                    filterParams.recipients = users
+                    filterParams.recipients = users?.takeIf { it.isNotEmpty() }
+                    filterParams.address = null
                     loadFilter()
                 }
 

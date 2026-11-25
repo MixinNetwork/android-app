@@ -12,6 +12,12 @@ import androidx.compose.material.RippleConfiguration
 import androidx.compose.material.RippleDefaults
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalRippleConfiguration as M3LocalRippleConfiguration
+import androidx.compose.material3.MaterialTheme as M3MaterialTheme
+import androidx.compose.material3.RippleConfiguration as M3RippleConfiguration
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -181,6 +187,10 @@ private fun quoteGreen(isP3Supported: Boolean) =
 
 private val LocalColors = compositionLocalOf { lightColorPalette(false) }
 
+/**
+ * Bridges Mixin's palette to both Material 3 and legacy Material 2 themes.
+ * New Compose screens should use `androidx.compose.material3`; Material 2 remains for legacy pages during migration.
+ */
 @Composable
 fun MixinAppTheme(
     darkTheme: Boolean = if (LocalInspectionMode.current) {
@@ -203,6 +213,44 @@ fun MixinAppTheme(
                 lightColorPalette(isP3Supported)
             }
         }
+    val m3ColorScheme =
+        remember(darkTheme, colors) {
+            if (darkTheme) {
+                darkColorScheme(
+                    primary = colors.accent,
+                    onPrimary = Color.White,
+                    secondary = colors.accent,
+                    onSecondary = Color.White,
+                    background = colors.background,
+                    onBackground = colors.textPrimary,
+                    surface = colors.background,
+                    onSurface = colors.textPrimary,
+                    surfaceVariant = colors.backgroundWindow,
+                    onSurfaceVariant = colors.textAssist,
+                    outline = colors.borderColor,
+                    outlineVariant = colors.borderPrimary,
+                    error = colors.red,
+                    onError = Color.White,
+                )
+            } else {
+                lightColorScheme(
+                    primary = colors.accent,
+                    onPrimary = Color.White,
+                    secondary = colors.accent,
+                    onSecondary = Color.White,
+                    background = colors.background,
+                    onBackground = colors.textPrimary,
+                    surface = colors.background,
+                    onSurface = colors.textPrimary,
+                    surfaceVariant = colors.backgroundWindow,
+                    onSurfaceVariant = colors.textAssist,
+                    outline = colors.borderColor,
+                    outlineVariant = colors.borderPrimary,
+                    error = colors.red,
+                    onError = Color.White,
+                )
+            }
+        }
     val textSelectionColors =
         TextSelectionColors(
             handleColor = Color(0xFF3D75E3),
@@ -215,16 +263,24 @@ fun MixinAppTheme(
         rippleAlpha = RippleDefaults.rippleAlpha(if (darkTheme) Color.White else Color.LightGray, !darkTheme),
     )
 
-    @OptIn(ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalMaterial3Api::class)
+    val m3RippleConfiguration = M3RippleConfiguration(
+        color = if (darkTheme) Color.White else Color.LightGray,
+    )
+
+    @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
     MaterialTheme(
         if (darkTheme) darkColors() else lightColors(),
     ) {
-        CompositionLocalProvider(
-            LocalColors provides colors,
-            LocalTextSelectionColors provides textSelectionColors,
-            LocalRippleConfiguration provides rippleConfiguration
-        ) {
-            content()
+        M3MaterialTheme(colorScheme = m3ColorScheme) {
+            CompositionLocalProvider(
+                LocalColors provides colors,
+                LocalTextSelectionColors provides textSelectionColors,
+                LocalRippleConfiguration provides rippleConfiguration,
+                M3LocalRippleConfiguration provides m3RippleConfiguration,
+            ) {
+                content()
+            }
         }
     }
 }
