@@ -73,7 +73,7 @@ fun AlertFrequencyBottom(
 
 
         LazyColumn {
-            items(AlertFrequency.entries.toTypedArray()) { alertFrequency ->
+            items(AlertFrequency.entries, key = { it.name }, contentType = { "alert_frequency" }) { alertFrequency ->
                 Spacer(Modifier.height(8.dp))
 
                 AlertSelectItem(

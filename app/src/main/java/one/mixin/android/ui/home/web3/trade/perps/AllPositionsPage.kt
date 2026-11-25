@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -239,6 +240,7 @@ fun AllPositionsPage(
                     )
                 } else {
                     ClosedPositionsContent(
+                        context = context,
                         positions = closedPositionsPaging,
                         totalRealizedPnl = BigDecimal.valueOf(totalRealizedPnl),
                         quoteColorReversed = quoteColorReversed,
@@ -273,7 +275,7 @@ private fun OpenPositionsContent(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
             ) {
-                item {
+                item(key = "total_position_value", contentType = "summary_card") {
                     TotalPositionValueCard(
                         totalMargin = totalMargin,
                         totalPnl = totalPnl,
@@ -281,7 +283,7 @@ private fun OpenPositionsContent(
                         quoteColorReversed = quoteColorReversed,
                     )
                 }
-                item {
+                item(key = "header_spacer", contentType = "spacer") {
                     Spacer(modifier = Modifier.height(12.dp))
                 }
                 openPositionItems(
@@ -341,6 +343,7 @@ private fun OpenPositionsContent(
 
 @Composable
 private fun ClosedPositionsContent(
+    context: Context,
     positions: LazyPagingItems<PerpsOrderItem>,
     totalRealizedPnl: BigDecimal,
     quoteColorReversed: Boolean,
@@ -355,16 +358,17 @@ private fun ClosedPositionsContent(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
             ) {
-                item {
+                item(key = "total_realized_pnl", contentType = "summary_card") {
                     TotalRealizedPnlCard(
                         totalPnl = totalRealizedPnl,
                         quoteColorReversed = quoteColorReversed,
                     )
                 }
-                item {
+                item(key = "header_spacer", contentType = "spacer") {
                     Spacer(modifier = Modifier.height(12.dp))
                 }
                 closedPositionItems(
+                    context = context,
                     positions = positions,
                     onPositionClick = onPositionClick,
                 )
@@ -479,6 +483,7 @@ private fun Modifier.groupedItemBorder(
 }
 
 private fun LazyListScope.closedPositionItems(
+    context: Context,
     positions: LazyPagingItems<PerpsOrderItem>,
     onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
@@ -490,7 +495,6 @@ private fun LazyListScope.closedPositionItems(
         },
     ) { index ->
         val order = positions[index] ?: return@items
-        val context = LocalContext.current
         val date = order.createdAtDateLabel(context)
         val previousDate = if (index > 0) {
             positions.peek(index - 1)?.createdAtDateLabel(context)
@@ -607,7 +611,7 @@ private fun TotalRealizedPnlCard(
 
 private fun LazyListScope.appendLoadingItem(loadState: LoadState) {
     if (loadState is LoadState.Loading) {
-        item {
+        item(key = "append_loading", contentType = "loading") {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

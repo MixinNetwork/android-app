@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.dpToPx
@@ -211,7 +210,17 @@ fun VerifyPinBeforeImportWalletPage(tip: Tip, mode: WalletSecurityActivity.Mode,
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         content = {
-                            items(list.size) { index ->
+                            items(
+                                count = list.size,
+                                key = { list[it] },
+                                contentType = { index ->
+                                    when (index) {
+                                        9 -> "empty"
+                                        11 -> "delete"
+                                        else -> "digit"
+                                    }
+                                },
+                            ) { index ->
                                 Box(
                                     contentAlignment = Alignment.Center,
                                     modifier =

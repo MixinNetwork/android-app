@@ -3,7 +3,6 @@
 package one.mixin.android.widget
 
 import one.mixin.android.extension.isCompactWindow
-import one.mixin.android.extension.screenHeight
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
@@ -63,7 +62,6 @@ import one.mixin.android.extension.isPhoneLandscape
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.realSize
 import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.util.SystemUIManager
@@ -743,7 +741,7 @@ fun BottomSheet.getMaxCustomViewHeight(): Int {
     val totalHeight =
         if (isNotchScreen) {
             val bottom = this.lastInsets?.getSystemWindowBottom() ?: 0
-            (if (context.isExpandedSheetScreen()) context.windowHeight() else context.realSize().y) - bottom
+            context.windowHeight() - bottom
         } else {
             val size = Point()
             val manager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -800,5 +798,4 @@ internal fun Context.isExpandedSheetScreen(): Boolean {
     return !activity.isCompactWindow()
 }
 
-internal fun Context.bottomSheetHeight(): Int =
-    if (isExpandedSheetScreen()) windowHeight() else screenHeight()
+internal fun Context.bottomSheetHeight(): Int = windowHeight()

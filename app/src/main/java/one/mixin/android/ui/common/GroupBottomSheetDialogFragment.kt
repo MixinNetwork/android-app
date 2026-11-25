@@ -187,10 +187,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         binding.avatar.setOnClickListener {
             if (!isAdded || !::conversation.isInitialized) return@setOnClickListener
 
-            val icon = conversation.iconUrl
-            if (icon.isNullOrBlank() || !icon.isWebUrl()) {
-                return@setOnClickListener
-            }
+            val icon = conversation.iconUrl?.takeIf { it.isNotBlank() }
+                ?: "android.resource://${requireContext().packageName}/${R.drawable.ic_group_place_holder}"
             AvatarViewerOverlay.show(requireActivity(), icon, binding.avatar)
         }
         setDetailsTv(binding.detailTv, binding.scrollView, conversationId)

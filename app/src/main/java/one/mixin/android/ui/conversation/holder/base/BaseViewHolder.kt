@@ -62,6 +62,10 @@ abstract class BaseViewHolder constructor(containerView: View) :
         protected var currentMediaWidth: Int = 0
         protected var currentMediaHeight: Int = 0
 
+        init {
+            itemView.setOnContextClickListener { it.performLongClick() }
+        }
+
         protected open fun bind(messageItem: MessageItem) {
             currentMessageId = messageItem.messageId
             currentMediaWidth = messageItem.mediaWidth ?: 0
