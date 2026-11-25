@@ -4,6 +4,7 @@ package one.mixin.android.ui.wallet.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,38 +17,41 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -59,11 +63,14 @@ import one.mixin.android.crypto.isEvmPrivateKeyValid
 import one.mixin.android.crypto.isSolanaAddressValid
 import one.mixin.android.crypto.isSolanaHexPrivateKeyValid
 import one.mixin.android.crypto.isSolanaPrivateKeyValid
+import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.ui.wallet.network.NetworkOption
+import one.mixin.android.ui.wallet.network.NetworkSelectBottomSheetDialogFragment
 import one.mixin.android.util.encodeToBase58String
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.crypto.DumpedPrivateKey
@@ -73,7 +80,6 @@ import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ImportWalletDetailPage(
     mode: WalletSecurityActivity.Mode,
@@ -86,7 +92,13 @@ fun ImportWalletDetailPage(
     defaultWalletName: String? = null,
 ) {
     val context = LocalContext.current
-    var text by remember(contentText) { mutableStateOf(contentText) }
+    val textState = remember { TextFieldState(initialText = contentText) }
+    LaunchedEffect(contentText) {
+        if (textState.text.toString() != contentText) {
+            textState.setTextAndPlaceCursorAtEnd(contentText)
+        }
+    }
+    val text = textState.text.toString()
     val clipboardManager = LocalClipboardManager.current
     val walletViewModel: Web3ViewModel = hiltViewModel()
 
@@ -107,23 +119,23 @@ fun ImportWalletDetailPage(
         "Arc" to Constants.ChainId.Arc,
         "Solana" to Constants.ChainId.SOLANA_CHAIN_ID
     )
-    var expanded by remember { mutableStateOf(false) }
     val initialNetworkName = remember(chainId) {
         if (chainId == null) null
         else networks.entries.find { it.value == chainId }?.key
     }
 
-    var selectedNetworkName by remember(initialNetworkName) {
+    var selectedNetworkName by rememberSaveable(initialNetworkName) {
         mutableStateOf(initialNetworkName ?: "Ethereum")
     }
     val showWalletNameInput = mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY ||
         mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
-    var walletName by remember(showWalletNameInput) { mutableStateOf("") }
-    var hasInitializedWalletName by remember(showWalletNameInput) { mutableStateOf(false) }
+    val walletNameState = rememberTextFieldState()
+    val walletName = walletNameState.text.toString()
+    var hasInitializedWalletName by rememberSaveable(showWalletNameInput) { mutableStateOf(false) }
 
     LaunchedEffect(defaultWalletName, showWalletNameInput) {
         if (showWalletNameInput && !hasInitializedWalletName && !defaultWalletName.isNullOrBlank()) {
-            walletName = defaultWalletName
+            walletNameState.setTextAndPlaceCursorAtEnd(defaultWalletName.take(36))
             hasInitializedWalletName = true
         }
     }
@@ -198,55 +210,41 @@ fun ImportWalletDetailPage(
         }
     }
 
-    val isInputValid by remember(mode, text, isEvmNetwork, isBitcoin, isPearl, isLitecoin, isSolana) {
-        derivedStateOf {
-            when (mode) {
-                WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
-                WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
-                    if (isEvmNetwork) {
-                        isEvmPrivateKeyValid(text)
-                    } else if (isBitcoin || isPearl) {
-                        isBitcoinPrivateKeyValid(text)
-                    } else if (isLitecoin) {
-                        runCatching { UtxoKeyGenerator.parseLitecoinPrivateKey(text) }.isSuccess
-                    } else if (isSolana) {
-                        isSolanaPrivateKeyValid(text)
-                    } else {
-                        false
-                    }
+    val isInputValid = remember(mode, text, isEvmNetwork, isBitcoin, isPearl, isLitecoin, isSolana) {
+        when (mode) {
+            WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
+            WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
+                if (isEvmNetwork) {
+                    isEvmPrivateKeyValid(text)
+                } else if (isBitcoin || isPearl) {
+                    isBitcoinPrivateKeyValid(text)
+                } else if (isLitecoin) {
+                    runCatching { UtxoKeyGenerator.parseLitecoinPrivateKey(text) }.isSuccess
+                } else if (isSolana) {
+                    isSolanaPrivateKeyValid(text)
+                } else {
+                    false
                 }
-                WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
-                    if (isEvmNetwork) {
-                        isEvmAddressValid(text)
-                    } else if (isBitcoin || isPearl || isLitecoin) {
-                        UtxoKeyGenerator.isAddressValid(text, currentChainId)
-                    } else if(isSolana) {
-                        isSolanaAddressValid(text)
-                    } else {
-                        false
-                    }
-                }
-                else -> false
             }
+            WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
+                if (isEvmNetwork) {
+                    isEvmAddressValid(text)
+                } else if (isBitcoin || isPearl || isLitecoin) {
+                    UtxoKeyGenerator.isAddressValid(text, currentChainId)
+                } else if(isSolana) {
+                    isSolanaAddressValid(text)
+                } else {
+                    false
+                }
+            }
+            else -> false
         }
     }
 
-    val showInvalidError by remember(text, isInputValid) {
-        derivedStateOf {
-            text.isNotEmpty() && !isInputValid
-        }
-    }
+    val showInvalidError = text.isNotEmpty() && !isInputValid
 
-    val showReimportMismatchError by remember(mode, isInputValid, isAddressMismatched) {
-        derivedStateOf {
-            mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY && text.isNotEmpty() && isInputValid && isAddressMismatched
-        }
-    }
-    val isWalletNameValid by remember(showWalletNameInput, walletName) {
-        derivedStateOf {
-            !showWalletNameInput || walletName.trim().isNotEmpty()
-        }
-    }
+    val showReimportMismatchError = mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY && text.isNotEmpty() && isInputValid && isAddressMismatched
+    val isWalletNameValid = !showWalletNameInput || walletName.trim().isNotEmpty()
 
     val isButtonEnabled = when (mode) {
         WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> isInputValid && !isAddressMismatched
@@ -288,92 +286,98 @@ fun ImportWalletDetailPage(
                     .padding(16.dp)
             ) {
                 if (showWalletNameInput) {
-                    TextField(
-                        value = walletName,
-                        onValueChange = { if (it.length <= 36) walletName = it },
-                        label = { Text(stringResource(R.string.Wallet_Name), color = MixinAppTheme.colors.accent) },
-                        singleLine = true,
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = MixinAppTheme.colors.textPrimary,
-                            backgroundColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            cursorColor = MixinAppTheme.colors.accent,
-                        ),
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
-                            .background(
-                                color = MixinAppTheme.colors.background,
-                            )
+                            .background(color = MixinAppTheme.colors.background)
                             .border(
                                 width = 1.dp,
                                 color = MixinAppTheme.colors.borderColor,
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(8.dp),
                             )
-                    )
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.Wallet_Name),
+                            color = MixinAppTheme.colors.accent,
+                            fontSize = 12.sp,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        BasicTextField(
+                            state = walletNameState,
+                            inputTransformation = InputTransformation {
+                                if (length > 36) {
+                                    revertAllChanges()
+                                }
+                            },
+                            lineLimits = TextFieldLineLimits.SingleLine,
+                            cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+                            textStyle = TextStyle(
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 16.sp,
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = {
-                        if (chainId == null) {
-                            expanded = !expanded
-                        }
-                    },
-                ) {
-                    TextField(
-                        readOnly = true,
-                        value = selectedNetworkName,
-                        onValueChange = { },
-                        label = { Text(stringResource(R.string.Choose_Network), color = MixinAppTheme.colors.accent) },
-                        trailingIcon = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(color = MixinAppTheme.colors.background)
+                        .border(
+                            width = 1.dp,
+                            color = MixinAppTheme.colors.borderColor,
+                            shape = RoundedCornerShape(8.dp),
+                        )
+                        .then(
                             if (chainId == null) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_sort_arrow_down),
-                                    contentDescription = null,
-                                    tint = MixinAppTheme.colors.iconGray
-                                )
-                            }
-                        },
-                        colors = TextFieldDefaults.textFieldColors(
-                            textColor = MixinAppTheme.colors.textPrimary,
-                            backgroundColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(
-                                color = MixinAppTheme.colors.background,
-                            )
-                            .border(
-                                width = 1.dp,
-                                color = MixinAppTheme.colors.borderColor,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = {
-                            expanded = false
-                        },
-                    ) {
-                        networks.keys.forEach { networkName ->
-                            DropdownMenuItem(
-                                onClick = {
-                                    selectedNetworkName = networkName
-                                    expanded = false
+                                Modifier.clickable {
+                                    val fragmentManager = context.findFragmentActivityOrNull()?.supportFragmentManager
+                                        ?: return@clickable
+                                    if (fragmentManager.findFragmentByTag(NetworkSelectBottomSheetDialogFragment.TAG) != null) {
+                                        return@clickable
+                                    }
+                                    val options = ArrayList(networks.map { (name, id) -> NetworkOption(id, name) })
+                                    NetworkSelectBottomSheetDialogFragment.newInstance(
+                                        options,
+                                        networks[selectedNetworkName],
+                                    ).apply {
+                                        onNetworkSelected = { option ->
+                                            selectedNetworkName = option.name
+                                        }
+                                    }.showNow(fragmentManager, NetworkSelectBottomSheetDialogFragment.TAG)
                                 }
-                            ) {
-                                Text(text = networkName, color = MixinAppTheme.colors.textPrimary)
+                            } else {
+                                Modifier
                             }
-                        }
+                        )
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.Choose_Network),
+                            color = MixinAppTheme.colors.accent,
+                            fontSize = 12.sp,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = selectedNetworkName,
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontSize = 16.sp,
+                        )
+                    }
+                    if (chainId == null) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_sort_arrow_down),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.iconGray,
+                        )
                     }
                 }
 
@@ -388,32 +392,42 @@ fun ImportWalletDetailPage(
                             cornerRadius = 8.dp
                         )
                 ) {
-                    OutlinedTextField(
-                        value = text,
-                        onValueChange = { text = it },
-                        placeholder = { Text(hint) },
+                    BasicTextField(
+                        state = textState,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = 150.dp)
-                            .padding(0.dp),
-                        maxLines = 5,
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = MixinAppTheme.colors.textPrimary,
-                            backgroundColor = Color.Transparent,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedBorderColor = Color.Transparent,
-                            cursorColor = MixinAppTheme.colors.accent
+                            .heightIn(min = 150.dp),
+                        lineLimits = TextFieldLineLimits.MultiLine(maxHeightInLines = 5),
+                        cursorBrush = SolidColor(MixinAppTheme.colors.accent),
+                        textStyle = TextStyle(
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontSize = 16.sp,
                         ),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,
                             imeAction = ImeAction.Done
-                        )
+                        ),
+                        decorator = { innerTextField ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                            ) {
+                                if (text.isEmpty()) {
+                                    Text(
+                                        text = hint,
+                                        color = MixinAppTheme.colors.textAssist,
+                                        fontSize = 16.sp,
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        },
                     )
                     if (text.isNotBlank()) {
                         IconButton(
                             onClick = {
-                                text = ""
+                                textState.clearText()
                             }, modifier = Modifier.align(Alignment.BottomEnd)
                         ) {
                             Icon(
@@ -427,7 +441,7 @@ fun ImportWalletDetailPage(
                             IconButton(
                                 onClick = {
                                     clipboardManager.getText()?.let {
-                                        text = it.text
+                                        textState.setTextAndPlaceCursorAtEnd(it.text)
                                     }
                                 },
                             ) {

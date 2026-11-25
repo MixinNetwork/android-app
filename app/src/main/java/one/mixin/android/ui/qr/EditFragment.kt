@@ -94,15 +94,15 @@ class EditFragment : VisionFragment() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         if (isVideo) {
             mixinPlayer.start()
         }
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onStop() {
+        super.onStop()
         if (isVideo) {
             mixinPlayer.pause()
         }

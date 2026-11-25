@@ -11,7 +11,7 @@
         android:layout_gravity="center"
         android:layout_marginBottom="9dp"
         android:layout_marginTop="3dp"
-        android:background="@drawable/bg_item_chat_time"
+        android:background="@drawable/chat_bubble_time"
         android:padding="3dp"
         android:paddingEnd="20dp"
         android:paddingStart="20dp"

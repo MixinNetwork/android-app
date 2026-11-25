@@ -2,8 +2,8 @@ package one.mixin.android.compose
 
 import android.content.SharedPreferences
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import one.mixin.android.extension.putBoolean
@@ -60,7 +60,7 @@ private fun <T> value(
         remember {
             mutableStateOf(getValue())
         }
-    LaunchedEffect(state.value) {
+    SideEffect(state.value) {
         setValue(state.value)
     }
     return state

@@ -347,6 +347,9 @@ class ConversationRepository
         ) =
             participantDao.findParticipantById(conversationId, userId)
 
+        fun observeParticipantRole(conversationId: String, userId: String) =
+            participantDao.observeParticipantRole(conversationId, userId)
+
         suspend fun getParticipantsCount(conversationId: String) =
             participantDao.getParticipantsCount(conversationId)
 

@@ -69,10 +69,11 @@ import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.isAutoRotate
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.shareMedia
 import one.mixin.android.extension.statusBarHeight
@@ -264,7 +265,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     @Synchronized
     private fun changeOrientation(orientation: Int) {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
+        // Large screens and multi-window ignore orientation requests, so keep following the window
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O || isInMultiWindowMode || !isCompactWindow()) {
             return
         }
 
@@ -646,7 +648,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val rect = PipVideoView.getPipRect(videoAspectRatioLayout.aspectRatio)
         val isLandscape = isLandscape()
         if (isLandscape) {
-            val screenHeight = realSize().y
+            val screenHeight = windowHeight()
             if (rect.width > screenHeight) {
                 val ratio = rect.width / rect.height
                 rect.height = screenHeight / ratio

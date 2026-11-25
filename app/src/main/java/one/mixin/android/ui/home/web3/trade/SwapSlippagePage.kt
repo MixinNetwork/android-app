@@ -47,6 +47,7 @@ import one.mixin.android.R
 
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.tickVibrate
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -199,12 +200,13 @@ private fun Custom(
         val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
         val interactionSource = remember { MutableInteractionSource() }
         val focused = remember { mutableStateOf(false) }
+        val textFieldState = rememberSyncedTextFieldState(
+            value = bps.value,
+            onValueChange = { bps.value = it },
+        )
         Spacer(modifier = Modifier.height(10.dp))
         BasicTextField(
-            value = bps.value,
-            onValueChange = {
-                bps.value = it
-            },
+            state = textFieldState,
             modifier =
                 Modifier
                     .fillMaxWidth()
@@ -224,35 +226,36 @@ private fun Custom(
                     textAlign = TextAlign.Start,
                 ),
             cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-        ) { innerTextField ->
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, color = MixinAppTheme.colors.borderColor, RoundedCornerShape(8.dp))
-                        .padding(10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Box(contentAlignment = Alignment.CenterStart) {
-                    innerTextField()
-                    if (bps.value.isEmpty()) {
-                        Text(
-                            text = "0.1 - 50",
-                            fontSize = 16.sp,
-                            color = MixinAppTheme.colors.textAssist,
-                        )
+            decorator = { innerTextField ->
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, color = MixinAppTheme.colors.borderColor, RoundedCornerShape(8.dp))
+                            .padding(10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Box(contentAlignment = Alignment.CenterStart) {
+                        innerTextField()
+                        if (textFieldState.text.isEmpty()) {
+                            Text(
+                                text = "0.1 - 50",
+                                fontSize = 16.sp,
+                                color = MixinAppTheme.colors.textAssist,
+                            )
+                        }
                     }
+                    Text(
+                        text = "%",
+                        style =
+                            TextStyle(
+                                fontSize = 20.sp,
+                                color = MixinAppTheme.colors.textPrimary,
+                            ),
+                    )
                 }
-                Text(
-                    text = "%",
-                    style =
-                        TextStyle(
-                            fontSize = 20.sp,
-                            color = MixinAppTheme.colors.textPrimary,
-                        ),
-                )
-            }
-        }
+            },
+        )
         if (isInvalid) {
             Spacer(modifier = Modifier.height(10.dp))
             Text(

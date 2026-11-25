@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -118,7 +119,7 @@ fun PerpetualGuidePage(
         stringResource(R.string.Trading_Fee),
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
-    var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
+    var selectedTab by rememberSaveable(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
     var hasCenteredInitialTab by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedTab) {
@@ -178,7 +179,8 @@ fun PerpetualGuidePage(
                 ) {
                     itemsIndexed(
                         items = tabs,
-                        key = { index, tab -> "$tab-$index" }
+                        key = { index, tab -> "$tab-$index" },
+                        contentType = { _, _ -> "guide_tab" },
                     ) { index, tab ->
                         OutlinedTab(
                             text = tab,
@@ -366,7 +368,7 @@ private fun ShortContent() {
 @Composable
 private fun LeverageContent() {
     val viewModel = hiltViewModel<PerpetualViewModel>()
-    var leverage by remember { mutableIntStateOf(10) }
+    var leverage by rememberSaveable { mutableIntStateOf(10) }
     val investment = 1000
     val fixedProfitPercent = 10f
     val liquidationPercent = if (leverage > 0) 100f / leverage else 100f
@@ -439,7 +441,7 @@ private fun LeverageContent() {
 @Composable
 private fun PositionContent() {
     val viewModel = hiltViewModel<PerpetualViewModel>()
-    var leverage by remember { mutableIntStateOf(10) }
+    var leverage by rememberSaveable { mutableIntStateOf(10) }
     var investment by remember { mutableIntStateOf(1000) }
     val maxLossPercent = if (leverage > 0) 100f / leverage else 100f
     val fixedProfitPercent = 10f
@@ -638,7 +640,7 @@ private fun TpSlContent() {
 @Composable
 private fun LiquidationContent() {
     var isLong by remember { mutableStateOf(true) }
-    var leverage by remember { mutableIntStateOf(10) }
+    var leverage by rememberSaveable { mutableIntStateOf(10) }
     val marketPrice = BigDecimal("100.00")
     val liquidationPrice = remember(marketPrice, leverage, isLong) {
         calculateGuideLiquidationPrice(
@@ -709,7 +711,7 @@ private fun TradingFeeExampleCard() {
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val profitColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    var leverage by remember { mutableIntStateOf(5) }
+    var leverage by rememberSaveable { mutableIntStateOf(5) }
     val maxLeverage = 10
     val amount = BigDecimal("100")
     val positionValue = amount.multiply(leverage.toBigDecimal())

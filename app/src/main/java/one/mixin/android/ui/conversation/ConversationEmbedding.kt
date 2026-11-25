@@ -190,7 +190,7 @@ object ConversationEmbedding {
     internal fun windowMeetsSplitRule(widthDp: Float, heightDp: Float): Boolean =
         widthDp >= SPLIT_MIN_WIDTH_DP && heightDp >= SPLIT_MIN_HEIGHT_DP && minOf(widthDp, heightDp) >= SPLIT_MIN_SMALLEST_WIDTH_DP
 
-    fun routeRootConversation(activity: Activity): Boolean {
+    fun routeRootConversation(activity: Activity, onRouted: () -> Unit = {}): Boolean {
         if (!activity.isTaskRoot || activity.intent.getBooleanExtra(EXTRA_ROUTED, false)) return false
         if (SplitController.getInstance(activity).splitSupportStatus != SplitController.SplitSupportStatus.SPLIT_AVAILABLE) return false
         val metrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(activity)
@@ -204,6 +204,7 @@ object ConversationEmbedding {
                 .putExtra(EXTRA_CONVERSATION, extras),
         )
         activity.intent.removeExtra(ConversationActivity.ARGS_SHORTCUT)
+        onRouted()
         activity.finish()
         return true
     }
