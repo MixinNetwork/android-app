@@ -143,6 +143,24 @@ class TransferClient
             private val singleTransferFileThread by lazy {
                 Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_TRANSFER_FILE_THREAD") }.asCoroutineDispatcher()
             }
+
+            // The error status must be decided before cancelSession, which overwrites the session state.
+            internal fun failAttachmentProcessing(
+                status: TransferStatusLiveData,
+                transferSessionManager: TransferSessionManager,
+                sessionId: String?,
+                cancelledByUser: Boolean,
+                preserveOrClearStagedAttachments: () -> Unit,
+            ) {
+                if (!cancelledByUser &&
+                    status.value != TransferStatus.ERROR &&
+                    transferSessionManager.getSessionState(sessionId) != TransferSessionState.CANCELLED
+                ) {
+                    status.value = TransferStatus.ERROR
+                }
+                preserveOrClearStagedAttachments()
+                transferSessionManager.cancelSession(sessionId)
+            }
         }
 
         private var socket: Socket? = null
@@ -511,14 +529,13 @@ class TransferClient
                             clearCacheDirectory()
                             status.value = TransferStatus.FINISHED
                         } else {
-                            if (!cancelledByUser &&
-                                status.value != TransferStatus.ERROR &&
-                                transferSessionManager.getSessionState(currentAuthorization?.sessionId) != TransferSessionState.CANCELLED
-                            ) {
-                                status.value = TransferStatus.ERROR
-                            }
-                            preserveOrClearStagedAttachments()
-                            transferSessionManager.cancelSession(currentAuthorization?.sessionId)
+                            failAttachmentProcessing(
+                                status,
+                                transferSessionManager,
+                                currentAuthorization?.sessionId,
+                                cancelledByUser,
+                                ::preserveOrClearStagedAttachments,
+                            )
                         }
                     } else {
                         preserveOrClearStagedAttachments()

@@ -567,7 +567,6 @@ dependencies {
 
     testImplementation("junit:junit:$junitVersion")
     testImplementation("androidx.test:core:$testCoreVersion")
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
     androidTestImplementation("org.mockito:mockito-core:$mockitoVersion")
 
     testImplementation("org.robolectric:robolectric:$robolectricVersion") {
