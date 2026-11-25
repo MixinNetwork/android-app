@@ -148,6 +148,8 @@ class TransferClient
         private var socket: Socket? = null
         @Volatile
         private var quit = false
+        @Volatile
+        private var cancelledByUser = false
         private var receiveCount = 0L
         private var processCount = 0L
         private var startTime = 0L
@@ -509,14 +511,14 @@ class TransferClient
                             clearCacheDirectory()
                             status.value = TransferStatus.FINISHED
                         } else {
-                            preserveOrClearStagedAttachments()
-                            transferSessionManager.cancelSession(currentAuthorization?.sessionId)
-                            if (!quit &&
+                            if (!cancelledByUser &&
                                 status.value != TransferStatus.ERROR &&
                                 transferSessionManager.getSessionState(currentAuthorization?.sessionId) != TransferSessionState.CANCELLED
                             ) {
                                 status.value = TransferStatus.ERROR
                             }
+                            preserveOrClearStagedAttachments()
+                            transferSessionManager.cancelSession(currentAuthorization?.sessionId)
                         }
                     } else {
                         preserveOrClearStagedAttachments()
@@ -532,6 +534,7 @@ class TransferClient
         }
 
         fun cancelAndExit() {
+            cancelledByUser = true
             quit = true
             transferSessionManager.cancelSession(currentAuthorization?.sessionId)
             exit(false)
