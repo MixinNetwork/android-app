@@ -639,8 +639,12 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     private fun forwardOneLinkIfNeeded(intent: Intent?) {
-        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) return
         val oneLinkUrl = intent?.dataString?.takeIf(PendingReferralStore::isOneLinkUrl) ?: return
+        forwardOneLinkUrl(oneLinkUrl)
+    }
+
+    private fun forwardOneLinkUrl(oneLinkUrl: String) {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) return
         AppsFlyerLib.getInstance().performDeepLinking(oneLinkUrl, false)
     }
 
@@ -1099,9 +1103,14 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             ConversationEmbedding.conversationIntent(this, extras)?.let(::startActivity)
             return
         }
-        if (intent.action == Intent.ACTION_VIEW && PendingReferralStore.isOneLinkUrl(intent.dataString)) {
-            // The referral code is saved by the AppsFlyer deep link listener; stay on the home tab.
-            intent.data = null
+        if (
+            consumeOneLinkIntentIfNeeded(
+                action = intent.action,
+                dataString = intent.dataString,
+                onForwardOneLink = ::forwardOneLinkUrl,
+                onClearData = { intent.data = null },
+            )
+        ) {
             binding.bottomNav.selectedItemId = R.id.nav_chat
             return
         }
@@ -1915,6 +1924,20 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
         }
     }
+}
+
+internal fun consumeOneLinkIntentIfNeeded(
+    action: String?,
+    dataString: String?,
+    onForwardOneLink: (String) -> Unit,
+    onClearData: () -> Unit,
+): Boolean {
+    if (action != Intent.ACTION_VIEW) return false
+    val oneLinkUrl = dataString?.takeIf(PendingReferralStore::isOneLinkUrl) ?: return false
+    // Forward to AppsFlyer before clearing intent.data so warm-start onNewIntent() does not drop the URL before resume.
+    onForwardOneLink(oneLinkUrl)
+    onClearData()
+    return true
 }
 
 @Suppress("SameParameterValue")

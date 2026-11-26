@@ -45,7 +45,7 @@ object PendingReferralStore {
     }
 
     fun markSignUpCompleted(context: Context) {
-        prefs(context).edit {
+        prefs(context).edit(commit = true) {
             putBoolean(KEY_SIGN_UP_PENDING, true)
         }
     }
@@ -81,7 +81,13 @@ object PendingReferralStore {
         }
         val savedAt = sharedPrefs.getLong(KEY_SAVED_AT, 0L)
         if (savedAt <= 0L || nowMs - savedAt > EXPIRY_MILLIS) {
-            clear(context)
+            sharedPrefs.edit {
+                remove(KEY_CODE)
+                remove(KEY_SAVED_AT)
+            }
+            if (_pendingCodeFlow.value != null) {
+                _pendingCodeFlow.value = null
+            }
             return null
         }
         if (_pendingCodeFlow.value != code) {

@@ -68,6 +68,7 @@ import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.Web3Signer
 import retrofit2.HttpException
@@ -98,6 +99,23 @@ internal fun resolveClassicUtxoBackfillPlan(
         derivationIndex = derivationIndex,
         missingChainIds = requiredChainIds - chainIds.toSet(),
     )
+}
+
+internal fun shouldMarkPostSignUpReferral(
+    tipType: TipType,
+    shouldOpenMainActivity: Boolean,
+): Boolean = shouldOpenMainActivity && tipType == TipType.Create
+
+internal fun persistSafeRegisteredAccount(
+    account: Account,
+    shouldMarkPostSignUpReferral: Boolean,
+    markSignUpCompleted: () -> Unit,
+    storeAccount: (Account) -> Unit,
+) {
+    if (account.hasSafe && shouldMarkPostSignUpReferral) {
+        markSignUpCompleted()
+    }
+    storeAccount(account)
 }
 
 @ActivityRetainedScoped
@@ -283,7 +301,7 @@ class TipFlowInteractor @Inject internal constructor(
         if (!Session.hasSafe()) {
             Timber.i("LoginFlow safe_register_start tip_type=${tipBundle.tipType}")
             val registerResult: Boolean = try {
-                registerPublicKey(context, tipBundle, pin, tipPriv, onStepChanged, onShowMessage)
+                registerPublicKey(context, tipBundle, pin, tipPriv, shouldOpenMainActivity, onStepChanged, onShowMessage)
             } catch (e: Exception) {
                 val errorInfo = e.getTipExceptionMsg(context)
                 onStepChanged(RetryRegister(null, errorInfo))
@@ -308,7 +326,7 @@ class TipFlowInteractor @Inject internal constructor(
             }
         }
         if (shouldOpenMainActivity) {
-            if (tipBundle.tipType == TipType.Create) {
+            if (shouldMarkPostSignUpReferral(tipBundle.tipType, shouldOpenMainActivity)) {
                 PendingReferralStore.markSignUpCompleted(context)
             }
             if (!openNextAfterPin(context, tipBundle.tipType == TipType.Create, pin)) {
@@ -495,14 +513,21 @@ class TipFlowInteractor @Inject internal constructor(
         tipBundle: TipBundle,
         pin: String,
         tipPriv: ByteArray?,
+        shouldOpenMainActivity: Boolean,
         onStepChanged: (TipStep) -> Unit,
         onShowMessage: (String) -> Unit,
     ): Boolean {
+        val markPostSignUpReferral = shouldMarkPostSignUpReferral(tipBundle.tipType, shouldOpenMainActivity)
         onStepChanged(Processing.Registering)
         val meResp = accountService.getMeSuspend()
         if (meResp.isSuccess) {
             val account = requireNotNull(meResp.data) { "required account can not be null" }
-            Session.storeAccount(account)
+            persistSafeRegisteredAccount(
+                account = account,
+                shouldMarkPostSignUpReferral = markPostSignUpReferral,
+                markSignUpCompleted = { PendingReferralStore.markSignUpCompleted(context) },
+                storeAccount = Session::storeAccount,
+            )
             if (account.hasSafe) {
                 if (hasPendingImportMnemonicInMemory()) {
                     markPendingImportMnemonic(context)
@@ -550,7 +575,12 @@ class TipFlowInteractor @Inject internal constructor(
         val registerResp = utxoService.registerPublicKey(registerRequest)
         if (registerResp.isSuccess) {
             val account = requireNotNull(registerResp.data) { "required account can not be null" }
-            Session.storeAccount(account)
+            persistSafeRegisteredAccount(
+                account = account,
+                shouldMarkPostSignUpReferral = markPostSignUpReferral,
+                markSignUpCompleted = { PendingReferralStore.markSignUpCompleted(context) },
+                storeAccount = Session::storeAccount,
+            )
             if (hasPendingImportMnemonicInMemory()) {
                 markPendingImportMnemonic(context)
             }
