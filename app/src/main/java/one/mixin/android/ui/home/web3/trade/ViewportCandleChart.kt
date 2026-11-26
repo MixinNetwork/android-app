@@ -26,6 +26,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.withFrameNanos
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -91,7 +92,14 @@ private const val GRID_LINE_COUNT = 4
 private const val PRICE_PADDING_RATIO = 0.08
 private const val BODY_WIDTH_RATIO = 0.7f
 private const val WICK_WIDTH_RATIO = 0.3f
-private const val LONG_PRESS_TIMEOUT_MS = 300L
+private const val LONG_PRESS_TIMEOUT_MS = 200L
+
+// Minimum gap between selection haptics so fast scrubbing over dense candles does not buzz continuously.
+private const val SELECTION_HAPTIC_INTERVAL_MS = 40L
+private val EDGE_SCROLL_ZONE = 24.dp
+
+// Auto-scroll speed when the held selection is at the very edge of the plot.
+private const val EDGE_SCROLL_CANDLES_PER_SECOND = 20f
 
 @Immutable
 internal data class ChartCandle(
@@ -185,6 +193,19 @@ internal class CandleChartState {
         end = newEnd
         followLatest = end >= maxEnd - 0.5f
         return moved
+    }
+
+    /**
+     * Scrolls toward older candles when [x] is within [edgePx] of the left edge, or newer ones near the right edge,
+     * faster the closer it is to the edge. Returns true when the chart moved.
+     */
+    fun scrollAtEdge(x: Float, edgePx: Float, frameSeconds: Float): Boolean {
+        val depth = when {
+            x < edgePx -> (edgePx - x) / edgePx
+            x > plotWidthPx - edgePx -> (plotWidthPx - edgePx - x) / edgePx
+            else -> return false
+        }.coerceIn(-1f, 1f)
+        return scrollByPx(depth * EDGE_SCROLL_CANDLES_PER_SECOND * step * frameSeconds)
     }
 
     /** Zooms by [factor] (> 1 zooms in) keeping the position under [anchorX] fixed. */
@@ -534,6 +555,9 @@ internal suspend fun PointerInputScope.detectChartGestures(
 
         var mode = initialMode
         var finishedNormally = false
+        var selectX = lastPosition.x
+        var lastSelectionHapticMillis = down.uptimeMillis - SELECTION_HAPTIC_INTERVAL_MS
+        var edgeScrollJob: Job? = null
         try {
             when (mode) {
                 GestureMode.Drag -> {
@@ -543,10 +567,20 @@ internal suspend fun PointerInputScope.detectChartGestures(
                     state.scrollByPx(totalDrag.x)
                 }
                 GestureMode.Select -> {
-                    // Long press: scrub through candles; the chart itself stays put until release.
+                    // Long press: scrub through candles; the chart only scrolls while the finger rests near an edge.
                     state.stopFling()
-                    state.select(lastPosition.x)
+                    state.select(selectX)
                     onLongPress()
+                    val edgePx = EDGE_SCROLL_ZONE.toPx()
+                    edgeScrollJob = scope.launch {
+                        var lastFrameNanos = withFrameNanos { it }
+                        while (true) {
+                            val frameNanos = withFrameNanos { it }
+                            val frameSeconds = (frameNanos - lastFrameNanos) / 1_000_000_000f
+                            lastFrameNanos = frameNanos
+                            if (state.scrollAtEdge(selectX, edgePx, frameSeconds)) state.select(selectX)
+                        }
+                    }
                 }
                 GestureMode.Pinch, GestureMode.Cancelled -> Unit
             }
@@ -584,13 +618,18 @@ internal suspend fun PointerInputScope.detectChartGestures(
                         pressed.forEach { it.consume() }
                     }
                     GestureMode.Select -> {
-                        if (state.select(primary.position.x)) onSelectionMove()
+                        selectX = primary.position.x
+                        if (state.select(selectX) && primary.uptimeMillis - lastSelectionHapticMillis >= SELECTION_HAPTIC_INTERVAL_MS) {
+                            lastSelectionHapticMillis = primary.uptimeMillis
+                            onSelectionMove()
+                        }
                         pressed.forEach { it.consume() }
                     }
                     GestureMode.Cancelled -> break
                 }
             }
         } finally {
+            edgeScrollJob?.cancel()
             if (!finishedNormally) {
                 state.clearSelection()
                 state.stopFling()
