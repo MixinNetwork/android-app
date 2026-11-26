@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -261,20 +262,18 @@ class Web3AddressFragment : BaseFragment() {
     }
 
     private fun updateChips() {
+        val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
+        val primaryTextColor = requireContext().colorFromAttribute(R.attr.text_primary)
+        val selectedBackgroundColor = requireContext().colorFromAttribute(R.attr.bg_clip)
+        val unselectedStrokeColor = ContextCompat.getColor(requireContext(), R.color.color_gray)
         binding.networkChipGroup.children.forEach {
             if (it is Chip) {
-                if (it.tag == web3Token.assetId) {
-                    val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
-                    it.setTextColor(accentColor)
-                    it.chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                    it.chipStrokeColor = ColorStateList.valueOf(accentColor)
-                    it.chipStrokeWidth = 1.dp.toFloat()
-                } else {
-                    it.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-                    it.chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                    it.chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray))
-                    it.chipStrokeWidth = 1.dp.toFloat()
-                }
+                val same = it.tag == web3Token.assetId
+                it.isChecked = same
+                it.setTextColor(if (same) accentColor else primaryTextColor)
+                it.chipBackgroundColor = ColorStateList.valueOf(if (same) selectedBackgroundColor else Color.TRANSPARENT)
+                it.chipStrokeColor = ColorStateList.valueOf(if (same) accentColor else unselectedStrokeColor)
+                it.chipStrokeWidth = 1.dp.toFloat()
             }
         }
     }

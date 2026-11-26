@@ -82,11 +82,13 @@ private fun MemberRenewOptionsSheet(
         modifier = Modifier
             .fillMaxWidth()
             .background(MixinAppTheme.colors.background)
-            .padding(horizontal = 20.dp)
-            .padding(top = 24.dp, bottom = 20.dp),
+            .padding(horizontal = 10.dp)
+            .padding(top = 24.dp, bottom = 16.dp),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -107,7 +109,7 @@ private fun MemberRenewOptionsSheet(
                     .clickable(onClick = onClose),
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         WalletBuyOptionItem(
             iconRes = R.drawable.ic_wallet_buy_card,
             title = stringResource(R.string.wallet_buy_option_google_pay_or_card),

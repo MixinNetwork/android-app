@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -160,20 +161,6 @@ class DepositFragment : BaseFragment() {
                         isClickable = true
                         c.tag = entry.key
                         val same = entry.key == asset.assetId
-                        if (same) {
-                            isChecked = true
-                            val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
-                            setTextColor(accentColor)
-                            chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                            chipStrokeColor = ColorStateList.valueOf(accentColor)
-                            chipStrokeWidth = 1.dp.toFloat()
-                        } else {
-                            isChecked = false
-                            setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-                            chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                            chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray))
-                            chipStrokeWidth = 1.dp.toFloat()
-                        }
                         setOnClickListener {
                             if (same) return@setOnClickListener
                             AnalyticsTracker.trackAssetReceiveTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.CHAIN_ITEM_CLICK)
@@ -198,6 +185,24 @@ class DepositFragment : BaseFragment() {
                         }
                     }
                 networkChipGroup.addView(chip)
+            }
+        }
+        updateChips(asset.assetId)
+    }
+
+    private fun updateChips(assetId: String) {
+        val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
+        val primaryTextColor = requireContext().colorFromAttribute(R.attr.text_primary)
+        val selectedBackgroundColor = requireContext().colorFromAttribute(R.attr.bg_clip)
+        val unselectedStrokeColor = ContextCompat.getColor(requireContext(), R.color.color_gray)
+        binding.networkChipGroup.children.forEach { clip ->
+            (clip as? Chip)?.apply {
+                val same = clip.tag == assetId
+                isChecked = same
+                setTextColor(if (same) accentColor else primaryTextColor)
+                chipBackgroundColor = ColorStateList.valueOf(if (same) selectedBackgroundColor else Color.TRANSPARENT)
+                chipStrokeColor = ColorStateList.valueOf(if (same) accentColor else unselectedStrokeColor)
+                chipStrokeWidth = 1.dp.toFloat()
             }
         }
     }
@@ -475,25 +480,7 @@ class DepositFragment : BaseFragment() {
             }
 
         }
-        binding.networkChipGroup.children.forEach { clip ->
-            (clip as? Chip)?.apply {
-                val same = clip.tag == asset.assetId
-                if (same) {
-                    isChecked = true
-                    val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
-                    setTextColor(accentColor)
-                    chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                    chipStrokeColor = ColorStateList.valueOf(accentColor)
-                    chipStrokeWidth = 1.dp.toFloat()
-                } else {
-                    isChecked = false
-                    setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-                    chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
-                    chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray))
-                    chipStrokeWidth = 1.dp.toFloat()
-                }
-            }
-        }
+        updateChips(asset.assetId)
         binding.assetName.text = "${asset.name} (${asset.symbol})"
         binding.networkName.text = getChainName(asset.chainId, asset.chainName, asset.assetKey)
         binding.minimumDepositValue.text = "${asset.dust} ${asset.symbol}"

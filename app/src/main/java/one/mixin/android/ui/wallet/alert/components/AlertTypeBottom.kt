@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -40,12 +41,12 @@ fun AlertTypeBottom(
             .fillMaxWidth()
             .clip(RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp))
             .background(color = MixinAppTheme.colors.background)
-            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .padding(horizontal = 10.dp, vertical = 10.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 12.dp),
+                .padding(horizontal = 6.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -62,7 +63,7 @@ fun AlertTypeBottom(
                 painter = painterResource(R.drawable.ic_circle_close),
                 modifier =
                 Modifier
-                    .padding(horizontal = 8.dp)
+                    .size(26.dp)
                     .clip(CircleShape)
                     .clickable {
                         onDismissRequest()
@@ -71,10 +72,12 @@ fun AlertTypeBottom(
             )
         }
 
+        Spacer(Modifier.height(4.dp))
 
-        LazyColumn {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             items(AlertType.entries, key = { it.name }, contentType = { "alert_type" }) { alertType ->
-                Spacer(Modifier.height(8.dp))
                 AlertSelectItem(
                     currentAlertType == alertType,
                     alertType.getIconResId(),
@@ -87,6 +90,6 @@ fun AlertTypeBottom(
             }
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
     }
 }

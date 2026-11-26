@@ -40,7 +40,7 @@ class CollectiblesFragment : BaseFragment() {
     }
 
     private val padding: Int by lazy {
-        16.dp
+        10.dp
     }
 
     @Inject

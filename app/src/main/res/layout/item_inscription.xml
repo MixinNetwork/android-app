@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
+    android:foreground="@drawable/ripple_round_8_mask"
     android:background="@drawable/bg_inscription">
 
     <one.mixin.android.widget.InscriptionView

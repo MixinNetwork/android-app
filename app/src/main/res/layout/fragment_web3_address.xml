@@ -30,10 +30,11 @@
                 android:id="@+id/network_chip_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="20dp"
-                android:visibility="gone" />
+                android:layout_marginEnd="10dp"
+                android:visibility="gone"
+                app:chipSpacingHorizontal="@dimen/margin10" />
 
             <ScrollView
                 android:id="@+id/sv"

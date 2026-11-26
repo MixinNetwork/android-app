@@ -36,7 +36,7 @@ class CollectionFragment : BaseFragment() {
     }
 
     private val padding: Int by lazy {
-        15.dp
+        10.dp
     }
 
     private var _binding: FragmentCollectionBinding? = null

@@ -73,7 +73,7 @@ class SearchInscriptionFragment : BaseFragment(R.layout.fragment_search_inscript
 
     private val binding by viewBinding(FragmentSearchInscriptionBinding::bind)
     private val padding: Int by lazy {
-        15.dp
+        10.dp
     }
 
     override fun onViewCreated(

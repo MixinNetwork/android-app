@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_gravity="start"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="10dp"
             android:background="@drawable/bg_inscription_radio"
             android:padding="1dp">
 
@@ -72,7 +72,7 @@
             android:background="@drawable/bg_inscription_radio"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="10dp"
             android:paddingStart="14dp"
             android:paddingEnd="14dp"
             android:gravity="center_vertical">
@@ -101,7 +101,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         android:background="?attr/bg_white">
 
         <androidx.recyclerview.widget.RecyclerView
