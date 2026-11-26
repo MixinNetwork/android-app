@@ -564,7 +564,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         jobManager.addJobInBackground(RefreshDappJob())
         jobManager.addJobInBackground(RestoreTransactionJob())
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && Session.isHomeReminderDelayPassed()) {
             RxPermissions(this)
                 .request(Manifest.permission.POST_NOTIFICATIONS)
                 .autoDispose(stopScope)
