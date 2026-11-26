@@ -41,9 +41,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -198,7 +198,7 @@ fun SwapContent(
             }
     }
 
-    val rotation by animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
+    val rotation = animateFloatAsState(if (isReverse) 180f else 0f, label = "rotation")
 
     fromToken?.let { from ->
         val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
@@ -279,7 +279,7 @@ fun SwapContent(
                                         }
                                         context.clickVibrate()
                                     }
-                                    .rotate(rotation),
+                                    .graphicsLayer { rotationZ = rotation.value },
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(

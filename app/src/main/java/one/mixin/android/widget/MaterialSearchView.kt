@@ -291,6 +291,17 @@ class MaterialSearchView : FrameLayout {
         binding.backIb.alpha = fastFadeIn
     }
 
+    fun focusSearch() {
+        if (!isOpen) {
+            openSearch()
+            return
+        }
+        binding.searchEt.isVisible = true
+        binding.searchEt.requestFocus()
+        binding.searchEt.setSelection(binding.searchEt.text?.length ?: 0)
+        binding.searchEt.showKeyboard()
+    }
+
     fun openSearch() {
         cancelSearchAnimations()
         isOpen = true

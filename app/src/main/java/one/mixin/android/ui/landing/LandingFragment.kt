@@ -85,6 +85,7 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         binding.featurePager.adapter = LandingFeatureAdapter(features)
         binding.featurePager.offscreenPageLimit = features.size
         
+        var lastIndicatorHeight = 0
         binding.root.addOnLayoutChangeListener { _, _, top, _, bottom, _, _, _, _ ->
             val height = bottom - top
             if (height > 0) {
@@ -94,12 +95,18 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
                 val params = binding.featurePager.layoutParams as ConstraintLayout.LayoutParams
                 val indicatorParams = binding.featureIndicator.layoutParams as ConstraintLayout.LayoutParams
                 // Keep the indicator clear of the bottom buttons on short windows
+                val indicatorHeight = binding.featureIndicator.height.takeIf { it > 0 }
+                    ?.also { lastIndicatorHeight = it }
+                    ?: lastIndicatorHeight.takeIf { it > 0 }
+                    ?: resources.getDimensionPixelSize(R.dimen.landing_indicator_dot_size)
                 val available = binding.createTv.top - params.bottomMargin - indicatorParams.topMargin -
-                    binding.featureIndicator.height - 16.dp
+                    indicatorHeight - 16.dp
                 if (available <= 0) {
                     binding.featurePager.isVisible = false
+                    binding.featureIndicator.isVisible = false
                 } else {
                     binding.featurePager.isVisible = true
+                    binding.featureIndicator.isVisible = true
                     val target = minOf((height * percent).toInt(), available).coerceAtLeast(1)
                     if (params.height != target) {
                         params.height = target
@@ -155,15 +162,15 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         binding.featureIndicator.getTabAt(binding.featurePager.currentItem)?.customView?.isSelected = true
         binding.featureIndicator.addOnTabSelectedListener(
             object : TabLayout.OnTabSelectedListener {
-                override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+                override fun onTabSelected(tab: TabLayout.Tab) {
                     tab.customView?.isSelected = true
                 }
 
-                override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+                override fun onTabUnselected(tab: TabLayout.Tab) {
                     tab.customView?.isSelected = false
                 }
 
-                override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+                override fun onTabReselected(tab: TabLayout.Tab) {
                 }
             }
         )

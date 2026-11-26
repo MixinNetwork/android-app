@@ -13,6 +13,7 @@ import okhttp3.Request
 import okio.ByteString.Companion.encode
 import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
+import one.mixin.android.Constants.INTERVAL_1_HOUR
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.referral.PendingReferralStore
 import one.mixin.android.crypto.EdKeyPair
@@ -64,12 +65,16 @@ object Session {
     private const val PREF_PIN_TOKEN = "pref_pin_token"
     private const val PREF_NAME_ACCOUNT = "pref_name_account"
     private const val PREF_NAME_TOKEN = "pref_name_token"
+    private const val PREF_HOME_REMINDER_START = "pref_home_reminder_start"
     private const val PREF_ED25519_PRIVATE_KEY = "pref_ed25519_private_key"
 
     fun storeAccount(account: Account) {
         self = account
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account.copy(salt = null)))
+        if (preference.getLong(PREF_HOME_REMINDER_START, 0L) <= 0L) {
+            preference.putLong(PREF_HOME_REMINDER_START, System.currentTimeMillis())
+        }
 
         ThirdPartyUserIdentity.setUser(account)
         val salt = account.salt
@@ -117,6 +122,17 @@ object Session {
         val exportedSaltAt = account?.saltExportedAt ?: return false
         val baseInstant = Instant.parse("0001-01-01T00:00:00Z")
         return Instant.parse(exportedSaltAt).isAfter(baseInstant)
+    }
+
+    // The timer lives in PREF_SESSION, so clearAccount() resets it on logout.
+    fun isHomeReminderDelayPassed(): Boolean {
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        val start = preference.getLong(PREF_HOME_REMINDER_START, 0L)
+        return start <= 0L || System.currentTimeMillis() - start >= INTERVAL_1_HOUR
+    }
+
+    fun skipHomeReminderDelay() {
+        MixinApplication.appContext.sharedPreferences(PREF_SESSION).putLong(PREF_HOME_REMINDER_START, 1L)
     }
 
     fun clearAccount() {

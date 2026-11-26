@@ -104,6 +104,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             val addresses by addressFlow.collectAsStateWithLifecycle(initialValue = null)
             val addressBookState by viewModel.addressBookState.collectAsStateWithLifecycle()
             val chains = addressBookState?.chains.orEmpty()
+            val chainMap = remember(chains) { chains.associateBy { it.chainId } }
             // Common wallets only show the networks they support, the privacy wallet shows all
             val walletChainIds = addressBookState?.walletChainIds
             val networks = remember(addressBookState) {
@@ -168,7 +169,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (selectedChainIds.size == 1) {
-                        AddressBookNetwork(selectedChainIds.first(), chains.firstOrNull { it.chainId == selectedChainIds.first() }, MixinAppTheme.colors.textPrimary)
+                        AddressBookNetwork(selectedChainIds.first(), chainMap[selectedChainIds.first()], MixinAppTheme.colors.textPrimary)
                     } else {
                         if (selectedChainIds.size > 1) {
                             Row(horizontalArrangement = Arrangement.spacedBy((-10).dp)) {
@@ -180,7 +181,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                                             .padding(1.dp),
                                     ) {
                                         CoilImage(
-                                            chains.firstOrNull { it.chainId == chainId }?.iconUrl,
+                                            chainMap[chainId]?.iconUrl,
                                             R.drawable.ic_avatar_place_holder,
                                             Modifier.size(18.dp).clip(CircleShape),
                                         )
@@ -224,8 +225,8 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        items(filteredAddresses, key = { it.addressId }) { address ->
-                            AddressBookCardWithDelete(address, chains.firstOrNull { it.chainId == address.chainId }, onClick = {
+                        items(filteredAddresses, key = { it.addressId }, contentType = { "address" }) { address ->
+                            AddressBookCardWithDelete(address, chainMap[address.chainId], onClick = {
                                 requireView().hideKeyboard()
                                 WalletActivity.showAddressBookDetail(requireActivity(), address, walletId)
                             }, onDelete = {

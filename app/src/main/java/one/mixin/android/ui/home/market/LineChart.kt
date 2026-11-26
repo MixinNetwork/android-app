@@ -1,22 +1,22 @@
 package one.mixin.android.ui.home.market
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -49,22 +49,24 @@ fun normalizeValues(values: List<Float>, minRange: Float = 0.2f, normalizedMaxRa
     if (values.isEmpty()) return Triple(emptyList(), -1, -1)
     val maxRange = normalizedMaxRange ?: maxRange()
 
-    val minValue = values.minOrNull() ?: 0f
-    val maxValue = values.maxOrNull() ?: 0f
+    return remember(values, minRange, maxRange) {
+        val minValue = values.minOrNull() ?: 0f
+        val maxValue = values.maxOrNull() ?: 0f
 
-    if (minValue == maxValue) {
-        return Triple(values.map { 0.5f }, 0, values.size - 1)
+        if (minValue == maxValue) {
+            return@remember Triple(values.map { 0.5f }, 0, values.size - 1)
+        }
+
+        val minIndex = values.indexOf(minValue)
+        val maxIndex = values.indexOf(maxValue)
+
+        val normalizedValues = values.map { value ->
+            val normalizedValue = (value - minValue) / (maxValue - minValue) * (maxRange - minRange) + minRange
+            1f - normalizedValue
+        }
+
+        Triple(normalizedValues, minIndex, maxIndex)
     }
-
-    val minIndex = values.indexOf(minValue)
-    val maxIndex = values.indexOf(maxValue)
-
-    val normalizedValues = values.map { value ->
-        val normalizedValue = (value - minValue) / (maxValue - minValue) * (maxRange - minRange) + minRange
-        1f - normalizedValue
-    }
-
-    return Triple(normalizedValues, minIndex, maxIndex)
 }
 
 @Composable
@@ -88,163 +90,155 @@ fun LineChart(
         val textPrimary = MixinAppTheme.colors.textPrimary
         val background = MixinAppTheme.colors.background
         var highlightPointIndex by remember { mutableIntStateOf(-1) }
-        var canvasSize by remember { mutableStateOf(Size.Zero) }
         val context = LocalContext.current
         val quoteColorPref = context.defaultSharedPreferences
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-        val isRising = dataPointsData.last() >= dataPointsData.first()
+        val isRising = dataPointsData.isEmpty() || dataPointsData.last() >= dataPointsData.first()
         val color = if (isRising != quoteColorPref) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
         val textColor = if (isRising != quoteColorPref) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
         val circleColor = MixinAppTheme.colors.background
         val lineWidth = Dp(1.5f)
 
         Box(modifier = Modifier.fillMaxSize()) {
-            Canvas(modifier = Modifier
+            val pointCount by rememberUpdatedState(dataPoints.size)
+            val onHighlight by rememberUpdatedState(onHighlightChange)
+            Spacer(modifier = Modifier
                 .fillMaxSize()
                 .then(if (onHighlightChange != null) {
                     Modifier
                         .pointerInput(Unit) {
                             detectDragGestures(onDragEnd = {
                                 highlightPointIndex = -1
-                                onHighlightChange.invoke(highlightPointIndex)
+                                onHighlight?.invoke(highlightPointIndex)
                             }) { change, _ ->
-                                val spacing = canvasSize.width / (dataPoints.size - 1)
+                                if (pointCount < 2 || size.width == 0) return@detectDragGestures
+                                val spacing = size.width.toFloat() / (pointCount - 1)
                                 val draggedIndex = (change.position.x.div(spacing)).toInt()
-                                highlightPointIndex = if (draggedIndex in dataPoints.indices) draggedIndex else -1
-                                onHighlightChange.invoke(highlightPointIndex)
+                                highlightPointIndex = if (draggedIndex in 0 until pointCount) draggedIndex else -1
+                                onHighlight?.invoke(highlightPointIndex)
                             }
                         }
                         .pointerInput(Unit) {
                             detectTapGestures(onPress = {
+                                if (pointCount < 2 || size.width == 0) return@detectTapGestures
                                 context.heavyClickVibrate()
-                                val spacing = size.width / (dataPoints.size - 1)
+                                val spacing = size.width.toFloat() / (pointCount - 1)
                                 val startIndex = (it.x / spacing).toInt()
-                                highlightPointIndex = if (startIndex in dataPoints.indices) startIndex else -1
-                                onHighlightChange.invoke(highlightPointIndex)
+                                highlightPointIndex = if (startIndex in 0 until pointCount) startIndex else -1
+                                onHighlight?.invoke(highlightPointIndex)
 
                                 tryAwaitRelease()
                                 highlightPointIndex = -1
-                                onHighlightChange.invoke(highlightPointIndex)
+                                onHighlight?.invoke(highlightPointIndex)
                             })
                         }
                 } else {
                     Modifier
-                })) {
-                val index = highlightPointIndex
-                canvasSize = size
-                val pathBefore = Path()
-                val pathAfter = Path()
-                val gradientPath = Path()
-                val spacing = size.width / (dataPoints.size - 1)
-                val points = dataPoints.mapIndexed { index, value ->
-                    index * spacing to size.height * value
-                }
-
-                pathBefore.moveTo(points.first().first, points.first().second)
-                gradientPath.moveTo(points.first().first, points.first().second)
-
-                for (i in 0 until points.size - 1) {
-                    val x1 = points[i].first
-                    val y1 = points[i].second
-                    val x2 = points[i + 1].first
-                    val y2 = points[i + 1].second
-                    val controlPoint1X = (x1 + x2) / 2
-                    val controlPoint2X = (x1 + x2) / 2
-
-                    if (index == -1 || i < index) {
-                        pathBefore.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
-                        gradientPath.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
-                    } else if (i == index) {
-                        pathBefore.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
-                        gradientPath.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
-                        pathAfter.moveTo(x2, y2)
-                    } else {
-                        pathAfter.cubicTo(controlPoint1X, y1, controlPoint2X, y2, x2, y2)
-                    }
-                }
-
-                if (index != -1) {
-                    gradientPath.lineTo(points[index.coerceAtLeast(0)].first, size.height)
-                } else {
-                    gradientPath.lineTo(points.last().first, size.height)
-                }
-                gradientPath.lineTo(0f, size.height)
-                gradientPath.close()
-
-                drawPath(
-                    path = gradientPath, brush = Brush.verticalGradient(
-                        colors = lineChartGradientColors(color), endY = size.height
-                    )
-                )
-
-                drawPath(
-                    path = pathBefore, color = color, style = Stroke(width = lineWidth.toPx())
-                )
-
-                if (index != -1) {
-                    drawPath(
-                        path = pathAfter, color = Color(0xFFD9D9D9), style = Stroke(width = lineWidth.toPx())
-                    )
-                }
-
-                if (index != -1) {
+                })
+                .drawWithCache {
+                    val pathBefore = Path()
+                    val pathAfter = Path()
+                    val gradientPath = Path()
+                    val gradientBrush = Brush.verticalGradient(colors = lineChartGradientColors(color), endY = size.height)
+                    val lineStroke = Stroke(width = lineWidth.toPx())
                     val dashPathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
-                    drawLine(
-                        color = textPrimary, start = Offset(index * spacing, 0f), end = Offset(index * spacing, size.height), strokeWidth = lineWidth.toPx(), pathEffect = dashPathEffect
-                    )
+                    onDrawBehind {
+                        if (dataPoints.size < 2) return@onDrawBehind
+                        val index = highlightPointIndex.takeIf { it in dataPoints.indices } ?: -1
+                        pathBefore.rewind()
+                        pathAfter.rewind()
+                        gradientPath.rewind()
+                        val spacing = size.width / (dataPoints.size - 1)
+                        val startY = size.height * dataPoints[0]
+                        pathBefore.moveTo(0f, startY)
+                        gradientPath.moveTo(0f, startY)
 
-                    drawLine(
-                        color = textPrimary, start = Offset(0f, size.height * dataPoints[0]), end = Offset(size.width, size.height * dataPoints[0]), strokeWidth = lineWidth.toPx(), pathEffect = dashPathEffect
-                    )
+                        for (i in 0 until dataPoints.lastIndex) {
+                            val x1 = i * spacing
+                            val y1 = size.height * dataPoints[i]
+                            val x2 = (i + 1) * spacing
+                            val y2 = size.height * dataPoints[i + 1]
+                            val controlX = (x1 + x2) / 2
+                            if (index == -1 || i <= index) {
+                                pathBefore.cubicTo(controlX, y1, controlX, y2, x2, y2)
+                                gradientPath.cubicTo(controlX, y1, controlX, y2, x2, y2)
+                                if (i == index) pathAfter.moveTo(x2, y2)
+                            } else {
+                                pathAfter.cubicTo(controlX, y1, controlX, y2, x2, y2)
+                            }
+                        }
 
-                    val circleCenter = Offset(
-                        index * spacing, size.height * dataPoints[index]
-                    )
+                        val endIndex = if (index == -1) dataPoints.lastIndex else index
+                        gradientPath.lineTo(endIndex * spacing, size.height)
+                        gradientPath.lineTo(0f, size.height)
+                        gradientPath.close()
 
-                    drawCircle(
-                        color = circleColor, radius = 10f, center = circleCenter
-                    )
+                        drawPath(path = gradientPath, brush = gradientBrush)
+                        drawPath(path = pathBefore, color = color, style = lineStroke)
 
-                    drawCircle(
-                        color = color, radius = 8f, center = circleCenter
-                    )
-                }
-                if (showMinMaxMarkers && minIndex != -1 && maxIndex != -1) {
-                    val minCircleCenter = Offset(
-                        minIndex * spacing, size.height * dataPoints[minIndex]
-                    )
+                        if (index != -1) {
+                            drawPath(
+                                path = pathAfter, color = Color(0xFFD9D9D9), style = lineStroke
+                            )
+                            drawLine(
+                                color = textPrimary, start = Offset(index * spacing, 0f), end = Offset(index * spacing, size.height), strokeWidth = lineStroke.width, pathEffect = dashPathEffect
+                            )
 
-                    val maxCircleCenter = Offset(
-                        maxIndex * spacing, size.height * dataPoints[maxIndex]
-                    )
+                            drawLine(
+                                color = textPrimary, start = Offset(0f, startY), end = Offset(size.width, startY), strokeWidth = lineStroke.width, pathEffect = dashPathEffect
+                            )
 
-                    if (index != minIndex) {
-                        drawCircle(
-                            color = circleColor, radius = 10f, center = minCircleCenter
-                        )
-                        drawCircle(
-                            color = color, radius = 8f, center = minCircleCenter
-                        )
+                            val circleCenter = Offset(
+                                index * spacing, size.height * dataPoints[index]
+                            )
+
+                            drawCircle(
+                                color = circleColor, radius = 10f, center = circleCenter
+                            )
+
+                            drawCircle(
+                                color = color, radius = 8f, center = circleCenter
+                            )
+                        }
+                        if (showMinMaxMarkers && minIndex != -1 && maxIndex != -1) {
+                            val minCircleCenter = Offset(
+                                minIndex * spacing, size.height * dataPoints[minIndex]
+                            )
+
+                            val maxCircleCenter = Offset(
+                                maxIndex * spacing, size.height * dataPoints[maxIndex]
+                            )
+
+                            if (index != minIndex) {
+                                drawCircle(
+                                    color = circleColor, radius = 10f, center = minCircleCenter
+                                )
+                                drawCircle(
+                                    color = color, radius = 8f, center = minCircleCenter
+                                )
+                            }
+                            if (index != maxIndex) {
+                                drawCircle(
+                                    color = circleColor, radius = 10f, center = maxCircleCenter
+                                )
+                                drawCircle(
+                                    color = color, radius = 8f, center = maxCircleCenter
+                                )
+                            }
+                        }
                     }
-                    if (index != maxIndex) {
-                        drawCircle(
-                            color = circleColor, radius = 10f, center = maxCircleCenter
-                        )
-                        drawCircle(
-                            color = color, radius = 8f, center = maxCircleCenter
-                        )
-                    }
-                }
-            }
+                })
 
             if (showMinMaxMarkers && minIndex != -1 && maxIndex != -1) {
-                val spacing = canvasSize.width / (dataPoints.size - 1)
-                val minXPosition = minIndex * spacing
-                val minYPosition = canvasSize.height * dataPoints[minIndex]
-                val maxXPosition = maxIndex * spacing
-                val maxYPosition = canvasSize.height * dataPoints[maxIndex]
-
                 SubcomposeLayout { constraints ->
+                    if (dataPoints.size < 2) return@SubcomposeLayout layout(constraints.maxWidth, constraints.maxHeight) {}
+                    val chartWidth = constraints.maxWidth.toFloat()
+                    val chartHeight = constraints.maxHeight.toFloat()
+                    val spacing = chartWidth / (dataPoints.size - 1)
+                    val minXPosition = minIndex * spacing
+                    val minYPosition = chartHeight * dataPoints[minIndex]
+                    val maxXPosition = maxIndex * spacing
+                    val maxYPosition = chartHeight * dataPoints[maxIndex]
                     val minText = BigDecimal(dataPointsData[minIndex].toDouble()).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()
                     val maxText = BigDecimal(dataPointsData[maxIndex].toDouble()).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()
                     // Measure min text
@@ -280,24 +274,24 @@ fun LineChart(
                     val maxTextHeight = maxTextPlaceable.maxByOrNull { it.height }?.height?.toFloat() ?: 0f
 
                     // Adjust positions
-                    val minXPositionAdjusted = if (canvasSize.width > minTextWidth) {
+                    val minXPositionAdjusted = if (chartWidth > minTextWidth) {
                         val minBound = 0f
-                        val maxBound = (canvasSize.width - minTextWidth).coerceAtLeast(minBound)
+                        val maxBound = (chartWidth - minTextWidth).coerceAtLeast(minBound)
                         (minXPosition - minTextWidth / 2).coerceIn(minBound, maxBound)
                     } else {
                         0f
                     }
                     val minYPositionAdjusted = (minYPosition).let {
-                        if (it + minTextHeight > canvasSize.height) {
+                        if (it + minTextHeight > chartHeight) {
                             minYPosition - minTextHeight
                         } else {
                             it
                         }
                     }
 
-                    val maxXPositionAdjusted = if (canvasSize.width > maxTextWidth) {
+                    val maxXPositionAdjusted = if (chartWidth > maxTextWidth) {
                         val minBound = 0f
-                        val maxBound = (canvasSize.width - maxTextWidth).coerceAtLeast(minBound)
+                        val maxBound = (chartWidth - maxTextWidth).coerceAtLeast(minBound)
                         (maxXPosition - maxTextWidth / 2).coerceIn(minBound, maxBound)
                     } else {
                         0f
@@ -329,11 +323,12 @@ fun LineChart(
             }
 
             val index = highlightPointIndex
-            if (index >= 0 && index <= dataPoints.size && index <= dataPointsData.size && !timePointsData.isNullOrEmpty() && index <= timePointsData.size) {
-                val spacing = canvasSize.width / (dataPoints.size - 1)
-                val xPosition = index * spacing
-
+            if (index in dataPoints.indices && timePointsData != null && index in timePointsData.indices) {
                 SubcomposeLayout { constraints ->
+                    if (dataPoints.size < 2) return@SubcomposeLayout layout(constraints.maxWidth, constraints.maxHeight) {}
+                    val chartWidth = constraints.maxWidth.toFloat()
+                    val spacing = chartWidth / (dataPoints.size - 1)
+                    val xPosition = index * spacing
                     val text = formatTimestamp(timePointsData[index], type)
                     val horizontalPadding = with(density) { 2.dp.toPx() }
 
@@ -353,9 +348,9 @@ fun LineChart(
                     val textWidth = textPlaceable.maxByOrNull { it.width }?.width?.toFloat() ?: 0f
 
                     // Adjust x position to ensure the Text is within bounds
-                    val xPositionAdjusted = if (canvasSize.width > textWidth + horizontalPadding * 2) {
+                    val xPositionAdjusted = if (chartWidth > textWidth + horizontalPadding * 2) {
                         val minBound = horizontalPadding
-                        val maxBound = (canvasSize.width - textWidth - horizontalPadding).coerceAtLeast(minBound)
+                        val maxBound = (chartWidth - textWidth - horizontalPadding).coerceAtLeast(minBound)
                         (xPosition - textWidth / 2).coerceIn(minBound, maxBound)
                     } else {
                         horizontalPadding

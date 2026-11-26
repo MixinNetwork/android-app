@@ -5,12 +5,35 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+
+internal class TextFieldSyncState(
+    private var lastSyncedValue: String,
+) {
+    fun syncExternalValue(
+        value: String,
+        state: TextFieldState,
+    ) {
+        if (value == lastSyncedValue) return
+        lastSyncedValue = value
+        if (state.text.toString() != value) {
+            state.setTextAndPlaceCursorAtEnd(value)
+        }
+    }
+
+    fun onFieldTextChanged(
+        current: String,
+        onValueChange: (String) -> Unit,
+    ) {
+        if (current == lastSyncedValue) return
+        lastSyncedValue = current
+        onValueChange(current)
+    }
+}
 
 @Composable
 internal fun rememberSyncedTextFieldState(
@@ -20,28 +43,14 @@ internal fun rememberSyncedTextFieldState(
 ): TextFieldState {
     val state = if (saveable) rememberTextFieldState(initialText = value) else remember { TextFieldState(initialText = value) }
     val latestOnValueChange by rememberUpdatedState(onValueChange)
-    val pendingEmissions = remember { ArrayDeque<String>() }
-    var lastExternalValue by remember { mutableStateOf(value) }
+    val syncState = remember { TextFieldSyncState(value) }
 
-    LaunchedEffect(value) {
-        val echoIndex = pendingEmissions.indexOf(value)
-        if (echoIndex >= 0) {
-            repeat(echoIndex + 1) { pendingEmissions.removeFirst() }
-            lastExternalValue = value
-            return@LaunchedEffect
-        }
-        pendingEmissions.clear()
-        lastExternalValue = value
-        if (state.text.toString() != value) {
-            state.setTextAndPlaceCursorAtEnd(value)
-        }
+    SideEffect {
+        syncState.syncExternalValue(value, state)
     }
     LaunchedEffect(state) {
         snapshotFlow { state.text.toString() }.collect { current ->
-            if (current != lastExternalValue) {
-                pendingEmissions.addLast(current)
-                latestOnValueChange(current)
-            }
+            syncState.onFieldTextChanged(current, latestOnValueChange)
         }
     }
     return state
