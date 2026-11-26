@@ -1394,9 +1394,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun handleSuccessfulWeb3Transfer() {
         val token = web3Token
         val toAddress = toAddress
+        val tag = addressTag
         if (token != null && toAddress != null) {
             MixinApplication.get().applicationScope.launch {
-                web3ViewModel.markAddressUsed(token.chainId, toAddress)
+                web3ViewModel.markAddressUsed(token.chainId, toAddress, tag)
             }
         }
         if (!isAdded) return

@@ -3,8 +3,11 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room3.Dao
 import androidx.room3.Query
+import androidx.room3.RawQuery
+import androidx.room3.RoomRawQuery
 import androidx.room3.Transaction
 import kotlinx.coroutines.flow.Flow
+import one.mixin.android.Constants
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AddressItem
 
@@ -62,21 +65,48 @@ interface AddressDao : BaseDao<Address> {
     @Query("SELECT * FROM addresses WHERE address_id IN (:addressIds)")
     suspend fun findByIds(addressIds: List<String>): List<Address>
 
-    // Server payloads never carry the local last used time, so keep it across REPLACE writes.
+    // Server payloads never carry the local last used time, so keep it across REPLACE writes and apply sends
+    // recorded before the address reached this table.
     @Transaction
     suspend fun insertKeepingLastUsed(addresses: List<Address>) {
         if (addresses.isEmpty()) return
         val lastUsed = findByIds(addresses.map { it.addressId }).associate { it.addressId to it.lastUsedAt }
-        insertListSuspend(addresses.map { it.copy(lastUsedAt = lastUsed[it.addressId] ?: it.lastUsedAt) })
+        insertListSuspend(
+            addresses.map { address ->
+                val recorded = findUsedAt(address.chainId, address.destination, address.tag.orEmpty(), address.chainId in Constants.Web3EvmChainIds)
+                address.copy(lastUsedAt = listOfNotNull(lastUsed[address.addressId], address.lastUsedAt, recorded).maxOrNull())
+            },
+        )
     }
 
     @Query("UPDATE addresses SET last_used_at = :usedAt WHERE address_id = :addressId AND (last_used_at IS NULL OR last_used_at < :usedAt)")
     suspend fun updateLastUsedAt(addressId: String, usedAt: Long)
+
+    @Transaction
+    suspend fun markUsed(chainId: String, destination: String, tag: String, ignoreCase: Boolean, usedAt: Long) {
+        recordUsage(chainId, destination, tag, usedAt)
+        updateLastUsedByDestination(chainId, destination, tag, ignoreCase, usedAt)
+    }
 
     @Query(
         "UPDATE addresses SET last_used_at = :usedAt WHERE chain_id = :chainId AND COALESCE(tag, '') = :tag " +
             "AND (destination = :destination OR (:ignoreCase AND destination = :destination COLLATE NOCASE)) " +
             "AND (last_used_at IS NULL OR last_used_at < :usedAt)",
     )
-    suspend fun markUsed(chainId: String, destination: String, tag: String, ignoreCase: Boolean, usedAt: Long)
+    suspend fun updateLastUsedByDestination(chainId: String, destination: String, tag: String, ignoreCase: Boolean, usedAt: Long)
+
+    @Query(
+        "INSERT OR REPLACE INTO address_usages(chain_id, destination, tag, used_at) VALUES(:chainId, :destination, :tag, " +
+            "MAX(:usedAt, COALESCE((SELECT used_at FROM address_usages WHERE chain_id = :chainId AND destination = :destination AND tag = :tag), 0)))",
+    )
+    suspend fun recordUsage(chainId: String, destination: String, tag: String, usedAt: Long)
+
+    @Query(
+        "SELECT MAX(used_at) FROM address_usages WHERE chain_id = :chainId AND tag = :tag " +
+            "AND (destination = :destination OR (:ignoreCase AND destination = :destination COLLATE NOCASE))",
+    )
+    suspend fun findUsedAt(chainId: String, destination: String, tag: String, ignoreCase: Boolean): Long?
+
+    @RawQuery
+    suspend fun queryTexts(query: RoomRawQuery): List<String>
 }

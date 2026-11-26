@@ -99,6 +99,7 @@ import one.mixin.android.util.database.moveLegacyPendingDatabaseFile
 import one.mixin.android.util.debug.getContent
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.AddressUsage
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetsExtra
@@ -174,6 +175,7 @@ import kotlin.math.min
         (Hyperlink::class),
         (FloodMessage::class),
         (Address::class),
+        (AddressUsage::class),
         (ResendMessage::class),
         (ResendSessionMessage::class),
         (StickerRelationship::class),

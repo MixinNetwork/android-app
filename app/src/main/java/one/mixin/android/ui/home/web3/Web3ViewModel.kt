@@ -297,7 +297,7 @@ class Web3ViewModel @Inject constructor(
             web3Repository.gaslessTransaction(id)
         }
 
-    suspend fun markAddressUsed(chainId: String, destination: String) = tokenRepository.markAddressUsed(chainId, destination, null)
+    suspend fun markAddressUsed(chainId: String, destination: String, tag: String?) = tokenRepository.markAddressUsed(chainId, destination, tag)
 
     suspend fun postRawTx(
         rawTx: String,

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 74,
-    "identityHash": "808ce26f31f660f2c583ec8231af6fea",
+    "identityHash": "5cbc29c6101ad7cb64a67341584c02eb",
     "entities": [
       {
         "tableName": "users",
@@ -1299,6 +1299,44 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_addresses_chain_id_updated_at` ON `${TABLE_NAME}` (`chain_id`, `updated_at`)"
           }
         ]
+      },
+      {
+        "tableName": "address_usages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `tag` TEXT NOT NULL, `used_at` INTEGER NOT NULL, PRIMARY KEY(`chain_id`, `destination`, `tag`))",
+        "fields": [
+          {
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destination",
+            "columnName": "destination",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tag",
+            "columnName": "tag",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usedAt",
+            "columnName": "used_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "chain_id",
+            "destination",
+            "tag"
+          ]
+        }
       },
       {
         "tableName": "resend_messages",
@@ -3408,7 +3446,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '808ce26f31f660f2c583ec8231af6fea')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5cbc29c6101ad7cb64a67341584c02eb')"
     ]
   }
 }

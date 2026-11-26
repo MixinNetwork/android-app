@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.repository.backfillLastUsedFromWithdrawals
+import one.mixin.android.repository.missingHistoryTokensQuery
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeWithdrawal
@@ -35,7 +36,7 @@ class AddressLastUsedTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, MixinDatabase::class.java)
             .setDriver(AndroidSQLiteDriver()).allowMainThreadQueries().build()
-        db.tokenDao().insertSuspend(Token("asset", "asset", "SYM", "asset", "", "0", "0", chain, "0", "0", 0, "key", "0", null, 18))
+        db.tokenDao().insertSuspend(token("asset"))
     }
 
     @After
@@ -71,6 +72,17 @@ class AddressLastUsedTest {
     }
 
     @Test
+    fun sendBeforeAddressSyncAppliesWhenAddressArrives() = runBlocking {
+        val dao = db.addressDao()
+        dao.markUsed(chain, "0xabcd", "", ignoreCase = true, usedAt = 500)
+        dao.markUsed(chain, "0xAbCd", "", ignoreCase = true, usedAt = 400)
+        dao.markUsed(chain, "0xAbCd", "Tag", ignoreCase = true, usedAt = 900)
+        dao.insertKeepingLastUsed(listOf(address, address.copy(addressId = "other", chainId = "other-chain")))
+        assertEquals(500L, dao.findAddressById(address.addressId, chain)?.lastUsedAt)
+        assertNull(dao.findAddressById("other", "other-chain")?.lastUsedAt)
+    }
+
+    @Test
     fun backfillUsesLatestWithdrawalBeforeCutoff() = runBlocking {
         val dao = db.addressDao()
         dao.insertKeepingLastUsed(listOf(address))
@@ -80,12 +92,53 @@ class AddressLastUsedTest {
         db.safeSnapshotDao().insertListSuspend(
             listOf(withdrawal("1", old), withdrawal("2", newer), withdrawal("3", afterCutoff)),
         )
-        backfillLastUsedFromWithdrawals(dao, db.safeSnapshotDao(), dao.findAll(), afterCutoff.toEpochMilli())
+        backfillLastUsedFromWithdrawals(dao, dao.findAll(), afterCutoff.toEpochMilli())
         assertEquals(newer.toEpochMilli(), dao.findAddressById(address.addressId, chain)?.lastUsedAt)
     }
 
-    private fun withdrawal(id: String, createdAt: Instant) = SafeSnapshot(
-        id, "withdrawal", "asset", "-1", "user", "", "", "hash", createdAt.toString(), null, null, null, null,
-        null, SafeWithdrawal("hash", "0xabcd"), null,
+    @Test
+    fun backfillComparesParsedTimestamps() = runBlocking {
+        val dao = db.addressDao()
+        dao.insertKeepingLastUsed(listOf(address))
+        val fraction = "2026-02-01T00:00:00.900123456Z"
+        db.safeSnapshotDao().insertListSuspend(
+            listOf(withdrawal("1", "2026-02-01T00:00:00Z"), withdrawal("2", fraction)),
+        )
+        backfillLastUsedFromWithdrawals(dao, dao.findAll(), Instant.parse("2026-03-01T00:00:00Z").toEpochMilli())
+        assertEquals(Instant.parse(fraction).toEpochMilli(), dao.findAddressById(address.addressId, chain)?.lastUsedAt)
+    }
+
+    @Test
+    fun backfillIgnoresWithdrawalsWithoutHash() = runBlocking {
+        val dao = db.addressDao()
+        dao.insertKeepingLastUsed(listOf(address))
+        db.safeSnapshotDao().insertListSuspend(listOf(withdrawal("1", "2026-02-01T00:00:00Z", hash = "")))
+        backfillLastUsedFromWithdrawals(dao, dao.findAll(), Instant.parse("2026-03-01T00:00:00Z").toEpochMilli())
+        assertNull(dao.findAddressById(address.addressId, chain)?.lastUsedAt)
+    }
+
+    @Test
+    fun backfillCountsWithdrawalOnceTokenArrives() = runBlocking {
+        val dao = db.addressDao()
+        dao.insertKeepingLastUsed(listOf(address))
+        val cutoff = Instant.parse("2026-03-01T00:00:00Z").toEpochMilli()
+        db.safeSnapshotDao().insertListSuspend(listOf(withdrawal("1", "2026-02-01T00:00:00Z", assetId = "late")))
+        assertEquals(listOf("late"), dao.queryTexts(missingHistoryTokensQuery(cutoff)))
+        backfillLastUsedFromWithdrawals(dao, dao.findAll(), cutoff)
+        assertNull(dao.findAddressById(address.addressId, chain)?.lastUsedAt)
+
+        db.tokenDao().insertSuspend(token("late"))
+        assertEquals(emptyList(), dao.queryTexts(missingHistoryTokensQuery(cutoff)))
+        backfillLastUsedFromWithdrawals(dao, dao.findAll(), cutoff)
+        assertEquals(Instant.parse("2026-02-01T00:00:00Z").toEpochMilli(), dao.findAddressById(address.addressId, chain)?.lastUsedAt)
+    }
+
+    private fun token(assetId: String) = Token(assetId, assetId, "SYM", assetId, "", "0", "0", chain, "0", "0", 0, "key", "0", null, 18)
+
+    private fun withdrawal(id: String, createdAt: Instant) = withdrawal(id, createdAt.toString())
+
+    private fun withdrawal(id: String, createdAt: String, hash: String = "hash", assetId: String = "asset") = SafeSnapshot(
+        id, "withdrawal", assetId, "-1", "user", "", "", "hash", createdAt, null, null, null, null,
+        null, SafeWithdrawal(hash, "0xabcd"), null,
     )
 }

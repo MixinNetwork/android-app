@@ -102,6 +102,8 @@ object Constants {
         const val PREF_NOTIFY_ENABLE_BIOMETRIC = "pref_notify_enable_biometric"
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
         const val PREF_ADDRESS_LAST_USED_CUTOFF = "pref_address_last_used_cutoff"
+        const val PREF_ADDRESS_LAST_USED_HISTORY_SYNCED = "pref_address_last_used_history_synced"
+        const val PREF_ADDRESS_LAST_USED_BACKFILLED = "pref_address_last_used_backfilled"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
         const val PREF_SWAP_LAST_PAIR = "pref_swap_last_pair"
         const val PREF_LIMIT_SWAP_LAST_PAIR = "pref_limit_swap_last_pair"

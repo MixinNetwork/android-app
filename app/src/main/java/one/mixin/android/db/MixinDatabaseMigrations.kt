@@ -635,6 +635,7 @@ class MixinDatabaseMigrations private constructor() {
             object : Migration(73, 74) {
                 override suspend fun migrate(connection: SQLiteConnection) {
                     connection.execSQL("ALTER TABLE `addresses` ADD COLUMN `last_used_at` INTEGER")
+                    connection.execSQL("CREATE TABLE IF NOT EXISTS `address_usages` (`chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `tag` TEXT NOT NULL, `used_at` INTEGER NOT NULL, PRIMARY KEY(`chain_id`, `destination`, `tag`))")
                 }
             }
 

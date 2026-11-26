@@ -19,7 +19,9 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_ADDRESS_LAST_USED_BACKFILLED
 import one.mixin.android.Constants.Account.PREF_ADDRESS_LAST_USED_CUTOFF
+import one.mixin.android.Constants.Account.PREF_ADDRESS_LAST_USED_HISTORY_SYNCED
 import one.mixin.android.Constants.SAFE_PUBLIC_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -540,9 +542,23 @@ class TokenRepository
             PropertyHelper.findValueByKey(PREF_ADDRESS_LAST_USED_CUTOFF, "").toLongOrNull()
                 ?: System.currentTimeMillis().also { PropertyHelper.updateKeyValue(PREF_ADDRESS_LAST_USED_CUTOFF, it) }
 
+        suspend fun markAddressHistorySynced() = PropertyHelper.updateKeyValue(PREF_ADDRESS_LAST_USED_HISTORY_SYNCED, true)
+
+        // Addresses are skipped once backfilled against fully synced history; until then each call retries,
+        // fetching token metadata the chain match needs.
         suspend fun backfillAddressLastUsed(addresses: List<Address>? = null) {
             val cutoff = addressLastUsedCutoff()
-            backfillLastUsedFromWithdrawals(addressDao, safeSnapshotDao, addresses ?: addressDao.findAll(), cutoff)
+            val backfilled = PropertyHelper.findValueByKey(PREF_ADDRESS_LAST_USED_BACKFILLED, "").split(',').filter { it.isNotEmpty() }.toSet()
+            val pending = (addresses ?: addressDao.findAll()).filter { it.addressId !in backfilled }
+            if (pending.isEmpty()) return
+            val missingTokens = addressDao.queryTexts(missingHistoryTokensQuery(cutoff))
+            if (missingTokens.isNotEmpty()) checkAndSyncTokens(missingTokens)
+            backfillLastUsedFromWithdrawals(addressDao, pending, cutoff)
+            val historyComplete = PropertyHelper.findValueByKey(PREF_ADDRESS_LAST_USED_HISTORY_SYNCED, false) &&
+                (missingTokens.isEmpty() || addressDao.queryTexts(missingHistoryTokensQuery(cutoff)).isEmpty())
+            if (historyComplete) {
+                PropertyHelper.updateKeyValue(PREF_ADDRESS_LAST_USED_BACKFILLED, (backfilled + pending.map { it.addressId }).joinToString(","))
+            }
         }
 
         suspend fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
