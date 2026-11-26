@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_ADDRESS_LAST_USED_CUTOFF
 import one.mixin.android.Constants.SAFE_PUBLIC_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -76,6 +77,7 @@ import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.withRoomTransaction
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.web3.WalletOutputDao
@@ -524,7 +526,24 @@ class TokenRepository
 
         fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
-        fun saveAddr(addr: Address) = addressDao.insert(addr)
+        suspend fun saveAddr(addr: Address) = addressDao.insertKeepingLastUsed(listOf(addr))
+
+        suspend fun saveAddresses(addresses: List<Address>) = addressDao.insertKeepingLastUsed(addresses)
+
+        suspend fun markAddressUsed(
+            chainId: String,
+            destination: String,
+            tag: String?,
+        ) = addressDao.markUsed(chainId, destination, tag.orEmpty(), chainId in Constants.Web3EvmChainIds, System.currentTimeMillis())
+
+        suspend fun addressLastUsedCutoff(): Long =
+            PropertyHelper.findValueByKey(PREF_ADDRESS_LAST_USED_CUTOFF, "").toLongOrNull()
+                ?: System.currentTimeMillis().also { PropertyHelper.updateKeyValue(PREF_ADDRESS_LAST_USED_CUTOFF, it) }
+
+        suspend fun backfillAddressLastUsed(addresses: List<Address>? = null) {
+            val cutoff = addressLastUsedCutoff()
+            backfillLastUsedFromWithdrawals(addressDao, safeSnapshotDao, addresses ?: addressDao.findAll(), cutoff)
+        }
 
         suspend fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
 

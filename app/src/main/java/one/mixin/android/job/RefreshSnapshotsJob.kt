@@ -19,6 +19,10 @@ class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy
         runBlocking {
             val startPosition = PropertyHelper.findValueByKey(PREF_SNAPSHOT_OFFSET, TIME_ZERO)
             refreshSnapshots(startPosition)
+            // Withdrawals before the cutoff are history synced after an upgrade or a fresh install.
+            if (Instant.parse(startPosition).toEpochMilli() < assetRepo.addressLastUsedCutoff()) {
+                assetRepo.backfillAddressLastUsed()
+            }
         }
 
     private suspend fun refreshSnapshots(offset: String): List<SafeSnapshot>? {

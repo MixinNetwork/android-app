@@ -424,6 +424,7 @@ class BottomSheetViewModel
                 tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
                 tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
             }
+            tokenRepository.simpleAssetItem(assetId)?.let { tokenRepository.markAddressUsed(it.chainId, destination, tag) }
             jobManager.addJobInBackground(SyncOutputJob())
             Timber.e("Kernel Withdrawal($traceId): withdrawal end")
             return withdrawalRequestResponse

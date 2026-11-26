@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.web3.GaslessFeeRequest
@@ -1391,6 +1392,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun handleSuccessfulWeb3Transfer() {
+        val token = web3Token
+        val toAddress = toAddress
+        if (token != null && toAddress != null) {
+            MixinApplication.get().applicationScope.launch {
+                web3ViewModel.markAddressUsed(token.chainId, toAddress)
+            }
+        }
         if (!isAdded) return
         AnalyticsTracker.trackAssetSendEnd()
         val navController = findNavController()

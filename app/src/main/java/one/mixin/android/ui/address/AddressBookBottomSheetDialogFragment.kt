@@ -58,6 +58,7 @@ import one.mixin.android.compose.GetStatusBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.fullDate
+import one.mixin.android.extension.toUtcTime
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.toast
@@ -309,7 +310,7 @@ internal fun AddressBookCard(address: Address, chain: Chain?, onClick: () -> Uni
         }
         Text(address.displayAddress(), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 18.sp)
         Text(
-            stringResource(R.string.Last_Updated_at, address.updatedAt.fullDate()),
+            stringResource(R.string.Last_Used_at, address.lastUsedAt?.toUtcTime()?.fullDate() ?: stringResource(R.string.Never)),
             color = MixinAppTheme.colors.textRemarks,
             fontSize = 12.sp,
             lineHeight = 16.sp,
