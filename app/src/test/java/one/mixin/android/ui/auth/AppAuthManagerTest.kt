@@ -2,21 +2,17 @@ package one.mixin.android.ui.auth
 
 import android.app.Activity
 import android.app.Application
-import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Bundle
+import android.net.Uri
 import android.os.Looper
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentActivity
 import androidx.test.core.app.ApplicationProvider
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.Constants.Account.PREF_APP_ENTER_BACKGROUND
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.FlagSecureReason
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -228,178 +224,203 @@ class AppAuthManagerTest {
     }
 
     @Test
-    fun flagSecureAppliedWhenAppAuthEnabledAndClearedWhenDisabled() {
+    @Config(sdk = [33])
+    fun recentsScreenshotDisabledWhenAppAuthEnabledAndRestoredWhenDisabled() {
         configure(0)
         val manager = manager()
         val activity = activity()
         manager.onActivityCreated(activity)
-        assertWindowSecure(activity, true)
+        assertEquals(false, activity.recentsScreenshotEnabled)
+        assertWindowSecure(activity.window, false)
 
         preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
         shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(activity, false)
+        assertEquals(true, activity.recentsScreenshotEnabled)
+        assertWindowSecure(activity.window, false)
 
         preferences.edit().putInt(PREF_APP_AUTH, 1).commit()
         shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(activity, true)
+        assertEquals(false, activity.recentsScreenshotEnabled)
+        assertWindowSecure(activity.window, false)
 
         preferences.edit().remove(PREF_APP_AUTH).commit()
         shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(activity, false)
+        assertEquals(true, activity.recentsScreenshotEnabled)
     }
 
     @Test
-    fun sharedWindowKeepsFlagSecureUntilAllReasonsDetach() {
+    @Config(sdk = [33])
+    fun destroyedActivityStopsReceivingRecentsScreenshotUpdates() {
         configure(0)
         val manager = manager()
         val activity = activity()
         manager.onActivityCreated(activity)
-        assertWindowSecure(activity, true)
-        val secondReason = FlagSecureReason(activity.window) { true }.apply { attach() }
-
-        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(activity, true)
-
-        preferences.edit().putInt(PREF_APP_AUTH, 0).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        secondReason.detach()
-        assertWindowSecure(activity, true)
-
-        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(activity, false)
-    }
-
-    @Test
-    fun destroyedActivityDetachesFlagSecureReasonAndIgnoresLaterChanges() {
-        configure(0)
-        val manager = manager()
-        val activity = activity()
-        manager.onActivityCreated(activity)
-        assertWindowSecure(activity, true)
+        assertEquals(listOf(false), activity.recentsScreenshotHistory)
 
         manager.onActivityDestroyed(activity)
-        assertWindowSecure(activity, false)
-
         preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
         shadowOf(Looper.getMainLooper()).idle()
         preferences.edit().putInt(PREF_APP_AUTH, 1).commit()
         shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(activity, false)
+        assertEquals(listOf(false), activity.recentsScreenshotHistory)
     }
 
     @Test
-    fun dialogFragmentWindowTracksAppAuthFlagSecureAndLifecycle() {
-        configure(0)
-        val manager = manager()
-        val activityController = Robolectric.buildActivity(FragmentActivity::class.java).create()
-        val activity = activityController.get()
-        manager.onActivityCreated(activity)
-        activityController.start().resume()
-
-        val dialogFragment = TestDialogFragment()
-        dialogFragment.showNow(activity.supportFragmentManager, "test-dialog")
-        shadowOf(Looper.getMainLooper()).idle()
-
-        val dialogWindow = requireNotNull(dialogFragment.dialog?.window)
-        assertWindowSecure(activity.window, true)
-        assertWindowSecure(dialogWindow, true)
-
-        // Backgrounding into Recents stops activity and dialog without clearing FLAG_SECURE.
-        activityController.pause().stop()
-        assertWindowSecure(activity.window, true)
-        assertWindowSecure(dialogWindow, true)
-        activityController.start().resume()
-
-        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(activity.window, false)
-        assertWindowSecure(dialogWindow, false)
-
-        preferences.edit().putInt(PREF_APP_AUTH, 1).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(activity.window, true)
-        assertWindowSecure(dialogWindow, true)
-
-        dialogFragment.dismissNow()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(dialogWindow, false)
-
-        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        preferences.edit().putInt(PREF_APP_AUTH, 0).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(dialogWindow, false)
-        assertWindowSecure(activity.window, true)
-    }
-
-    @Test
-    fun sharedDialogWindowPreservesFlagSecureAcrossAppAuthAndSecondReason() {
-        configure(0)
-        val manager = manager()
-        val activityController = Robolectric.buildActivity(FragmentActivity::class.java).create()
-        val activity = activityController.get()
-        manager.onActivityCreated(activity)
-        activityController.start().resume()
-
-        val dialogFragment = TestDialogFragment()
-        dialogFragment.showNow(activity.supportFragmentManager, "shared-dialog")
-        shadowOf(Looper.getMainLooper()).idle()
-
-        val dialogWindow = requireNotNull(dialogFragment.dialog?.window)
-        var pinSecure = true
-        val pinReason = FlagSecureReason(dialogWindow) { pinSecure }.apply { attach() }
-        assertWindowSecure(dialogWindow, true)
-
-        // Clearing PIN's FlagSecureReason while App Lock is enabled must keep FLAG_SECURE.
-        pinSecure = false
-        pinReason.invalidate()
-        assertWindowSecure(dialogWindow, true)
-
-        // Re-enabling PIN's FlagSecureReason while disabling App Lock must keep FLAG_SECURE.
-        pinSecure = true
-        pinReason.invalidate()
-        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(dialogWindow, true)
-
-        pinReason.detach()
-        assertWindowSecure(dialogWindow, false)
-    }
-
-    @Test
-    fun attachAndDetachSecureWindowTracksAppAuthChanges() {
+    @Config(sdk = [31])
+    fun preApi33DoesNotCallRecentsScreenshotOrSetGlobalFlagSecure() {
         configure(0)
         val manager = manager()
         val activity = activity()
-        val dialog = Dialog(activity)
-        val dialogWindow = requireNotNull(dialog.window)
-
-        val reason = manager.attachSecureWindow(dialogWindow)
-        assertNotNull(reason)
-        assertWindowSecure(dialogWindow, true)
+        manager.onActivityCreated(activity)
+        assertTrue(activity.recentsScreenshotHistory.isEmpty())
+        assertWindowSecure(activity.window, false)
 
         preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
         shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(dialogWindow, false)
-
-        preferences.edit().putInt(PREF_APP_AUTH, 2).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(dialogWindow, true)
-
-        manager.detachSecureWindow(reason)
-        assertWindowSecure(dialogWindow, false)
-
-        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        preferences.edit().putInt(PREF_APP_AUTH, 0).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(dialogWindow, false)
+        assertTrue(activity.recentsScreenshotHistory.isEmpty())
+        assertWindowSecure(activity.window, false)
     }
 
-    private fun assertWindowSecure(activity: Activity, expected: Boolean) {
-        assertWindowSecure(activity.window, expected)
+    @Test
+    @Config(sdk = [33])
+    fun sensitiveScreenFlagSecureReasonWorksIndependentlyOfAppAuth() {
+        configure(0)
+        val manager = manager()
+        val activity = activity()
+        manager.onActivityCreated(activity)
+        assertWindowSecure(activity.window, false)
+
+        val sensitiveReason = FlagSecureReason(activity.window) { true }.apply { attach() }
+        assertWindowSecure(activity.window, true)
+
+        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertWindowSecure(activity.window, true)
+
+        sensitiveReason.detach()
+        assertWindowSecure(activity.window, false)
+    }
+
+    @Test
+    fun pendingDeepLinkFromSecondTaskSurvivesUnlockFromFirstTask() {
+        configure(0)
+        val manager = manager()
+        val mainActivity = activity(taskId = 1)
+        manager.onActivityStarted(mainActivity)
+        val lock1 = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityStarted(lock1)
+
+        val uri = Uri.parse("mixin://pay/cross-task")
+        val urlActivity = Robolectric.buildActivity(
+            UrlInterpreterActivity::class.java,
+            Intent(Intent.ACTION_VIEW, uri),
+        ).get()
+        assertTrue(manager.checkAndShow(urlActivity))
+        val lock2 = Robolectric.buildActivity(AppAuthActivity::class.java, Intent().setData(uri)).get()
+        manager.onActivityStarted(lock2)
+
+        // Switching back to the first task's lock screen must not lose the deep link from the second task.
+        manager.onActivityStarted(lock1)
+
+        assertEquals(uri, manager.onAuthenticated())
+        assertTrue(lock1.isFinishing)
+        assertTrue(lock2.isFinishing)
+        assertNull(manager.onAuthenticated())
+    }
+
+    @Test
+    fun pendingDeepLinkIsRecordedEvenWhenTaskAlreadyPending() {
+        configure(0)
+        val manager = manager()
+        val hostActivity = activity(taskId = 0)
+        manager.onActivityStarted(hostActivity)
+        assertNotNull(shadowOf(hostActivity).nextStartedActivity)
+
+        val uri = Uri.parse("mixin://users/same-task")
+        val urlActivity = Robolectric.buildActivity(
+            UrlInterpreterActivity::class.java,
+            Intent(Intent.ACTION_VIEW, uri),
+        ).get()
+        assertTrue(manager.checkAndShow(urlActivity))
+        assertNull(shadowOf(urlActivity).nextStartedActivity)
+
+        assertEquals(uri, manager.onAuthenticated())
+    }
+
+    @Test
+    fun unlockedUrlInterpreterDoesNotPolluteSubsequentLockDeepLink() {
+        configure(1, wallTime - 1_000)
+        val manager = manager()
+        val urlActivity = Robolectric.buildActivity(
+            UrlInterpreterActivity::class.java,
+            Intent(Intent.ACTION_VIEW, Uri.parse("mixin://users/unlocked")),
+        ).get()
+        assertFalse(manager.checkAndShow(urlActivity))
+
+        wallTime += 60_001
+        val mainActivity = activity(taskId = 1)
+        manager.onActivityStarted(mainActivity)
+        assertTrue(manager.isLocked)
+        assertNull(manager.onAuthenticated())
+    }
+
+    @Test
+    fun olderAuthActivityStartDoesNotOverwriteNewerPendingDeepLink() {
+        configure(0)
+        val manager = manager()
+        val first = Uri.parse("mixin://users/first")
+        val second = Uri.parse("mixin://users/second")
+        val lock1 = Robolectric.buildActivity(AppAuthActivity::class.java, Intent().setData(first)).get()
+        manager.onActivityStarted(lock1)
+
+        val urlActivity = Robolectric.buildActivity(
+            UrlInterpreterActivity::class.java,
+            Intent(Intent.ACTION_VIEW, second),
+        ).get()
+        assertTrue(manager.checkAndShow(urlActivity))
+
+        manager.onActivityStarted(lock1)
+        assertEquals(second, manager.onAuthenticated())
+    }
+
+    @Test
+    @Config(sdk = [33])
+    fun resetClearsLockStatePendingDeepLinkTasksAndRestoresRecentsScreenshot() {
+        configure(1, wallTime - 60_001)
+        val manager = manager()
+        val activity = activity(taskId = 1)
+        manager.onActivityCreated(activity)
+        assertEquals(false, activity.recentsScreenshotEnabled)
+        manager.onActivityStarted(activity)
+        assertTrue(manager.isLocked)
+
+        val lockActivity = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityStarted(lockActivity)
+        val urlActivity = Robolectric.buildActivity(
+            UrlInterpreterActivity::class.java,
+            Intent(Intent.ACTION_VIEW, Uri.parse("mixin://pay/logout-clear")),
+        ).get()
+        assertTrue(manager.checkAndShow(urlActivity))
+        manager.onActivityStopped(activity)
+        manager.onActivityStopped(lockActivity)
+
+        // Simulate logout removing PREF_APP_AUTH and resetting in-memory auth state.
+        preferences.edit().remove(PREF_APP_AUTH).commit()
+        manager.reset()
+        shadowOf(Looper.getMainLooper()).idle()
+
+        assertFalse(manager.isLocked)
+        assertTrue(lockActivity.isFinishing)
+        assertEquals(true, activity.recentsScreenshotEnabled)
+        assertEquals(0L, preferences.getLong(PREF_APP_ENTER_BACKGROUND, -1))
+
+        // Re-enabling lock after re-login should start from a clean slate without stale pendingTasks or deep links.
+        configure(0)
+        val nextActivity = activity(taskId = 1)
+        manager.onActivityStarted(nextActivity)
+        assertTrue(manager.isLocked)
+        assertEquals(AppAuthActivity::class.java.name, shadowOf(nextActivity).nextStartedActivity.component?.className)
+        assertNull(manager.onAuthenticated())
     }
 
     private fun assertWindowSecure(window: Window, expected: Boolean) {
@@ -414,21 +435,24 @@ class AppAuthManagerTest {
 
     private fun manager() = AppAuthManager(preferences, { elapsed }, { wallTime })
 
-    private fun activity() = Robolectric.buildActivity(TestActivity::class.java).create().get()
+    private fun activity(taskId: Int = 0) =
+        Robolectric.buildActivity(TestActivity::class.java).create().get().apply {
+            customTaskId = taskId
+        }
 
     class TestActivity : Activity() {
         var changingConfigurations = false
+        var customTaskId = 0
+        var recentsScreenshotEnabled: Boolean? = null
+        val recentsScreenshotHistory = mutableListOf<Boolean>()
 
         override fun isChangingConfigurations() = changingConfigurations
-    }
 
-    class TestDialogFragment : DialogFragment() {
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = Dialog(requireContext())
+        override fun getTaskId() = customTaskId
 
-        override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?,
-        ): View = View(requireContext())
+        override fun setRecentsScreenshotEnabled(enabled: Boolean) {
+            recentsScreenshotEnabled = enabled
+            recentsScreenshotHistory.add(enabled)
+        }
     }
 }

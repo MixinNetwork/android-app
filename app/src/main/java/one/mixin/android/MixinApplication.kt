@@ -395,6 +395,7 @@ open class MixinApplication :
         // Clear biometric key material and prefs so a later relogin cannot reuse the old fingerprint state.
         BiometricUtil.deleteKey(this)
         defaultSharedPreferences.remove(PREF_APP_AUTH)
+        appAuth.reset()
         // Remove the in-memory and persisted account session, including session id and account profile.
         Session.clearAccount()
         // Remove locally cached mnemonic from encrypted storage during logout.

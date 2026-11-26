@@ -63,11 +63,9 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.util.FlagSecureReason
 import one.mixin.android.util.avoidBottomSheetFolds
 import one.mixin.android.extension.findFragmentActivityOrNull
 import kotlinx.coroutines.Job
-import one.mixin.android.MixinApplication
 import one.mixin.android.widget.AndroidUtilities.dp
 import kotlin.math.abs
 import kotlin.math.max
@@ -80,7 +78,6 @@ class BottomSheet(
     private val centerOnExpandedScreen: Boolean = false,
 ) : ComponentDialog(context, R.style.TransparentDialog) {
     private var foldJob: Job? = null
-    private var appAuthSecureReason: FlagSecureReason? = null
     val isCentered: Boolean
         get() = centerOnExpandedScreen && context.isExpandedSheetScreen()
 
@@ -197,9 +194,6 @@ class BottomSheet(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (appAuthSecureReason == null) {
-            appAuthSecureReason = MixinApplication.appAuthOrNull()?.attachSecureWindow(window)
-        }
         context.takeIf { it.isExpandedSheetScreen() }?.findFragmentActivityOrNull()?.let { activity ->
             foldJob?.cancel()
             foldJob = activity.avoidBottomSheetFolds(activity, container)
@@ -219,8 +213,6 @@ class BottomSheet(
     }
 
     override fun onDetachedFromWindow() {
-        MixinApplication.appAuthOrNull()?.detachSecureWindow(appAuthSecureReason)
-        appAuthSecureReason = null
         foldJob?.cancel()
         foldJob = null
         super.onDetachedFromWindow()
@@ -396,9 +388,6 @@ class BottomSheet(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (appAuthSecureReason == null) {
-            appAuthSecureReason = MixinApplication.appAuthOrNull()?.attachSecureWindow(window)
-        }
         window?.setWindowAnimations(R.style.DialogNoAnimation)
         setContentView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         sheetContainer.outlineProvider = object : ViewOutlineProvider() {

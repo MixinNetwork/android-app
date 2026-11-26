@@ -41,6 +41,7 @@ class AppAuthActivity : BaseActivity() {
     companion object {
         private const val STATE_CLEAR_WHEN_PIN_SUCCESS = "clear_when_pin_success"
         private const val STATE_PENDING_PIN_UNLOCK = "pending_pin_unlock"
+        private const val MAX_AUTO_RETRY_COUNT = 3
 
         fun show(activity: Activity) {
             Intent(activity, AppAuthActivity::class.java).apply {
@@ -61,6 +62,7 @@ class AppAuthActivity : BaseActivity() {
     private var promptActive = false
     private var promptScheduled = false
     private var retryPromptOnResume = false
+    private var autoRetryCount = 0
     private var authenticated = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,6 +84,9 @@ class AppAuthActivity : BaseActivity() {
 
         binding.swirl.setState(SwirlView.State.ON)
         binding.swirl.setOnClickListener {
+            autoRetryCount = 0
+            binding.swirl.removeCallbacks(resetSwirlRunnable)
+            resetSwirlState()
             showPrompt()
         }
         binding.pinTv.setOnClickListener {
@@ -98,7 +103,11 @@ class AppAuthActivity : BaseActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.data != null) setIntent(intent)
+        if (intent.data != null) {
+            setIntent(intent)
+            MixinApplication.appAuthOrNull()?.recordPendingDeepLink(intent.data)
+        }
+        autoRetryCount = 0
         binding.swirl.setState(SwirlView.State.ON)
     }
 
@@ -109,6 +118,7 @@ class AppAuthActivity : BaseActivity() {
             applyPinSuccessUnlock()
             return
         }
+        autoRetryCount = 0
         retryPromptOnResume = false
         schedulePrompt()
     }
@@ -210,6 +220,7 @@ class AppAuthActivity : BaseActivity() {
             }
         }.setOnResult { success ->
             if (!success && !authenticated && !viewModel.pendingPinUnlock) {
+                autoRetryCount = 0
                 schedulePrompt()
             }
         }
@@ -222,19 +233,26 @@ class AppAuthActivity : BaseActivity() {
     }
 
     private fun showError(errString: CharSequence) {
+        binding.swirl.removeCallbacks(resetSwirlRunnable)
         binding.info.text = errString
         binding.info.setTextColor(getColor(R.color.colorRed))
         binding.swirl.setState(SwirlView.State.ERROR)
         binding.pinTv.isVisible = true
     }
 
+    private fun resetSwirlState() {
+        binding.info.text = getString(R.string.Confirm_fingerprint)
+        binding.info.setTextColor(colorFromAttribute(R.attr.text_assist))
+        binding.swirl.setState(SwirlView.State.ON)
+    }
+
     private fun finishAndCheckNeed2GoUrlInterpreter() {
         if (authenticated || isFinishing) return
         authenticated = true
         cancelPrompt()
-        val data = intent.data
+        val intentData = intent.data
         val wasTaskRoot = isTaskRoot
-        MixinApplication.get().appAuth.onAuthenticated()
+        val data = MixinApplication.get().appAuth.onAuthenticated() ?: intentData
         if (data != null) {
             UrlInterpreterActivity.show(this, data)
         } else if (wasTaskRoot) {
@@ -260,9 +278,7 @@ class AppAuthActivity : BaseActivity() {
 
     private val resetSwirlRunnable =
         Runnable {
-            binding.info.text = getString(R.string.Confirm_fingerprint)
-            binding.info.setTextColor(colorFromAttribute(R.attr.text_assist))
-            binding.swirl.setState(SwirlView.State.ON)
+            resetSwirlState()
         }
 
     private val showPromptRunnable =
@@ -277,20 +293,32 @@ class AppAuthActivity : BaseActivity() {
                 moveTaskToBack(true)
             }
             BiometricPrompt.ERROR_CANCELED -> {
-                if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    retryPromptOnResume = true
+                } else if (autoRetryCount < MAX_AUTO_RETRY_COUNT) {
+                    autoRetryCount++
                     schedulePrompt(1000)
                 } else {
-                    retryPromptOnResume = true
+                    showError(errString.ifBlank { getString(R.string.Touch_the_fingerprint_sensor) })
                 }
             }
-            BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_HW_NOT_PRESENT, BiometricPrompt.ERROR_HW_UNAVAILABLE -> {
+            BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_HW_NOT_PRESENT -> {
                 viewModel.clearWhenPinSuccess = true
                 showError(errString)
             }
-            BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> showError(errString)
+            BiometricPrompt.ERROR_HW_UNAVAILABLE, BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
+                showError(errString)
+            }
             else -> {
-                refreshSwirl(errString)
-                schedulePrompt(1000)
+                if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    retryPromptOnResume = true
+                } else if (autoRetryCount < MAX_AUTO_RETRY_COUNT) {
+                    autoRetryCount++
+                    refreshSwirl(errString)
+                    schedulePrompt(1000)
+                } else {
+                    showError(errString.ifBlank { getString(R.string.Touch_the_fingerprint_sensor) })
+                }
             }
         }
     }
