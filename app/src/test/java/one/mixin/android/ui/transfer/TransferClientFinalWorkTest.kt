@@ -1,5 +1,6 @@
 package one.mixin.android.ui.transfer
 
+import android.app.Application
 import kotlinx.serialization.ExperimentalSerializationApi
 import one.mixin.android.ui.transfer.status.TransferStatus
 import one.mixin.android.ui.transfer.status.TransferStatusLiveData
@@ -13,7 +14,7 @@ import kotlin.test.assertEquals
 
 @OptIn(ExperimentalSerializationApi::class)
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [34])
+@Config(application = Application::class, manifest = Config.NONE, sdk = [28])
 class TransferClientFinalWorkTest {
     private val accountId = UUID.randomUUID().toString()
     private val peerDeviceId = "peer-device-1"
