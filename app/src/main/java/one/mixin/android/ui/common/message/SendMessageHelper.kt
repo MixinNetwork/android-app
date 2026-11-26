@@ -19,7 +19,6 @@ import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.encodeBlurHash
 import one.mixin.android.extension.getBotNumber
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
 import one.mixin.android.extension.getMimeType
@@ -86,7 +85,6 @@ import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
 import java.io.File
-import java.io.FileInputStream
 import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
@@ -695,8 +693,8 @@ class SendMessageHelper
             }
             if (mimeType == MimeType.GIF.toString()) {
                 val gifFile = MixinApplication.get().getImagePath().createGifTemp(conversationId, messageId)
-                val path = uri.getFilePath(MixinApplication.get()) ?: return -1
-                gifFile.copyFromInputStream(FileInputStream(path))
+                val input = MixinApplication.get().contentResolver.openInputStream(uri) ?: return -1
+                gifFile.copyFromInputStream(input)
                 val size = getImageSize(gifFile)
                 val thumbnail = gifFile.encodeBlurHash()
 
