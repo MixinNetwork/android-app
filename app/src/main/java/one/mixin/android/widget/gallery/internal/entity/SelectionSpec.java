@@ -1,6 +1,5 @@
 package one.mixin.android.widget.gallery.internal.entity;
 
-import android.content.pm.ActivityInfo;
 import android.provider.MediaStore;
 
 import java.util.List;
@@ -17,7 +16,6 @@ public final class SelectionSpec {
     public Set<MimeType> mimeTypeSet;
     public boolean mediaTypeExclusive;
     public boolean showSingleMediaType;
-    public int orientation;
     public boolean countable;
     public int maxSelectable;
     public int maxImageSelectable;
@@ -52,7 +50,6 @@ public final class SelectionSpec {
         mimeTypeSet = null;
         mediaTypeExclusive = true;
         showSingleMediaType = false;
-        orientation = 0;
         countable = false;
         maxSelectable = 1;
         maxImageSelectable = 0;
@@ -71,10 +68,6 @@ public final class SelectionSpec {
 
     public boolean singleSelectionModeEnabled() {
         return !countable && (maxSelectable == 1 || (maxImageSelectable == 1 && maxVideoSelectable == 1));
-    }
-
-    public boolean needOrientationRestriction() {
-        return orientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     }
 
     public boolean onlyShowImages() {

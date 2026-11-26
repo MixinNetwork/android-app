@@ -15,14 +15,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.OutputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -41,13 +46,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -102,7 +103,13 @@ fun TransferDestinationInputPage(
     var safeWalletChainId by remember { mutableStateOf<String?>(null) }
     var showCashAccount by remember { mutableStateOf(false) }
     var cashRewardApy by remember { mutableStateOf<String?>(null) }
-    var text by remember(contentText) { mutableStateOf(contentText) }
+    val textState = rememberTextFieldState(initialText = contentText)
+    LaunchedEffect(contentText) {
+        if (textState.text.toString() != contentText) {
+            textState.setTextAndPlaceCursorAtEnd(contentText)
+        }
+    }
+    val text = textState.text.toString()
     val clipboardManager = LocalClipboard.current
     val cashAccountBadge = cashAccountApyText(cashRewardApy)?.let { apy ->
         stringResource(R.string.cash_account_apy, apy)
@@ -215,29 +222,13 @@ fun TransferDestinationInputPage(
                         cornerRadius = 8.dp
                     ),
             ) {
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = {
-                        text = it
-                    },
+                BasicTextField(
+                    state = textState,
                     modifier = Modifier
+                        .fillMaxWidth()
                         .wrapContentHeight()
                         .heightIn(min = 120.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        backgroundColor = Color.Transparent,
-                        textColor = MixinAppTheme.colors.textPrimary,
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = Color.Transparent,
-                        cursorColor = MixinAppTheme.colors.textBlue
-                    ),
-                    placeholder = {
-                        Text(
-                            text = stringResource(R.string.hint_address),
-                            color = MixinAppTheme.colors.textAssist,
-                            fontSize = 14.sp,
-                            lineHeight = 20.sp
-                        )
-                    },
+                    cursorBrush = SolidColor(MixinAppTheme.colors.textBlue),
                     textStyle = TextStyle(
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
@@ -247,39 +238,45 @@ fun TransferDestinationInputPage(
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text, imeAction = ImeAction.Done
                     ),
-                    minLines = 3,
-                    maxLines = 20,
-                    visualTransformation = if (text.isExternalTransferUrl() || text.isLightningUrl()) {
-                        VisualTransformation { input ->
-                            val inputText = input.text
-                            if (inputText.length <= 12) {
-                                return@VisualTransformation TransformedText(input, OffsetMapping.Identity)
-                            }
-
-                            val annotatedString = buildAnnotatedString {
-                                append(inputText)
-                                addStyle(
-                                    style = SpanStyle(fontWeight = FontWeight.ExtraBold),
-                                    start = 0,
-                                    end = 6.coerceAtMost(inputText.length)
-                                )
-                                addStyle(
-                                    style = SpanStyle(fontWeight = FontWeight.ExtraBold),
-                                    start = (inputText.length - 6).coerceAtLeast(0),
-                                    end = inputText.length
-                                )
-                            }
-                            TransformedText(annotatedString, OffsetMapping.Identity)
+                    lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 3, maxHeightInLines = 20),
+                    outputTransformation = OutputTransformation {
+                        val inputText = asCharSequence().toString()
+                        if ((inputText.isExternalTransferUrl() || inputText.isLightningUrl()) && length > 12) {
+                            addStyle(
+                                SpanStyle(fontWeight = FontWeight.ExtraBold),
+                                0,
+                                6.coerceAtMost(length),
+                            )
+                            addStyle(
+                                SpanStyle(fontWeight = FontWeight.ExtraBold),
+                                (length - 6).coerceAtLeast(0),
+                                length,
+                            )
                         }
-                    } else {
-                        VisualTransformation.None
-                    }
+                    },
+                    decorator = { innerTextField ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                        ) {
+                            if (text.isEmpty()) {
+                                Text(
+                                    text = stringResource(R.string.hint_address),
+                                    color = MixinAppTheme.colors.textAssist,
+                                    fontSize = 14.sp,
+                                    lineHeight = 20.sp
+                                )
+                            }
+                            innerTextField()
+                        }
+                    },
                 )
 
                 if (text.isNotBlank()) {
                     IconButton(
                         onClick = {
-                            text = ""
+                            textState.clearText()
                         },
                         modifier = Modifier.align(Alignment.BottomEnd)
                     ) {
@@ -294,7 +291,7 @@ fun TransferDestinationInputPage(
                         IconButton(
                             onClick = {
                                 clipboardManager.nativeClipboardManager.primaryClip?.getItemAt(0)?.text?.let {
-                                    text = it.toString()
+                                    textState.setTextAndPlaceCursorAtEnd(it.toString())
                                 }
                             },
                         ) {

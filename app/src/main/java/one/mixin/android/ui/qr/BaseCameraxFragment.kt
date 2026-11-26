@@ -119,6 +119,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             override fun onDisplayChanged(displayId: Int) =
                 view?.let { view ->
                     if (displayId == this@BaseCameraxFragment.displayId) {
+                        preview?.targetRotation = view.display.rotation
                         imageAnalysis?.targetRotation = view.display.rotation
                         this@BaseCameraxFragment.onDisplayChanged(view.display.rotation)
                     }

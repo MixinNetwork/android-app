@@ -33,8 +33,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.cancelRunOnUiThread
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.runOnUiThread
-import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.screenWidth
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.translationY
@@ -80,9 +79,9 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     private var released = false
     private val timedOutCaptchaTypes = mutableSetOf<CaptchaType>()
 
-    private val captchaContentHeight by lazy {
+    private fun captchaContentHeight(): Int {
         val barHeight = captchaDialogBarStyle().heightDp.dp
-        minOf(CAPTCHA_CONTENT_MAX_HEIGHT_DP.dp, (context.screenHeight() * 0.85f).toInt() - barHeight).coerceAtLeast(320.dp)
+        return minOf(CAPTCHA_CONTENT_MAX_HEIGHT_DP.dp, (context.windowHeight() * 0.85f).toInt() - barHeight).coerceAtLeast(320.dp)
     }
 
     private val captchaContainer: LinearLayout by lazy {
@@ -105,7 +104,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                 captchaContent,
                 LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    captchaContentHeight,
+                    captchaContentHeight(),
                 ),
             )
         }
@@ -174,7 +173,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             addJavascriptInterface(this@CaptchaView, "MixinContext")
-            translationY = context.screenHeight().toFloat()
+            translationY = context.windowHeight().toFloat()
         }
     }
 
@@ -341,7 +340,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         val dialog = captchaDialog ?: createDialog().also {
             captchaDialog = it
         }
-        webView.translationY = context.screenHeight().toFloat()
+        webView.translationY = context.windowHeight().toFloat()
         if (!dialog.isShowing) {
             try {
                 dialog.show()
@@ -391,7 +390,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
 
     private fun captchaDialogWidth(): Int {
         val margin = DIALOG_HORIZONTAL_MARGIN_DP.dp * 2
-        if (!context.isExpandedSheetScreen()) return context.screenWidth() - margin
+        if (!context.isExpandedSheetScreen()) return context.windowWidth() - margin
         // Large screens and split panes: follow the window and cap the card so the captcha widget lays out correctly.
         return minOf(context.windowWidth() - margin, CAPTCHA_DIALOG_MAX_WIDTH_DP.dp)
     }
@@ -436,7 +435,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         cancelRunOnUiThread(stopWebViewRunnable)
         updateProgress(100)
         if (!webViewLazy.isInitialized()) return
-        webView.translationY(context.screenHeight().toFloat())
+        webView.translationY(context.windowHeight().toFloat())
         webView.webChromeClient = object : WebChromeClient() {}
         webView.loadUrl("about:blank")
         webView.webViewClient = object : WebViewClient() {}

@@ -38,6 +38,8 @@ open class BaseActivity : AppCompatActivity() {
 
     protected open fun onWindowLayoutModeChanged() {}
 
+    protected open fun onBackPressedAtRoot(): Boolean = false
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         androidx.core.view.ViewCompat.requestApplyInsets(window.decorView)
@@ -66,6 +68,9 @@ open class BaseActivity : AppCompatActivity() {
                                 return
                             }
                         }
+                    }
+                    if (supportFragmentManager.backStackEntryCount == 0 && onBackPressedAtRoot()) {
+                        return
                     }
                     isEnabled = false
                     onBackPressedDispatcher.onBackPressed()

@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -57,6 +59,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.UserAvatarImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.vo.User
 import one.mixin.android.widget.NameTextView
 
@@ -212,26 +215,26 @@ internal fun ContactSectionHeader(title: String) {
 
 @Composable
 internal fun ContactsSearchField(value: String, onValueChange: (String) -> Unit, hint: String, newChat: Boolean = false) {
+    val textFieldState = rememberSyncedTextFieldState(value, onValueChange)
     BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
+        state = textFieldState,
         modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = if (newChat) 0.dp else 10.dp, bottom = 12.dp)
             .background(MixinAppTheme.colors.backgroundGrayLight, RoundedCornerShape(20.dp)),
         textStyle = TextStyle(color = MixinAppTheme.colors.textPrimary, fontSize = 16.sp, lineHeight = 20.sp, letterSpacing = 0.sp),
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
         cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-        decorationBox = { innerTextField ->
+        decorator = { innerTextField ->
             Row(Modifier.height(40.dp).padding(start = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(painterResource(R.drawable.ic_contacts_search), null, tint = Color.Unspecified, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(14.dp))
                 Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                    if (value.isEmpty()) {
+                    if (textFieldState.text.isEmpty()) {
                         Text(hint, color = Color(0xFFBCBEC3), fontSize = 16.sp, lineHeight = 20.sp, letterSpacing = 0.sp, maxLines = 1)
                     }
                     innerTextField()
                 }
-                if (value.isNotEmpty()) {
-                    IconButton(onClick = { onValueChange("") }, modifier = Modifier.size(40.dp)) {
+                if (textFieldState.text.isNotEmpty()) {
+                    IconButton(onClick = { textFieldState.clearText() }, modifier = Modifier.size(40.dp)) {
                         Icon(painterResource(R.drawable.ic_float_close), stringResource(R.string.Clear), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
                     }
                 } else {
