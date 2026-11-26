@@ -22,7 +22,11 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.Snapshot
+import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -309,9 +313,16 @@ internal fun ViewportCandleChart(
     val latestPrice = marketPriceText?.toDoubleOrNull() ?: candles.last().close
     val latestPriceText = formatPrice(latestPrice, priceDecimals)
 
-    val visible = state.visibleIndices()
-    val targetRange = visiblePriceRange(candles, visible, latestPrice)
-    val range = animatedPriceRange(targetRange, hold = state.isScrolling)
+    // Scroll and zoom state is only read in the draw phase and snapshotFlow, so dragging redraws without recomposing.
+    val latestPriceState = rememberUpdatedState(latestPrice)
+    val priceRange = remember { PriceRangeAnimator() }
+    if (!priceRange.initialized) {
+        priceRange.snapTo(Snapshot.withoutReadObservation { visiblePriceRange(candles, state.visibleIndices(), latestPrice) })
+    }
+    LaunchedEffect(state) {
+        snapshotFlow { visiblePriceRange(state.candles, state.visibleIndices(), latestPriceState.value) to state.isScrolling }
+            .collectLatest { (target, hold) -> priceRange.animateTo(target, hold) }
+    }
     // Size the axis from all candles so scrolling never changes the plot width (and candle width).
     val axisTexts = remember(candles, latestPriceText, priceDecimals) {
         listOf(
@@ -376,7 +387,7 @@ internal fun ViewportCandleChart(
         ) {
             drawChart(
                 state = state,
-                range = range,
+                range = priceRange.value,
                 timeFrame = timeFrame,
                 priceDecimals = priceDecimals,
                 latestPrice = latestPrice,
@@ -434,23 +445,33 @@ private fun visiblePriceRange(candles: List<ChartCandle>, visible: IntRange, lat
     return PriceRange(low - pad, high + pad)
 }
 
-@Composable
-private fun animatedPriceRange(target: PriceRange, hold: Boolean): PriceRange {
-    var from by remember { mutableStateOf(target) }
-    var to by remember { mutableStateOf(target) }
-    val progress = remember { Animatable(1f) }
+@Stable
+private class PriceRangeAnimator {
+    private var from = PriceRange(0.0, 1.0)
+    private var to = from
+    private val progress = Animatable(1f)
+    var initialized = false
+        private set
+
+    val value: PriceRange get() = lerp(from, to, progress.value)
+
+    fun snapTo(target: PriceRange) {
+        from = target
+        to = target
+        initialized = true
+    }
+
     // While held, only grow the range so candles scrolled into view are never clipped;
     // once released, animate to the latest target.
-    LaunchedEffect(target, hold) {
-        val current = lerp(from, to, progress.value)
+    suspend fun animateTo(target: PriceRange, hold: Boolean) {
+        val current = value
         val next = if (hold) PriceRange(min(current.min, target.min), max(current.max, target.max)) else target
-        if (next == to || (hold && next == current)) return@LaunchedEffect
+        if (next == to || (hold && next == current)) return
         from = current
         to = next
         progress.snapTo(0f)
         progress.animateTo(1f, tween(durationMillis = 220, easing = FastOutSlowInEasing))
     }
-    return lerp(from, to, progress.value)
 }
 
 private fun lerp(from: PriceRange, to: PriceRange, fraction: Float): PriceRange = PriceRange(
@@ -518,6 +539,8 @@ internal suspend fun PointerInputScope.detectChartGestures(
                 GestureMode.Drag -> {
                     state.clearSelection()
                     state.startScroll()
+                    // Apply the movement spent crossing touch slop so the candle under the finger stays under it.
+                    state.scrollByPx(totalDrag.x)
                 }
                 GestureMode.Select -> {
                     // Long press: scrub through candles; the chart itself stays put until release.
