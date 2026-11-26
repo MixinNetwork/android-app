@@ -69,6 +69,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,6 +79,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
@@ -95,8 +97,10 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -105,6 +109,7 @@ import one.mixin.android.ui.home.web3.market.MarketFavoriteAnimationIntent
 import one.mixin.android.ui.home.web3.market.MarketFavoriteIcon
 import one.mixin.android.ui.home.web3.market.shouldClearFavoriteAnimationIntent
 import one.mixin.android.ui.home.web3.trade.CandleChart
+import one.mixin.android.ui.home.web3.trade.TradeTierBadge
 import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.selectLocalizedMarketDescription
@@ -123,6 +128,15 @@ private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
 private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 private const val PREF_MARKET_DETAIL_MARK_PRICE = "perps_market_detail_mark_price"
 private const val PREF_MARKET_DETAIL_TIME_FRAME = "perps_market_detail_time_frame"
+
+internal fun resolvePerpsProGuideVisibility(
+    hasActivity: Boolean?,
+    hasSyncedOrders: Boolean,
+): Boolean? = when {
+    hasActivity == true -> true
+    hasActivity == false && hasSyncedOrders -> false
+    else -> null
+}
 
 @Composable
 fun PerpsMarketDetailPage(
@@ -161,13 +175,21 @@ fun PerpsMarketDetailPage(
             flowOf(emptyList<PerpsPositionItem>())
         }
     }.collectAsStateWithLifecycle(initialValue = null)
-    val allClosedPositions by remember(walletId) {
+    val allActivityOrders by remember(walletId) {
         if (walletId.isNotEmpty()) {
-            viewModel.observeOrders(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
+            viewModel.observeOrders(walletId, CLOSED_POSITION_PREVIEW_LIMIT).map { it as List<PerpsOrderItem>? }
         } else {
-            flowOf(emptyList())
+            flowOf(emptyList<PerpsOrderItem>())
         }
-    }.collectAsStateWithLifecycle(initialValue = emptyList())
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val hasActivity by remember(walletId) {
+        if (walletId.isNotEmpty()) {
+            viewModel.observeHasActivity(walletId).map<Boolean, Boolean?> { it }
+        } else {
+            flowOf<Boolean?>(false)
+        }
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val syncedOrderWalletIds by viewModel.syncedOrderWalletIds.collectAsStateWithLifecycle()
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     var isAddingProcessing by remember { mutableStateOf(false) }
     val currentPosition = openPositions?.firstOrNull { it.marketId == marketId }
@@ -208,7 +230,12 @@ fun PerpsMarketDetailPage(
         }
     }
     val hasLoadedOpenPositions = openPositions != null
-    val closedPositions = allClosedPositions.filter { it.marketId == marketId }
+    val hasSyncedOrders = walletId.isEmpty() || walletId in syncedOrderWalletIds
+    val showProGuide = resolvePerpsProGuideVisibility(
+        hasActivity = hasActivity,
+        hasSyncedOrders = hasSyncedOrders,
+    )
+    val closedPositions = allActivityOrders.orEmpty().filter { it.marketId == marketId }
     val timeFrameValues = listOf("1m", "5m", "15m", "1h", "4h", "1d", "1w")
     val timeFrameLabels = listOf(
         stringResource(R.string.minutes_count_short, 1),
@@ -533,16 +560,32 @@ fun PerpsMarketDetailPage(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
+                val onLearnGuideClick: () -> Unit = {
+                    AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
+                    activity?.let {
+                        PerpetualGuideBottomSheetDialogFragment.newInstance(
+                            PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
+                        ).show(it.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                    }
+                }
+                val onProGuideClick: () -> Unit = {
+                    AnalyticsTracker.trackTradeProClick(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
+                    activity?.let {
+                        Constants.HelpLink.TRADE_PRO.openAsUrlOrWeb(
+                            it,
+                            null,
+                            it.supportFragmentManager,
+                            it.lifecycleScope,
+                        )
+                    }
+                }
+
                 if (market != null) {
-                    if (currentPosition == null) {
-                        HowPerpsWorksCard(
-                            onLearnClick = {
-                                AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
-                                val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
-                                PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                    PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
-                                ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                            }
+                    if (currentPosition == null && hasLoadedOpenPositions && showProGuide != null) {
+                        PerpsDetailGuideCard(
+                            showProGuide = showProGuide,
+                            onLearnClick = onLearnGuideClick,
+                            onProClick = onProGuideClick,
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
@@ -581,16 +624,12 @@ fun PerpsMarketDetailPage(
                     )
                 }
 
-                if (currentPosition != null && market != null) {
+                if (currentPosition != null && market != null && showProGuide != null) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    HowPerpsWorksCard(
-                        onLearnClick = {
-                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
-                            val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
-                            PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
-                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                        }
+                    PerpsDetailGuideCard(
+                        showProGuide = showProGuide,
+                        onLearnClick = onLearnGuideClick,
+                        onProClick = onProGuideClick,
                     )
                 }
 
@@ -833,6 +872,78 @@ private fun MarketAboutSection(description: String) {
                 view.setMarketDescription(description)
             },
         )
+    }
+}
+
+@Composable
+private fun PerpsDetailGuideCard(
+    showProGuide: Boolean,
+    onLearnClick: () -> Unit,
+    onProClick: () -> Unit,
+) {
+    if (showProGuide) {
+        PerpsProGuideCard(onClick = onProClick)
+    } else {
+        HowPerpsWorksCard(onLearnClick = onLearnClick)
+    }
+}
+
+@Composable
+private fun PerpsProGuideCard(
+    onClick: () -> Unit,
+) {
+    val context = LocalContext.current
+    val proBadgeBackground = if (context.isNightMode()) {
+        MixinAppTheme.colors.accent.copy(alpha = 0.16f)
+    } else {
+        Color(0xFFE8F4FF)
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 20.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_perps_pro),
+                contentDescription = null,
+                modifier = Modifier.size(42.dp),
+            )
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.trade_with_mixin_perps),
+                        fontSize = 16.sp,
+                        lineHeight = 20.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MixinAppTheme.colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    TradeTierBadge(
+                        text = stringResource(R.string.Trade_Pro),
+                        color = MixinAppTheme.colors.accent,
+                        modifier = Modifier.background(proBadgeBackground, RoundedCornerShape(4.dp)),
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.Trade_Perps_Pro_Description),
+                    fontSize = 14.sp,
+                    lineHeight = 19.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                )
+            }
+        }
     }
 }
 

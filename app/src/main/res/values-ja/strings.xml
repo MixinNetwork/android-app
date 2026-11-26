@@ -1245,6 +1245,8 @@
     <string name="Trade_Limit_Orders">指値注文</string>
     <string name="Trade_Perpetual_Activity">無期限契約の取引履歴</string>
     <string name="Trade_Pro_Description">高度なチャート、クロスマージン、指値注文。</string>
+    <string name="Trade_Perps_Pro_Description">高度なチャート、クロスマージン、指値注文</string>
+    <string name="trade_with_mixin_perps">Mixin Perpsで取引</string>
     <string name="Trade_Now">今すぐ取引</string>
     <string name="Spot_Trade_Guide_Overview_Desc">Mixin はスワップと指値注文に対応しており、DEX と CEX から集約した流動性を活用して、複数のチェーンや資産を取引できます。</string>
     <string name="Spot_Trade_Guide_Swap_Desc">スワップでは、利用可能な最良の市場価格で即座に取引できます。</string>

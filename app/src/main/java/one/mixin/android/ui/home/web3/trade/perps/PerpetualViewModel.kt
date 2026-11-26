@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -83,6 +85,9 @@ class PerpetualViewModel @Inject constructor(
 
     private val _favoriteMarketIds = MutableStateFlow<List<String>>(emptyList())
     val favoriteMarketIds: StateFlow<List<String>> = _favoriteMarketIds.asStateFlow()
+
+    private val _syncedOrderWalletIds = MutableStateFlow<Set<String>>(emptySet())
+    val syncedOrderWalletIds: StateFlow<Set<String>> = _syncedOrderWalletIds.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -174,7 +179,13 @@ class PerpetualViewModel @Inject constructor(
         if (refreshOrdersJob?.isActive == true) return
         refreshOrdersJob = viewModelScope.launch {
             while (isActive) {
-                refreshOrders(walletId)
+                try {
+                    syncOrders(walletId)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e, "Error refreshing orders")
+                }
                 delay(intervalMs)
             }
         }
@@ -187,25 +198,32 @@ class PerpetualViewModel @Inject constructor(
     fun refreshOrders(walletId: String, limit: Int = 100) {
         viewModelScope.launch {
             try {
-                val latestUpdatedAt = withContext(Dispatchers.IO) {
-                    perpsOrderDao.getLatestUpdatedAt()
-                }
-                withContext(Dispatchers.IO) {
-                    syncPerpsOrderPages(
-                        initialOffset = latestUpdatedAt,
-                        limit = limit,
-                        fetch = { offset ->
-                            val response = routeService.getPerpsOrders(walletId = walletId, limit = limit, offset = offset)
-                            if (!response.isSuccess) throw MixinResponseException(response.errorCode, response.errorDescription)
-                            response.data ?: throw DataErrorException()
-                        },
-                        save = { upsertSyncedOrders(it) },
-                    )
-                }
+                syncOrders(walletId, limit)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Timber.e(e, "Error refreshing orders")
             }
         }
+    }
+
+    private suspend fun syncOrders(walletId: String, limit: Int = 100) {
+        val latestUpdatedAt = withContext(Dispatchers.IO) {
+            perpsOrderDao.getLatestUpdatedAt()
+        }
+        withContext(Dispatchers.IO) {
+            syncPerpsOrderPages(
+                initialOffset = latestUpdatedAt,
+                limit = limit,
+                fetch = { offset ->
+                    val response = routeService.getPerpsOrders(walletId = walletId, limit = limit, offset = offset)
+                    if (!response.isSuccess) throw MixinResponseException(response.errorCode, response.errorDescription)
+                    response.data ?: throw DataErrorException()
+                },
+                save = { upsertSyncedOrders(it) },
+            )
+        }
+        _syncedOrderWalletIds.update { it + walletId }
     }
 
     fun loadMarkets(
@@ -807,6 +825,12 @@ class PerpetualViewModel @Inject constructor(
 
     fun observeOrders(walletId: String, limit: Int): Flow<List<PerpsOrderItem>> {
         return perpsOrderDao.observeOrders(limit)
+    }
+
+    fun observeHasActivity(walletId: String): Flow<Boolean> {
+        if (walletId.isBlank()) return flowOf(false)
+        // PerpsDatabase is isolated per logged-in account, and perps_orders has no wallet_id column.
+        return perpsOrderDao.observeHasActivity()
     }
 
     suspend fun getOpenPositionsFromDb(walletId: String): List<PerpsPositionItem> {
