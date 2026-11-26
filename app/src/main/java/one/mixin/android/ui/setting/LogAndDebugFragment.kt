@@ -133,16 +133,19 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
 
                 previewVerifyMobileReminder.setOnClickListener {
                     VerifyMobileReminderBottomSheetDialogFragment.allowDebugShowOnce(requireContext())
+                    Session.skipHomeReminderDelay()
                     toast(R.string.Verify_Mobile_Reminder_Will_Show_Once)
                 }
 
                 previewRecoveryReminder.setOnClickListener {
                     RecoveryReminderBottomSheetDialogFragment.allowDebugShowOnce(requireContext())
+                    Session.skipHomeReminderDelay()
                     toast(R.string.Recovery_Reminder_Will_Show_Once)
                 }
 
                 previewNewUpdateReminder.setOnClickListener {
                     ReminderBottomSheetDialogFragment.allowDebugShowOnce(requireContext())
+                    Session.skipHomeReminderDelay()
                     toast(R.string.New_Update_Reminder_Will_Show_Once)
                 }
 

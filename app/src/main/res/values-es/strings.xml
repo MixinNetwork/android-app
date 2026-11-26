@@ -1152,6 +1152,7 @@
     <string name="free_inheritance_service">Servicio de herencia gratuito</string>
     <string name="membership_benefit_free_inheritance_service">Utilice el servicio de herencia de forma gratuita.</string>
     <string name="membership_renew_option_card_desc">Utilice Google Pay, tarjeta de crédito o débito para renovar su plan.</string>
+    <string name="membership_renew_option_crypto">Criptomonedas</string>
     <string name="membership_renew_option_crypto_desc">Utilice USDT, USDC u otras criptomonedas para renovar su plan.</string>
     <string name="mnemonic_login_security_title">¿Es seguro importar a Mixin?</string>
     <string name="mobile_number_description">Este es el número de teléfono vinculado a tu cuenta</string>

@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet
 
-import android.content.Context
 import android.view.View
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,10 +17,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,10 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.WalletItem
@@ -43,7 +39,6 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.components.ActionBottom
-import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.ui.wallet.components.WalletCard
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.widget.bottomSheetHeight
@@ -62,26 +57,25 @@ class WalletMultiSelectBottomSheetDialogFragment : MixinComposeBottomSheetDialog
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    @OptIn(FlowPreview::class)
     @Composable
     override fun ComposeContent() {
         MixinAppTheme {
-            val searchQuery = remember { MutableStateFlow("") }
+            var query by rememberSaveable { mutableStateOf("") }
             val wallets by viewModel.walletsFlow.collectAsState()
-            val scope = rememberCoroutineScope()
-            LaunchedEffect(Unit) {
-                // initial load: show all wallets (privacy + all web3 wallets)
-                viewModel.searchWallets("", "", "")
-                searchQuery.debounce(150).collect { query ->
-                    viewModel.searchWallets("", "", query)
+            LaunchedEffect(query) {
+                if (query.isNotEmpty()) {
+                    delay(150)
                 }
+                viewModel.searchWallets("", "", query)
             }
 
+            val filteredWallets = remember(wallets) { wallets.filter { !it.isWatch() && !it.isMixinSafe() } }
             WalletMultiSelectScreen(
-                wallets = wallets.filter { it.isWatch().not() && it.isMixinSafe().not() },
+                wallets = filteredWallets,
                 initialSelectedIds = initialSelectedIds,
                 initialPrivacySelected = initialPrivacySelected,
-                onQueryChanged = { q -> scope.launch { searchQuery.emit(q) } },
+                query = query,
+                onQueryChanged = { query = it },
                 onConfirm = { selected ->
                     onConfirmListener?.invoke(selected)
                     dismiss()
@@ -135,29 +129,26 @@ private fun WalletMultiSelectScreen(
     wallets: List<WalletItem>,
     initialSelectedIds: List<String>,
     initialPrivacySelected: Boolean,
+    query: String,
     onQueryChanged: (String) -> Unit,
     onConfirm: (List<WalletItem?>) -> Unit,
     onReset: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
-    var query by remember { mutableStateOf("") }
-
-    val selectedWalletIds = remember { mutableStateListOf<String>().apply { addAll(initialSelectedIds) } }
-    var privacySelected by remember { mutableStateOf(initialPrivacySelected) }
-
-    val walletItems = remember(wallets, query) {
-        wallets
+    var selectedWalletIds by rememberSaveable(
+        saver = Saver(
+            save = { ArrayList(it.value) },
+            restore = { mutableStateOf(it.toSet()) },
+        ),
+    ) {
+        mutableStateOf(initialSelectedIds.toSet())
     }
+    var privacySelected by rememberSaveable { mutableStateOf(initialPrivacySelected) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
             query = query,
-            onQueryChanged = {
-                query = it
-                onQueryChanged(it)
-            },
+            onQueryChanged = onQueryChanged,
             isSearching = false,
             onCancel = onCancel,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
@@ -189,8 +180,11 @@ private fun WalletMultiSelectScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             // Web3 wallets
-            walletItems.forEachIndexed { index, wallet ->
-                val checked = selectedWalletIds.contains(wallet.id)
+            wallets.forEachIndexed { index, wallet ->
+                val checked = wallet.id in selectedWalletIds
+                val toggle = {
+                    selectedWalletIds = if (wallet.id in selectedWalletIds) selectedWalletIds - wallet.id else selectedWalletIds + wallet.id
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -204,13 +198,7 @@ private fun WalletMultiSelectScreen(
                             name = wallet.name,
                             destination = destination,
                             hasLocalPrivateKey = wallet.hasLocalPrivateKey,
-                            onClick = {
-                                if (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey)) {
-                                    toggleSelection(selectedWalletIds, wallet.id)
-                                } else {
-                                    toggleSelection(selectedWalletIds, wallet.id)
-                                }
-                            },
+                            onClick = toggle,
                             isSelectable = true,
                             isSelected = checked,
                         )
@@ -219,13 +207,7 @@ private fun WalletMultiSelectScreen(
                         WalletCard(
                             name = wallet.name,
                             destination = destination,
-                            onClick = {
-                                if (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey)) {
-                                    toggleSelection(selectedWalletIds, wallet.id)
-                                } else {
-                                    toggleSelection(selectedWalletIds, wallet.id)
-                                }
-                            },
+                            onClick = toggle,
                             isSelectable = true,
                             isSelected = checked,
                         )
@@ -234,20 +216,14 @@ private fun WalletMultiSelectScreen(
                         WalletCard(
                             name = wallet.name,
                             destination = destination,
-                            onClick = {
-                                if (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey)) {
-                                    toggleSelection(selectedWalletIds, wallet.id)
-                                } else {
-                                    toggleSelection(selectedWalletIds, wallet.id)
-                                }
-                            },
+                            onClick = toggle,
                             isSelectable = true,
                             isSelected = checked,
                         )
                     }
                 }
 
-                if (index < walletItems.size - 1) {
+                if (index < wallets.size - 1) {
                     Spacer(modifier = Modifier.height(10.dp))
                 }
             }
@@ -276,8 +252,4 @@ private fun WalletMultiSelectScreen(
             }
         )
     }
-}
-
-private fun toggleSelection(selected: MutableList<String>, id: String) {
-    if (selected.contains(id)) selected.remove(id) else selected.add(id)
 }

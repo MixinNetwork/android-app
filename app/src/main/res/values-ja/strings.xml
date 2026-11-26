@@ -1093,6 +1093,7 @@
     <string name="free_inheritance_service">無料相続サービス</string>
     <string name="membership_benefit_free_inheritance_service">相続サービスを無料でご利用ください。</string>
     <string name="membership_renew_option_card_desc">Google Pay、クレジットカードまたはデビットカードでプランを更新します。</string>
+    <string name="membership_renew_option_crypto">仮想通貨</string>
     <string name="membership_renew_option_crypto_desc">USDT、USDC、またはその他の仮想通貨でプランを更新します。</string>
     <string name="mnemonic_login_security_title">Mixinにインポートしても安全ですか？</string>
     <string name="mobile_number_description">アカウントに紐づけられた携帯電話番号です</string>

@@ -24,6 +24,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -104,6 +107,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
@@ -678,13 +682,17 @@ internal fun PerpsReductionInput(
     onPercentageSelected: ((BigDecimal) -> Unit)? = null,
     autoFocus: Boolean = true,
 ) {
-    var textFieldValue by remember(isPercentage) { mutableStateOf(TextFieldValue(input, TextRange(input.length))) }
-    LaunchedEffect(input) {
-        textFieldValue = syncPerpsMarginInput(textFieldValue, input)
+    val textFieldState = rememberSyncedTextFieldState(
+        value = input,
+        onValueChange = onInputChanged,
+    )
+    LaunchedEffect(isPercentage) {
+        if (textFieldState.text.toString() != input) {
+            textFieldState.setTextAndPlaceCursorAtEnd(input)
+        }
     }
     fun updateInput(value: String) {
-        textFieldValue = TextFieldValue(value, TextRange(value.length))
-        onInputChanged(value)
+        textFieldState.setTextAndPlaceCursorAtEnd(value)
     }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -739,24 +747,26 @@ internal fun PerpsReductionInput(
             Row(modifier = Modifier.weight(1f, fill = false), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 if (!isPercentage) Text(PERPS_USD_SYMBOL, style = inputTextStyle)
                 BasicTextField(
-                    value = textFieldValue,
-                    onValueChange = { value ->
-                        val text = value.text
-                        if (text.length <= 40 && text.all { it in '0'..'9' || (decimalPlaces > 0 && it == '.') } && text.count { it == '.' } <= 1 &&
-                            text.substringAfter('.', "").length <= decimalPlaces) {
-                            textFieldValue = value
-                            if (text != input) onInputChanged(text)
+                    state = textFieldState,
+                    inputTransformation = InputTransformation {
+                        val text = asCharSequence().toString()
+                        val valid = text.length <= 40 &&
+                            text.all { it in '0'..'9' || (decimalPlaces > 0 && it == '.') } &&
+                            text.count { it == '.' } <= 1 &&
+                            text.substringAfter('.', "").length <= decimalPlaces
+                        if (!valid) {
+                            revertAllChanges()
                         }
                     },
                     enabled = enabled,
-                    singleLine = true,
+                    lineLimits = TextFieldLineLimits.SingleLine,
                     modifier = Modifier.widthIn(min = 20.dp, max = 160.dp).width(inputWidth).focusRequester(focusRequester),
                     textStyle = inputTextStyle,
                     keyboardOptions = KeyboardOptions(keyboardType = if (decimalPlaces == 0) KeyboardType.Number else KeyboardType.Decimal),
                     cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-                    decorationBox = { field ->
+                    decorator = { field ->
                         Box(contentAlignment = Alignment.Center) {
-                            if (input.isEmpty()) Text(placeholder, style = inputTextStyle)
+                            if (textFieldState.text.isEmpty()) Text(placeholder, style = inputTextStyle)
                             field()
                         }
                     },

@@ -40,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -295,7 +296,7 @@ private fun PerpsAddContent(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
-    var amount by remember(position.positionId, initialMargin) {
+    var amount by rememberSaveable(position.positionId, initialMargin) {
         mutableStateOf(limitTradeInputDecimalPlaces(initialMargin.orEmpty(), TRADE_INPUT_MAX_DECIMAL_PLACES))
     }
     val tokenBalance = selectedToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO

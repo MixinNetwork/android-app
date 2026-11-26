@@ -806,6 +806,7 @@
     <string name="free_inheritance_service">Layanan Warisan Gratis</string>
     <string name="membership_benefit_free_inheritance_service">Gunakan layanan warisan secara gratis.</string>
     <string name="membership_renew_option_card_desc">Gunakan Google Pay, kartu kredit atau debit untuk memperpanjang paket Anda.</string>
+    <string name="membership_renew_option_crypto">Kripto</string>
     <string name="membership_renew_option_crypto_desc">Gunakan USDT, USDC, atau kripto lainnya untuk memperpanjang paket Anda.</string>
     <string name="changed_disappearing_message_settings_read_only">%1$s mengubah setelan pesan yang hilang. Ketuk untuk mempelajari lebih lanjut.</string>
     <string name="changed_disappearing_message_settings_editable">%1$s mengubah setelan pesan yang hilang. Ketuk untuk mengubah setelan atau mempelajari lebih lanjut.</string>

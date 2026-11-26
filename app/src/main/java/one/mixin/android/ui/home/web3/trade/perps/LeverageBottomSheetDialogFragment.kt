@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -155,7 +156,7 @@ private fun LeverageContent(
     onApply: (Float) -> Unit,
 ) {
     val boundedMaxLeverage = maxLeverage.coerceAtLeast(1)
-    var tempLeverage by remember(currentLeverage, boundedMaxLeverage) {
+    var tempLeverage by rememberSaveable(currentLeverage, boundedMaxLeverage) {
         mutableIntStateOf(currentLeverage.roundToInt().coerceIn(1, boundedMaxLeverage))
     }
     val stepperEdgePadding = (LocalConfiguration.current.screenWidthDp.dp * 0.16f).coerceAtMost(60.dp)

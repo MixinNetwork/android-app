@@ -27,6 +27,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
@@ -47,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.ui.home.web3.market.MarketChip
 import one.mixin.android.ui.home.web3.market.MarketHeaderSortLabels
 import one.mixin.android.ui.home.web3.market.MarketListEntry
@@ -113,6 +116,7 @@ private fun PerpsMarketSearchBar(
     onQueryChanged: (String) -> Unit,
     onCancel: () -> Unit,
 ) {
+    val textFieldState = rememberSyncedTextFieldState(query, onQueryChanged)
     Row(
         modifier =
             Modifier
@@ -122,8 +126,7 @@ private fun PerpsMarketSearchBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BasicTextField(
-            value = query,
-            onValueChange = onQueryChanged,
+            state = textFieldState,
             modifier =
                 Modifier
                     .weight(1f)
@@ -136,9 +139,9 @@ private fun PerpsMarketSearchBar(
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 14.sp,
                 ),
-            singleLine = true,
+            lineLimits = TextFieldLineLimits.SingleLine,
             cursorBrush = SolidColor(MixinAppTheme.colors.accent),
-            decorationBox = { innerTextField ->
+            decorator = { innerTextField ->
                 Row(
                     modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -154,7 +157,7 @@ private fun PerpsMarketSearchBar(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.CenterStart,
                     ) {
-                        if (query.isEmpty()) {
+                        if (textFieldState.text.isEmpty()) {
                             Text(
                                 text = stringResource(R.string.search_placeholder_market),
                                 color = MixinAppTheme.colors.textAssist,
@@ -163,9 +166,9 @@ private fun PerpsMarketSearchBar(
                         }
                         innerTextField()
                     }
-                    if (query.isNotEmpty()) {
+                    if (textFieldState.text.isNotEmpty()) {
                         IconButton(
-                            onClick = { onQueryChanged("") },
+                            onClick = { textFieldState.clearText() },
                             modifier = Modifier.size(24.dp),
                         ) {
                             Icon(

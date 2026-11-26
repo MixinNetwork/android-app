@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -27,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,12 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import one.mixin.android.Constants
 import one.mixin.android.R
 
@@ -64,6 +63,7 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.NoKeyWarningBottomSheetDialogFragment
+import one.mixin.android.ui.common.compose.rememberSyncedTextFieldState
 import one.mixin.android.ui.wallet.components.KEY_HIDE_COMMON_WALLET_INFO
 import one.mixin.android.ui.wallet.components.KEY_HIDE_PRIVACY_WALLET_INFO
 import one.mixin.android.ui.wallet.components.KEY_HIDE_SAFE_WALLET_INFO
@@ -94,30 +94,20 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    @OptIn(FlowPreview::class)
     @Composable
     override fun ComposeContent() {
         MixinAppTheme {
-            val searchQuery = remember { MutableStateFlow("") }
+            var query by rememberSaveable { mutableStateOf("") }
             val wallets by viewModel.walletsFlow.collectAsState()
             val allWallets by viewModel.allWalletsFlow.collectAsState()
-            LaunchedEffect(Unit) {
-                launch {
-                    searchQuery.collect { query ->
-                        if (query.isEmpty()) {
-                            viewModel.searchWallets(excludeWalletId ?: "", chainId ?: "", query)
-                        }
-                    }
+            LaunchedEffect(excludeWalletId, chainId) {
+                viewModel.loadAllWallets(excludeWalletId ?: "", chainId ?: "")
+            }
+            LaunchedEffect(query, excludeWalletId, chainId) {
+                if (query.isNotEmpty()) {
+                    delay(150)
                 }
-                launch {
-                    searchQuery
-                        .debounce(150)
-                        .collect { query ->
-                            if (query.isNotEmpty()) {
-                                viewModel.searchWallets(excludeWalletId ?: "", chainId ?: "", query)
-                            }
-                        }
-                }
+                viewModel.searchWallets(excludeWalletId ?: "", chainId ?: "", query)
             }
 
             WalletListScreen(
@@ -125,11 +115,8 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 wallets = wallets,
                 allWallets = allWallets,
                 excludeWalletId = excludeWalletId,
-                onQueryChanged = { query ->
-                    lifecycleScope.launch {
-                        searchQuery.emit(query)
-                    }
-                },
+                query = query,
+                onQueryChanged = { query = it },
                 onWalletClick = { wallet ->
                     if (wallet != null && (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey))) {
                         NoKeyWarningBottomSheetDialogFragment.newInstance(wallet.toWeb3Wallet()).apply {
@@ -196,33 +183,47 @@ fun WalletListScreen(
     wallets: List<WalletItem>,
     allWallets: List<WalletItem>,
     excludeWalletId: String?,
+    query: String,
     onQueryChanged: (String) -> Unit,
     onWalletClick: (WalletItem?) -> Unit,
     onCancel: () -> Unit,
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
-    var query by remember { mutableStateOf("") }
     val hidePrivacyWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_PRIVACY_WALLET_INFO, false)) }
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
-    val hasAll = remember(allWallets) { allWallets.any { it.isMixinSafe().not() && it.id != excludeWalletId } }
-    val hasSafe = remember(allWallets) { allWallets.any { it.safeChainId == chainId } }
-    val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
-    val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds || chainId in Constants.Web3UtxoChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
-    val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
-    var selectedCategory by remember(hasAll, hasSafe, hasCreated, hasImported, hasWatch) {
-        mutableStateOf(
-            when {
-                hasAll -> null
-                hasSafe -> WalletCategory.MIXIN_SAFE.value
-                hasCreated -> WalletCategory.CLASSIC.value
-                hasImported -> "import"
-                hasWatch -> "watch"
-                else -> null
+    val hasAll = remember(allWallets, excludeWalletId) { allWallets.any { it.isMixinSafe().not() && it.id != excludeWalletId } }
+    val hasSafe = remember(allWallets, chainId) { allWallets.any { it.safeChainId == chainId } }
+    val hasImported = remember(allWallets, excludeWalletId) { allWallets.any { it.isImported() && excludeWalletId != it.id } }
+    val hasCreated = remember(allWallets, chainId, excludeWalletId) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds || chainId in Constants.Web3UtxoChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
+    val hasWatch = remember(allWallets) { allWallets.any { it.isWatch() } }
+    var selectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
+    var hasInitializedCategory by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(allWallets, hasAll, hasSafe, hasCreated, hasImported, hasWatch) {
+        if (allWallets.isEmpty()) return@LaunchedEffect
+        val isSelectedAvailable =
+            when (selectedCategory) {
+                null -> hasAll
+                WalletCategory.MIXIN_SAFE.value -> hasSafe
+                WalletCategory.CLASSIC.value -> hasCreated
+                "import" -> hasImported
+                "watch" -> hasWatch
+                else -> false
             }
-        )
+        if (!hasInitializedCategory || !isSelectedAvailable) {
+            selectedCategory =
+                when {
+                    hasAll -> null
+                    hasSafe -> WalletCategory.MIXIN_SAFE.value
+                    hasCreated -> WalletCategory.CLASSIC.value
+                    hasImported -> "import"
+                    hasWatch -> "watch"
+                    else -> null
+                }
+            hasInitializedCategory = true
+        }
     }
 
     val walletItems = remember(wallets, excludeWalletId, query, selectedCategory) {
@@ -255,10 +256,7 @@ fun WalletListScreen(
     ) {
         SearchBar(
             query = query,
-            onQueryChanged = {
-                query = it
-                onQueryChanged(it)
-            },
+            onQueryChanged = onQueryChanged,
             isSearching = false,
             onCancel = onCancel,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
@@ -369,13 +367,13 @@ fun SearchBar(
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val textFieldState = rememberSyncedTextFieldState(query, onQueryChanged)
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         BasicTextField(
-            value = query,
-            onValueChange = onQueryChanged,
+            state = textFieldState,
             modifier = Modifier
                 .weight(1f)
                 .height(44.dp)
@@ -387,9 +385,9 @@ fun SearchBar(
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp
             ),
-            singleLine = true,
+            lineLimits = TextFieldLineLimits.SingleLine,
             cursorBrush = SolidColor(MixinAppTheme.colors.textBlue),
-            decorationBox = { innerTextField ->
+            decorator = { innerTextField ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_edit_search),
@@ -401,7 +399,7 @@ fun SearchBar(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.CenterStart,
                     ) {
-                        if (query.isEmpty()) {
+                        if (textFieldState.text.isEmpty()) {
                             Text(
                                 text = stringResource(id = R.string.search_placeholder_asset),
                                 color = MixinAppTheme.colors.textAssist,
@@ -410,9 +408,9 @@ fun SearchBar(
                         }
                         innerTextField()
                     }
-                    if (query.isNotEmpty()) {
+                    if (textFieldState.text.isNotEmpty()) {
                         IconButton(
-                            onClick = { onQueryChanged("") },
+                            onClick = { textFieldState.clearText() },
                             modifier = Modifier.size(16.dp)
                         ) {
                             Icon(

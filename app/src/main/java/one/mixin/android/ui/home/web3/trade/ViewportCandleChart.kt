@@ -22,7 +22,12 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.withFrameNanos
+import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -48,6 +53,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -86,7 +92,14 @@ private const val GRID_LINE_COUNT = 4
 private const val PRICE_PADDING_RATIO = 0.08
 private const val BODY_WIDTH_RATIO = 0.7f
 private const val WICK_WIDTH_RATIO = 0.3f
-private const val LONG_PRESS_TIMEOUT_MS = 300L
+private const val LONG_PRESS_TIMEOUT_MS = 200L
+
+// Minimum gap between selection haptics so fast scrubbing over dense candles does not buzz continuously.
+private const val SELECTION_HAPTIC_INTERVAL_MS = 40L
+private val EDGE_SCROLL_ZONE = 24.dp
+
+// Auto-scroll speed when the held selection is at the very edge of the plot.
+private const val EDGE_SCROLL_CANDLES_PER_SECOND = 20f
 
 @Immutable
 internal data class ChartCandle(
@@ -182,6 +195,19 @@ internal class CandleChartState {
         return moved
     }
 
+    /**
+     * Scrolls toward older candles when [x] is within [edgePx] of the left edge, or newer ones near the right edge,
+     * faster the closer it is to the edge. Returns true when the chart moved.
+     */
+    fun scrollAtEdge(x: Float, edgePx: Float, frameSeconds: Float): Boolean {
+        val depth = when {
+            x < edgePx -> (edgePx - x) / edgePx
+            x > plotWidthPx - edgePx -> (plotWidthPx - edgePx - x) / edgePx
+            else -> return false
+        }.coerceIn(-1f, 1f)
+        return scrollByPx(depth * EDGE_SCROLL_CANDLES_PER_SECOND * step * frameSeconds)
+    }
+
     /** Zooms by [factor] (> 1 zooms in) keeping the position under [anchorX] fixed. */
     fun zoom(factor: Float, anchorX: Float) {
         val anchorPosition = end - (plotWidthPx - anchorX) / step
@@ -214,7 +240,7 @@ internal class CandleChartState {
     fun fling(scope: CoroutineScope, velocityPx: Float, decay: DecayAnimationSpec<Float>) {
         stopFling()
         isScrolling = true
-        flingJob = scope.launch {
+        val job = scope.launch(start = CoroutineStart.LAZY) {
             try {
                 var last = 0f
                 AnimationState(initialValue = 0f, initialVelocity = velocityPx).animateDecay(decay) {
@@ -223,9 +249,14 @@ internal class CandleChartState {
                     if (!scrollByPx(delta)) cancelAnimation()
                 }
             } finally {
-                isScrolling = false
+                if (flingJob === coroutineContext[Job]) {
+                    flingJob = null
+                    isScrolling = false
+                }
             }
         }
+        flingJob = job
+        job.start()
     }
 
     fun stopFling() {
@@ -303,9 +334,16 @@ internal fun ViewportCandleChart(
     val latestPrice = marketPriceText?.toDoubleOrNull() ?: candles.last().close
     val latestPriceText = formatPrice(latestPrice, priceDecimals)
 
-    val visible = state.visibleIndices()
-    val targetRange = visiblePriceRange(candles, visible, latestPrice)
-    val range = animatedPriceRange(targetRange, hold = state.isScrolling)
+    // Scroll and zoom state is only read in the draw phase and snapshotFlow, so dragging redraws without recomposing.
+    val latestPriceState = rememberUpdatedState(latestPrice)
+    val priceRange = remember { PriceRangeAnimator() }
+    if (!priceRange.initialized) {
+        priceRange.snapTo(Snapshot.withoutReadObservation { visiblePriceRange(candles, state.visibleIndices(), latestPrice) })
+    }
+    LaunchedEffect(state) {
+        snapshotFlow { visiblePriceRange(state.candles, state.visibleIndices(), latestPriceState.value) to state.isScrolling }
+            .collectLatest { (target, hold) -> priceRange.animateTo(target, hold) }
+    }
     // Size the axis from all candles so scrolling never changes the plot width (and candle width).
     val axisTexts = remember(candles, latestPriceText, priceDecimals) {
         listOf(
@@ -370,7 +408,7 @@ internal fun ViewportCandleChart(
         ) {
             drawChart(
                 state = state,
-                range = range,
+                range = priceRange.value,
                 timeFrame = timeFrame,
                 priceDecimals = priceDecimals,
                 latestPrice = latestPrice,
@@ -428,23 +466,33 @@ private fun visiblePriceRange(candles: List<ChartCandle>, visible: IntRange, lat
     return PriceRange(low - pad, high + pad)
 }
 
-@Composable
-private fun animatedPriceRange(target: PriceRange, hold: Boolean): PriceRange {
-    var from by remember { mutableStateOf(target) }
-    var to by remember { mutableStateOf(target) }
-    val progress = remember { Animatable(1f) }
+@Stable
+private class PriceRangeAnimator {
+    private var from = PriceRange(0.0, 1.0)
+    private var to = from
+    private val progress = Animatable(1f)
+    var initialized = false
+        private set
+
+    val value: PriceRange get() = lerp(from, to, progress.value)
+
+    fun snapTo(target: PriceRange) {
+        from = target
+        to = target
+        initialized = true
+    }
+
     // While held, only grow the range so candles scrolled into view are never clipped;
     // once released, animate to the latest target.
-    LaunchedEffect(target, hold) {
-        val current = lerp(from, to, progress.value)
+    suspend fun animateTo(target: PriceRange, hold: Boolean) {
+        val current = value
         val next = if (hold) PriceRange(min(current.min, target.min), max(current.max, target.max)) else target
-        if (next == to || (hold && next == current)) return@LaunchedEffect
+        if (next == to || (hold && next == current)) return
         from = current
         to = next
         progress.snapTo(0f)
         progress.animateTo(1f, tween(durationMillis = 220, easing = FastOutSlowInEasing))
     }
-    return lerp(from, to, progress.value)
 }
 
 private fun lerp(from: PriceRange, to: PriceRange, fraction: Float): PriceRange = PriceRange(
@@ -452,9 +500,9 @@ private fun lerp(from: PriceRange, to: PriceRange, fraction: Float): PriceRange 
     max = from.max + (to.max - from.max) * fraction,
 )
 
-private enum class GestureMode { Pending, Drag, Pinch, Select }
+private enum class GestureMode { Cancelled, Drag, Pinch, Select }
 
-private suspend fun PointerInputScope.detectChartGestures(
+internal suspend fun PointerInputScope.detectChartGestures(
     state: CandleChartState,
     scope: CoroutineScope,
     decay: DecayAnimationSpec<Float>,
@@ -465,80 +513,126 @@ private suspend fun PointerInputScope.detectChartGestures(
         val down = awaitFirstDown(requireUnconsumed = false)
         state.stopFling()
         val tracker = VelocityTracker().apply { addPointerInputChange(down) }
-        val longPressDeadline = down.uptimeMillis + min(viewConfiguration.longPressTimeoutMillis, LONG_PRESS_TIMEOUT_MS)
-        var mode = GestureMode.Pending
-        var lastUptime = down.uptimeMillis
+        val longPressTimeout = min(viewConfiguration.longPressTimeoutMillis, LONG_PRESS_TIMEOUT_MS)
+        val longPressDeadline = down.uptimeMillis + longPressTimeout
         var lastPosition = down.position
         var totalDrag = Offset.Zero
 
-        while (true) {
-            val event = if (mode == GestureMode.Pending) {
-                withTimeoutOrNull((longPressDeadline - lastUptime).coerceAtLeast(0L)) { awaitPointerEvent() }
-            } else {
-                awaitPointerEvent()
-            }
-            if (event == null) {
-                // Long press: scrub through candles; the chart itself stays put until release.
-                mode = GestureMode.Select
-                state.stopFling()
-                state.select(lastPosition.x)
-                onLongPress()
-                continue
-            }
+        // Keep a single timeout across all pending pointer events so high-frequency micro-moves
+        // cannot repeatedly reset Compose's 8ms timeout micro-delay and starve long press.
+        val initialMode = withTimeoutOrNull(longPressTimeout) {
+            while (true) {
+                val event = awaitPointerEvent()
+                val pressed = event.changes.filter { it.pressed }
+                if (pressed.isEmpty()) return@withTimeoutOrNull GestureMode.Cancelled
 
-            val pressed = event.changes.filter { it.pressed }
-            if (pressed.isEmpty()) {
-                when (mode) {
-                    GestureMode.Drag -> state.fling(scope, tracker.calculateVelocity().x, decay)
-                    // The detail card is only shown while the finger is held down.
-                    GestureMode.Select -> state.clearSelection()
-                    GestureMode.Pending, GestureMode.Pinch -> Unit
+                val primary = pressed.first()
+                lastPosition = primary.position
+
+                // A parent (the page's vertical scroll) claimed the gesture.
+                if (event.changes.any { it.isConsumed }) return@withTimeoutOrNull GestureMode.Cancelled
+                if (pressed.size > 1) {
+                    state.clearSelection()
+                    return@withTimeoutOrNull GestureMode.Pinch
                 }
-                break
-            }
-            val primary = pressed.first()
-            lastUptime = primary.uptimeMillis
-            lastPosition = primary.position
 
+                totalDrag += primary.positionChange()
+                if (totalDrag.getDistance() > viewConfiguration.touchSlop) {
+                    if (abs(totalDrag.x) < abs(totalDrag.y)) return@withTimeoutOrNull GestureMode.Cancelled
+                    tracker.addPointerInputChange(primary)
+                    primary.consume()
+                    return@withTimeoutOrNull GestureMode.Drag
+                }
+
+                if (primary.uptimeMillis >= longPressDeadline) {
+                    primary.consume()
+                    return@withTimeoutOrNull GestureMode.Select
+                }
+            }
+        } ?: GestureMode.Select
+
+        if (initialMode == GestureMode.Cancelled) return@awaitEachGesture
+
+        var mode = initialMode
+        var finishedNormally = false
+        var selectX = lastPosition.x
+        var lastSelectionHapticMillis = down.uptimeMillis - SELECTION_HAPTIC_INTERVAL_MS
+        var edgeScrollJob: Job? = null
+        try {
             when (mode) {
-                GestureMode.Pending -> {
-                    // A parent (the page's vertical scroll) claimed the gesture.
-                    if (event.changes.any { it.isConsumed }) break
-                    if (pressed.size > 1) {
-                        mode = GestureMode.Pinch
-                        state.clearSelection()
-                    } else {
-                        totalDrag += primary.positionChange()
-                        if (totalDrag.getDistance() > viewConfiguration.touchSlop) {
-                            if (abs(totalDrag.x) < abs(totalDrag.y)) break
-                            mode = GestureMode.Drag
-                            state.clearSelection()
-                            state.startScroll()
-                            tracker.addPointerInputChange(primary)
-                            primary.consume()
+                GestureMode.Drag -> {
+                    state.clearSelection()
+                    state.startScroll()
+                    // Apply the movement spent crossing touch slop so the candle under the finger stays under it.
+                    state.scrollByPx(totalDrag.x)
+                }
+                GestureMode.Select -> {
+                    // Long press: scrub through candles; the chart only scrolls while the finger rests near an edge.
+                    state.stopFling()
+                    state.select(selectX)
+                    onLongPress()
+                    val edgePx = EDGE_SCROLL_ZONE.toPx()
+                    edgeScrollJob = scope.launch {
+                        var lastFrameNanos = withFrameNanos { it }
+                        while (true) {
+                            val frameNanos = withFrameNanos { it }
+                            val frameSeconds = (frameNanos - lastFrameNanos) / 1_000_000_000f
+                            lastFrameNanos = frameNanos
+                            if (state.scrollAtEdge(selectX, edgePx, frameSeconds)) state.select(selectX)
                         }
                     }
                 }
-                GestureMode.Drag -> {
-                    if (pressed.size > 1) {
-                        mode = GestureMode.Pinch
-                        state.stopFling()
-                    } else {
-                        tracker.addPointerInputChange(primary)
-                        state.scrollByPx(primary.positionChange().x)
-                        primary.consume()
+                GestureMode.Pinch, GestureMode.Cancelled -> Unit
+            }
+
+            while (true) {
+                val event = awaitPointerEvent()
+                val pressed = event.changes.filter { it.pressed }
+                if (pressed.isEmpty()) {
+                    finishedNormally = true
+                    when (mode) {
+                        GestureMode.Drag -> state.fling(scope, tracker.calculateVelocity().x, decay)
+                        // The detail card is only shown while the finger is held down.
+                        GestureMode.Select -> state.clearSelection()
+                        GestureMode.Pinch, GestureMode.Cancelled -> Unit
                     }
+                    break
                 }
-                GestureMode.Pinch -> {
-                    val zoom = event.pressedZoom()
-                    if (zoom != 1f) state.zoom(zoom, event.pressedCentroid().x)
-                    state.scrollByPx(event.pressedPan().x)
-                    pressed.forEach { it.consume() }
+
+                val primary = pressed.first()
+                when (mode) {
+                    GestureMode.Drag -> {
+                        if (pressed.size > 1) {
+                            mode = GestureMode.Pinch
+                            state.stopFling()
+                        } else {
+                            tracker.addPointerInputChange(primary)
+                            state.scrollByPx(primary.positionChange().x)
+                            primary.consume()
+                        }
+                    }
+                    GestureMode.Pinch -> {
+                        val zoom = event.pressedZoom()
+                        if (zoom != 1f) state.zoom(zoom, event.pressedCentroid().x)
+                        state.scrollByPx(event.pressedPan().x)
+                        pressed.forEach { it.consume() }
+                    }
+                    GestureMode.Select -> {
+                        selectX = primary.position.x
+                        if (state.select(selectX) && primary.uptimeMillis - lastSelectionHapticMillis >= SELECTION_HAPTIC_INTERVAL_MS) {
+                            lastSelectionHapticMillis = primary.uptimeMillis
+                            onSelectionMove()
+                        }
+                        pressed.forEach { it.consume() }
+                    }
+                    GestureMode.Cancelled -> break
                 }
-                GestureMode.Select -> {
-                    if (state.select(primary.position.x)) onSelectionMove()
-                    pressed.forEach { it.consume() }
-                }
+            }
+        } finally {
+            edgeScrollJob?.cancel()
+            if (!finishedNormally) {
+                state.clearSelection()
+                state.stopFling()
             }
         }
     }

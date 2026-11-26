@@ -116,14 +116,10 @@ fun BrowserPage(
     val viewModel = hiltViewModel<SessionRequestViewModel>()
     val context = LocalContext.current
     val commonWallet = stringResource(R.string.Common_Wallet)
-    var showWarning by remember { mutableStateOf(false) }
+    val showWarning = parsedTx?.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED
     var walletName by remember { mutableStateOf<String?>(null) }
     var addressDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
     var walletDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
-
-    LaunchedEffect(parsedTx) {
-        showWarning = parsedTx?.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED
-    }
 
     LaunchedEffect(Unit) {
         val wallet = viewModel.findWalletById(Web3Signer.currentWalletId)

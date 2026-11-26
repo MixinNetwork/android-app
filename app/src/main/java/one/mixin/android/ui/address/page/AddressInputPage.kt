@@ -15,21 +15,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -72,7 +73,13 @@ fun AddressInputPage(
     errorInfo: String? = null,
     isLoading: Boolean = false
 ) {
-    var address by remember(contentText, networkChainId) { mutableStateOf(contentText) }
+    val addressState = rememberTextFieldState(initialText = contentText)
+    LaunchedEffect(contentText, networkChainId) {
+        if (addressState.text.toString() != contentText) {
+            addressState.setTextAndPlaceCursorAtEnd(contentText)
+        }
+    }
+    val address = addressState.text.toString()
     val focusRequester = remember { FocusRequester() }
     val clipboard = LocalClipboard.current
     val coroutineScope = rememberCoroutineScope()
@@ -157,27 +164,13 @@ fun AddressInputPage(
                             cornerRadius = 8.dp
                         ),
                 ) {
-                    OutlinedTextField(
-                        value = address,
-                        onValueChange = { address = it },
+                    BasicTextField(
+                        state = addressState,
                         modifier = Modifier
+                            .fillMaxWidth()
                             .height(120.dp)
                             .focusRequester(focusRequester),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            backgroundColor = Color.Transparent,
-                            textColor = MixinAppTheme.colors.textPrimary,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedBorderColor = Color.Transparent,
-                            cursorColor = MixinAppTheme.colors.textBlue
-                        ),
-                        placeholder = {
-                            Text(
-                                text = stringResource(R.string.hint_address),
-                                color = MixinAppTheme.colors.textAssist,
-                                fontSize = 14.sp,
-                                lineHeight = 20.sp
-                            )
-                        },
+                        cursorBrush = SolidColor(MixinAppTheme.colors.textBlue),
                         textStyle = TextStyle(
                             fontSize = 14.sp,
                             lineHeight = 20.sp,
@@ -188,14 +181,30 @@ fun AddressInputPage(
                             keyboardType = KeyboardType.Text,
                             imeAction = ImeAction.Done
                         ),
-                        minLines = 3,
-                        maxLines = 3
+                        lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 3, maxHeightInLines = 3),
+                        decorator = { innerTextField ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
+                            ) {
+                                if (address.isEmpty()) {
+                                    Text(
+                                        text = stringResource(R.string.hint_address),
+                                        color = MixinAppTheme.colors.textAssist,
+                                        fontSize = 14.sp,
+                                        lineHeight = 20.sp
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        },
                     )
 
                     if (address.isNotBlank()) {
                         IconButton(
                             onClick = {
-                                address = ""
+                                addressState.clearText()
                             }, modifier = Modifier.align(Alignment.BottomEnd)
                         ) {
                             Icon(
@@ -210,7 +219,7 @@ fun AddressInputPage(
                                 onClick = {
                                     coroutineScope.launch {
                                         clipboard.getClipEntry()?.clipData?.getItemAt(0)?.text?.toString()?.let {
-                                            address = it
+                                            addressState.setTextAndPlaceCursorAtEnd(it)
                                         }
                                     }
                                 }

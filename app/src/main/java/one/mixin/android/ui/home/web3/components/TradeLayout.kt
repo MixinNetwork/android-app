@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 
 @Composable
 fun TradeLayout(
@@ -24,57 +24,46 @@ fun TradeLayout(
     tailCompose: (@Composable () -> Unit)? = null,
     margin: Dp,
 ) {
-    ConstraintLayout(
+    Layout(
+        content = {
+            Box { headerCompose() }
+            Box { bottomCompose() }
+            Box { centerCompose() }
+            if (tailCompose != null) {
+                Box { tailCompose() }
+            }
+        },
         modifier =
             Modifier
                 .wrapContentHeight()
                 .wrapContentWidth()
                 .padding(horizontal = 10.dp, vertical = margin),
-    ) {
-        val (headerRef, bottomRef, centerRef, tailRef) = createRefs()
-        Box(
-            modifier =
-                Modifier.constrainAs(headerRef) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
-        ) {
-            headerCompose()
-        }
-        Box(
-            modifier =
-                Modifier.constrainAs(bottomRef) {
-                    top.linkTo(headerRef.bottom, margin)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
-        ) {
-            bottomCompose()
-        }
-        Box(
-            modifier =
-                Modifier.constrainAs(centerRef) {
-                    top.linkTo(headerRef.bottom)
-                    bottom.linkTo(bottomRef.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
-        ) {
-            centerCompose()
-        }
+    ) { measurables, constraints ->
+        val marginPx = margin.roundToPx()
+        val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
+        val header = measurables[0].measure(looseConstraints)
+        val bottom = measurables[1].measure(looseConstraints)
+        val center = measurables[2].measure(looseConstraints)
+        val tail = measurables.getOrNull(3)?.measure(looseConstraints)
 
-        if (tailCompose != null) {
-            Box(
-                modifier =
-                    Modifier.constrainAs(tailRef) {
-                        top.linkTo(bottomRef.bottom, margin)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    },
-            ) {
-                tailCompose()
-            }
+        val width = maxOf(
+            header.width,
+            bottom.width,
+            center.width,
+            tail?.width ?: 0,
+        ).coerceIn(constraints.minWidth, constraints.maxWidth)
+
+        val bottomY = header.height + marginPx
+        val centerY = header.height + (marginPx - center.height) / 2
+        val tailY = bottomY + bottom.height + marginPx
+        val totalHeight = (tail?.let { tailY + it.height } ?: (bottomY + bottom.height))
+            .coerceIn(constraints.minHeight, constraints.maxHeight)
+
+        layout(width, totalHeight) {
+            header.placeRelative((width - header.width) / 2, 0)
+            bottom.placeRelative((width - bottom.width) / 2, bottomY)
+            center.placeRelative((width - center.width) / 2, centerY)
+            tail?.placeRelative((width - tail.width) / 2, tailY)
         }
     }
 }

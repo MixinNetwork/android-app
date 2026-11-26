@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting.ui.page
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -72,11 +73,12 @@ fun BlockedPage() {
 
 @Composable
 private fun BlockedList(users: List<User>) {
+    val context = LocalContext.current
     LazyColumn {
-        items(users) {
-            BlockedUserItem(user = it)
+        items(users, key = { it.userId }, contentType = { "blocked_user" }) {
+            BlockedUserItem(user = it, context = context)
         }
-        item {
+        item(key = "block_tip", contentType = "footer") {
             Text(
                 modifier = Modifier.padding(16.dp),
                 text = stringResource(id = R.string.block_tip),
@@ -115,8 +117,7 @@ private fun EmptyBlockedView() {
 }
 
 @Composable
-private fun BlockedUserItem(user: User) {
-    val context = LocalContext.current
+private fun BlockedUserItem(user: User, context: Context) {
     Row(
         modifier =
             Modifier

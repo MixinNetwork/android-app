@@ -58,6 +58,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -96,7 +97,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -198,13 +198,14 @@ fun PerpsMarketDetailPage(
         }
     }
     val adjustmentResultKey = currentPosition?.positionId?.let { PerpsAdjustBottomSheetDialogFragment.resultKey(it) }
-    DisposableEffect(activity, lifecycleOwner, adjustmentResultKey) {
-        if (activity == null || adjustmentResultKey == null) return@DisposableEffect onDispose {}
-        val manager = activity.supportFragmentManager
-        manager.setFragmentResultListener(adjustmentResultKey, lifecycleOwner) { _, result ->
-            onAdjustment(result.getString(PerpsAdjustBottomSheetDialogFragment.RESULT_ACTION).orEmpty())
+    if (activity != null && adjustmentResultKey != null) {
+        DisposableEffect(activity, lifecycleOwner, adjustmentResultKey) {
+            val manager = activity.supportFragmentManager
+            manager.setFragmentResultListener(adjustmentResultKey, lifecycleOwner) { _, result ->
+                onAdjustment(result.getString(PerpsAdjustBottomSheetDialogFragment.RESULT_ACTION).orEmpty())
+            }
+            onDispose { manager.clearFragmentResultListener(adjustmentResultKey) }
         }
-        onDispose { manager.clearFragmentResultListener(adjustmentResultKey) }
     }
     val hasLoadedOpenPositions = openPositions != null
     val closedPositions = allClosedPositions.filter { it.marketId == marketId }
@@ -1234,7 +1235,11 @@ private fun TimeFrameSelector(
                 Box(
                     modifier = Modifier
                         .offset { IntOffset(indicatorX.value.roundToInt(), 0) }
-                        .width(with(density) { indicatorWidth.value.toDp() })
+                        .layout { measurable, constraints ->
+                            val width = indicatorWidth.value.roundToInt().coerceIn(constraints.minWidth, constraints.maxWidth)
+                            val placeable = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
+                            layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
+                        }
                         .height(36.dp)
                         .background(MixinAppTheme.colors.background, RoundedCornerShape(18.dp))
                 )

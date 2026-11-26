@@ -402,9 +402,13 @@ class ConversationListFragment : LinkFragment() {
         }
     }
 
-    private fun openSearch() {
+    fun openSearch() {
         if (isAdded) {
-            binding.searchBar.openSearch()
+            if (binding.searchBar.isOpen) {
+                binding.searchBar.focusSearch()
+            } else {
+                binding.searchBar.openSearch()
+            }
         }
     }
 
@@ -816,6 +820,7 @@ class ConversationListFragment : LinkFragment() {
         lifecycleScope.launch {
             if (!isAdded || parentFragmentManager.isStateSaved) return@launch
             if (TaskDialogActivity.consumeReturn()) return@launch
+            if (!Session.isHomeReminderDelayPassed()) return@launch
             val blockedByPhoneFlow = parentFragmentManager.fragments.any {
                 it.tag in listOf(AddPhoneBeforeFragment.TAG, VerifyFragment.TAG, VerificationFragment.TAG, MobileFragment.TAG)
             }

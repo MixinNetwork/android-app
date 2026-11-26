@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
@@ -13,7 +14,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -86,8 +87,8 @@ class InputAmountBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     @Composable
     override fun ComposeContent() {
 
-        var inputAmount by remember { mutableStateOf("0") }
-        var isPrimaryMode by remember { mutableStateOf(true) }
+        var inputAmount by rememberSaveable { mutableStateOf("0") }
+        var isPrimaryMode by rememberSaveable { mutableStateOf(true) }
 
         val minValue = remember(minimum) { minimum?.toBigDecimalOrNull() }
         val maxValue = remember(maximum) { maximum?.toBigDecimalOrNull() }
@@ -192,7 +193,7 @@ class InputAmountBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     var onNumberClick: ((String) -> Unit)? = null
