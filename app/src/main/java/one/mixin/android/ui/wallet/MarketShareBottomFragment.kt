@@ -1,10 +1,11 @@
 package one.mixin.android.ui.wallet
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.Typeface
-import android.media.MediaScannerConnection
+import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -27,8 +28,11 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.core.view.doOnAttach
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withResumed
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -49,14 +53,17 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.savePngBitmapToFile
+import one.mixin.android.extension.savePngToPublicDownloads
 import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -76,6 +83,7 @@ import one.mixin.android.ui.home.web3.trade.perps.changePercent
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsPrice
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
@@ -84,8 +92,8 @@ import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.widget.bottomSheetHeight
+import timber.log.Timber
 import java.io.File
-import java.io.FileOutputStream
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -498,15 +506,25 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
 
     private fun shareToSystem() {
         lifecycleScope.launch {
-            val file = createShareFile()
-            val uri = FileProvider.getUriForFile(requireContext(), BuildConfig.APPLICATION_ID + ".provider", file)
-            val share = android.content.Intent().apply {
-                action = android.content.Intent.ACTION_SEND
-                type = "image/png"
-                putExtra(android.content.Intent.EXTRA_STREAM, uri)
+            try {
+                if (!isAdded) return@launch
+                val file = createShareFile()
+                if (!isAdded) return@launch
+                val uri = FileProvider.getUriForFile(requireContext(), BuildConfig.APPLICATION_ID + ".provider", file)
+                val share = android.content.Intent().apply {
+                    action = android.content.Intent.ACTION_SEND
+                    type = "image/png"
+                    putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                dismiss()
+                startActivity(android.content.Intent.createChooser(share, getString(R.string.Share)))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to share market image")
+                toast(R.string.Save_failure)
             }
-            dismiss()
-            startActivity(android.content.Intent.createChooser(share, getString(R.string.Share)))
         }
     }
 
@@ -635,7 +653,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         val bitmap = createShareBitmap()
         val file = File(requireContext().cacheDir, "${buildFileName()}.png")
         withContext(Dispatchers.IO) {
-            saveBitmapToFile(file, bitmap)
+            savePngBitmapToFile(file, bitmap)
         }
         return file
     }
@@ -654,22 +672,49 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     }
 
     private fun saveToAlbum() {
-        lifecycleScope.launch {
-            delay(100)
-            val bitmap = createShareBitmap()
-            val dir = requireContext().getPublicDownloadPath()
-            dir.mkdirs()
-            val file = File(dir, "${buildFileName()}.png")
-            saveBitmapToFile(file, bitmap)
-            MediaScannerConnection.scanFile(requireContext(), arrayOf(file.toString()), null, null)
-            dismiss()
-            toast(getString(R.string.Save_to, dir.path))
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(scope(Lifecycle.Event.ON_STOP))
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            performSaveToAlbum()
+                        } else if (isAdded) {
+                            requireContext().openPermissionSetting()
+                        }
+                    },
+                    {
+                        toast(R.string.Save_failure)
+                    },
+                )
+        } else {
+            performSaveToAlbum()
         }
     }
 
-    private fun saveBitmapToFile(file: File, bitmap: Bitmap) {
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+    private fun performSaveToAlbum() {
+        lifecycleScope.launch {
+            try {
+                delay(100)
+                if (!isAdded) return@launch
+                val context = requireContext()
+                val bitmap = createShareBitmap()
+                val fileName = "${buildFileName()}.png"
+                val savedPath =
+                    withContext(Dispatchers.IO) {
+                        context.savePngToPublicDownloads(bitmap, fileName)
+                    }
+                if (isAdded) {
+                    dismiss()
+                }
+                toast(getString(R.string.Save_to, savedPath))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to save market share image")
+                toast(R.string.Save_failure)
+            }
         }
     }
 

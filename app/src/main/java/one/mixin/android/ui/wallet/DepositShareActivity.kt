@@ -2,35 +2,28 @@
 
 package one.mixin.android.ui.wallet
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ClipData
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.graphics.Typeface
-import android.media.MediaScannerConnection
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
-import android.system.ErrnoException
-import android.system.OsConstants
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
-import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -44,16 +37,16 @@ import one.mixin.android.databinding.ActivityDepositShareBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.deleteOnExists
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.getPublicDownloadPath
-import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.round
+import one.mixin.android.extension.savePngBitmapToFile
+import one.mixin.android.extension.savePngToPublicDownloads
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toValidFileName
 import one.mixin.android.extension.toast
@@ -62,14 +55,13 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.web.getScreenshot
 import one.mixin.android.ui.web.refreshScreenshot
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BadgeCircleImageView
 import timber.log.Timber
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
 @AndroidEntryPoint
 class DepositShareActivity : BaseActivity() {
@@ -273,19 +265,39 @@ class DepositShareActivity : BaseActivity() {
             .setListener(null)
     }
 
+    private fun buildDepositFileName(): String =
+        "${(tokenSymbol?.takeIf { it.isNotBlank() } ?: "mixin").toValidFileName()}_deposit.png"
+
     private val onShare: () -> Unit = {
         lifecycleScope.launch {
-            val bitmap = binding.test.drawToBitmap()
-            val fileName = "${tokenSymbol}_deposit.png"
-            val file = File(cacheDir, fileName)
-            saveBitmapToFile(file, bitmap)
-            val uri = FileProvider.getUriForFile(this@DepositShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
-            val share = Intent()
-            share.action = Intent.ACTION_SEND
-            share.type = "image/png"
-            share.putExtra(Intent.EXTRA_STREAM, uri)
-            finish()
-            startActivity(Intent.createChooser(share, getString(R.string.Share)))
+            try {
+                if (isFinishing || isDestroyed) return@launch
+                if (!binding.test.isLaidOut || binding.test.width <= 0 || binding.test.height <= 0) {
+                    toast(R.string.Save_failure)
+                    return@launch
+                }
+                val bitmap = binding.test.drawToBitmap()
+                val fileName = buildDepositFileName()
+                val file = File(cacheDir, fileName)
+                withContext(Dispatchers.IO) {
+                    savePngBitmapToFile(file, bitmap)
+                }
+                if (isFinishing || isDestroyed) return@launch
+                val uri = FileProvider.getUriForFile(this@DepositShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
+                val share = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    type = "image/png"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                finish()
+                startActivity(Intent.createChooser(share, getString(R.string.Share)))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to share deposit QR image")
+                toast(R.string.Save_failure)
+            }
         }
     }
 
@@ -298,15 +310,41 @@ class DepositShareActivity : BaseActivity() {
     }
 
     private val onSave: () -> Unit = {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
+            RxPermissions(this)
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            performSave()
+                        } else {
+                            openPermissionSetting()
+                        }
+                    },
+                    {
+                        toast(R.string.Save_failure)
+                    },
+                )
+        } else {
+            performSave()
+        }
+    }
+
+    private fun performSave() {
         lifecycleScope.launch {
             try {
                 delay(100)
                 if (isFinishing || isDestroyed) return@launch
+                if (!binding.test.isLaidOut || binding.test.width <= 0 || binding.test.height <= 0) {
+                    toast(R.string.Save_failure)
+                    return@launch
+                }
                 val bitmap = binding.test.drawToBitmap()
-                val fileName = "${(tokenSymbol?.takeIf { it.isNotBlank() } ?: "mixin").toValidFileName()}_deposit.png"
+                val fileName = buildDepositFileName()
                 val savedPath =
                     withContext(Dispatchers.IO) {
-                        saveDepositBitmap(bitmap, fileName)
+                        savePngToPublicDownloads(bitmap, fileName)
                     }
                 if (!isFinishing && !isDestroyed) {
                     finish()
@@ -318,146 +356,6 @@ class DepositShareActivity : BaseActivity() {
                 Timber.e(e, "Failed to save deposit QR image")
                 toast(R.string.Save_failure)
             }
-        }
-    }
-
-    private fun saveDepositBitmap(
-        bitmap: Bitmap,
-        fileName: String,
-    ): String {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            try {
-                return saveBitmapToMediaStore(
-                    collectionUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                    relativePath = "${Environment.DIRECTORY_DOWNLOADS}${File.separator}Mixin",
-                    displayDirPath = getPublicDownloadPath().path,
-                    bitmap = bitmap,
-                    fileName = fileName,
-                )
-            } catch (e: Exception) {
-                if (isNoSpaceError(e)) throw e
-                Timber.w(e, "Failed to save deposit QR image to MediaStore.Downloads")
-            }
-            try {
-                return saveBitmapToMediaStore(
-                    collectionUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                    relativePath = "${Environment.DIRECTORY_PICTURES}${File.separator}Mixin",
-                    displayDirPath = getPublicPicturePath().path,
-                    bitmap = bitmap,
-                    fileName = fileName,
-                )
-            } catch (e: Exception) {
-                if (isNoSpaceError(e)) throw e
-                Timber.w(e, "Failed to save deposit QR image to MediaStore.Images")
-            }
-            return saveBitmapToAppExternalDir(bitmap, fileName)
-        }
-
-        if (hasWritePermission()) {
-            try {
-                val dir = getPublicDownloadPath()
-                if (!dir.exists() && !dir.mkdirs()) {
-                    throw IOException("Failed to create directory: ${dir.path}")
-                }
-                val file = File(dir, fileName)
-                try {
-                    saveBitmapToFile(file, bitmap)
-                } catch (e: Exception) {
-                    runCatching { file.deleteOnExists() }
-                    throw e
-                }
-                MediaScannerConnection.scanFile(this@DepositShareActivity, arrayOf(file.toString()), null, null)
-                return dir.path
-            } catch (e: Exception) {
-                if (isNoSpaceError(e)) throw e
-                Timber.w(e, "Failed to save deposit QR image to public download dir")
-            }
-        }
-        return saveBitmapToAppExternalDir(bitmap, fileName)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    private fun saveBitmapToMediaStore(
-        collectionUri: Uri,
-        relativePath: String,
-        displayDirPath: String,
-        bitmap: Bitmap,
-        fileName: String,
-    ): String {
-        val values =
-            ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-                put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
-                put(MediaStore.MediaColumns.IS_PENDING, 1)
-            }
-        val resolver = contentResolver
-        val uri =
-            resolver.insert(collectionUri, values)
-                ?: throw IOException("Failed to insert MediaStore entry in $relativePath")
-        try {
-            val outputStream =
-                resolver.openOutputStream(uri)
-                    ?: throw IOException("Failed to open output stream for $uri")
-            outputStream.use { out ->
-                if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
-                    throw IOException("Failed to compress bitmap")
-                }
-                out.flush()
-            }
-            val doneValues =
-                ContentValues().apply {
-                    put(MediaStore.MediaColumns.IS_PENDING, 0)
-                }
-            resolver.update(uri, doneValues, null, null)
-            return displayDirPath
-        } catch (e: Exception) {
-            runCatching { resolver.delete(uri, null, null) }
-            throw e
-        }
-    }
-
-    private fun saveBitmapToAppExternalDir(
-        bitmap: Bitmap,
-        fileName: String,
-    ): String {
-        val dir =
-            getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-                ?: throw IOException("External files directory unavailable")
-        if (!dir.exists() && !dir.mkdirs()) {
-            throw IOException("Failed to create directory: ${dir.path}")
-        }
-        val file = File(dir, fileName)
-        try {
-            saveBitmapToFile(file, bitmap)
-        } catch (e: Exception) {
-            runCatching { file.deleteOnExists() }
-            throw e
-        }
-        return dir.path
-    }
-
-    private fun isNoSpaceError(throwable: Throwable): Boolean {
-        var current: Throwable? = throwable
-        while (current != null) {
-            if (current is ErrnoException && current.errno == OsConstants.ENOSPC) {
-                return true
-            }
-            val message = current.message
-            if (message != null && (message.contains("ENOSPC", ignoreCase = true) || message.contains("No space left on device", ignoreCase = true))) {
-                return true
-            }
-            current = current.cause
-        }
-        return false
-    }
-
-    private fun saveBitmapToFile(file: File, bitmap: Bitmap) {
-        FileOutputStream(file).use { out ->
-            if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
-                throw IOException("Failed to compress bitmap")
-            }
-            out.flush()
         }
     }
 }
