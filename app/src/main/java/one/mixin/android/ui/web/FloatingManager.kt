@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.webkit.WebViewClient
 import androidx.annotation.MainThread
@@ -224,25 +226,10 @@ private fun initClips() {
             var restoredAdded = false
             if (validClips.isNotEmpty()) {
                 val remainingSlots = (MAX_CLIPS - clips.size).coerceAtLeast(0)
-                if (remainingSlots > 0) {
-                    val toAdd = mutableListOf<WebClip>()
-                    for (restored in validClips) {
-                        val duplicated = clips.any { existing ->
-                            existing.url == restored.url && existing.conversationId == restored.conversationId
-                        } || toAdd.any { added ->
-                            added.url == restored.url && added.conversationId == restored.conversationId
-                        }
-                        if (!duplicated && toAdd.size < remainingSlots) {
-                            toAdd.add(restored)
-                        } else {
-                            destroyClipWebView(restored)
-                        }
-                    }
-                    clips.addAll(toAdd)
-                    restoredAdded = toAdd.isNotEmpty()
-                } else {
-                    validClips.forEach(::destroyClipWebView)
-                }
+                val toAdd = validClips.take(remainingSlots)
+                validClips.drop(toAdd.size).forEach(::destroyClipWebView)
+                clips.addAll(toAdd)
+                restoredAdded = toAdd.isNotEmpty()
             }
             if (hadInvalidClips || restoredAdded) {
                 if (clips.isEmpty()) {
@@ -323,6 +310,11 @@ fun replaceApp(app: App) {
 }
 
 fun releaseAll() {
+    if (Looper.myLooper() != Looper.getMainLooper()) {
+        MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
+        Handler(Looper.getMainLooper()).post { releaseAll() }
+        return
+    }
     initClipsJob?.cancel()
     initClipsJob = null
     clipsLoadedFromPrefs = true
