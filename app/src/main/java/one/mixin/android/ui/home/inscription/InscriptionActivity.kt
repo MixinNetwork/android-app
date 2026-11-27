@@ -61,6 +61,7 @@ import one.mixin.android.databinding.ViewInscriptionMenuBinding
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.detectImageType
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getCapturedImage
@@ -188,8 +189,8 @@ class InscriptionActivity : BaseActivity() {
         jobManager.addJobInBackground(SyncInscriptionsJob(listOf(inscriptionHash)))
     }
 
-    private fun buildInscriptionFileName(base: String = inscriptionHash): String =
-        "${(base.takeIf { it.isNotBlank() } ?: "inscription").toValidFileName()}.png"
+    private fun buildInscriptionFileName(extension: String, base: String = inscriptionHash): String =
+        "${(base.takeIf { it.isNotBlank() } ?: "inscription").toValidFileName()}.$extension"
 
     private var saveJob: Job? = null
     private var shareJob: Job? = null
@@ -229,7 +230,7 @@ class InscriptionActivity : BaseActivity() {
                 val cropped = cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height)
                 val savedPath =
                     withContext(Dispatchers.IO) {
-                        savePngToPublicDownloads(cropped, buildInscriptionFileName())
+                        savePngToPublicDownloads(cropped, buildInscriptionFileName("png"))
                     }
                 isShareDialogVisible = false
                 toast(getString(R.string.Save_to, savedPath))
@@ -253,7 +254,7 @@ class InscriptionActivity : BaseActivity() {
                     if (isFinishing || isDestroyed) return@launch
                     val bitmap = binding.overflow.drawToBitmap()
                     val cropped = cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height)
-                    val baseName = buildInscriptionFileName().removeSuffix(".png")
+                    val baseName = buildInscriptionFileName("png").removeSuffix(".png")
                     val file = withContext(Dispatchers.IO) {
                         savePngBitmapToUniqueCacheFile(baseName, cropped)
                     }
@@ -465,7 +466,10 @@ class InscriptionActivity : BaseActivity() {
             val savedPath =
                 withContext(Dispatchers.IO) {
                     loader.withDiskCacheFile(result) { cachedFile ->
-                        saveFileToPublicDownloads(cachedFile, buildInscriptionFileName(name))
+                        val header = ByteArray(12)
+                        val headerSize = cachedFile.inputStream().use { it.read(header) }
+                        val (mimeType, extension) = detectImageType(header.copyOf(headerSize.coerceAtLeast(0))) ?: ("image/png" to "png")
+                        saveFileToPublicDownloads(cachedFile, buildInscriptionFileName(extension, name), mimeType)
                     }
                 }
             if (savedPath == null) {

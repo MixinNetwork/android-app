@@ -1271,6 +1271,24 @@ fun Context.saveFileToPublicDownloads(
         out.flush()
     }
 
+/**
+ * Detects PNG, JPEG, GIF or WebP from the leading bytes of an image file,
+ * returning the MIME type paired with its file extension, or null when unknown.
+ */
+fun detectImageType(header: ByteArray): Pair<String, String>? {
+    fun matches(
+        offset: Int,
+        vararg bytes: Int,
+    ): Boolean = header.size >= offset + bytes.size && bytes.indices.all { header[offset + it] == bytes[it].toByte() }
+    return when {
+        matches(0, 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A) -> "image/png" to "png"
+        matches(0, 0xFF, 0xD8, 0xFF) -> "image/jpeg" to "jpg"
+        matches(0, 0x47, 0x49, 0x46, 0x38) -> "image/gif" to "gif"
+        matches(0, 0x52, 0x49, 0x46, 0x46) && matches(8, 0x57, 0x45, 0x42, 0x50) -> "image/webp" to "webp"
+        else -> null
+    }
+}
+
 private fun Context.saveToPublicDownloads(
     fileName: String,
     mimeType: String,
