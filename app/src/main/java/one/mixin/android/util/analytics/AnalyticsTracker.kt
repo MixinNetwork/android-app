@@ -981,9 +981,9 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackTradeProClick() {
+    fun trackTradeProClick(source: String = "trade_more_menu") {
         logEvent("trade_pro_click") {
-            putString("source", "trade_more_menu")
+            putString("source", source)
         }
     }
 

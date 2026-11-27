@@ -39,6 +39,16 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     fun observeOrders(limit: Int): Flow<List<PerpsOrderItem>>
 
     @Query("""
+        SELECT EXISTS(
+            SELECT 1
+            FROM perps_orders o
+            WHERE o.order_type IN ('open', 'increase_position', 'increase_margin', 'decrease_margin', 'close')
+            AND o.status != 'processing'
+        )
+    """)
+    fun observeHasActivity(): Flow<Boolean>
+
+    @Query("""
         SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id

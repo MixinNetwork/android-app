@@ -2347,6 +2347,8 @@
     <string name="Trade_Limit_Orders">限價訂單</string>
     <string name="Trade_Perpetual_Activity">合約記錄</string>
     <string name="Trade_Pro_Description">專業圖表、全倉保證金及限價訂單。</string>
+    <string name="Trade_Perps_Pro_Description">專業圖表、全倉保證金及限價訂單</string>
+    <string name="trade_with_mixin_perps">使用 Mixin 永續合約</string>
     <string name="Trade_Now">立即交易</string>
     <string name="order_state_created">已創建</string>
     <string name="order_state_pricing">定價</string>
