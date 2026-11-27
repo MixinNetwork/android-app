@@ -1271,7 +1271,7 @@ class ConversationFragment() :
 
     override fun onPause() {
         // don't stop audio player if triggered by screen off or app lock overlay
-        if (powerManager.isInteractive && !MixinApplication.get().isAppAuthShown()) {
+        if (powerManager.isInteractive && !MixinApplication.get().appAuth.isLocked) {
             AudioPlayer.pause()
         }
         sensorManager.unregisterListener(this)

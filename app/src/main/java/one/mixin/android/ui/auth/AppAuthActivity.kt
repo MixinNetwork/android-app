@@ -1,39 +1,47 @@
-@file:Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
-
 package one.mixin.android.ui.auth
 
-import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.widget.RelativeLayout
+import androidx.activity.addCallback
+import androidx.activity.viewModels
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
-import androidx.core.hardware.fingerprint.FingerprintManagerCompat
-import androidx.core.os.CancellationSignal
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
 import com.mattprecious.swirl.SwirlView
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityAppAuthBinding
 import one.mixin.android.event.AppAuthEvent
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isLandscape
-import one.mixin.android.extension.putInt
-import one.mixin.android.extension.putLong
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
+
+class AppAuthViewModel : ViewModel() {
+    var pendingPinUnlock: Boolean = false
+    var pendingPinUnlockEpoch: Long = -1L
+}
 
 @AndroidEntryPoint
 class AppAuthActivity : BaseActivity() {
     companion object {
+        private const val STATE_DEEP_LINK_DISCARDED = "deep_link_discarded"
+        private const val MAX_AUTO_RETRY_COUNT = 3
+
         fun show(activity: Activity) {
             Intent(activity, AppAuthActivity::class.java).apply {
                 data = if (activity is UrlInterpreterActivity) activity.intent.data else null
@@ -45,67 +53,123 @@ class AppAuthActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAppAuthBinding
 
-    @SuppressLint("RestrictedApi")
-    private var fingerprintManager: FingerprintManagerCompat? = null
-    private var biometricManager: BiometricManager? = null
+    private val viewModel: AppAuthViewModel by viewModels()
 
-    private var hasEnrolledFingerprints = false
+    private var biometricPrompt: BiometricPrompt? = null
 
-    private var clearWhenPinSuccess = false
+    private var pinSessionGeneration = 0
+    private var deepLinkDiscarded = false
+    private var promptGeneration = 0
+    private var promptActive = false
+    private var promptScheduled = false
+    private var retryPromptOnResume = false
+    private var pendingShowPin = false
+    private var autoRetryCount = 0
+    private var authenticated = false
+    private var stoppedForBackground = false
 
-    private var cancellationSignal: CancellationSignal? = null
-
-    @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState?.getBoolean(STATE_DEEP_LINK_DISCARDED) == true) {
+            deepLinkDiscarded = true
+            intent?.data = null
+        }
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
         updateLayout()
-        fingerprintManager =
-            FingerprintManagerCompat.from(this).apply {
-                this@AppAuthActivity.hasEnrolledFingerprints = hasEnrolledFingerprints()
-            }
-        if (!hasEnrolledFingerprints) {
-            biometricManager = BiometricManager.from(this)
+        onBackPressedDispatcher.addCallback(this) {
+            dismissToBackground()
         }
+        (supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as? VerifyBottomSheetDialogFragment)
+            ?.let(::bindPinVerification)
 
         binding.swirl.setState(SwirlView.State.ON)
         binding.swirl.setOnClickListener {
-            showPrompt()
+            autoRetryCount = 0
+            binding.swirl.removeCallbacks(resetSwirlRunnable)
+            resetSwirlState()
+            if (canUseBiometric()) showPrompt() else showPinVerification()
         }
         binding.pinTv.setOnClickListener {
-            VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
-                .setOnPinSuccess {
-                    if (clearWhenPinSuccess) {
-                        defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
-                        defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, 0)
-                    }
-                    finishAndCheckNeed2GoUrlInterpreter()
-                }
-                .showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+            showPinVerification()
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        binding.swirl.setState(SwirlView.State.ON)
+        if (intent.data != null) {
+            deepLinkDiscarded = false
+            setIntent(intent)
+            MixinApplication.appAuthOrNull()?.recordPendingDeepLink(taskId, intent.data)
+        }
+        autoRetryCount = 0
+        binding.swirl.removeCallbacks(resetSwirlRunnable)
+        resetSwirlState()
     }
 
     override fun onStart() {
         super.onStart()
-        binding.swirl.postDelayed(showPromptRunnable, 100)
+        stoppedForBackground = false
+        if (isFinishing) return
+        val appAuth = MixinApplication.appAuthOrNull()
+        val canConsumePendingPin =
+            viewModel.pendingPinUnlock &&
+                (appAuth == null || appAuth.lockEpoch == viewModel.pendingPinUnlockEpoch)
+        viewModel.pendingPinUnlock = false
+        viewModel.pendingPinUnlockEpoch = -1L
+        if (canConsumePendingPin && !authenticated) {
+            applyPinSuccessUnlock()
+            return
+        }
+        if (pendingShowPin || !canUseBiometric()) {
+            showPinVerification()
+            return
+        }
+        autoRetryCount = 0
+        retryPromptOnResume = false
+        schedulePrompt()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (pendingShowPin) {
+            showPinVerification()
+            return
+        }
+        if (retryPromptOnResume) {
+            retryPromptOnResume = false
+            schedulePrompt()
+        }
+    }
+
+    override fun onPause() {
+        if (promptScheduled) {
+            promptScheduled = false
+            binding.swirl.removeCallbacks(showPromptRunnable)
+            retryPromptOnResume = true
+        }
+        super.onPause()
     }
 
     override fun onStop() {
+        cancelPrompt()
+        if (!isChangingConfigurations && !authenticated) {
+            stoppedForBackground = true
+            pinSessionGeneration++
+            pendingShowPin = false
+            (supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as? VerifyBottomSheetDialogFragment)
+                ?.dismissAllowingStateLoss()
+            deepLinkDiscarded = true
+            intent?.data = null
+            viewModel.pendingPinUnlock = false
+            viewModel.pendingPinUnlockEpoch = -1L
+        }
         super.onStop()
-        binding.swirl.removeCallbacks(resetSwirlRunnable)
-        binding.swirl.removeCallbacks(showPromptRunnable)
-        cancellationSignal?.cancel()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        biometricManager = null
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_DEEP_LINK_DISCARDED, deepLinkDiscarded || (!isChangingConfigurations && !authenticated))
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -113,53 +177,131 @@ class AppAuthActivity : BaseActivity() {
         updateLayout()
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        moveTaskToBack(true)
+    private fun schedulePrompt(delayMs: Long = 100) {
+        if (promptActive || authenticated || isFinishing || pendingShowPin) return
+        binding.swirl.removeCallbacks(showPromptRunnable)
+        promptScheduled = true
+        binding.swirl.postDelayed(showPromptRunnable, delayMs)
     }
 
-    @SuppressLint("RestrictedApi")
     private fun showPrompt() {
-        cancellationSignal?.cancel()
-        cancellationSignal = CancellationSignal()
-        if (hasEnrolledFingerprints) {
-            fingerprintManager?.authenticate(null, 0, cancellationSignal, fingerprintCallback, null)
-        } else {
-            showAppAuthPrompt(
-                this,
-                getString(R.string.Confirm_fingerprint),
-                getString(R.string.Cancel),
-                biometricCallback,
-                getString(R.string.Unlock_with_fingerprint)
-            )
+        promptScheduled = false
+        if (promptActive || authenticated || isFinishing || pendingShowPin || !canUseBiometric()) return
+        val pinDialog = supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG)
+        if (pinDialog != null && !pinDialog.isRemoving) return
+        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                retryPromptOnResume = true
+            }
+            return
+        }
+        retryPromptOnResume = false
+        binding.swirl.removeCallbacks(showPromptRunnable)
+        val generation = ++promptGeneration
+        promptActive = true
+        biometricPrompt = showAppAuthPrompt(
+            this,
+            getString(R.string.Confirm_fingerprint),
+            getString(R.string.Verify_PIN),
+            biometricCallback(generation),
+            getString(R.string.Unlock_with_fingerprint),
+        )
+    }
+
+    private fun showPinVerification() {
+        if (authenticated || isFinishing) return
+        if (supportFragmentManager.isStateSaved) {
+            pendingShowPin = true
+            return
+        }
+        pendingShowPin = false
+        cancelPrompt()
+        binding.pinTv.isVisible = true
+        val dialog = supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as? VerifyBottomSheetDialogFragment
+            ?: VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
+        bindPinVerification(dialog)
+        if (!dialog.isAdded) {
+            dialog.showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         }
     }
 
-    private fun refreshSwirl(
-        errString: CharSequence,
-        show: Boolean,
-    ) {
-        showError(errString)
-        binding.swirl.postDelayed(resetSwirlRunnable, 1000)
-        if (show) {
-            binding.swirl.postDelayed(showPromptRunnable, 1000)
+    private fun cancelPrompt() {
+        ++promptGeneration
+        promptActive = false
+        promptScheduled = false
+        retryPromptOnResume = false
+        binding.swirl.removeCallbacks(resetSwirlRunnable)
+        binding.swirl.removeCallbacks(showPromptRunnable)
+        biometricPrompt?.cancelAuthentication()
+        biometricPrompt = null
+    }
+
+    private fun isCurrentPrompt(generation: Int): Boolean =
+        generation == promptGeneration && promptActive && !isFinishing && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+
+    private fun applyPinSuccessUnlock() {
+        if (authenticated || isFinishing) return
+        toast(R.string.Successful)
+        finishAndCheckNeed2GoUrlInterpreter()
+    }
+
+    private fun bindPinVerification(dialog: VerifyBottomSheetDialogFragment) {
+        val sessionToken = ++pinSessionGeneration
+        val sessionEpoch = MixinApplication.appAuthOrNull()?.lockEpoch
+        dialog.disableToast = true
+        dialog.setOnPinSuccess {
+            if (sessionToken != pinSessionGeneration) return@setOnPinSuccess
+            val currentAppAuth = MixinApplication.appAuthOrNull()
+            if (currentAppAuth != null && sessionEpoch != null && currentAppAuth.lockEpoch != sessionEpoch) return@setOnPinSuccess
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                applyPinSuccessUnlock()
+            } else if (!stoppedForBackground) {
+                viewModel.pendingPinUnlock = true
+                viewModel.pendingPinUnlockEpoch = sessionEpoch ?: currentAppAuth?.lockEpoch ?: 0L
+            }
+        }.setOnResult { success ->
+            if (sessionToken != pinSessionGeneration) return@setOnResult
+            if (!success && !authenticated && !viewModel.pendingPinUnlock) {
+                autoRetryCount = 0
+                schedulePrompt()
+            }
         }
+    }
+
+    private fun refreshSwirl(errString: CharSequence) {
+        showError(errString)
+        binding.swirl.removeCallbacks(resetSwirlRunnable)
+        binding.swirl.postDelayed(resetSwirlRunnable, 1000)
     }
 
     private fun showError(errString: CharSequence) {
+        binding.swirl.removeCallbacks(resetSwirlRunnable)
         binding.info.text = errString
         binding.info.setTextColor(getColor(R.color.colorRed))
         binding.swirl.setState(SwirlView.State.ERROR)
         binding.pinTv.isVisible = true
     }
 
+    private fun resetSwirlState() {
+        binding.info.text = getString(R.string.Confirm_fingerprint)
+        binding.info.setTextColor(colorFromAttribute(R.attr.text_assist))
+        binding.swirl.setState(SwirlView.State.ON)
+    }
+
     private fun finishAndCheckNeed2GoUrlInterpreter() {
-        val data = intent.data
+        if (authenticated || isFinishing) return
+        authenticated = true
+        cancelPrompt()
+        val intentData = intent.data
+        val wasTaskRoot = isTaskRoot
+        val appAuth = MixinApplication.appAuthOrNull()
+        val data = if (appAuth != null) appAuth.onAuthenticated(taskId = taskId, expectNextActivity = wasTaskRoot) else intentData
         if (data != null) {
             UrlInterpreterActivity.show(this, data)
+        } else if (wasTaskRoot) {
+            startActivity(MainActivity.getWakeUpIntent(this))
         }
         finish()
-
         RxBus.publish(AppAuthEvent())
     }
 
@@ -179,9 +321,7 @@ class AppAuthActivity : BaseActivity() {
 
     private val resetSwirlRunnable =
         Runnable {
-            binding.info.text = getString(R.string.Confirm_fingerprint)
-            binding.info.setTextColor(colorFromAttribute(R.attr.text_assist))
-            binding.swirl.setState(SwirlView.State.ON)
+            resetSwirlState()
         }
 
     private val showPromptRunnable =
@@ -189,79 +329,84 @@ class AppAuthActivity : BaseActivity() {
             showPrompt()
         }
 
-    private val biometricCallback =
-        object : BiometricPrompt.AuthenticationCallback() {
-            override fun onAuthenticationError(
-                errorCode: Int,
-                errString: CharSequence,
-            ) {
-                when (errorCode) {
-                    BiometricPrompt.ERROR_CANCELED, BiometricPrompt.ERROR_USER_CANCELED, BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
-                        moveTaskToBack(true)
-                    }
-                    BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
-                        showError(errString)
-                    }
-                    BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_HW_NOT_PRESENT, BiometricPrompt.ERROR_HW_UNAVAILABLE -> {
-                        clearWhenPinSuccess = true
-                        showError(errString)
-                    }
-                    else -> {
-                        refreshSwirl(errString, true)
-                    }
+    private fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+        promptActive = false
+        when (errorCode) {
+            BiometricPrompt.ERROR_USER_CANCELED -> {
+                dismissToBackground()
+            }
+            BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
+                showPinVerification()
+            }
+            BiometricPrompt.ERROR_NO_BIOMETRICS,
+            BiometricPrompt.ERROR_HW_NOT_PRESENT,
+            BiometricPrompt.ERROR_HW_UNAVAILABLE,
+            BiometricPrompt.ERROR_LOCKOUT,
+            BiometricPrompt.ERROR_LOCKOUT_PERMANENT,
+            -> {
+                showError(errString)
+            }
+            else -> {
+                if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                    retryPromptOnResume = true
+                } else if (autoRetryCount < MAX_AUTO_RETRY_COUNT) {
+                    autoRetryCount++
+                    if (errorCode != BiometricPrompt.ERROR_CANCELED) refreshSwirl(errString)
+                    schedulePrompt(1000)
+                } else {
+                    showError(errString.ifBlank { getString(R.string.Touch_the_fingerprint_sensor) })
                 }
+            }
+        }
+    }
+
+    private fun dismissToBackground() {
+        cancelPrompt()
+        if (!isInOwnTask()) {
+            // Hosted in another app's task (e.g. a share sheet): close only our pages and leave the host app.
+            MixinApplication.appAuthOrNull()?.onAuthCancelled(this, ownTask = false)
+            finishAffinity()
+            return
+        }
+        val shouldGoHome = MixinApplication.appAuthOrNull()?.onAuthCancelled(this, ownTask = true) == true
+        moveTaskToBack(true)
+        if (shouldGoHome) {
+            startActivity(
+                Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_HOME)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                },
+            )
+        }
+    }
+
+    private fun isInOwnTask(): Boolean =
+        getSystemService(ActivityManager::class.java)?.appTasks.orEmpty().any { appTask ->
+            // getTaskInfo() throws if the task was removed after appTasks was read.
+            val info = runCatching { appTask.taskInfo }.getOrNull() ?: return@any false
+            @Suppress("DEPRECATION")
+            val id = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) info.taskId else info.persistentId
+            id == taskId
+        }
+
+    private fun canUseBiometric(): Boolean =
+        when (BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)) {
+            BiometricManager.BIOMETRIC_SUCCESS, BiometricManager.BIOMETRIC_STATUS_UNKNOWN -> true
+            else -> false
+        }
+
+    private fun biometricCallback(generation: Int) =
+        object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                if (isCurrentPrompt(generation)) this@AppAuthActivity.onAuthenticationError(errorCode, errString)
             }
 
             override fun onAuthenticationFailed() {
-                refreshSwirl(getString(R.string.Not_recognized), false)
+                if (isCurrentPrompt(generation)) refreshSwirl(getString(R.string.Not_recognized))
             }
 
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                finishAndCheckNeed2GoUrlInterpreter()
-            }
-        }
-
-    @SuppressLint("RestrictedApi")
-    private val fingerprintCallback =
-        object : FingerprintManagerCompat.AuthenticationCallback() {
-            override fun onAuthenticationError(
-                errorCode: Int,
-                errString: CharSequence,
-            ) {
-                when (errorCode) {
-                    BiometricPrompt.ERROR_CANCELED, BiometricPrompt.ERROR_USER_CANCELED, 1010 -> {
-                        moveTaskToBack(true)
-                    }
-                    BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
-                        showError(errString)
-                    }
-                    BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_HW_NOT_PRESENT, BiometricPrompt.ERROR_HW_UNAVAILABLE -> {
-                        clearWhenPinSuccess = true
-                        showError(errString)
-                    }
-                    else -> {
-                        refreshSwirl(errString, true)
-                    }
-                }
-            }
-
-            override fun onAuthenticationFailed() {
-                refreshSwirl(getString(R.string.Not_recognized), false)
-            }
-
-            override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult) {
-                finishAndCheckNeed2GoUrlInterpreter()
-            }
-
-            override fun onAuthenticationHelp(
-                helpMsgId: Int,
-                helpString: CharSequence,
-            ) {
-                // workaround for xiaomi
-                if (helpMsgId == 1021 || helpMsgId == 1022 || helpMsgId == 1023 || helpMsgId == 1001) {
-                    return
-                }
-                refreshSwirl(helpString.toString(), true)
+                if (isCurrentPrompt(generation)) finishAndCheckNeed2GoUrlInterpreter()
             }
         }
 }
