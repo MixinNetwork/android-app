@@ -22,6 +22,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -42,6 +43,8 @@ import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowBiometricPrompt
 import org.robolectric.shadows.ShadowToast
 import org.robolectric.util.ReflectionHelpers
+import org.robolectric.shadow.api.Shadow
+import org.robolectric.shadows.ShadowBiometricManager
 import org.robolectric.util.ReflectionHelpers.ClassParameter
 import java.lang.reflect.Proxy
 import java.util.concurrent.TimeUnit
@@ -361,6 +364,8 @@ class AppAuthActivityTest {
         val fakeApp = FakeMixinApplication()
         MixinApplication.appContext = fakeApp
         fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+        val biometricManager = fakeApp.getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+        Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(true)
         controller.create().start().resume().visible()
         val activity = controller.get()
         val mainLooper = shadowOf(Looper.getMainLooper())
@@ -385,6 +390,91 @@ class AppAuthActivityTest {
 
         assertTrue(activity.isFinishing)
         assertEquals(0, fakeApp.defaultSharedPreferences.getInt(PREF_APP_AUTH, -1))
+    }
+
+    @Test
+    fun hardwareUnavailableWithMissingHardwareClearsAppAuthAfterPinUnlock() {
+        val fakeApp = FakeMixinApplication()
+        MixinApplication.appContext = fakeApp
+        fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+        val biometricManager = fakeApp.getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+        Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
+        controller.create().start().resume().visible()
+        val activity = controller.get()
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
+
+        authenticateWithError(currentAuthenticateSession(), BiometricPrompt.ERROR_HW_UNAVAILABLE, "Hardware unavailable")
+        mainLooper.idle()
+
+        val viewModel = ViewModelProvider(activity)[AppAuthViewModel::class.java]
+        assertTrue(viewModel.clearWhenPinSuccess)
+
+        val dialog = VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
+        ReflectionHelpers.callInstanceMethod<Unit>(
+            activity,
+            "bindPinVerification",
+            ClassParameter.from(VerifyBottomSheetDialogFragment::class.java, dialog),
+        )
+        ReflectionHelpers.getField<((String) -> Unit)?>(dialog, "onPinSuccess")?.invoke("123456")
+
+        assertTrue(activity.isFinishing)
+        assertEquals(-1, fakeApp.defaultSharedPreferences.getInt(PREF_APP_AUTH, 0))
+    }
+
+    @Test
+    fun newIntentClearsPreviousBiometricErrorState() {
+        controller.create().start().resume().visible()
+        val activity = controller.get()
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
+
+        authenticateWithError(currentAuthenticateSession(), BiometricPrompt.ERROR_LOCKOUT, "Too many attempts")
+        mainLooper.idle()
+        val infoView = activity.findViewById<TextView>(R.id.info)
+        assertEquals("Too many attempts", infoView.text.toString())
+        assertEquals(activity.getColor(R.color.colorRed), infoView.currentTextColor)
+
+        controller.newIntent(Intent(activity, AppAuthActivity::class.java))
+        assertEquals(activity.getString(R.string.Confirm_fingerprint), infoView.text.toString())
+        assertFalse(infoView.currentTextColor == activity.getColor(R.color.colorRed))
+    }
+
+    @Test
+    fun leavingLockScreenWithoutUnlockingClearsIntentDataAndPendingDeepLink() {
+        val fakeApp = FakeMixinApplication()
+        MixinApplication.appContext = fakeApp
+        fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+
+        val staleUri = Uri.parse("mixin://pay/stale-link")
+        val localController = Robolectric.buildActivity(
+            AppAuthActivity::class.java,
+            Intent(Intent.ACTION_VIEW, staleUri),
+        )
+        val lockActivity = localController.get()
+        ReflectionHelpers.setField(lockActivity, "injected", true)
+        localController.create().start().resume().visible()
+        fakeApp.appAuth.onActivityStarted(lockActivity)
+        fakeApp.appAuth.onActivityResumed(lockActivity)
+
+        localController.pause().stop()
+        fakeApp.appAuth.onActivityPaused(lockActivity)
+        fakeApp.appAuth.onActivityStopped(lockActivity)
+        assertNull(lockActivity.intent.data)
+
+        localController.start().resume()
+        fakeApp.appAuth.onActivityStarted(lockActivity)
+        fakeApp.appAuth.onActivityResumed(lockActivity)
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
+        ReflectionHelpers.callInstanceMethod<Unit>(currentAuthenticateSession(), "authenticateSuccessfully")
+        mainLooper.idle()
+
+        assertTrue(lockActivity.isFinishing)
+        val startedIntent = shadowOf(lockActivity).nextStartedActivity
+        assertEquals(MainActivity::class.java.name, startedIntent?.component?.className)
+        assertNull(startedIntent?.data)
+        localController.pause().stop().destroy()
     }
 
     @Test

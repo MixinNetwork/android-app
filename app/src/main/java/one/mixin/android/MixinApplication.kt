@@ -483,6 +483,7 @@ open class MixinApplication :
 
     override fun onActivityPaused(activity: Activity) {
         resumedActivities.remove(activity)
+        appAuth.onActivityPaused(activity)
         activityInForeground = resumedActivities.isNotEmpty()
         resumedActivities.lastOrNull()?.let {
             topActivity = it

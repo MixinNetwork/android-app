@@ -12,16 +12,28 @@ import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.Constants.Account.PREF_APP_ENTER_BACKGROUND
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import java.lang.ref.WeakReference
 
 internal class AppAuthManager(
     private val preferences: SharedPreferences,
     private val elapsedRealtime: () -> Long = SystemClock::elapsedRealtime,
     private val currentTimeMillis: () -> Long = System::currentTimeMillis,
+    private val taskIdOf: (Activity) -> Int = Activity::getTaskId,
 ) {
+    private class PendingLaunch(
+        val initiator: WeakReference<Activity>,
+        val launchedAtMs: Long,
+    )
+
+    companion object {
+        private const val PENDING_LAUNCH_TIMEOUT_MS = 500L
+    }
+
     private val createdActivities = mutableSetOf<Activity>()
     private val startedActivities = mutableSetOf<Activity>()
     private val authActivities = mutableSetOf<Activity>()
-    private val pendingTasks = mutableSetOf<Int>()
+    private val resumedAuthActivities = mutableSetOf<Activity>()
+    private val launchingAuthTasks = mutableMapOf<Int, PendingLaunch>()
     private var backgroundElapsedRealtime: Long? = null
     private var foregroundChecked = false
     private var pendingDeepLink: Uri? = null
@@ -52,13 +64,27 @@ internal class AppAuthManager(
     fun onActivityCreated(activity: Activity) {
         createdActivities.add(activity)
         syncRecentsScreenshot(activity)
+        if (activity !is AppAuthActivity && activity !is UrlInterpreterActivity) {
+            launchingAuthTasks.remove(taskIdOf(activity))
+        }
     }
 
     fun onActivityStarted(activity: Activity) {
         startedActivities.add(activity)
         if (activity is AppAuthActivity) {
+            if (!isEnabled()) {
+                startedActivities.remove(activity)
+                authActivities.remove(activity)
+                resumedAuthActivities.remove(activity)
+                launchingAuthTasks.remove(taskIdOf(activity))
+                isLocked = false
+                foregroundChecked = true
+                pendingDeepLink = null
+                activity.finish()
+                return
+            }
             authActivities.add(activity)
-            pendingTasks.remove(activity.taskId)
+            launchingAuthTasks.remove(taskIdOf(activity))
             if (pendingDeepLink == null) {
                 recordPendingDeepLink(activity.intent?.data)
             }
@@ -70,17 +96,26 @@ internal class AppAuthManager(
 
     fun onActivityResumed(activity: Activity) {
         if (activity is AppAuthActivity) {
-            pendingTasks.remove(activity.taskId)
+            resumedAuthActivities.add(activity)
+            launchingAuthTasks.remove(taskIdOf(activity))
         } else if (isLocked) {
-            checkAndShow(activity)
+            checkAndShowInternal(activity, fromResume = true)
         }
     }
 
+    fun onActivityPaused(activity: Activity) {
+        resumedAuthActivities.remove(activity)
+    }
+
     fun onActivityStopped(activity: Activity) {
+        resumedAuthActivities.remove(activity)
         if (!startedActivities.remove(activity) || startedActivities.isNotEmpty() || activity.isChangingConfigurations) return
         foregroundChecked = false
         backgroundElapsedRealtime = elapsedRealtime()
-        if (!isLocked) {
+        launchingAuthTasks.clear()
+        if (isLocked) {
+            pendingDeepLink = null
+        } else {
             preferences.putLong(PREF_APP_ENTER_BACKGROUND, currentTimeMillis())
         }
     }
@@ -88,11 +123,22 @@ internal class AppAuthManager(
     fun onActivityDestroyed(activity: Activity) {
         createdActivities.remove(activity)
         startedActivities.remove(activity)
+        resumedAuthActivities.remove(activity)
         authActivities.remove(activity)
-        if (activity is AppAuthActivity) pendingTasks.remove(activity.taskId)
+        val taskId = taskIdOf(activity)
+        if (activity is AppAuthActivity) {
+            launchingAuthTasks.remove(taskId)
+        } else if (launchingAuthTasks[taskId]?.initiator?.get() === activity) {
+            launchingAuthTasks.remove(taskId)
+        }
     }
 
-    fun checkAndShow(activity: Activity): Boolean {
+    fun checkAndShow(activity: Activity): Boolean = checkAndShowInternal(activity, fromResume = false)
+
+    private fun checkAndShowInternal(
+        activity: Activity,
+        fromResume: Boolean,
+    ): Boolean {
         if (activity is AppAuthActivity || activity.isFinishing || activity.isDestroyed) return isLocked
         val mode = preferences.getInt(PREF_APP_AUTH, -1)
         if (mode == -1) {
@@ -116,9 +162,35 @@ internal class AppAuthManager(
         if (activity is UrlInterpreterActivity) {
             recordPendingDeepLink(activity.intent?.data)
         }
-        if (pendingTasks.add(activity.taskId)) {
+        if (shouldLaunchAuthForTask(activity, fromResume)) {
+            if (activity !is UrlInterpreterActivity) {
+                launchingAuthTasks[taskIdOf(activity)] = PendingLaunch(WeakReference(activity), elapsedRealtime())
+            }
             AppAuthActivity.show(activity)
         }
+        return true
+    }
+
+    private fun shouldLaunchAuthForTask(
+        activity: Activity,
+        fromResume: Boolean,
+    ): Boolean {
+        val taskId = taskIdOf(activity)
+        if (activity !is UrlInterpreterActivity) {
+            if (resumedAuthActivities.any { taskIdOf(it) == taskId && !it.isFinishing && !it.isDestroyed }) {
+                return false
+            }
+            if (!fromResume && authActivities.any { taskIdOf(it) == taskId && !it.isFinishing && !it.isDestroyed }) {
+                return false
+            }
+        }
+        val pending = launchingAuthTasks[taskId] ?: return true
+        val initiator = pending.initiator.get()
+        val withinWindow = elapsedRealtime() - pending.launchedAtMs in 0 until PENDING_LAUNCH_TIMEOUT_MS
+        if (initiator != null && !initiator.isFinishing && !initiator.isDestroyed && withinWindow) {
+            return false
+        }
+        launchingAuthTasks.remove(taskId)
         return true
     }
 
@@ -126,7 +198,8 @@ internal class AppAuthManager(
         isLocked = false
         foregroundChecked = true
         backgroundElapsedRealtime = null
-        pendingTasks.clear()
+        launchingAuthTasks.clear()
+        resumedAuthActivities.clear()
         preferences.putLong(PREF_APP_ENTER_BACKGROUND, 0)
         val deepLink = pendingDeepLink
         pendingDeepLink = null
@@ -136,16 +209,16 @@ internal class AppAuthManager(
     }
 
     fun reset() {
-        isLocked = false
-        preferences.putLong(PREF_APP_ENTER_BACKGROUND, 0)
         runOnMain {
             isLocked = false
             foregroundChecked = false
             backgroundElapsedRealtime = null
-            pendingTasks.clear()
+            launchingAuthTasks.clear()
             pendingDeepLink = null
+            preferences.putLong(PREF_APP_ENTER_BACKGROUND, 0)
             authActivities.forEach { it.finish() }
             authActivities.clear()
+            resumedAuthActivities.clear()
             createdActivities.toList().forEach(::syncRecentsScreenshot)
         }
     }

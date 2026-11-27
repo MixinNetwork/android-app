@@ -423,6 +423,124 @@ class AppAuthManagerTest {
         assertNull(manager.onAuthenticated())
     }
 
+    @Test
+    fun pendingDeepLinkIsClearedWhenLockedAppGoesToBackground() {
+        configure(0)
+        val manager = manager()
+        val urlActivity = Robolectric.buildActivity(
+            UrlInterpreterActivity::class.java,
+            Intent(Intent.ACTION_VIEW, Uri.parse("mixin://pay/stale-transfer")),
+        ).get()
+        assertTrue(manager.checkAndShow(urlActivity))
+
+        val lockActivity = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityStarted(lockActivity)
+        manager.onActivityResumed(lockActivity)
+
+        // Leaving the lock screen without unlocking clears the stale pending deep link.
+        manager.onActivityPaused(lockActivity)
+        manager.onActivityStopped(lockActivity)
+        assertTrue(manager.isLocked)
+
+        manager.onActivityStarted(lockActivity)
+        manager.onActivityResumed(lockActivity)
+        assertNull(manager.onAuthenticated())
+    }
+
+    @Test
+    fun singleInstanceUrlInterpreterDoesNotBlockSubsequentAuthLaunches() {
+        configure(0)
+        val manager = AppAuthManager(
+            preferences,
+            { elapsed },
+            { wallTime },
+            { if (it is UrlInterpreterActivity) 20 else 1 },
+        )
+        val firstUrl = Robolectric.buildActivity(
+            UrlInterpreterActivity::class.java,
+            Intent(Intent.ACTION_VIEW, Uri.parse("mixin://users/first")),
+        ).get()
+        assertTrue(manager.checkAndShow(firstUrl))
+        assertNotNull(shadowOf(firstUrl).nextStartedActivity)
+
+        // Simulate AppAuthActivity launching in the main task while UrlInterpreterActivity stays in its own task.
+        val lockInMainTask = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityStarted(lockInMainTask)
+        manager.onActivityStopped(lockInMainTask)
+
+        val secondUrl = Robolectric.buildActivity(
+            UrlInterpreterActivity::class.java,
+            Intent(Intent.ACTION_VIEW, Uri.parse("mixin://users/second")),
+        ).get()
+        assertTrue(manager.checkAndShow(secondUrl))
+        assertEquals(AppAuthActivity::class.java.name, shadowOf(secondUrl).nextStartedActivity.component?.className)
+        assertEquals(Uri.parse("mixin://users/second"), manager.onAuthenticated())
+    }
+
+    @Test
+    fun clearTaskNewActivityCanLaunchAuthBeforePreviousPendingLaunchCompletes() {
+        configure(0)
+        val manager = manager()
+        val oldActivity = activity(taskId = 1)
+        manager.onActivityCreated(oldActivity)
+        manager.onActivityStarted(oldActivity)
+        assertNotNull(shadowOf(oldActivity).nextStartedActivity)
+
+        val clearTaskNewActivity = activity(taskId = 1)
+        manager.onActivityCreated(clearTaskNewActivity)
+        manager.onActivityStarted(clearTaskNewActivity)
+        assertEquals(
+            AppAuthActivity::class.java.name,
+            shadowOf(clearTaskNewActivity).nextStartedActivity.component?.className,
+        )
+    }
+
+    @Test
+    fun startingAuthActivityWhenLockDisabledFinishesWithoutLocking() {
+        val manager = manager()
+        val restoredLock = Robolectric.buildActivity(
+            AppAuthActivity::class.java,
+            Intent().setData(Uri.parse("mixin://pay/stale")),
+        ).get()
+        manager.onActivityStarted(restoredLock)
+
+        assertFalse(manager.isLocked)
+        assertTrue(restoredLock.isFinishing)
+        val nextHost = activity(taskId = 1)
+        manager.onActivityStarted(nextHost)
+        assertNull(shadowOf(nextHost).nextStartedActivity)
+        assertNull(manager.onAuthenticated())
+    }
+
+    @Test
+    @Config(sdk = [33])
+    fun resetUpdatesAllStateAtomicallyOnMainThread() {
+        configure(1, wallTime - 60_001)
+        val manager = manager()
+        val activity = activity(taskId = 1)
+        manager.onActivityCreated(activity)
+        manager.onActivityStarted(activity)
+        val lockActivity = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityStarted(lockActivity)
+        assertTrue(manager.isLocked)
+
+        preferences.edit().remove(PREF_APP_AUTH).commit()
+        val worker = Thread { manager.reset() }
+        worker.start()
+        worker.join()
+
+        // Before the main looper runs, state has not been partially mutated on the background thread.
+        assertTrue(manager.isLocked)
+        assertEquals(0L, preferences.getLong(PREF_APP_ENTER_BACKGROUND, -1))
+        assertFalse(lockActivity.isFinishing)
+
+        shadowOf(Looper.getMainLooper()).idle()
+        assertFalse(manager.isLocked)
+        assertTrue(lockActivity.isFinishing)
+        assertEquals(0L, preferences.getLong(PREF_APP_ENTER_BACKGROUND, -1))
+        assertEquals(true, activity.recentsScreenshotEnabled)
+    }
+
     private fun assertWindowSecure(window: Window, expected: Boolean) {
         assertEquals(expected, (window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0)
         assertEquals(expected, FlagSecureReason.isSecured(window))

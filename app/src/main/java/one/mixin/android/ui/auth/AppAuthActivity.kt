@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.RelativeLayout
 import androidx.activity.addCallback
 import androidx.activity.viewModels
+import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -108,12 +109,14 @@ class AppAuthActivity : BaseActivity() {
             MixinApplication.appAuthOrNull()?.recordPendingDeepLink(intent.data)
         }
         autoRetryCount = 0
-        binding.swirl.setState(SwirlView.State.ON)
+        binding.swirl.removeCallbacks(resetSwirlRunnable)
+        resetSwirlState()
     }
 
     override fun onStart() {
         super.onStart()
-        if (viewModel.pendingPinUnlock && !authenticated && !isFinishing) {
+        if (isFinishing) return
+        if (viewModel.pendingPinUnlock && !authenticated) {
             viewModel.pendingPinUnlock = false
             applyPinSuccessUnlock()
             return
@@ -142,6 +145,9 @@ class AppAuthActivity : BaseActivity() {
 
     override fun onStop() {
         cancelPrompt()
+        if (!isChangingConfigurations && !authenticated) {
+            intent?.data = null
+        }
         super.onStop()
     }
 
@@ -252,7 +258,8 @@ class AppAuthActivity : BaseActivity() {
         cancelPrompt()
         val intentData = intent.data
         val wasTaskRoot = isTaskRoot
-        val data = MixinApplication.get().appAuth.onAuthenticated() ?: intentData
+        val appAuth = MixinApplication.appAuthOrNull()
+        val data = if (appAuth != null) appAuth.onAuthenticated() else intentData
         if (data != null) {
             UrlInterpreterActivity.show(this, data)
         } else if (wasTaskRoot) {
@@ -306,7 +313,13 @@ class AppAuthActivity : BaseActivity() {
                 viewModel.clearWhenPinSuccess = true
                 showError(errString)
             }
-            BiometricPrompt.ERROR_HW_UNAVAILABLE, BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
+            BiometricPrompt.ERROR_HW_UNAVAILABLE -> {
+                if (hasNoBiometricHardware()) {
+                    viewModel.clearWhenPinSuccess = true
+                }
+                showError(errString)
+            }
+            BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
                 showError(errString)
             }
             else -> {
@@ -321,6 +334,12 @@ class AppAuthActivity : BaseActivity() {
                 }
             }
         }
+    }
+
+    private fun hasNoBiometricHardware(): Boolean {
+        val status = BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+        return status == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE ||
+            status == BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED
     }
 
     private fun biometricCallback(generation: Int) =
