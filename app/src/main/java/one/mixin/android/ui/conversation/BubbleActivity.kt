@@ -19,6 +19,7 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSA
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.landing.LandingActivity
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -74,9 +75,20 @@ class BubbleActivity : BlazeBaseActivity() {
     private fun showConversation(intent: Intent) {
         val bundle = intent.extras ?: return
         lifecycleScope.launch(
-            CoroutineExceptionHandler { _, _ ->
+            CoroutineExceptionHandler { _, throwable ->
+                if (Session.getAccount() == null) {
+                    LandingActivity.show(this)
+                    finish()
+                    return@CoroutineExceptionHandler
+                }
+                val fallbackExtras = intent.extras
+                if (fallbackExtras == null || (fallbackExtras.getString(CONVERSATION_ID) == null && fallbackExtras.getString(RECIPIENT_ID) == null)) {
+                    Timber.e(throwable, "Invalid bubble conversation intent extras")
+                    finish()
+                    return@CoroutineExceptionHandler
+                }
                 replaceFragment(
-                    ConversationFragment.newInstance(intent.extras!!),
+                    ConversationFragment.newInstance(fallbackExtras),
                     R.id.container,
                     ConversationFragment.TAG,
                 )

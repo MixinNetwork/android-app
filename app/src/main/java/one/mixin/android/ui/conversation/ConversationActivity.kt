@@ -26,6 +26,7 @@ import one.mixin.android.vo.User
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.Job
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ConversationActivity : BlazeBaseActivity() {
@@ -106,9 +107,21 @@ class ConversationActivity : BlazeBaseActivity() {
         val bundle = intent.extras ?: return
         conversationJob?.cancel()
         conversationJob = lifecycleScope.launch(
-            CoroutineExceptionHandler { _, _ ->
+            CoroutineExceptionHandler { _, throwable ->
+                if (Session.getAccount() == null) {
+                    suppressHomeFallbackOnFinish = true
+                    LandingActivity.show(this)
+                    finish()
+                    return@CoroutineExceptionHandler
+                }
+                val fallbackExtras = intent.extras
+                if (fallbackExtras == null || (fallbackExtras.getString(CONVERSATION_ID) == null && fallbackExtras.getString(RECIPIENT_ID) == null)) {
+                    Timber.e(throwable, "Invalid conversation intent extras")
+                    finish()
+                    return@CoroutineExceptionHandler
+                }
                 replaceFragment(
-                    ConversationFragment.newInstance(intent.extras!!),
+                    ConversationFragment.newInstance(fallbackExtras),
                     R.id.container,
                     ConversationFragment.TAG,
                 )

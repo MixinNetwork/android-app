@@ -74,6 +74,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.AnimationProperties
@@ -97,6 +98,7 @@ import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlin.math.min
 
 @UnstableApi @AndroidEntryPoint
@@ -107,7 +109,8 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
         PipVideoView.getInstance()
     }
 
-    private val processor = QRCodeProcessor()
+    private val processorDelegate = lazy { QRCodeProcessor() }
+    private val processor by processorDelegate
 
     private val adapter: TranscriptMediaPagerAdapter by lazy {
         TranscriptMediaPagerAdapter(this, this@TranscriptMediaPagerActivity, mediaPagerAdapterListener)
@@ -122,13 +125,25 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
     }
 
     @Inject
-    lateinit var conversationRepository: ConversationRepository
+    lateinit var conversationRepositoryProvider: Provider<ConversationRepository>
+
+    private val conversationRepository: ConversationRepository
+        get() = conversationRepositoryProvider.get()
+
     private lateinit var binding: ActivityMediaPagerBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         skipSystemUi = true
-        postponeEnterTransition()
-        super.onCreate(savedInstanceState)
+        val hasAccount = Session.getAccount() != null
+        if (hasAccount) {
+            postponeEnterTransition()
+        }
+        super.onCreate(if (hasAccount) savedInstanceState else null)
+        if (!hasAccount) {
+            LandingActivity.show(this)
+            finish()
+            return
+        }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         binding = ActivityMediaPagerBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -174,6 +189,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
 
     override fun onStop() {
         super.onStop()
+        if (!::binding.isInitialized) return
         binding.lockTv.removeCallbacks(hideLockRunnable)
         if (!pipVideoView.shown) {
             VideoPlayer.player().pause()
@@ -182,10 +198,18 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
 
     override fun onDestroy() {
         super.onDestroy()
+        if (!::binding.isInitialized) {
+            if (processorDelegate.isInitialized()) {
+                processor.close()
+            }
+            return
+        }
         if (!pipVideoView.shown) {
             VideoPlayer.destroy()
         }
-        processor.close()
+        if (processorDelegate.isInitialized()) {
+            processor.close()
+        }
         SensorOrientationChangeNotifier.reset()
         binding.viewPager.unregisterOnPageChangeCallback(onPageChangeCallback)
     }

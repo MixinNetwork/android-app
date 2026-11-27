@@ -9,7 +9,9 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.internal.managers.ActivityComponentManager
 import one.mixin.android.MixinApplication
 import one.mixin.android.session.Session
+import one.mixin.android.ui.conversation.chathistory.ChatHistoryActivity
 import one.mixin.android.ui.landing.LandingActivity
+import one.mixin.android.ui.media.pager.transcript.TranscriptMediaPagerActivity
 import one.mixin.android.vo.Account
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -99,8 +101,63 @@ class ConversationActivitySessionTest {
     }
 
     @Test
+    fun chatHistoryActivityMissingAccountReturnsToLandingWithoutRestoringFragments() {
+        val savedState = createSavedStateWithFragment()
+        val intent = Intent(ApplicationProvider.getApplicationContext(), ChatHistoryActivity::class.java)
+            .putExtra("conversation_id", "conversation-id")
+            .putExtra("transcript_id", "message-id")
+        val controller = Robolectric.buildActivity(ChatHistoryActivity::class.java, intent)
+        ReflectionHelpers.setField(controller.get(), "injected", true)
+        try {
+            controller.create(savedState)
+
+            val activity = controller.get()
+            assertTrue(activity.isFinishing)
+            controller.start()
+            assertEquals(1, RestoredFragment.attachments)
+            assertTrue(activity.supportFragmentManager.fragments.isEmpty())
+            val redirect = shadowOf(activity).nextStartedActivity
+            assertEquals(LandingActivity::class.java.name, redirect.component?.className)
+            assertTrue(redirect.flags and Intent.FLAG_ACTIVITY_CLEAR_TASK != 0)
+            assertNull(shadowOf(activity).nextStartedActivity)
+        } finally {
+            if (controller.get().isFinishing) controller.stop().destroy()
+        }
+    }
+
+    @Test
+    fun transcriptMediaPagerActivityMissingAccountReturnsToLandingWithoutRestoringFragments() {
+        val savedState = createSavedStateWithFragment()
+        val intent = Intent(ApplicationProvider.getApplicationContext(), TranscriptMediaPagerActivity::class.java)
+        val controller = Robolectric.buildActivity(TranscriptMediaPagerActivity::class.java, intent)
+        ReflectionHelpers.setField(controller.get(), "injected", true)
+        try {
+            controller.create(savedState)
+
+            val activity = controller.get()
+            assertTrue(activity.isFinishing)
+            controller.start()
+            assertEquals(1, RestoredFragment.attachments)
+            assertTrue(activity.supportFragmentManager.fragments.isEmpty())
+            val redirect = shadowOf(activity).nextStartedActivity
+            assertEquals(LandingActivity::class.java.name, redirect.component?.className)
+            assertTrue(redirect.flags and Intent.FLAG_ACTIVITY_CLEAR_TASK != 0)
+            assertNull(shadowOf(activity).nextStartedActivity)
+        } finally {
+            if (controller.get().isFinishing) controller.stop().destroy()
+        }
+    }
+
+    @Test
     fun injectedRepositoriesAreDeferredViaProvider() {
-        for (activityClass in listOf(ConversationActivity::class.java, BubbleActivity::class.java)) {
+        for (
+            activityClass in listOf(
+                ConversationActivity::class.java,
+                BubbleActivity::class.java,
+                ChatHistoryActivity::class.java,
+                TranscriptMediaPagerActivity::class.java,
+            )
+        ) {
             val injectedFields = activityClass.declaredFields.filter { it.isAnnotationPresent(Inject::class.java) }
             assertTrue(injectedFields.isNotEmpty())
             for (field in injectedFields) {
