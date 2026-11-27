@@ -221,6 +221,7 @@ private fun initClips() {
             if (!isActive) return@withContext
             clipsLoadedFromPrefs = true
             initClipsJob = null
+            var restoredAdded = false
             if (validClips.isNotEmpty()) {
                 val remainingSlots = (MAX_CLIPS - clips.size).coerceAtLeast(0)
                 if (remainingSlots > 0) {
@@ -238,11 +239,12 @@ private fun initClips() {
                         }
                     }
                     clips.addAll(toAdd)
+                    restoredAdded = toAdd.isNotEmpty()
                 } else {
                     validClips.forEach(::destroyClipWebView)
                 }
             }
-            if (hadInvalidClips) {
+            if (hadInvalidClips || restoredAdded) {
                 if (clips.isEmpty()) {
                     saveJob?.cancel()
                     saveJob = null
