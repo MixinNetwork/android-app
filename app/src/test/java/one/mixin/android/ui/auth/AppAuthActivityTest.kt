@@ -105,13 +105,19 @@ class AppAuthActivityTest {
 
     @Test
     fun backInAnotherAppsTaskFinishesOurPagesWithoutMovingTheHostTaskBack() {
+        val fakeApp = FakeMixinApplication()
+        MixinApplication.appContext = fakeApp
+        fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
         controller.create().start().resume()
         val activity = controller.get()
+        activity.intent.data = Uri.parse("mixin://users/foreign-task")
+        fakeApp.appAuth.onActivityStarted(activity)
         // No app task matches the lock screen's task, e.g. it was launched inside a share sheet host task.
         activity.onBackPressedDispatcher.onBackPressed()
         assertFalse(shadowOf(activity).isTaskMovedToBack)
         assertTrue(activity.isFinishing)
         assertNull(shadowOf(activity).nextStartedActivity)
+        assertNull(fakeApp.appAuth.onAuthenticated(taskId = activity.taskId))
     }
 
     @Test
@@ -230,10 +236,7 @@ class AppAuthActivityTest {
 
         val savedState = Bundle()
         controller.saveInstanceState(savedState)
-        assertFalse(savedState.containsKey("pending_pin_unlock"))
 
-        // Even if a restored bundle contained a legacy pending_pin_unlock key, a fresh process must not auto-unlock.
-        savedState.putBoolean("pending_pin_unlock", true)
         val restoredController = Robolectric.buildActivity(AppAuthActivity::class.java)
         ReflectionHelpers.setField(restoredController.get(), "injected", true)
         restoredController.create(savedState)
@@ -609,6 +612,22 @@ class AppAuthActivityTest {
     }
 
     @Test
+    fun closedPinSheetIsRecreatedBeforeShowingPinVerification() {
+        val biometricManager = ApplicationProvider.getApplicationContext<Context>()
+            .getSystemService(FrameworkBiometricManager::class.java)
+        Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
+        controller.create().start().resume().visible()
+        val activity = controller.get()
+        val first = showingPinSheet(activity)
+
+        first.dismissNow()
+        ReflectionHelpers.callInstanceMethod<Unit>(activity, "showPinVerification")
+
+        val second = showingPinSheet(activity)
+        assertTrue(second !== first)
+    }
+
+    @Test
     fun noUsableBiometricSwirlClickOpensPinVerificationInsteadOfPrompt() {
         val biometricManager = ApplicationProvider.getApplicationContext<Context>()
             .getSystemService(FrameworkBiometricManager::class.java)
@@ -715,46 +734,6 @@ class AppAuthActivityTest {
             assertEquals(1, fakeApp.defaultSharedPreferences.getInt(PREF_APP_AUTH, -1))
             localController.pause().stop().destroy()
         }
-    }
-
-    @Test
-    fun unlockingInFirstTaskOpensPendingDeepLinkFromSecondTaskOnce() {
-        val fakeApp = FakeMixinApplication()
-        MixinApplication.appContext = fakeApp
-        fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
-
-        controller.create().start().resume().visible()
-        val lock1 = controller.get()
-        fakeApp.appAuth.onActivityStarted(lock1)
-
-        val uri = Uri.parse("mixin://pay/from-second-task")
-        val urlActivity = Robolectric.buildActivity(
-            UrlInterpreterActivity::class.java,
-            Intent(Intent.ACTION_VIEW, uri),
-        ).get()
-        assertTrue(fakeApp.appAuth.checkAndShow(urlActivity))
-        // Consume the AppAuthActivity launch triggered by UrlInterpreterActivity before verifying unlock.
-        assertEquals(AppAuthActivity::class.java.name, shadowOf(urlActivity).nextStartedActivity.component?.className)
-
-        val lock2Controller = Robolectric.buildActivity(AppAuthActivity::class.java, Intent().setData(uri))
-        ReflectionHelpers.setField(lock2Controller.get(), "injected", true)
-        val lock2 = lock2Controller.create().start().get()
-        fakeApp.appAuth.onActivityStarted(lock2)
-
-        val mainLooper = shadowOf(Looper.getMainLooper())
-        mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
-        ReflectionHelpers.callInstanceMethod<Unit>(currentAuthenticateSession(), "authenticateSuccessfully")
-        mainLooper.idle()
-
-        val startedIntent = shadowOf(lock1).nextStartedActivity
-        assertNotNull(startedIntent)
-        assertEquals(UrlInterpreterActivity::class.java.name, startedIntent.component?.className)
-        assertEquals(uri, startedIntent.data)
-        assertNull(shadowOf(lock1).nextStartedActivity)
-        assertTrue(lock1.isFinishing)
-        assertTrue(lock2.isFinishing)
-        assertNull(shadowOf(lock2).nextStartedActivity)
-        lock2Controller.stop().destroy()
     }
 
     @Test

@@ -217,12 +217,18 @@ class AppAuthActivity : BaseActivity() {
         pendingShowPin = false
         cancelPrompt()
         binding.pinTv.isVisible = true
-        val dialog = supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as? VerifyBottomSheetDialogFragment
-            ?: VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
-        bindPinVerification(dialog)
-        if (!dialog.isAdded) {
-            dialog.showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+        val existing = supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as? VerifyBottomSheetDialogFragment
+        if (existing != null && !existing.isRemoving && existing.isAdded && existing.dialog?.isShowing == true) {
+            bindPinVerification(existing)
+            return
         }
+        if (existing != null && !existing.isRemoving) {
+            existing.dismissAllowingStateLoss()
+        }
+        supportFragmentManager.executePendingTransactions()
+        val dialog = VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
+        bindPinVerification(dialog)
+        dialog.showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }
 
     private fun cancelPrompt() {

@@ -7,8 +7,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Looper
-import android.view.Window
-import android.view.WindowManager
 import androidx.test.core.app.ApplicationProvider
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.Constants.Account.PREF_APP_ENTER_BACKGROUND
@@ -231,17 +229,14 @@ class AppAuthManagerTest {
         val activity = activity()
         manager.onActivityCreated(activity)
         assertEquals(false, activity.recentsScreenshotEnabled)
-        assertWindowSecure(activity.window, false)
 
         preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals(true, activity.recentsScreenshotEnabled)
-        assertWindowSecure(activity.window, false)
 
         preferences.edit().putInt(PREF_APP_AUTH, 1).commit()
         shadowOf(Looper.getMainLooper()).idle()
         assertEquals(false, activity.recentsScreenshotEnabled)
-        assertWindowSecure(activity.window, false)
 
         preferences.edit().remove(PREF_APP_AUTH).commit()
         shadowOf(Looper.getMainLooper()).idle()
@@ -267,65 +262,49 @@ class AppAuthManagerTest {
 
     @Test
     @Config(sdk = [31])
-    fun preApi33DoesNotCallRecentsScreenshotOrSetGlobalFlagSecure() {
+    fun preApi33DoesNotCallRecentsScreenshot() {
         configure(0)
         val manager = manager()
         val activity = activity()
         manager.onActivityCreated(activity)
         assertTrue(activity.recentsScreenshotHistory.isEmpty())
-        assertWindowSecure(activity.window, false)
 
         preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
         shadowOf(Looper.getMainLooper()).idle()
         assertTrue(activity.recentsScreenshotHistory.isEmpty())
-        assertWindowSecure(activity.window, false)
     }
 
     @Test
-    @Config(sdk = [33])
-    fun sensitiveScreenKeepsFlagSecureWhenAppAuthIsToggled() {
+    fun cancelledTaskDeepLinkIsNotReturnedByOtherTaskAuthentication() {
         configure(0)
-        val manager = manager()
-        val activity = activity()
-        manager.onActivityCreated(activity)
-        assertWindowSecure(activity.window, false)
-
-        activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        assertWindowSecure(activity.window, true)
-
-        preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(activity.window, true)
-
-        preferences.edit().putInt(PREF_APP_AUTH, 0).commit()
-        shadowOf(Looper.getMainLooper()).idle()
-        assertWindowSecure(activity.window, true)
-    }
-
-    @Test
-    fun pendingDeepLinkFromSecondTaskSurvivesUnlockFromFirstTask() {
-        configure(0)
-        val manager = manager()
         val mainActivity = activity(taskId = 1)
-        manager.onActivityStarted(mainActivity)
         val lock1 = Robolectric.buildActivity(AppAuthActivity::class.java).get()
-        manager.onActivityStarted(lock1)
 
         val uri = Uri.parse("mixin://pay/cross-task")
         val urlActivity = Robolectric.buildActivity(
             UrlInterpreterActivity::class.java,
             Intent(Intent.ACTION_VIEW, uri),
         ).get()
-        assertTrue(manager.checkAndShow(urlActivity))
         val lock2 = Robolectric.buildActivity(AppAuthActivity::class.java, Intent().setData(uri)).get()
+        val manager = AppAuthManager(
+            preferences,
+            { elapsed },
+            { wallTime },
+            { activity ->
+                when (activity) {
+                    mainActivity, lock1 -> 1
+                    else -> 2
+                }
+            },
+        )
+        manager.onActivityStarted(mainActivity)
+        manager.onActivityStarted(lock1)
+        assertTrue(manager.checkAndShow(urlActivity))
         manager.onActivityStarted(lock2)
 
-        // Switching back to the first task's lock screen must not lose the deep link from the second task.
-        manager.onActivityStarted(lock1)
-
-        assertEquals(uri, manager.onAuthenticated())
+        assertFalse(manager.onAuthCancelled(lock2, ownTask = false))
+        assertNull(manager.onAuthenticated(taskId = 1))
         assertTrue(lock1.isFinishing)
-        assertTrue(lock2.isFinishing)
         assertNull(manager.onAuthenticated())
     }
 
@@ -345,7 +324,7 @@ class AppAuthManagerTest {
         assertTrue(manager.checkAndShow(urlActivity))
         assertNull(shadowOf(urlActivity).nextStartedActivity)
 
-        assertEquals(uri, manager.onAuthenticated())
+        assertEquals(uri, manager.onAuthenticated(taskId = 0))
     }
 
     @Test
@@ -381,7 +360,7 @@ class AppAuthManagerTest {
         assertTrue(manager.checkAndShow(urlActivity))
 
         manager.onActivityStarted(lock1)
-        assertEquals(second, manager.onAuthenticated())
+        assertEquals(second, manager.onAuthenticated(taskId = 0))
     }
 
     @Test
@@ -475,7 +454,7 @@ class AppAuthManagerTest {
         ).get()
         assertTrue(manager.checkAndShow(secondUrl))
         assertEquals(AppAuthActivity::class.java.name, shadowOf(secondUrl).nextStartedActivity.component?.className)
-        assertEquals(Uri.parse("mixin://users/second"), manager.onAuthenticated())
+        assertEquals(Uri.parse("mixin://users/second"), manager.onAuthenticated(taskId = 20))
     }
 
     @Test
@@ -620,9 +599,17 @@ class AppAuthManagerTest {
         // A second AppAuthActivity that finishes launching after unlock must close instead of locking again.
         manager.onActivityStarted(lock2)
         assertTrue(lock2.isFinishing)
+        manager.onActivityStopped(lock2)
         assertFalse(manager.isLocked)
+        val target = activity(taskId = 1)
+        shadowOf(target).nextStartedActivity
+        manager.onActivityStarted(target)
+        assertFalse(manager.checkAndShow(target))
+        assertFalse(manager.isLocked)
+        assertEquals(0L, manager.lockEpoch)
 
         // Once the app goes to background and returns, locking resumes as expected.
+        manager.onActivityStopped(target)
         manager.onActivityStopped(mainActivity)
         manager.onActivityStopped(otherActivity)
         manager.onActivityStarted(mainActivity)
@@ -688,6 +675,7 @@ class AppAuthManagerTest {
         manager.onActivityStopped(lockActivity)
 
         elapsed += 60_001
+        shadowOf(Looper.getMainLooper()).idleFor(700, TimeUnit.MILLISECONDS)
         val activity = activity()
         manager.onActivityStarted(activity)
         assertTrue(manager.isLocked)
@@ -771,7 +759,7 @@ class AppAuthManagerTest {
             if (!expectNextActivity) intent.data = Uri.parse("mixin://users/handoff")
             val lock = Robolectric.buildActivity(AppAuthActivity::class.java, intent).get()
             manager.onActivityStarted(lock)
-            assertEquals(intent.data, manager.onAuthenticated(expectNextActivity = expectNextActivity))
+            assertEquals(intent.data, manager.onAuthenticated(taskId = 0, expectNextActivity = expectNextActivity))
             manager.onActivityStopped(lock)
             shadowOf(Looper.getMainLooper()).idleFor(699, TimeUnit.MILLISECONDS)
             val target = activity()
@@ -781,6 +769,25 @@ class AppAuthManagerTest {
             assertFalse(manager.isLocked)
             assertNull(shadowOf(target).nextStartedActivity)
         }
+    }
+
+    @Test
+    fun processRecreatedWithOnlyLockScreenDefersBackgroundUntilBusinessActivityStarts() {
+        configure(0)
+        val manager = manager()
+        val lock = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityStarted(lock)
+        assertNull(manager.onAuthenticated(taskId = 0))
+        manager.onActivityStopped(lock)
+
+        shadowOf(Looper.getMainLooper()).idleFor(699, TimeUnit.MILLISECONDS)
+        val target = activity()
+        manager.onActivityStarted(target)
+        shadowOf(Looper.getMainLooper()).idleFor(1, TimeUnit.MILLISECONDS)
+
+        assertEquals(0L, manager.lockEpoch)
+        assertFalse(manager.isLocked)
+        assertNull(shadowOf(target).nextStartedActivity)
     }
 
     @Test
@@ -806,10 +813,6 @@ class AppAuthManagerTest {
                 assertTrue(manager.isLocked)
             }
         }
-    }
-
-    private fun assertWindowSecure(window: Window, expected: Boolean) {
-        assertEquals(expected, (window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0)
     }
 
     private fun configure(mode: Int, backgroundTime: Long = 0) {

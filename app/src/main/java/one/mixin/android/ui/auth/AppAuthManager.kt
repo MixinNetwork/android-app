@@ -83,7 +83,6 @@ internal class AppAuthManager(
 
     fun onActivityStarted(activity: Activity) {
         cancelDeferredBackground()
-        awaitingPostAuthActivity = false
         if (startedActivities.isEmpty()) {
             inForeground = true
         }
@@ -117,6 +116,7 @@ internal class AppAuthManager(
             }
             lock()
         } else {
+            awaitingPostAuthActivity = false
             checkAndShow(activity)
         }
     }
@@ -206,6 +206,7 @@ internal class AppAuthManager(
         val taskId = taskIdOf(activity)
         activeAuthTasks.remove(taskId)
         launchingAuthTasks.remove(taskId)
+        pendingDeepLinks.remove(taskId)
         if (!ownTask) return false
         cancelledAuthTasks.add(taskId)
         return cancelledAuthTasks.size > 1
@@ -298,12 +299,12 @@ internal class AppAuthManager(
         startedAuthActivities.clear()
         resumedAuthActivities.clear()
         preferences.putLong(PREF_APP_ENTER_BACKGROUND, 0)
-        val deepLink = taskId?.let { pendingDeepLinks[it] } ?: pendingDeepLinks.values.lastOrNull()
+        val deepLink = taskId?.let { pendingDeepLinks[it] }
         pendingDeepLinks.clear()
-        awaitingPostAuthActivity = deepLink != null || expectNextActivity
         authActivities.forEach { it.finish() }
         startedActivities.removeAll { it in authActivities }
         authActivities.clear()
+        awaitingPostAuthActivity = deepLink != null || expectNextActivity || startedActivities.isEmpty()
         return deepLink
     }
 
