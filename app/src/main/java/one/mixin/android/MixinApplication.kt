@@ -60,6 +60,7 @@ import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.session.Session
+import androidx.fragment.app.FragmentActivity
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.auth.AppAuthActivity
 import one.mixin.android.ui.call.CallActivity
@@ -276,6 +277,7 @@ open class MixinApplication :
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)
+        PipVideoView.onDisplayChanged()
         val activity = topActivity
         if (activity != null) {
             refreshFloating(activity, true)
@@ -488,6 +490,17 @@ open class MixinApplication :
         topActivity = activity
         activityInForeground = true
         refreshFloating(activity, false)
+        resumePendingPip(activity)
+    }
+
+    private fun resumePendingPip(activity: Activity?) {
+        if (activity !is FragmentActivity || activity is AppAuthActivity || activity is CallActivity) return
+        activity.window.decorView.post {
+            if (activity !in resumedActivities || appAuthShown || activity.isFinishing || activity.isDestroyed) return@post
+            PipVideoView.consumePendingExpandRequest()?.let { request ->
+                MediaViewerOverlay.showFromPip(activity, request.source, request.thumbLocation)
+            }
+        }
     }
 
     override fun onActivityPaused(activity: Activity) {
@@ -519,6 +532,7 @@ open class MixinApplication :
             activityReferences -= 1
         } else {
             appAuthShown = false
+            resumePendingPip(topActivity)
         }
         if (!appAuthShown && activity !is AppAuthActivity && activityReferences == 0 && !isActivityChangingConfigurations) {
             defaultSharedPreferences.putLong(Constants.Account.PREF_APP_ENTER_BACKGROUND, System.currentTimeMillis())

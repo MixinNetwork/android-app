@@ -23,18 +23,6 @@
             tools:ignore="ContentDescription" />
 
         <ImageView
-            android:id="@+id/fullscreen_iv"
-            android:layout_width="48dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginEnd="48dp"
-            android:padding="8dp"
-            android:scaleX="1.3"
-            android:scaleY="1.3"
-            android:src="@drawable/ic_fullscreen"
-            tools:ignore="ContentDescription" />
-
-        <ImageView
             android:id="@+id/pip_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -75,33 +63,101 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:orientation="vertical"
         android:background="@drawable/bg_gradient_bottom_bar">
 
-        <TextView
-            android:id="@id/exo_position"
+        <LinearLayout
+            android:id="@+id/scrubber_preview_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:fontFamily="monospace"
-            android:text="@string/default_time"
-            android:textColor="@color/transparent_white" />
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="4dp"
+            android:elevation="4dp"
+            android:background="@drawable/bg_scrubber_preview"
+            android:visibility="gone">
 
-        <androidx.media3.ui.DefaultTimeBar
-            android:id="@id/exo_progress"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            app:bar_height="2dp"
-            app:scrubber_drawable="@drawable/ic_seek_bar" />
+            <ImageView
+                android:id="@+id/scrubber_preview_iv"
+                android:layout_width="136dp"
+                android:layout_height="80dp"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
 
-        <TextView
-            android:id="@id/exo_duration"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/scrubber_preview_time_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/time_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@id/exo_position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:fontFamily="monospace"
+                android:text="@string/default_time"
+                android:textColor="@color/transparent_white" />
+
+            <androidx.media3.ui.DefaultTimeBar
+                android:id="@id/exo_progress"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                app:bar_height="2dp"
+                app:scrubber_drawable="@drawable/ic_seek_bar" />
+
+            <TextView
+                android:id="@id/exo_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:fontFamily="monospace"
+                android:text="@string/default_time"
+                android:textColor="@color/transparent_white" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:fontFamily="monospace"
-            android:text="@string/default_time"
-            android:textColor="@color/transparent_white" />
+            android:gravity="end|center_vertical">
+
+            <ImageButton
+                android:id="@+id/mute_iv"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/Mute"
+                android:src="@drawable/ic_player_volume_on" />
+
+            <TextView
+                android:id="@+id/speed_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:minWidth="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/fullscreen_iv"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/exo_controls_fullscreen_enter_description"
+                android:src="@drawable/ic_fullscreen" />
+        </LinearLayout>
     </LinearLayout>
 </FrameLayout>

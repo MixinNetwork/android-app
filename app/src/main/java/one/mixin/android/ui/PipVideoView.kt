@@ -8,28 +8,41 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context.WINDOW_SERVICE
+import android.content.Intent
+import android.hardware.display.DisplayManager
+import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.Point
+import android.graphics.RectF
+import android.graphics.drawable.BitmapDrawable
+import android.os.Handler
+import android.os.Looper
 import android.os.Build
 import android.os.PowerManager
+import android.view.Display
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.ProgressBar
 import androidx.annotation.Keep
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentActivity
+import androidx.media3.common.Player
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player.STATE_BUFFERING
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_IDLE
 import androidx.media3.common.Player.STATE_READY
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlaybackException
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -38,9 +51,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getPixelsInCM
-import one.mixin.android.extension.isLandscape
-import one.mixin.android.extension.navigationBarHeight
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.round
 import one.mixin.android.extension.safeAddView
 import one.mixin.android.extension.safeRemoveView
@@ -49,7 +60,10 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.XiaomiUtilities
-import one.mixin.android.util.video.MixinPlayer
+import one.mixin.android.ui.auth.AppAuthActivity
+import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaViewerOverlay
 import one.mixin.android.widget.AspectRatioFrameLayout
 import one.mixin.android.widget.PlayView
 import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
@@ -63,7 +77,28 @@ import kotlin.math.round
 @UnstableApi
 @SuppressLint("InvalidWakeLockTag")
 class PipVideoView {
+    data class PipSource(
+        val conversationId: String,
+        val messageId: String,
+        val transcriptId: String?,
+        val isVideo: Boolean,
+        val mediaSource: MediaPagerActivity.MediaSource,
+        val mediaUrl: String?,
+        val aspectRatio: Float,
+        val rotation: Int,
+    )
+
+    data class PipExpandRequest(val source: PipSource, val thumbLocation: MediaThumbLocation?)
+
     companion object {
+        private var pendingExpandRequest: PipExpandRequest? = null
+
+        fun consumePendingExpandRequest() = pendingExpandRequest.also { pendingExpandRequest = null }
+
+        fun onDisplayChanged() {
+            Instance?.updateWindowBounds()
+        }
+
         private val appContext by lazy {
             MixinApplication.appContext
         }
@@ -79,30 +114,34 @@ class PipVideoView {
             val px = prefreences.getFloat(PX, 0f)
             val py = prefreences.getFloat(PY, 0f)
 
-            val isLandscape = appContext.isLandscape()
-            val realSize = appContext.realSize()
-            val realX = if (isLandscape) realSize.y else realSize.x
-            val realY = if (isLandscape) realSize.x else realSize.y
-
-            var videoWidth: Int
-            var videoHeight: Int
-            if (aspectRatio > 1f) {
-                videoWidth = realX * 2 / 3
-                videoHeight = (videoWidth / aspectRatio).toInt()
-            } else {
-                videoHeight = realY / 3
-                videoWidth = (videoHeight * aspectRatio).toInt()
-                if (videoWidth > realX / 2) {
-                    videoWidth = realX / 2
-                    videoHeight = (videoWidth / aspectRatio).toInt()
-                }
-            }
+            val screen = availableSize()
+            val realX = screen.x
+            val realY = screen.y
+            val ratio = aspectRatio.takeIf { it.isFinite() && it > 0 } ?: 1f
+            val maxWidth = if (ratio > 1f) realX * 2 / 3 else realX / 2
+            val maxHeight = (realY - appContext.statusBarHeight()) / if (ratio > 1f) 2 else 3
+            val videoWidth = minOf(maxWidth, (maxHeight * ratio).toInt()).coerceAtLeast(1)
+            val videoHeight = (videoWidth / ratio).toInt().coerceIn(1, maxHeight.coerceAtLeast(1))
             return Rect(
                 getSideCoord(true, sidex, px, videoWidth, realX, realY).toFloat(),
                 getSideCoord(false, sidey, py, videoHeight, realX, realY).toFloat(),
                 videoWidth.toFloat(),
                 videoHeight.toFloat(),
             )
+        }
+
+        private fun availableSize(): Point {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val display = appContext.getSystemService<DisplayManager>()!!.getDisplay(Display.DEFAULT_DISPLAY)
+                val context = appContext.createDisplayContext(display).createWindowContext(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, null)
+                val metrics = context.getSystemService<WindowManager>()!!.currentWindowMetrics
+                val insets = metrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.navigationBars())
+                return Point(
+                    metrics.bounds.width() - insets.left - insets.right,
+                    metrics.bounds.height() - insets.top - insets.bottom,
+                )
+            }
+            return Point().also { appContext.getSystemService<WindowManager>()!!.defaultDisplay.getSize(it) }
         }
 
         fun getSideCoord(
@@ -113,16 +152,13 @@ class PipVideoView {
             realX: Int,
             realY: Int,
         ): Int {
-            val total =
-                if (isX) {
-                    realX - sideSize
-                } else {
-                    realY - sideSize
-                }
+            val margin = 10.dp
+            val start = if (isX) margin else appContext.statusBarHeight() + margin
+            val end = ((if (isX) realX else realY) - sideSize - margin).coerceAtLeast(start)
             return when (side) {
-                0 -> appContext.dpToPx(10f)
-                1 -> total - appContext.dpToPx(10f)
-                else -> (round((total - appContext.dpToPx(20f)) * p) + appContext.dpToPx(10f)).toInt()
+                0 -> start
+                1 -> end
+                else -> start + round((end - start) * p.coerceIn(0f, 1f)).toInt()
             }
         }
 
@@ -157,7 +193,61 @@ class PipVideoView {
     private var closeButton: ImageView? = null
     private var playView: PlayView? = null
 
-    private var mediaUrl: String? = null
+    private var currentSource: PipSource? = null
+    private var muteButton: ImageView? = null
+    private var progressBar: ProgressBar? = null
+    private var screen = Point()
+    private val handler = Handler(Looper.getMainLooper())
+    private val hideControls = Runnable { fadeOut() }
+    private val updateProgress = object : Runnable {
+        override fun run() {
+            val player = VideoPlayer.player().player
+            val duration = player.duration
+            val visible = currentSource?.isVideo == true && !player.isCurrentMediaItemDynamic && duration > 0
+            progressBar?.isVisible = visible
+            if (visible) {
+                progressBar?.progress = (player.currentPosition.toDouble() / duration * 1000).toInt()
+                if (player.isPlaying) handler.postDelayed(this, 200)
+            }
+        }
+    }
+
+    private val playerListener = object : Player.Listener {
+        override fun onEvents(player: Player, events: Player.Events) {
+            handler.removeCallbacks(updateProgress)
+            updateProgress.run()
+            if (events.contains(Player.EVENT_VOLUME_CHANGED)) updateMuteButton()
+            if (events.containsAny(Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_PLAYER_ERROR)) {
+                updatePlayState(player)
+            }
+        }
+
+        override fun onPlayerError(error: PlaybackException) {
+            fadeIn()
+        }
+    }
+
+    private fun updateMuteButton() {
+        val muted = VideoPlayer.player().isMuted()
+        muteButton?.setImageResource(if (muted) R.drawable.ic_player_volume_off else R.drawable.ic_player_volume_on)
+        muteButton?.contentDescription = appContext.getString(if (muted) R.string.Unmute else R.string.Mute)
+    }
+
+    private fun updatePlayState(player: Player) {
+        playView?.status = when {
+            player.playerError != null || player.playbackState == STATE_ENDED -> PlayView.STATUS_REFRESH
+            player.playbackState == STATE_BUFFERING && player.playWhenReady -> STATUS_LOADING
+            player.isPlaying -> STATUS_PLAYING
+            else -> STATUS_PAUSE
+        }
+        fadeIn()
+        if (player.playWhenReady && player.playbackState in STATE_BUFFERING..STATE_READY) {
+            if (!aodWakeLock.isHeld) aodWakeLock.acquire(10 * 60 * 1000L)
+        } else if (aodWakeLock.isHeld) {
+            aodWakeLock.release()
+        }
+    }
+
 
     private val windowManager: WindowManager by lazy {
         appContext.getSystemService(WINDOW_SERVICE) as WindowManager
@@ -181,13 +271,15 @@ class PipVideoView {
         isVideo: Boolean,
         mediaSource: MediaPagerActivity.MediaSource,
         mediaUrl: String?,
+        transcriptId: String? = null,
     ): TextureView {
-        windowView?.let { windowManager.safeRemoveView(it) }
-        this.mediaUrl = mediaUrl
-        val isLandscape = appContext.isLandscape()
-        val realSize = appContext.realSize()
-        val realX = if (isLandscape) realSize.y else realSize.x
-        val realY = if (isLandscape) realSize.x else realSize.y
+        if (windowView != null) close(false)
+        val source = PipSource(conversationId, messageId, transcriptId, isVideo, mediaSource, mediaUrl, aspectRatio, rotation)
+        currentSource = source
+        screen = availableSize()
+        val rect = getPipRect(aspectRatio)
+        videoWidth = rect.width.toInt()
+        videoHeight = rect.height.toInt()
         windowView =
             object : FrameLayout(appContext) {
                 private var startX: Float = 0f
@@ -223,29 +315,13 @@ class PipVideoView {
                         val dy = y - startY
                         windowLayoutParams.x = (windowLayoutParams.x + dx).toInt()
                         windowLayoutParams.y = (windowLayoutParams.y + dy).toInt()
-                        var maxDiff = videoWidth * 2 / 3
-                        if (windowLayoutParams.x < -maxDiff) {
-                            windowLayoutParams.x = -maxDiff
-                        } else if (windowLayoutParams.x > realX - windowLayoutParams.width + maxDiff) {
-                            windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
-                        }
-                        var alpha = 1.0f
-                        if (windowLayoutParams.x < 0) {
-                            alpha = 1.0f + windowLayoutParams.x / maxDiff.toFloat() * 0.5f
-                        } else if (windowLayoutParams.x > realX - windowLayoutParams.width) {
-                            alpha =
-                                1.0f - (windowLayoutParams.x - realX + windowLayoutParams.width) / maxDiff.toFloat() * 0.5f
-                        }
-                        if (windowView?.alpha != alpha) {
-                            windowView?.alpha = alpha
-                        }
-                        maxDiff = 0
-                        if (windowLayoutParams.y < -maxDiff) {
-                            windowLayoutParams.y = -maxDiff
-                        } else if (windowLayoutParams.y > realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
-                            windowLayoutParams.y =
-                                realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
-                        }
+                        val maxDiff = (videoWidth * 2 / 3).coerceAtLeast(1)
+                        val right = screen.x - videoWidth
+                        windowLayoutParams.x = windowLayoutParams.x.coerceIn(-maxDiff, right + maxDiff)
+                        val overflow = maxOf(-windowLayoutParams.x, windowLayoutParams.x - right, 0)
+                        windowView?.alpha = 1f - overflow / maxDiff.toFloat() * .5f
+                        val top = appContext.statusBarHeight()
+                        windowLayoutParams.y = windowLayoutParams.y.coerceIn(top, (screen.y - videoHeight).coerceAtLeast(top))
                         windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
                         startX = x
                         startY = y
@@ -255,44 +331,46 @@ class PipVideoView {
                     return true
                 }
             }
-        if (aspectRatio > 1f) {
-            videoWidth = realX * 2 / 3
-            videoHeight = (videoWidth / aspectRatio).toInt()
-        } else {
-            videoHeight = realY / 3
-            videoWidth = (videoHeight * aspectRatio).toInt()
-            if (videoWidth > realX / 2) {
-                videoWidth = realX / 2
-                videoHeight = (videoWidth / aspectRatio).toInt()
-            }
+        windowView?.apply {
+            round(12.dp)
+            setBackgroundColor(Color.BLACK)
+            elevation = 8.dp.toFloat()
         }
         val aspectRatioFrameLayout = AspectRatioFrameLayout(appContext)
         aspectRatioFrameLayout.setAspectRatio(aspectRatio, rotation)
-        aspectRatioFrameLayout.round(8.dp)
+        aspectRatioFrameLayout.round(12.dp)
         windowView?.addView(aspectRatioFrameLayout, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, Gravity.CENTER))
         val textureView = TextureView(appContext)
         aspectRatioFrameLayout.addView(textureView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
+        progressBar = ProgressBar(appContext, null, android.R.attr.progressBarStyleHorizontal).apply {
+            max = 1000
+            progressTintList = android.content.res.ColorStateList.valueOf(Color.WHITE)
+            progressBackgroundTintList = android.content.res.ColorStateList.valueOf(0x40FFFFFF)
+            aspectRatioFrameLayout.addView(this, FrameLayout.LayoutParams(MATCH_PARENT, 2.dp, Gravity.BOTTOM))
+        }
+        muteButton = ImageView(appContext).apply {
+            visibility = GONE
+            scaleType = ImageView.ScaleType.CENTER
+            windowView?.addView(this, FrameLayout.LayoutParams(44.dp, 44.dp, Gravity.BOTTOM or Gravity.START))
+            setOnClickListener {
+                VideoPlayer.player().toggleMute()
+                fadeIn()
+            }
+        }
+        updateMuteButton()
         inlineButton =
             ImageView(appContext).apply {
                 scaleType = ImageView.ScaleType.CENTER
                 visibility = GONE
+                contentDescription = appContext.getString(androidx.media3.ui.R.string.exo_controls_fullscreen_enter_description)
                 setImageResource(R.drawable.ic_pip_maximum)
                 windowView?.addView(
                     this,
                     FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END),
                 )
                 setOnClickListener {
-                    if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
-                        toast(R.string.need_background_permission)
-                    }
-                    MediaPagerActivity.show(
-                        MixinApplication.appContext,
-                        conversationId,
-                        messageId,
-                        aspectRatio,
-                        mediaSource,
-                    )
+                    expand(source, textureView)
                 }
             }
 
@@ -300,6 +378,7 @@ class PipVideoView {
             ImageView(appContext).apply {
                 scaleType = ImageView.ScaleType.CENTER
                 visibility = GONE
+                contentDescription = appContext.getString(R.string.Close)
                 setImageResource(R.drawable.ic_close_white_24dp)
                 windowView?.addView(
                     this,
@@ -316,114 +395,23 @@ class PipVideoView {
             PlayView(appContext).apply {
                 setBackgroundResource(R.drawable.bg_play_control)
                 windowView?.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
-                val playbackState = VideoPlayer.player().player.playbackState
-                status =
-                    when (playbackState) {
-                        STATE_IDLE, STATE_ENDED -> {
-                            isVisible = true
-                            STATUS_IDLE
-                        }
-                        STATE_BUFFERING -> {
-                            isVisible = true
-                            STATUS_LOADING
-                        }
-                        else -> {
-                            if (VideoPlayer.player().isPlaying()) {
-                                isVisible = false
-                                STATUS_PLAYING
-                            } else {
-                                isVisible = true
-                                STATUS_IDLE
-                            }
-                        }
-                    }
                 setOnClickListener {
-                    when (status) {
-                        STATUS_IDLE -> {
-                            mediaUrl?.let {
-                                if (isPlayerIdle()) {
-                                    if (isVideo) {
-                                        VideoPlayer.player().loadVideo(it, messageId, true)
-                                    } else {
-                                        VideoPlayer.player().loadHlsVideo(it, messageId, true)
-                                    }
-                                }
-                                start()
-                            }
+                    val video = VideoPlayer.player()
+                    when (video.player.playbackState) {
+                        STATE_ENDED -> {
+                            video.seekTo(0L)
+                            video.start()
                         }
-                        STATUS_LOADING, STATUS_PLAYING -> {
-                            pause()
+                        STATE_IDLE -> mediaUrl?.let {
+                            if (isVideo) video.loadVideo(it, messageId, true) else video.loadHlsVideo(it, messageId, true)
+                            video.start()
                         }
-                        STATUS_PAUSE -> {
-                            start()
-                        }
-                        PlayView.STATUS_REFRESH -> {
-                            mediaUrl?.let {
-                                if (isVideo) {
-                                    VideoPlayer.player().loadVideo(it, messageId, true)
-                                } else {
-                                    VideoPlayer.player().loadHlsVideo(it, messageId, true)
-                                }
-                            }
-                        }
+                        else -> video.player.playWhenReady = !video.player.playWhenReady
                     }
+                    fadeIn()
                 }
             }
-
-        VideoPlayer.player().setOnMediaPlayerListener(
-            object : MixinPlayer.MediaPlayerListenerWrapper() {
-                override fun onPlayerError(
-                    mid: String,
-                    error: ExoPlaybackException,
-                ) {
-                    playView?.fadeIn()
-                    playView?.status = PlayView.STATUS_REFRESH
-                }
-
-                override fun onPlayerStateChanged(
-                    mid: String,
-                    playWhenReady: Boolean,
-                    playbackState: Int,
-                ) {
-                    when (playbackState) {
-                        STATE_ENDED -> {
-                            stop()
-                            if (aodWakeLock.isHeld) {
-                                aodWakeLock.release()
-                            }
-                        }
-                        STATE_IDLE -> {
-                            if (isVideo) {
-                                stop()
-                                fadeIn()
-                            } else {
-                                playView?.fadeIn()
-                                playView?.status = PlayView.STATUS_REFRESH
-                            }
-                            if (aodWakeLock.isHeld) {
-                                aodWakeLock.release()
-                            }
-                        }
-                        STATE_READY -> {
-                            if (playWhenReady) {
-                                fadeOut()
-                                playView?.status = STATUS_PLAYING
-                            } else {
-                                playView?.status = STATUS_PAUSE
-                            }
-                            if (!aodWakeLock.isHeld) {
-                                aodWakeLock.acquire(10 * 60 * 1000L)
-                            }
-                        }
-                        STATE_BUFFERING -> {
-                            playView?.fadeIn()
-                            playView?.status = STATUS_LOADING
-                        }
-                    }
-                }
-            },
-        )
-
+        VideoPlayer.player().player.addListener(playerListener)
         textureView.setOnClickListener {
             if (closeButton?.isVisible == true) {
                 fadeOut()
@@ -431,44 +419,89 @@ class PipVideoView {
                 fadeIn()
             }
         }
-        val preferences = appContext.defaultSharedPreferences
-        val sidex = preferences.getInt(SIDEX, 1)
-        val sidey = preferences.getInt(SIDEY, 0)
-        val px = preferences.getFloat(PX, 0f)
-        val py = preferences.getFloat(PY, 0f)
         try {
             windowLayoutParams = WindowManager.LayoutParams()
             windowLayoutParams.width = videoWidth
             windowLayoutParams.height = videoHeight
-            windowLayoutParams.x = getSideCoord(true, sidex, px, videoWidth, realX, realY)
-            windowLayoutParams.y = getSideCoord(false, sidey, py, videoHeight, realX, realY)
+            windowLayoutParams.x = rect.x.toInt()
+            windowLayoutParams.y = rect.y.toInt()
             windowLayoutParams.format = PixelFormat.TRANSLUCENT
-            windowLayoutParams.gravity = Gravity.TOP or Gravity.START
+            windowLayoutParams.gravity = Gravity.TOP or Gravity.LEFT
             if (Build.VERSION.SDK_INT >= 26) {
                 windowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             } else {
                 windowLayoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
             }
             windowLayoutParams.flags =
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
             windowManager.safeAddView(windowView, windowLayoutParams)
             shown = true
         } catch (e: Exception) {
             Timber.e(e)
         }
         windowView?.keepScreenOn = true
-        if (!aodWakeLock.isHeld) {
-            aodWakeLock.acquire(10 * 60 * 1000L)
-        }
+        updatePlayState(VideoPlayer.player().player)
+        updateProgress.run()
         return textureView
+    }
+
+    private fun expand(source: PipSource, textureView: TextureView) {
+        val loc = IntArray(2)
+        textureView.getLocationOnScreen(loc)
+        val thumb = MediaThumbLocation.fromScreenBounds(
+            RectF(loc[0].toFloat(), loc[1].toFloat(), (loc[0] + textureView.width).toFloat(), (loc[1] + textureView.height).toFloat()),
+            cornerRadii = MediaThumbLocation.uniformRadii(12.dp.toFloat()),
+            drawable = textureView.bitmap?.let { BitmapDrawable(appContext.resources, it) },
+        )
+        val app = MixinApplication.get()
+        val host = app.topActivity?.takeUnless { it.isFinishing || it.isDestroyed }
+        if (app.activityInForeground && host is FragmentActivity && host !is AppAuthActivity && host !is CallActivity && !app.isAppAuthShown()) {
+            MediaViewerOverlay.showFromPip(host, source, thumb)
+        } else {
+            pendingExpandRequest = PipExpandRequest(source, thumb)
+            if (!app.activityInForeground) {
+                if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+                    toast(R.string.need_background_permission)
+                }
+                val intent = if (host != null) {
+                    Intent(appContext, host::class.java).addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                            Intent.FLAG_ACTIVITY_REORDER_TO_FRONT,
+                    )
+                } else {
+                    appContext.packageManager.getLaunchIntentForPackage(appContext.packageName)?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                intent?.let(appContext::startActivity)
+            }
+        }
+    }
+
+    private fun updateWindowBounds() {
+        val source = currentSource ?: return
+        if (!shown) return
+        screen = availableSize()
+        val rect = getPipRect(source.aspectRatio)
+        videoWidth = rect.width.toInt()
+        videoHeight = rect.height.toInt()
+        windowLayoutParams.width = videoWidth
+        windowLayoutParams.height = videoHeight
+        windowLayoutParams.x = rect.x.toInt()
+        windowLayoutParams.y = rect.y.toInt()
+        windowView?.let { windowManager.updateViewLayout(it, windowLayoutParams) }
     }
 
     var shown = false
 
     fun close(stop: Boolean) {
+        if (currentSource == null) return
+        currentSource = null
+        pendingExpandRequest = null
+        handler.removeCallbacksAndMessages(null)
+        VideoPlayer.player().player.removeListener(playerListener)
         try {
             if (stop) {
-                stop()
+                VideoPlayer.player().stop()
             }
             shown = false
             if (aodWakeLock.isHeld) {
@@ -478,12 +511,17 @@ class PipVideoView {
         } catch (ignored: Exception) {
         }
         windowView = null
+        progressBar = null
+        muteButton = null
         playView = null
         inlineButton = null
         closeButton = null
     }
 
     private fun fadeIn() {
+        handler.removeCallbacks(hideControls)
+        if (VideoPlayer.player().player.isPlaying) handler.postDelayed(hideControls, 3000)
+        muteButton?.fadeIn()
         closeButton?.fadeIn()
         inlineButton?.fadeIn()
         if (playView?.isVisible == false) {
@@ -492,6 +530,7 @@ class PipVideoView {
     }
 
     private fun fadeOut() {
+        muteButton?.fadeOut()
         closeButton?.fadeOut()
         inlineButton?.fadeOut()
         if (playView?.status != PlayView.STATUS_REFRESH) {
@@ -499,17 +538,11 @@ class PipVideoView {
         }
     }
 
-    private fun isPlayerIdle() =
-        VideoPlayer.player().player.playbackState == STATE_IDLE ||
-            VideoPlayer.player().player.playbackState == STATE_ENDED
-
     private var decelerateInterpolator: DecelerateInterpolator? = null
 
     private fun animateToBoundsMaybe() {
-        val realSize = appContext.realSize()
-        val isLandscape = appContext.isLandscape()
-        val realX = if (isLandscape) realSize.y else realSize.x
-        val realY = if (isLandscape) realSize.x else realSize.y
+        val realX = screen.x
+        val realY = screen.y
         val startX = getSideCoord(true, 0, 0f, videoWidth, realX, realY)
         val endX = getSideCoord(true, 1, 0f, videoWidth, realX, realY)
         val startY = getSideCoord(false, 0, 0f, videoHeight, realX, realY)
@@ -598,30 +631,11 @@ class PipVideoView {
         }
     }
 
-    private fun start() {
-        playView?.status = STATUS_PLAYING
-        VideoPlayer.player().start()
-    }
-
-    private fun pause() {
-        playView?.status = STATUS_PAUSE
-        VideoPlayer.player().pause()
-    }
-
-    private fun stop() {
-        playView?.status = STATUS_IDLE
-        VideoPlayer.player().stop()
-    }
+    @Keep
+    fun getX(): Int = windowLayoutParams.x
 
     @Keep
-    fun getX() {
-        windowLayoutParams.x
-    }
-
-    @Keep
-    fun getY() {
-        windowLayoutParams.y
-    }
+    fun getY(): Int = windowLayoutParams.y
 
     @Keep
     fun setX(value: Int) {

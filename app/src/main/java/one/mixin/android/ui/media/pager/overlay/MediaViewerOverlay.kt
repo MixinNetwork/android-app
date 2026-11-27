@@ -77,7 +77,7 @@ import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
 import one.mixin.android.extension.createWebpTemp
-import one.mixin.android.extension.fadeOut
+import one.mixin.android.ui.media.pager.PlayerView
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImageCachePath
@@ -150,19 +150,22 @@ class MediaViewerOverlay private constructor(
     private val initialThumb: MediaThumbLocation?,
     private val thumbProvider: MediaThumbProvider?,
     private val onShowInChat: ((String) -> Unit)?,
+    private val fromPip: Boolean = false,
 ) : MediaDismissLayout.OnDismissListener, SensorOrientationChangeNotifier.Listener {
 
     private sealed class Mode {
+        abstract val messageId: String
+
         data class Conversation(
             val conversationId: String,
-            val messageId: String,
+            override val messageId: String,
             val initialItem: MessageItem?,
             val mediaSource: MediaSource,
         ) : Mode()
 
         data class Transcript(
             val transcriptId: String,
-            val messageId: String,
+            override val messageId: String,
         ) : Mode()
     }
 
@@ -209,6 +212,8 @@ class MediaViewerOverlay private constructor(
     private var chromeVisible = true
     private var chromeVisibleBeforeDrag = true
     private var currentIsVideo = false
+    private var selectedId: String? = null
+    private var activePlayerView: PlayerView? = null
     private var inDismissState = false
     private var controllerVisibleBeforeDismiss = false
     private var topBarInsetTop = 0
@@ -253,7 +258,7 @@ class MediaViewerOverlay private constructor(
         dialog.setContentView(binding.root)
         dialog.show()
 
-        loadData()
+        if (!fromPip) loadData()
         runEnterTransition()
     }
 
@@ -279,6 +284,14 @@ class MediaViewerOverlay private constructor(
         binding.backIv.setOnClickListener {
             dismissWithAnimation(0f)
         }
+        binding.pipIv.setOnClickListener {
+            val container = findCurrentPageContainer() ?: return@setOnClickListener
+            val position = binding.viewPager.currentItem
+            when (mode) {
+                is Mode.Conversation -> getConversationItem(position)?.let { switchToPipConversation(it, container) }
+                is Mode.Transcript -> transcriptAdapter?.getItem(position)?.let { switchToPipTranscript(it, container) }
+            }
+        }
         binding.moreIv.setOnClickListener {
             openCurrentBottomMenu()
         }
@@ -297,11 +310,7 @@ class MediaViewerOverlay private constructor(
         binding.viewPager.isSaveEnabled = false
         // Disable DefaultItemAnimator so PagingData updates never fade-in the visible page
         (binding.viewPager.getChildAt(0) as? RecyclerView)?.itemAnimator = null
-        val initialMessageId =
-            when (mode) {
-                is Mode.Conversation -> mode.messageId
-                is Mode.Transcript -> mode.messageId
-            }
+        val initialMessageId = mode.messageId
         val initialPlaceholder: (() -> Drawable?)? =
             initialThumb?.drawable?.let { thumbDrawable ->
                 { copyDrawable(thumbDrawable) }
@@ -316,12 +325,7 @@ class MediaViewerOverlay private constructor(
                         initialMessageId = initialMessageId,
                         initialPlaceholderProvider = initialPlaceholder,
                         onVideoHolderBound = { holder, position, messageItem ->
-                            if (!hasDismissed && !isClosing && position == binding.viewPager.currentItem &&
-                                (messageItem.isVideo() || messageItem.isLive()) && VideoPlayer.player().mId == messageItem.messageId
-                            ) {
-                                holder.binding.playerView.player = VideoPlayer.player().player
-                                attachVideoControlVisibilityListener(messageItem.messageId)
-                            }
+                            if (position == binding.viewPager.currentItem) attachVideoPage(holder.binding, messageItem.messageId)
                         },
                     )
                 binding.viewPager.adapter = conversationAdapter
@@ -334,6 +338,9 @@ class MediaViewerOverlay private constructor(
                         listener = transcriptPagerListener,
                         initialMessageId = initialMessageId,
                         initialPlaceholderProvider = initialPlaceholder,
+                        onVideoHolderBound = { holder, position, item ->
+                            if (position == binding.viewPager.currentItem) attachVideoPage(holder.binding, item.messageId)
+                        },
                     )
                 binding.viewPager.adapter = transcriptAdapter
             }
@@ -353,11 +360,7 @@ class MediaViewerOverlay private constructor(
 
     private fun runEnterTransition() {
         val thumb = initialThumb
-        val initialMessageId =
-            when (mode) {
-                is Mode.Conversation -> mode.messageId
-                is Mode.Transcript -> mode.messageId
-            }
+        val initialMessageId = mode.messageId
 
         if (thumb != null && !thumb.isEmpty() && thumb.drawable != null) {
             binding.viewPager.visibility = View.INVISIBLE
@@ -376,11 +379,12 @@ class MediaViewerOverlay private constructor(
                     binding.transitionView.post {
                         if (isClosing) return@post
                         hideSourceForMessage(initialMessageId, thumb)
+                        if (fromPip) loadData()
                         binding.transitionView.startPreparedOpen(
                             onProgress = { t ->
                                 binding.backgroundView.alpha = t
                                 dialog.syncSystemBarAppearance(t)
-                                if (!currentIsVideo && chromeVisible) {
+                                if (chromeVisible) {
                                     binding.topBar.alpha = t
                                 }
                             },
@@ -389,8 +393,8 @@ class MediaViewerOverlay private constructor(
                                 binding.backgroundView.alpha = 1f
                                 dialog.syncSystemBarAppearance(1f)
                                 binding.viewPager.visibility = View.VISIBLE
-                                binding.topBar.alpha = if (!currentIsVideo && chromeVisible) 1f else 0f
-                                binding.topBar.isVisible = !currentIsVideo && chromeVisible
+                                binding.topBar.alpha = if (chromeVisible) 1f else 0f
+                                binding.topBar.isVisible = chromeVisible
                                 binding.viewPager.doOnPreDraw {
                                     binding.viewPager.post {
                                         if (!isClosing) {
@@ -404,6 +408,7 @@ class MediaViewerOverlay private constructor(
                 }
             }
         } else {
+            finishPipOpenWithoutThumb()
             binding.backgroundView.alpha = 0f
             binding.topBar.alpha = 0f
             binding.backgroundView.animate()
@@ -417,19 +422,27 @@ class MediaViewerOverlay private constructor(
                     dialog.syncSystemBarAppearance(1f)
                 }
                 .start()
-            if (!currentIsVideo) {
+            if (chromeVisible) {
                 binding.topBar.animate().alpha(1f).setDuration(200L).start()
             }
         }
     }
 
+    private fun finishPipOpenWithoutThumb() {
+        if (fromPip) {
+            pipVideoView.close(stop = false)
+            loadData()
+        }
+    }
+
     private fun finishEnterTransitionImmediate() {
+        finishPipOpenWithoutThumb()
         isOpeningTransition = false
         binding.backgroundView.alpha = 1f
         dialog.syncSystemBarAppearance(1f)
         binding.viewPager.visibility = View.VISIBLE
-        binding.topBar.alpha = if (!currentIsVideo && chromeVisible) 1f else 0f
-        binding.topBar.isVisible = !currentIsVideo && chromeVisible
+        binding.topBar.alpha = if (chromeVisible) 1f else 0f
+        binding.topBar.isVisible = chromeVisible
         binding.transitionView.clearAndHide()
     }
 
@@ -453,15 +466,13 @@ class MediaViewerOverlay private constructor(
                 ?: return cleanupAndDismissImmediate()
 
         updateTopBarForConversation(messageItem)
-        adapter.initialPos = 0
-        adapter.submitData(dialog.lifecycle, PagingData.from(listOf(messageItem)))
-
         if (messageItem.isVideo() || messageItem.isLive()) {
             checkPip(mode.messageId)
-            messageItem.loadVideoOrLive {
-                VideoPlayer.player().start()
-            }
+            if (!hasActiveVideo(messageItem.messageId)) messageItem.loadVideoOrLive { VideoPlayer.player().start() }
         }
+
+        adapter.initialPos = 0
+        adapter.submitData(dialog.lifecycle, PagingData.from(listOf(messageItem)))
 
         if (messageItem.isAppCard() && (mode.mediaSource == MediaSource.SharedMedia || !messageItem.isAppCardWithMediaCover())) {
             checkOrientation()
@@ -623,81 +634,103 @@ class MediaViewerOverlay private constructor(
                     conversationRepository.indexTranscriptMediaMessages(mode.transcriptId, mode.messageId)
                 }.coerceIn(0, items.lastIndex)
             }
-        adapter.initialPos = safeIndex
-        adapter.list = items
-        binding.viewPager.setCurrentItem(safeIndex, false)
-
         val current = items[safeIndex]
         updateTopBarForTranscript(current)
         if (current.isVideo() || current.isLive()) {
-            checkPip(mode.messageId)
-            current.loadVideoOrLive {
-                VideoPlayer.player().start()
-            }
+            checkPip(current.messageId)
+            if (!hasActiveVideo(current.messageId)) current.loadVideoOrLive { VideoPlayer.player().start() }
         }
+        adapter.initialPos = safeIndex
+        adapter.list = items
+        binding.viewPager.setCurrentItem(safeIndex, false)
         checkOrientation()
     }
 
     private fun updateTopBarForConversation(item: MessageItem) {
-        val isVideoOrLive = item.isVideo() || item.isLive()
-        currentIsVideo = isVideoOrLive
-        if (isVideoOrLive) {
-            binding.topBar.isVisible = false
-            attachVideoControlVisibilityListener(item.messageId)
-        } else {
-            val sender = item.userFullName.orEmpty()
-            val time = runCatching { item.createdAt.fullDate() }.getOrDefault("")
-            binding.titleTv.text = sender
-            binding.titleTv.isVisible = sender.isNotBlank()
-            binding.subtitleTv.text = time
-            binding.subtitleTv.isVisible = time.isNotBlank()
-            binding.moreIv.isVisible = item.isAppCard() || item.isImage()
-            if (!isOpeningTransition && !binding.transitionView.isAnimating && !inDismissState) {
-                binding.topBar.isVisible = chromeVisible
-                binding.topBar.alpha = if (chromeVisible) 1f else 0f
-                binding.topBar.translationY = 0f
-            }
-            dialog.setSystemBarsVisible(chromeVisible)
-        }
+        updateTopBar(item.messageId, item.userFullName.orEmpty(), item.createdAt.fullDate(), item.isVideo(), item.isLive(), item.isAppCard() || item.isImage() || item.isVideo())
     }
 
     private fun updateTopBarForTranscript(item: ChatHistoryMessageItem) {
-        val isVideoOrLive = item.isVideo() || item.isLive()
-        currentIsVideo = isVideoOrLive
-        if (isVideoOrLive) {
-            binding.topBar.isVisible = false
-            attachVideoControlVisibilityListener(item.messageId)
-        } else {
-            val sender = item.userFullName.orEmpty()
-            val time = runCatching { item.createdAt.fullDate() }.getOrDefault("")
-            binding.titleTv.text = sender
-            binding.titleTv.isVisible = sender.isNotBlank()
-            binding.subtitleTv.text = time
-            binding.subtitleTv.isVisible = time.isNotBlank()
-            binding.moreIv.isVisible = item.isImage()
-            if (!isOpeningTransition && !binding.transitionView.isAnimating && !inDismissState) {
-                binding.topBar.isVisible = chromeVisible
-                binding.topBar.alpha = if (chromeVisible) 1f else 0f
-                binding.topBar.translationY = 0f
-            }
-            dialog.setSystemBarsVisible(chromeVisible)
-        }
+        updateTopBar(item.messageId, item.userFullName.orEmpty(), item.createdAt.fullDate(), item.isVideo(), item.isLive(), item.isImage() || item.isVideo())
     }
 
-    private fun attachVideoControlVisibilityListener(messageId: String) {
-        binding.viewPager.post {
-            if (isClosing) return@post
-            val container = binding.viewPager.findViewWithTag<MediaDismissLayout>("$PREFIX$messageId") ?: return@post
-            val playerView = runCatching { ItemPagerVideoLayoutBinding.bind(container).playerView }.getOrNull() ?: return@post
-            playerView.playerControlView.visibilityListener =
-                object : PlayerControlView.VisibilityListener {
-                    override fun onVisibilityChange(visibility: Int) {
-                        if (!isClosing && currentIsVideo) {
-                            dialog.setSystemBarsVisible(visibility == View.VISIBLE)
-                        }
-                    }
-                }
+    private fun updateTopBar(id: String, sender: String, date: String, video: Boolean, live: Boolean, hasMenu: Boolean) {
+        if (selectedId != id) {
+            detachVideoPage()
+            if (video || live || currentIsVideo) chromeVisible = true
         }
+        selectedId = id
+        currentIsVideo = video || live
+        binding.titleTv.text = sender
+        binding.subtitleTv.text = date
+        binding.titleTv.isVisible = true
+        binding.subtitleTv.isVisible = true
+        binding.liveTv.isVisible = live || activePlayerView?.playerControlView?.isLive == true
+        binding.pipIv.isVisible = currentIsVideo
+        binding.pipIv.isEnabled = currentIsVideo && hasActiveVideo(id)
+        binding.pipIv.alpha = if (binding.pipIv.isEnabled) 1f else .5f
+        binding.moreIv.isVisible = hasMenu
+        syncChrome(chromeVisible)
+    }
+
+    private fun syncChrome(visible: Boolean) {
+        if (isClosing || pipAnimationInProgress || inDismissState) return
+        chromeVisible = visible
+        binding.topBar.animate().cancel()
+        binding.topBar.translationY = 0f
+        binding.topBar.isVisible = visible
+        if (!isOpeningTransition) binding.topBar.alpha = if (visible) 1f else 0f
+        dialog.setSystemBarsVisible(visible)
+    }
+
+    private fun hasActiveVideo(id: String): Boolean = VideoPlayer.player().let { it.mId == id && it.player.playbackState != Player.STATE_IDLE }
+
+    private fun detachVideoPage() {
+        activePlayerView?.apply {
+            playerControlView.visibilityListener = null
+            playerControlView.onVideoStateChanged = null
+            player = null
+            hideController()
+        }
+        activePlayerView = null
+    }
+
+    private fun attachVideoPage(page: ItemPagerVideoLayoutBinding, id: String) {
+        if (isClosing || selectedId != id || !currentIsVideo || page.playerView.currentMessageId != id) return
+        val view = page.playerView
+        val controls = view.playerControlView
+        val newPage = activePlayerView !== view || controls.visibilityListener == null
+        if (activePlayerView !== view) detachVideoPage()
+        activePlayerView = view
+        if (newPage) {
+            controls.visibilityListener = object : PlayerControlView.VisibilityListener {
+                override fun onVisibilityChange(visibility: Int) = syncChrome(visibility == View.VISIBLE)
+            }
+            controls.onVideoStateChanged = {
+                val ready = hasActiveVideo(id)
+                binding.pipIv.isEnabled = ready
+                binding.pipIv.alpha = if (ready) 1f else .5f
+                binding.liveTv.isVisible = controls.isLive
+            }
+        }
+        val video = VideoPlayer.player()
+        if (video.mId == id) {
+            if (view.player !== video.player) view.player = video.player
+            val state = video.player.playbackState
+            val readyOrEnded = state == Player.STATE_READY || state == Player.STATE_ENDED
+            if (state != Player.STATE_IDLE && (video.player.videoSize.width > 0 || readyOrEnded)) {
+                view.videoAspectRatio.layoutParams = view.videoAspectRatio.layoutParams.apply {
+                    width = ViewGroup.LayoutParams.MATCH_PARENT
+                    height = ViewGroup.LayoutParams.MATCH_PARENT
+                }
+            }
+            if (readyOrEnded || (fromPip && id == mode.messageId && state != Player.STATE_IDLE)) {
+                page.previewIv.isVisible = false
+            }
+        }
+        view.switchFullscreen(activity.isLandscape())
+        controls.updateLiveView()
+        if (newPage) view.showController(view.player?.playWhenReady != true)
     }
 
     private fun toggleImageChrome() {
@@ -815,7 +848,13 @@ class MediaViewerOverlay private constructor(
                         val messageItem = getConversationItem(position)
                         if (messageItem == null) {
                             pendingConversationPosition = position
-                            if (!pipVideoView.shown) {
+                            detachVideoPage()
+                            selectedId = null
+                            currentIsVideo = false
+                            binding.pipIv.isVisible = false
+                            binding.moreIv.isVisible = false
+                            binding.liveTv.isVisible = false
+                            if (!firstLoad && !pipVideoView.shown) {
                                 VideoPlayer.player().stop()
                                 VideoPlayer.player().pause()
                             }
@@ -842,8 +881,9 @@ class MediaViewerOverlay private constructor(
 
     override fun onDragStart() {
         inDismissState = true
+        dialog.setSystemBarsVisible(false)
         chromeVisibleBeforeDrag = chromeVisible
-        if (!currentIsVideo && chromeVisible) {
+        if (chromeVisible) {
             binding.topBar.animate().cancel()
             binding.topBar.animate().alpha(0f).setDuration(120L).start()
         }
@@ -851,7 +891,7 @@ class MediaViewerOverlay private constructor(
             findCurrentPageContainer()?.let { container ->
                 val playerView = runCatching { ItemPagerVideoLayoutBinding.bind(container).playerView }.getOrNull()
                 if (playerView != null) {
-                    controllerVisibleBeforeDismiss = playerView.useController && playerView.videoAspectRatio.isVisible
+                    controllerVisibleBeforeDismiss = playerView.playerControlView.isVisible
                     playerView.hideController()
                 }
             }
@@ -871,9 +911,10 @@ class MediaViewerOverlay private constructor(
 
     override fun onDragCancel() {
         inDismissState = false
+        dialog.setSystemBarsVisible(chromeVisibleBeforeDrag)
         binding.backgroundView.alpha = 1f
         dialog.syncSystemBarAppearance(1f)
-        if (!currentIsVideo && chromeVisibleBeforeDrag) {
+        if (chromeVisibleBeforeDrag) {
             binding.topBar.isVisible = true
             binding.topBar.animate().alpha(1f).setDuration(150L).start()
         }
@@ -1087,6 +1128,7 @@ class MediaViewerOverlay private constructor(
         permissionAlert?.dismiss()
         permissionAlert = null
 
+        detachVideoPage()
         restoreHiddenSource()
         if (orientationModified && !activity.isFinishing && !activity.isDestroyed) {
             activity.requestedOrientation = initialOrientation
@@ -1109,28 +1151,16 @@ class MediaViewerOverlay private constructor(
         binding.lockTv.removeCallbacks(hideLockRunnable)
         if (isClosing || manualFinish || pipVideoView.shown) return
 
+        val container = findCurrentPageContainer()
+        if (!currentIsVideo || !VideoPlayer.player().player.isPlaying) return
+        if (container == null || !activity.checkInlinePermissions { pauseVideoIfNotPip() }) {
+            pauseVideoIfNotPip()
+            return
+        }
+        val position = binding.viewPager.currentItem
         when (mode) {
-            is Mode.Conversation -> {
-                val currMessage = getConversationItem(binding.viewPager.currentItem)
-                if (currMessage == null) {
-                    pauseVideoIfNotPip()
-                    return
-                }
-                if (!VideoPlayer.player().isPlaying() || !(currMessage.isVideo() || currMessage.isLive())) return
-                if (activity.checkInlinePermissions { pauseVideoIfNotPip() }) {
-                    val v = findPageContainer(currMessage.messageId)
-                    if (v != null) {
-                        switchToPipConversation(currMessage, v)
-                    } else {
-                        pauseVideoIfNotPip()
-                    }
-                } else {
-                    pauseVideoIfNotPip()
-                }
-            }
-            is Mode.Transcript -> {
-                pauseVideoIfNotPip()
-            }
+            is Mode.Conversation -> getConversationItem(position)?.let { switchToPipConversation(it, container) }
+            is Mode.Transcript -> transcriptAdapter?.getItem(position)?.let { switchToPipTranscript(it, container) }
         }
     }
 
@@ -1161,10 +1191,7 @@ class MediaViewerOverlay private constructor(
                 90 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
                 else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
-        val portrait =
-            activity.requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT ||
-                activity.requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
-        dialog.setSystemBarsVisible(portrait && (!currentIsVideo || chromeVisible))
+        dialog.setSystemBarsVisible(chromeVisible)
 
         findCurrentPageContainer()?.let { container ->
             runCatching {
@@ -1308,21 +1335,13 @@ class MediaViewerOverlay private constructor(
     }
 
     private fun loadConversationVideoMessage(messageItem: MessageItem) {
-        if (messageItem.isVideo() || messageItem.isLive()) {
-            messageItem.loadVideoOrLive {
-                val view = findPageContainer(messageItem.messageId) ?: return@loadVideoOrLive
-                ItemPagerVideoLayoutBinding.bind(view).playerView.player = VideoPlayer.player().player
-            }
-        }
+        if (!hasActiveVideo(messageItem.messageId)) messageItem.loadVideoOrLive()
+        findPageContainer(messageItem.messageId)?.let { attachVideoPage(ItemPagerVideoLayoutBinding.bind(it), messageItem.messageId) }
     }
 
     private fun loadTranscriptVideoMessage(messageItem: ChatHistoryMessageItem) {
-        if (messageItem.isVideo() || messageItem.isLive()) {
-            messageItem.loadVideoOrLive {
-                val view = findPageContainer(messageItem.messageId) ?: return@loadVideoOrLive
-                ItemPagerVideoLayoutBinding.bind(view).playerView.player = VideoPlayer.player().player
-            }
-        }
+        if (!hasActiveVideo(messageItem.messageId)) messageItem.loadVideoOrLive()
+        findPageContainer(messageItem.messageId)?.let { attachVideoPage(ItemPagerVideoLayoutBinding.bind(it), messageItem.messageId) }
     }
 
     private fun getConversationItem(position: Int): MessageItem? =
@@ -1750,17 +1769,9 @@ class MediaViewerOverlay private constructor(
         val videoAspectRatioLayout =
             ItemPagerVideoLayoutBinding.bind(windowView).playerView.videoAspectRatio
         val rect = PipVideoView.getPipRect(videoAspectRatioLayout.aspectRatio)
-        val isLandscape = activity.isLandscape()
-        if (isLandscape) {
-            val windowHeight = activity.windowHeight()
-            if (rect.width > windowHeight) {
-                val ratio = rect.width / rect.height
-                rect.height = windowHeight / ratio
-                rect.width = windowHeight.toFloat()
-            }
-        }
-        val width = if (isLandscape) windowView.height else windowView.width
-        val scale = (if (isLandscape) rect.height else rect.width) / width.coerceAtLeast(1)
+        val origin = IntArray(2)
+        videoAspectRatioLayout.getLocationOnScreen(origin)
+        val scale = rect.width / videoAspectRatioLayout.width.coerceAtLeast(1)
         val changedTextureView =
             pipVideoView.show(
                 videoAspectRatioLayout.aspectRatio,
@@ -1770,25 +1781,25 @@ class MediaViewerOverlay private constructor(
                 isVideo,
                 mediaSource,
                 absolutePath,
+                transcriptId = (mode as? Mode.Transcript)?.transcriptId,
             )
 
         val videoTexture = windowView.findViewById<TextureView>(R.id.video_texture)
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(binding.backgroundView, View.ALPHA, 0f),
+            ObjectAnimator.ofFloat(binding.topBar, View.ALPHA, 0f),
             ObjectAnimator.ofFloat(videoTexture, View.SCALE_X, scale),
             ObjectAnimator.ofFloat(videoTexture, View.SCALE_Y, scale),
             ObjectAnimator.ofFloat(
                 videoAspectRatioLayout,
                 View.TRANSLATION_X,
-                rect.x - videoAspectRatioLayout.x -
-                    activity.windowWidth() * (1f - scale) / 2,
+                rect.x - origin[0] - (videoAspectRatioLayout.width - rect.width) / 2,
             ),
             ObjectAnimator.ofFloat(
                 videoAspectRatioLayout,
                 View.TRANSLATION_Y,
-                rect.y - videoAspectRatioLayout.y +
-                    activity.statusBarHeight() - (videoAspectRatioLayout.height - rect.height) / 2,
+                rect.y - origin[1] - (videoAspectRatioLayout.height - rect.height) / 2,
             ),
         )
         animatorSet.interpolator = DecelerateInterpolator()
@@ -1796,11 +1807,8 @@ class MediaViewerOverlay private constructor(
         animatorSet.addListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator) {
-                    windowView.findViewById<View>(R.id.pip_iv)?.fadeOut()
-                    windowView.findViewById<View>(R.id.close_iv)?.fadeOut()
-                    windowView.findViewById<View>(R.id.live_tv)?.let {
-                        if (it.isEnabled) it.fadeOut()
-                    }
+                    activePlayerView?.hideController()
+                    dialog.setSystemBarsVisible(false)
                 }
 
                 override fun onAnimationEnd(animation: Animator) {
@@ -1969,6 +1977,19 @@ class MediaViewerOverlay private constructor(
                     (activity == null || it.activity === activity)
             } == true
 
+        fun showFromPip(activity: FragmentActivity, source: PipVideoView.PipSource, thumb: MediaThumbLocation?) {
+            val mode = if (source.transcriptId != null) {
+                Mode.Transcript(source.transcriptId, source.messageId)
+            } else {
+                Mode.Conversation(source.conversationId, source.messageId, null, source.mediaSource)
+            }
+            val transitionThumb = thumb?.copy(setSourceVisible = { visible ->
+                if (!visible) PipVideoView.getInstance().close(stop = false)
+                thumb.setSourceVisible(visible)
+            })
+            show(activity, mode, transitionThumb, fromPip = true)
+        }
+
         fun showConversation(
             activity: FragmentActivity,
             conversationId: String,
@@ -1978,21 +1999,7 @@ class MediaViewerOverlay private constructor(
             initialThumb: MediaThumbLocation?,
             thumbProvider: MediaThumbProvider? = null,
             onShowInChat: ((String) -> Unit)? = null,
-        ) {
-            if (activity.isFinishing || activity.isDestroyed) return
-            if (!activity.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
-            currentOverlay?.cleanupAndDismissImmediate()
-            val overlay =
-                MediaViewerOverlay(
-                    activity = activity,
-                    mode = Mode.Conversation(conversationId, messageId, initialItem, mediaSource),
-                    initialThumb = initialThumb,
-                    thumbProvider = thumbProvider,
-                    onShowInChat = onShowInChat,
-                )
-            currentOverlay = overlay
-            overlay.show()
-        }
+        ) = show(activity, Mode.Conversation(conversationId, messageId, initialItem, mediaSource), initialThumb, thumbProvider, onShowInChat)
 
         fun showTranscript(
             activity: FragmentActivity,
@@ -2000,18 +2007,20 @@ class MediaViewerOverlay private constructor(
             messageId: String,
             initialThumb: MediaThumbLocation?,
             thumbProvider: MediaThumbProvider? = null,
+        ) = show(activity, Mode.Transcript(transcriptId, messageId), initialThumb, thumbProvider)
+
+        private fun show(
+            activity: FragmentActivity,
+            mode: Mode,
+            initialThumb: MediaThumbLocation?,
+            thumbProvider: MediaThumbProvider? = null,
+            onShowInChat: ((String) -> Unit)? = null,
+            fromPip: Boolean = false,
         ) {
             if (activity.isFinishing || activity.isDestroyed) return
             if (!activity.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
             currentOverlay?.cleanupAndDismissImmediate()
-            val overlay =
-                MediaViewerOverlay(
-                    activity = activity,
-                    mode = Mode.Transcript(transcriptId, messageId),
-                    initialThumb = initialThumb,
-                    thumbProvider = thumbProvider,
-                    onShowInChat = null,
-                )
+            val overlay = MediaViewerOverlay(activity, mode, initialThumb, thumbProvider, onShowInChat, fromPip)
             currentOverlay = overlay
             overlay.show()
         }

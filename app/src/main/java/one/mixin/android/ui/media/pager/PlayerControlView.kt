@@ -11,8 +11,11 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.media3.common.C
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.Assertions
@@ -22,11 +25,14 @@ import androidx.media3.ui.TimeBar
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerControlBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.util.VideoPlayer
+import one.mixin.android.extension.round
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.widget.PlayView2.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView2.Companion.STATUS_PLAYING
 import java.util.Formatter
 import java.util.Locale
+import one.mixin.android.util.video.VideoPlayerControls
 import kotlin.math.min
 
 @UnstableApi class PlayerControlView(context: Context, attributeSet: AttributeSet) :
@@ -57,7 +63,24 @@ import kotlin.math.min
             hide()
         }
 
-    private var useBottomLayout = false
+    var useBuiltInTopBar = true
+        set(value) {
+            field = value
+            topLayout.isVisible = value
+            ViewCompat.requestApplyInsets(this)
+        }
+    var liveSource = false
+    var onVideoStateChanged: (() -> Unit)? = null
+    val isLive get() = liveSource || player?.isCurrentMediaItemDynamic == true
+    private var previewLoader: VideoFramePreviewLoader? = null
+    var videoPath: String? = null
+        set(value) {
+            if (field == value) return
+            field = value
+            previewLoader?.setVideoSource(value)
+            hidePreview()
+        }
+
     var inRefreshState = false
         set(value) {
             field = value
@@ -75,9 +98,8 @@ import kotlin.math.min
                 removeListener(componentListener)
             }
             field = value
-            value?.apply {
-                addListener(componentListener)
-            }
+            if (attachedToWindow) value?.addListener(componentListener)
+            updateAll()
         }
 
     var messageId: String? = null
@@ -98,12 +120,26 @@ import kotlin.math.min
     val closeIv by lazy { binding.closeIv }
 
     init {
+        binding.scrubberPreviewIv.round(6.dp)
+        binding.muteIv.setOnClickListener {
+            if (player == null) return@setOnClickListener
+            VideoPlayer.player().toggleMute()
+            updatePlaybackControls()
+            hideAfterTimeout()
+        }
+        binding.speedTv.setOnClickListener {
+            if (player == null || isLive) return@setOnClickListener
+            val video = VideoPlayer.player()
+            video.setSpeed(VideoPlayerControls.nextSpeed(video.getSpeed()))
+            updatePlaybackControls()
+            hideAfterTimeout()
+        }
         playView.setOnClickListener(componentListener)
         timeBar.addListener(componentListener)
         ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
             insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()).let { safeInsets ->
                 if (context.isLandscape()) {
-                    binding.topFl.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, 0)
+                    binding.topFl.setPadding(safeInsets.left, safeInsets.top.takeIf { useBuiltInTopBar } ?: 0, safeInsets.right, 0)
                     binding.bottomLl.setPadding(
                         12.dp + safeInsets.left,
                         12.dp,
@@ -111,7 +147,7 @@ import kotlin.math.min
                         24.dp + safeInsets.bottom,
                     )
                 } else {
-                    binding.topFl.setPadding(safeInsets.left, 24.dp + safeInsets.top, safeInsets.right, 0)
+                    binding.topFl.setPadding(safeInsets.left, if (useBuiltInTopBar) 24.dp + safeInsets.top else 0, safeInsets.right, 0)
                     binding.bottomLl.setPadding(
                         12.dp + safeInsets.left,
                         24.dp,
@@ -129,6 +165,7 @@ import kotlin.math.min
         ViewCompat.requestApplyInsets(this)
         attachedToWindow = true
         player?.addListener(componentListener)
+        updateAll()
         if (hideAtMs != C.TIME_UNSET) {
             val delayMs = hideAtMs - SystemClock.uptimeMillis()
             if (delayMs <= 0) {
@@ -144,6 +181,9 @@ import kotlin.math.min
     public override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         attachedToWindow = false
+        hidePreview()
+        previewLoader?.release()
+        previewLoader = null
         player?.removeListener(componentListener)
         removeCallbacks(updateProgressAction)
         removeCallbacks(hideAction)
@@ -152,7 +192,7 @@ import kotlin.math.min
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         if (ev.action == MotionEvent.ACTION_DOWN) {
             removeCallbacks(hideAction)
-        } else if (ev.action == MotionEvent.ACTION_UP) {
+        } else if (ev.action == MotionEvent.ACTION_UP || ev.action == MotionEvent.ACTION_CANCEL) {
             hideAfterTimeout()
         }
         return super.dispatchTouchEvent(ev)
@@ -162,14 +202,15 @@ import kotlin.math.min
         if (!isVisible) {
             visibility = View.VISIBLE
             visibilityListener?.onVisibilityChange(visibility)
-            updateAll()
             playView.requestFocus()
         }
+        updateAll()
         hideAfterTimeout()
     }
 
     fun hide() {
         if (isVisible) {
+            hidePreview()
             visibility = View.GONE
             visibilityListener?.onVisibilityChange(visibility)
             removeCallbacks(updateProgressAction)
@@ -187,17 +228,66 @@ import kotlin.math.min
     }
 
     fun updateLiveView() {
-        // TODO support multiWindowTimeBar
-        player?.let {
-            val timeLine = it.currentTimeline
-            val windowIndex = it.currentWindowIndex
-            try {
-                val currentWindow = timeLine.getWindow(windowIndex, window)
-                liveView.isVisible = currentWindow.isDynamic
-                useBottomLayout = !currentWindow.isDynamic
-            } catch (ignored: IndexOutOfBoundsException) {
+        liveView.isVisible = isLive
+        binding.timeRow.isVisible = !isLive
+        binding.speedTv.isVisible = !isLive
+        onVideoStateChanged?.invoke()
+    }
+
+    private fun updatePlaybackControls() {
+        val muted = player?.volume == 0f
+        binding.muteIv.setImageResource(if (muted) R.drawable.ic_player_volume_off else R.drawable.ic_player_volume_on)
+        binding.muteIv.contentDescription = context.getString(if (muted) R.string.Unmute else R.string.Mute)
+        val speed = player?.playbackParameters?.speed ?: 1f
+        binding.speedTv.text = speed.toString().removeSuffix(".0") + "x"
+        switchFullscreen(context.isLandscape())
+    }
+
+    private fun showPreview(position: Long) {
+        val time = Util.getStringForTime(formatBuilder, formatter, position)
+        positionView.text = time
+        binding.scrubberPreviewTimeTv.text = time
+        val bubble = binding.scrubberPreviewContainer
+        bubble.isVisible = true
+        val duration = player?.duration?.takeIf { it != C.TIME_UNSET && it > 0L } ?: 0L
+        val fraction = if (duration > 0L) (position.toFloat() / duration).coerceIn(0f, 1f) else 0f
+        val visualFraction = if (layoutDirection == View.LAYOUT_DIRECTION_RTL) 1f - fraction else fraction
+        val center = binding.timeRow.left + timeBar.left + timeBar.width * visualFraction
+        fun placeBubble() {
+            bubble.doOnLayout {
+                val maxX = (bottomLayout.width - bubble.width).coerceAtLeast(0).toFloat()
+                bubble.x = (center - bubble.width / 2f).coerceIn(0f, maxX)
             }
         }
+        placeBubble()
+        val loader = previewLoader ?: VideoFramePreviewLoader().also {
+            it.setVideoSource(videoPath)
+            previewLoader = it
+        }
+        loader.loadFrame(position) { frame ->
+            if (scrubbing) {
+                binding.scrubberPreviewIv.setImageBitmap(frame)
+                binding.scrubberPreviewIv.isVisible = frame != null
+                if (frame != null) {
+                    val maxWidth = 136.dp
+                    val maxHeight = 110.dp
+                    val scale = minOf(maxWidth.toFloat() / frame.width, maxHeight.toFloat() / frame.height)
+                    binding.scrubberPreviewIv.updateLayoutParams {
+                        width = (frame.width * scale).toInt().coerceAtLeast(1)
+                        height = (frame.height * scale).toInt().coerceAtLeast(1)
+                    }
+                }
+                placeBubble()
+            }
+        }
+    }
+
+    private fun hidePreview() {
+        if (scrubbing) parent?.requestDisallowInterceptTouchEvent(false)
+        scrubbing = false
+        binding.scrubberPreviewContainer.isVisible = false
+        binding.scrubberPreviewIv.isVisible = false
+        binding.scrubberPreviewIv.setImageDrawable(null)
     }
 
     private fun hideAfterTimeout() {
@@ -258,16 +348,9 @@ import kotlin.math.min
         updatePlayView()
         updateNavigation()
         updateTimeline()
-        if (!topLayout.isVisible) {
-            topLayout.isVisible = true
-        }
-        if (useBottomLayout) {
-            if (!bottomLayout.isVisible) {
-                bottomLayout.isVisible = true
-            }
-        } else {
-            bottomLayout.isVisible = false
-        }
+        topLayout.isVisible = useBuiltInTopBar
+        updateLiveView()
+        updatePlaybackControls()
     }
 
     private fun updatePlayView() {
@@ -449,7 +532,7 @@ import kotlin.math.min
             timeBar: TimeBar,
             position: Long,
         ) {
-            positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
+            showPreview(position)
         }
 
         override fun onScrubStart(
@@ -457,7 +540,9 @@ import kotlin.math.min
             position: Long,
         ) {
             scrubbing = true
-            positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
+            removeCallbacks(hideAction)
+            parent?.requestDisallowInterceptTouchEvent(true)
+            showPreview(position)
         }
 
         override fun onScrubStop(
@@ -465,7 +550,8 @@ import kotlin.math.min
             position: Long,
             canceled: Boolean,
         ) {
-            scrubbing = false
+            hidePreview()
+            hideAfterTimeout()
             if (!canceled) {
                 player?.let { seekToTimeBarPosition(it, position) }
             }
@@ -475,6 +561,7 @@ import kotlin.math.min
             playWhenReady: Boolean,
             playbackState: Int,
         ) {
+            onVideoStateChanged?.invoke()
             updatePlayView()
             updateProgress()
         }
@@ -494,11 +581,17 @@ import kotlin.math.min
             timeline: Timeline,
             reason: Int,
         ) {
+            updateLiveView()
             updateNavigation()
             updateTimeline()
         }
 
+        override fun onVolumeChanged(volume: Float) = updatePlaybackControls()
+
+        override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) = updatePlaybackControls()
+
         override fun onClick(v: View) {
+            hideAfterTimeout()
             val player = this@PlayerControlView.player ?: return
 
             if (v == playView) {

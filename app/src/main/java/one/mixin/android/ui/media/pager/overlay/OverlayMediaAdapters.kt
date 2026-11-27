@@ -68,7 +68,7 @@ internal class OverlayMediaPagerAdapter(
             MediaItemType.Video.ordinal -> {
                 layout.inflate(R.layout.item_pager_video_layout, attachToRoot = true)
                 layout.addView(circleProgress)
-                VideoHolder(layout, listener)
+                VideoHolder(layout, listener).apply { binding.playerView.playerControlView.useBuiltInTopBar = false }
             }
             else -> {
                 layout.addView(createPhotoView(parent))
@@ -142,6 +142,7 @@ internal class OverlayTranscriptPagerAdapter(
     private val listener: TranscriptMediaPagerAdapterListener,
     private val initialMessageId: String? = null,
     private val initialPlaceholderProvider: (() -> Drawable?)? = null,
+    private val onVideoHolderBound: (TranscriptVideoHolder, Int, ChatHistoryMessageItem) -> Unit,
 ) : RecyclerView.Adapter<TranscriptMediaPagerHolder>() {
 
     var initialPos: Int = 0
@@ -169,7 +170,7 @@ internal class OverlayTranscriptPagerAdapter(
             MediaItemType.Video.ordinal -> {
                 layout.inflate(R.layout.item_pager_video_layout, attachToRoot = true)
                 layout.addView(circleProgress)
-                TranscriptVideoHolder(layout, listener)
+                TranscriptVideoHolder(layout, listener).apply { binding.playerView.playerControlView.useBuiltInTopBar = false }
             }
             else -> {
                 layout.addView(createPhotoView(parent))
@@ -202,6 +203,7 @@ internal class OverlayTranscriptPagerAdapter(
             else -> {
                 holder as TranscriptVideoHolder
                 holder.bind(messageItem, position == initialPos, videoStatusCache)
+                onVideoHolderBound(holder, position, messageItem)
                 messageItem.mediaStatus?.let {
                     videoStatusCache.put(messageItem.messageId, it)
                 }

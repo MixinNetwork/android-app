@@ -5,12 +5,17 @@ package one.mixin.android.ui.media.pager
 import android.content.Context
 import android.graphics.Matrix
 import android.graphics.RectF
+import android.os.SystemClock
 import android.util.AttributeSet
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.LayoutInflater
 import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
+import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.isVisible
+import androidx.media3.common.C
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
@@ -38,6 +43,7 @@ import one.mixin.android.widget.AspectRatioFrameLayout
             value?.apply {
                 setVideoTextureView(binding.videoTexture)
                 addListener(componentListener)
+                componentListener.onVideoSizeChanged(videoSize)
             }
         }
 
@@ -63,20 +69,76 @@ import one.mixin.android.widget.AspectRatioFrameLayout
     val videoAspectRatio get() = binding.videoAspectRatio
     val playerControlView get() = binding.playerControlView
 
+    private var lastSeekTime = 0L
+    private var seekSeconds = 0
+    private val gestures = GestureDetectorCompat(context, object : GestureDetector.SimpleOnGestureListener() {
+        override fun onDown(e: MotionEvent) = true
+
+        override fun onSingleTapConfirmed(e: MotionEvent): Boolean = performClick()
+
+        override fun onLongPress(e: MotionEvent) {
+            callback?.onLongClick()
+        }
+
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            val activePlayer = player ?: return false
+            val delta = when {
+                e.x < width * .35f -> -10
+                e.x > width * .65f -> 10
+                else -> 0
+            }
+            if (delta != 0 && !playerControlView.isLive && activePlayer.isCurrentMediaItemSeekable && activePlayer.duration != C.TIME_UNSET) {
+                VideoPlayer.player().seekBy(delta * 1000L)
+                showSeekFeedback(delta)
+            } else {
+                when (activePlayer.playbackState) {
+                    Player.STATE_IDLE -> {
+                        playerControlView.preparePlayback?.invoke()
+                        activePlayer.playWhenReady = true
+                    }
+                    Player.STATE_ENDED -> {
+                        activePlayer.seekTo(0)
+                        activePlayer.playWhenReady = true
+                    }
+                    else -> activePlayer.playWhenReady = !activePlayer.playWhenReady
+                }
+            }
+            return true
+        }
+    })
+
+    private fun showSeekFeedback(delta: Int) {
+        val now = SystemClock.uptimeMillis()
+        seekSeconds = if (now - lastSeekTime < 800 && (seekSeconds > 0) == (delta > 0)) seekSeconds + delta else delta
+        lastSeekTime = now
+        val badge = if (delta < 0) binding.seekBackwardOverlay else binding.seekForwardOverlay
+        val other = if (delta < 0) binding.seekForwardOverlay else binding.seekBackwardOverlay
+        other.isVisible = false
+        badge.animate().cancel()
+        badge.text = if (delta > 0) "+${seekSeconds}s" else "${seekSeconds}s"
+        badge.alpha = 1f
+        badge.isVisible = true
+        badge.animate().alpha(0f).setStartDelay(800).setDuration(180).withEndAction { badge.isVisible = false }.start()
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (!useController) return super.onTouchEvent(event)
+        gestures.onTouchEvent(event)
+        return true
+    }
+
+    override fun performClick(): Boolean {
+        super.performClick()
+        return toggleControllerVisibility()
+    }
+
     init {
         val useController = true
         val ta = context.obtainStyledAttributes(attributeSet, R.styleable.PlayerView)
         this.useController = ta.getBoolean(R.styleable.PlayerView_use_controller, useController)
         ta.recycle()
 
-        setOnClickListener {
-            if (!this.useController || player == null) return@setOnClickListener
-            toggleControllerVisibility()
-        }
-        setOnLongClickListener {
-            callback?.onLongClick()
-            return@setOnLongClickListener false
-        }
+        isClickable = true
         binding.refreshView.setOnClickListener {
             refreshAction?.invoke()
             updateRefreshViewVisibility(false)
@@ -102,7 +164,7 @@ import one.mixin.android.widget.AspectRatioFrameLayout
     private fun updateRefreshViewVisibility(visible: Boolean) {
         binding.refreshView.isVisible = visible
         binding.playerControlView.inRefreshState = visible
-        if (!visible) {
+        if (!visible && playerControlView.useBuiltInTopBar) {
             hideController()
         }
     }
@@ -142,7 +204,7 @@ import one.mixin.android.widget.AspectRatioFrameLayout
     }
 
     private fun toggleControllerVisibility(): Boolean {
-        if (!useController || player == null) return false
+        if (!useController) return false
 
         if (!binding.playerControlView.isVisible) {
             maybeShowController(true)
@@ -229,7 +291,7 @@ import one.mixin.android.widget.AspectRatioFrameLayout
             val unappliedRotationDegrees = videoSize.unappliedRotationDegrees
             val width = videoSize.width
             val height = videoSize.height
-            if (VideoPlayer.player().mId != currentMessageId) {
+            if (width == 0 || height == 0 || VideoPlayer.player().mId != currentMessageId) {
                 return
             }
             var videoAspectRatio: Float =
@@ -261,7 +323,7 @@ import one.mixin.android.widget.AspectRatioFrameLayout
                     Player.STATE_READY -> {
                         binding.pbView.isVisible = false
                         if (playWhenReady) {
-                            hideController()
+                            if (playerControlView.useBuiltInTopBar) hideController() else maybeShowController(false)
                         } else {
                             maybeShowController(false)
                         }

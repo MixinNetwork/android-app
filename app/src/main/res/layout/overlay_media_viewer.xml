@@ -80,6 +80,28 @@
                     tools:text="2026/11/19 21:00" />
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/live_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/chat_live_shadow"
+                android:paddingHorizontal="4dp"
+                android:text="@string/Live"
+                android:textAllCaps="true"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/pip_iv"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/Floating"
+                android:src="@drawable/ic_pip"
+                android:visibility="gone" />
+
             <ImageButton
                 android:id="@+id/more_iv"
                 android:layout_width="48dp"
