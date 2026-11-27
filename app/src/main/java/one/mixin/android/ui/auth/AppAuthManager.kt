@@ -29,6 +29,7 @@ internal class AppAuthManager(
     private val activeAuthTasks = mutableSetOf<Int>()
     private val cancelledAuthTasks = mutableSetOf<Int>()
     private var backgroundElapsedRealtime: Long? = null
+    private var inForeground = false
     private var foregroundChecked = false
     private var authenticatedInForeground = false
     private var pendingDeepLink: Uri? = null
@@ -62,16 +63,18 @@ internal class AppAuthManager(
     fun onActivityCreated(activity: Activity) {
         createdActivities.add(activity)
         syncRecentsScreenshot(activity)
-        val taskId = taskIdOf(activity)
         if (activity is AppAuthActivity) {
             authActivities.add(activity)
-            launchingAuthTasks[taskId] = WeakReference(activity)
-        } else if (activity !is UrlInterpreterActivity) {
-            launchingAuthTasks.remove(taskId)
+        }
+        if (activity !is UrlInterpreterActivity) {
+            launchingAuthTasks.remove(taskIdOf(activity))
         }
     }
 
     fun onActivityStarted(activity: Activity) {
+        if (startedActivities.isEmpty()) {
+            inForeground = true
+        }
         startedActivities.add(activity)
         if (activity is AppAuthActivity) {
             val taskId = taskIdOf(activity)
@@ -120,9 +123,10 @@ internal class AppAuthManager(
     fun onActivityStopped(activity: Activity) {
         startedAuthActivities.remove(activity)
         resumedAuthActivities.remove(activity)
-        val removed = startedActivities.remove(activity)
+        startedActivities.remove(activity)
         startedActivities.removeAll { it.isFinishing || it.isDestroyed }
-        if (!removed || startedActivities.isNotEmpty() || activity.isChangingConfigurations) return
+        if (!inForeground || startedActivities.isNotEmpty() || activity.isChangingConfigurations) return
+        inForeground = false
         foregroundChecked = false
         authenticatedInForeground = false
         lockEpoch++
@@ -144,10 +148,7 @@ internal class AppAuthManager(
         resumedAuthActivities.remove(activity)
         authActivities.remove(activity)
         val taskId = taskIdOf(activity)
-        val pending = launchingAuthTasks[taskId]?.get()
-        if (pending === activity) {
-            launchingAuthTasks.remove(taskId)
-        } else if (activity is AppAuthActivity && pending !is AppAuthActivity) {
+        if (activity is AppAuthActivity || launchingAuthTasks[taskId]?.get() === activity) {
             launchingAuthTasks.remove(taskId)
         }
     }
@@ -224,11 +225,16 @@ internal class AppAuthManager(
             }
         }
         val initiator = launchingAuthTasks[taskId]?.get()
-        if (initiator != null && !initiator.isFinishing && !initiator.isDestroyed) {
-            return false
+        if (initiator == null || initiator.isFinishing || initiator.isDestroyed) {
+            launchingAuthTasks.remove(taskId)
+            return true
         }
-        launchingAuthTasks.remove(taskId)
-        return true
+        // A pending launch only covers the paired onStart -> onResume; the first resume consumes it so a
+        // swallowed launch (or one that hit a finishing lock screen) is retried on the next resume or start.
+        if (fromResume) {
+            launchingAuthTasks.remove(taskId)
+        }
+        return false
     }
 
     fun onAuthenticated(): Uri? {

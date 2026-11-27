@@ -673,9 +673,80 @@ class AppAuthManagerTest {
         assertNull(shadowOf(graceFinishing).nextStartedActivity)
     }
 
+    @Test
+    fun earlyFinishedLockScreenStoppingLastStillEntersBackground() {
+        configure(1)
+        val manager = manager()
+        val lockActivity = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityStarted(lockActivity)
+        assertTrue(manager.isLocked)
+
+        // Unlocking finishes the lock screen and drops it from the started set before its onStop arrives.
+        manager.onAuthenticated()
+        assertTrue(lockActivity.isFinishing)
+        manager.onActivityStopped(lockActivity)
+
+        elapsed += 60_001
+        val activity = activity()
+        manager.onActivityStarted(activity)
+        assertTrue(manager.isLocked)
+        assertNotNull(shadowOf(activity).nextStartedActivity)
+    }
+
+    @Test
+    fun swallowedAuthLaunchIsRetriedOnTheNextResume() {
+        configure(0)
+        val manager = manager()
+        val mainActivity = activity(taskId = 1)
+        manager.onActivityCreated(mainActivity)
+        manager.onActivityStarted(mainActivity)
+        assertNotNull(shadowOf(mainActivity).nextStartedActivity)
+
+        // The launch is swallowed, so no AppAuthActivity is created; the paired resume is still deduplicated.
+        manager.onActivityResumed(mainActivity)
+        assertNull(shadowOf(mainActivity).nextStartedActivity)
+
+        manager.onActivityPaused(mainActivity)
+        manager.onActivityResumed(mainActivity)
+        assertNotNull(shadowOf(mainActivity).nextStartedActivity)
+        assertTrue(manager.isLocked)
+    }
+
+    @Test
+    fun authLaunchLandingOnFinishingLockScreenIsRetried() {
+        configure(0)
+        val manager = manager()
+        val mainActivity = activity()
+        manager.onActivityCreated(mainActivity)
+        manager.onActivityStarted(mainActivity)
+        shadowOf(mainActivity).nextStartedActivity
+        val lockActivity = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityCreated(lockActivity)
+        manager.onActivityStarted(lockActivity)
+        manager.onActivityResumed(lockActivity)
+
+        lockActivity.finish()
+        manager.onActivityPaused(lockActivity)
+        val content = activity()
+        manager.onActivityStarted(content)
+        assertNotNull(shadowOf(content).nextStartedActivity)
+
+        // REORDER_TO_FRONT reaches the finishing lock screen, so no new AppAuthActivity is created.
+        manager.onActivityResumed(content)
+        assertNull(shadowOf(content).nextStartedActivity)
+        manager.onActivityPaused(content)
+        manager.onActivityResumed(content)
+        assertNotNull(shadowOf(content).nextStartedActivity)
+
+        // A later start in the same task is not blocked either once the pending launch was consumed.
+        manager.onActivityResumed(content)
+        val next = activity()
+        manager.onActivityStarted(next)
+        assertNotNull(shadowOf(next).nextStartedActivity)
+    }
+
     private fun assertWindowSecure(window: Window, expected: Boolean) {
         assertEquals(expected, (window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0)
-        assertEquals(expected, FlagSecureReason.isSecured(window))
     }
 
     private fun configure(mode: Int, backgroundTime: Long = 0) {

@@ -46,7 +46,5 @@ class FlagSecureReason(
                 window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
         }
-
-        fun isSecured(window: Window?): Boolean = window != null && (reasons[window] ?: 0) > 0
     }
 }

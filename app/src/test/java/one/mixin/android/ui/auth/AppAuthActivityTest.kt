@@ -1,5 +1,7 @@
 package one.mixin.android.ui.auth
 
+import android.app.Activity
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -45,6 +47,8 @@ import org.robolectric.shadows.ShadowBiometricPrompt
 import org.robolectric.shadows.ShadowToast
 import org.robolectric.util.ReflectionHelpers
 import org.robolectric.shadow.api.Shadow
+import org.robolectric.shadows.ShadowActivityManager
+import org.robolectric.shadows.ShadowAppTask
 import org.robolectric.shadows.ShadowBiometricManager
 import org.robolectric.util.ReflectionHelpers.ClassParameter
 import java.lang.reflect.Proxy
@@ -87,9 +91,21 @@ class AppAuthActivityTest {
     fun backMovesTaskAwayWithoutRemovingTheLockScreen() {
         controller.create().start().resume()
         val activity = controller.get()
+        registerOwnTask(activity)
         activity.onBackPressedDispatcher.onBackPressed()
         assertTrue(shadowOf(activity).isTaskMovedToBack)
         assertFalse(activity.isFinishing)
+    }
+
+    @Test
+    fun backInAnotherAppsTaskFinishesOurPagesWithoutMovingTheHostTaskBack() {
+        controller.create().start().resume()
+        val activity = controller.get()
+        // No app task matches the lock screen's task, e.g. it was launched inside a share sheet host task.
+        activity.onBackPressedDispatcher.onBackPressed()
+        assertFalse(shadowOf(activity).isTaskMovedToBack)
+        assertTrue(activity.isFinishing)
+        assertNull(shadowOf(activity).nextStartedActivity)
     }
 
     @Test
@@ -335,6 +351,7 @@ class AppAuthActivityTest {
     fun userCanceledBiometricStillMovesTaskToBack() {
         controller.create().start().resume().visible()
         val activity = controller.get()
+        registerOwnTask(activity)
         val mainLooper = shadowOf(Looper.getMainLooper())
         mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
         val session = currentAuthenticateSession()
@@ -364,6 +381,7 @@ class AppAuthActivityTest {
 
         controller.create().start().resume().visible()
         val activity = controller.get()
+        registerOwnTask(activity)
         val mainLooper = shadowOf(Looper.getMainLooper())
         mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
         authenticateWithError(currentAuthenticateSession(), BiometricPrompt.ERROR_USER_CANCELED, "User canceled")
@@ -378,14 +396,15 @@ class AppAuthActivityTest {
 
     @Test
     fun negativeButtonUsesVerifyPinAndOpensPinVerification() {
-        val biometricManager = ApplicationProvider.getApplicationContext<Context>()
-            .getSystemService(android.hardware.biometrics.BiometricManager::class.java)
-        Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
         controller.create().start().resume().visible()
         val activity = controller.get()
         val mainLooper = shadowOf(Looper.getMainLooper())
         mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
         val session = currentAuthenticateSession()
+        // Keep the PIN sheet's BiometricLayout off the Firebase-backed keyguard path.
+        val biometricManager = ApplicationProvider.getApplicationContext<Context>()
+            .getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+        Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
 
         authenticateWithError(session, BiometricPrompt.ERROR_NEGATIVE_BUTTON, activity.getString(R.string.Verify_PIN))
         mainLooper.idle()
@@ -517,9 +536,8 @@ class AppAuthActivityTest {
         authenticateWithError(session, BiometricPrompt.ERROR_HW_UNAVAILABLE, "Hardware unavailable")
         mainLooper.idle()
 
-        val viewModel = ViewModelProvider(activity)[AppAuthViewModel::class.java]
-        assertFalse(viewModel.clearWhenPinSuccess)
         assertTrue(activity.findViewById<TextView>(R.id.pin_tv).isVisible)
+        assertEquals("Hardware unavailable", activity.findViewById<TextView>(R.id.info).text.toString())
 
         val dialog = VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
         ReflectionHelpers.callInstanceMethod<Unit>(
@@ -535,7 +553,7 @@ class AppAuthActivityTest {
     }
 
     @Test
-    fun hardwareUnavailableWithMissingHardwareClearsAppAuthAfterPinUnlock() {
+    fun noUsableBiometricGoesStraightToPinVerificationAndKeepsAppAuth() {
         val fakeApp = FakeMixinApplication()
         MixinApplication.appContext = fakeApp
         fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
@@ -543,25 +561,17 @@ class AppAuthActivityTest {
         Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
         controller.create().start().resume().visible()
         val activity = controller.get()
-        val mainLooper = shadowOf(Looper.getMainLooper())
-        mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
+        shadowOf(Looper.getMainLooper()).idleFor(100, TimeUnit.MILLISECONDS)
 
-        authenticateWithError(currentAuthenticateSession(), BiometricPrompt.ERROR_HW_UNAVAILABLE, "Hardware unavailable")
-        mainLooper.idle()
-
-        val viewModel = ViewModelProvider(activity)[AppAuthViewModel::class.java]
-        assertTrue(viewModel.clearWhenPinSuccess)
-
-        val dialog = VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
-        ReflectionHelpers.callInstanceMethod<Unit>(
-            activity,
-            "bindPinVerification",
-            ClassParameter.from(VerifyBottomSheetDialogFragment::class.java, dialog),
-        )
+        assertNull(ReflectionHelpers.getStaticField<Any?>(ShadowBiometricPrompt::class.java, "currentAuthenticateSession"))
+        assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptActive"))
+        assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptScheduled"))
+        assertTrue(activity.findViewById<TextView>(R.id.pin_tv).isVisible)
+        val dialog = activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as VerifyBottomSheetDialogFragment
         ReflectionHelpers.getField<((String) -> Unit)?>(dialog, "onPinSuccess")?.invoke("123456")
 
         assertTrue(activity.isFinishing)
-        assertEquals(-1, fakeApp.defaultSharedPreferences.getInt(PREF_APP_AUTH, 0))
+        assertEquals(0, fakeApp.defaultSharedPreferences.getInt(PREF_APP_AUTH, -1))
     }
 
     @Test
@@ -620,7 +630,7 @@ class AppAuthActivityTest {
     }
 
     @Test
-    fun noBiometricsAndHardwareNotPresentClearAppAuthAfterPinUnlock() {
+    fun noBiometricsAndHardwareNotPresentKeepAppAuthAfterPinUnlock() {
         for (errorCode in listOf(BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_HW_NOT_PRESENT)) {
             val fakeApp = FakeMixinApplication()
             MixinApplication.appContext = fakeApp
@@ -635,8 +645,8 @@ class AppAuthActivityTest {
             authenticateWithError(currentAuthenticateSession(), errorCode, "Unavailable")
             mainLooper.idle()
 
-            val viewModel = ViewModelProvider(activity)[AppAuthViewModel::class.java]
-            assertTrue(viewModel.clearWhenPinSuccess)
+            assertTrue(activity.findViewById<TextView>(R.id.pin_tv).isVisible)
+            assertEquals("Unavailable", activity.findViewById<TextView>(R.id.info).text.toString())
 
             val dialog = VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
             ReflectionHelpers.callInstanceMethod<Unit>(
@@ -647,7 +657,7 @@ class AppAuthActivityTest {
             ReflectionHelpers.getField<((String) -> Unit)?>(dialog, "onPinSuccess")?.invoke("123456")
 
             assertTrue(activity.isFinishing)
-            assertEquals(-1, fakeApp.defaultSharedPreferences.getInt(PREF_APP_AUTH, 0))
+            assertEquals(1, fakeApp.defaultSharedPreferences.getInt(PREF_APP_AUTH, -1))
             localController.pause().stop().destroy()
         }
     }
@@ -690,6 +700,12 @@ class AppAuthActivityTest {
         assertTrue(lock2.isFinishing)
         assertNull(shadowOf(lock2).nextStartedActivity)
         lock2Controller.stop().destroy()
+    }
+
+    private fun registerOwnTask(activity: Activity) {
+        val appTask = ShadowAppTask.newInstance()
+        Shadow.extract<ShadowAppTask>(appTask).setTaskInfo(ActivityManager.RecentTaskInfo().apply { taskId = activity.taskId })
+        Shadow.extract<ShadowActivityManager>(activity.getSystemService(ActivityManager::class.java)).setAppTasks(listOf(appTask))
     }
 
     private fun currentAuthenticateSession(): Any =

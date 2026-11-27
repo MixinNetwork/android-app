@@ -1,8 +1,10 @@
 package one.mixin.android.ui.auth
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.widget.RelativeLayout
 import androidx.activity.addCallback
@@ -15,17 +17,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import com.mattprecious.swirl.SwirlView
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.ActivityAppAuthBinding
 import one.mixin.android.event.AppAuthEvent
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isLandscape
-import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
@@ -33,7 +32,6 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 
 class AppAuthViewModel : ViewModel() {
-    var clearWhenPinSuccess: Boolean = false
     var pendingPinUnlock: Boolean = false
     var pendingPinUnlockEpoch: Long = -1L
 }
@@ -41,7 +39,6 @@ class AppAuthViewModel : ViewModel() {
 @AndroidEntryPoint
 class AppAuthActivity : BaseActivity() {
     companion object {
-        private const val STATE_CLEAR_WHEN_PIN_SUCCESS = "clear_when_pin_success"
         private const val MAX_AUTO_RETRY_COUNT = 3
 
         fun show(activity: Activity) {
@@ -73,10 +70,6 @@ class AppAuthActivity : BaseActivity() {
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
         updateLayout()
-        if (savedInstanceState != null) {
-            viewModel.clearWhenPinSuccess =
-                viewModel.clearWhenPinSuccess || savedInstanceState.getBoolean(STATE_CLEAR_WHEN_PIN_SUCCESS)
-        }
         onBackPressedDispatcher.addCallback(this) {
             dismissToBackground()
         }
@@ -120,7 +113,7 @@ class AppAuthActivity : BaseActivity() {
             applyPinSuccessUnlock()
             return
         }
-        if (pendingShowPin) {
+        if (pendingShowPin || !canUseBiometric()) {
             showPinVerification()
             return
         }
@@ -159,11 +152,6 @@ class AppAuthActivity : BaseActivity() {
             viewModel.pendingPinUnlockEpoch = -1L
         }
         super.onStop()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean(STATE_CLEAR_WHEN_PIN_SUCCESS, viewModel.clearWhenPinSuccess)
-        super.onSaveInstanceState(outState)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -235,9 +223,6 @@ class AppAuthActivity : BaseActivity() {
 
     private fun applyPinSuccessUnlock() {
         if (authenticated || isFinishing) return
-        if (viewModel.clearWhenPinSuccess) {
-            defaultSharedPreferences.putInt(Constants.Account.PREF_APP_AUTH, -1)
-        }
         toast(R.string.Successful)
         finishAndCheckNeed2GoUrlInterpreter()
     }
@@ -340,17 +325,12 @@ class AppAuthActivity : BaseActivity() {
                     showError(errString.ifBlank { getString(R.string.Touch_the_fingerprint_sensor) })
                 }
             }
-            BiometricPrompt.ERROR_NO_BIOMETRICS, BiometricPrompt.ERROR_HW_NOT_PRESENT -> {
-                viewModel.clearWhenPinSuccess = true
-                showError(errString)
-            }
-            BiometricPrompt.ERROR_HW_UNAVAILABLE -> {
-                if (hasNoBiometricHardware()) {
-                    viewModel.clearWhenPinSuccess = true
-                }
-                showError(errString)
-            }
-            BiometricPrompt.ERROR_LOCKOUT, BiometricPrompt.ERROR_LOCKOUT_PERMANENT -> {
+            BiometricPrompt.ERROR_NO_BIOMETRICS,
+            BiometricPrompt.ERROR_HW_NOT_PRESENT,
+            BiometricPrompt.ERROR_HW_UNAVAILABLE,
+            BiometricPrompt.ERROR_LOCKOUT,
+            BiometricPrompt.ERROR_LOCKOUT_PERMANENT,
+            -> {
                 showError(errString)
             }
             else -> {
@@ -369,6 +349,11 @@ class AppAuthActivity : BaseActivity() {
 
     private fun dismissToBackground() {
         val shouldGoHome = MixinApplication.appAuthOrNull()?.onAuthCancelled(this) == true
+        if (!isInOwnTask()) {
+            // Hosted in another app's task (e.g. a share sheet): close only our pages and leave the host app.
+            finishAffinity()
+            return
+        }
         moveTaskToBack(true)
         if (shouldGoHome) {
             startActivity(
@@ -380,11 +365,17 @@ class AppAuthActivity : BaseActivity() {
         }
     }
 
-    private fun hasNoBiometricHardware(): Boolean {
-        val status = BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
-        return status == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE ||
-            status == BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED
-    }
+    private fun isInOwnTask(): Boolean =
+        getSystemService(ActivityManager::class.java).appTasks.any { appTask ->
+            // getTaskInfo() throws if the task was removed after appTasks was read.
+            val info = runCatching { appTask.taskInfo }.getOrNull() ?: return@any false
+            @Suppress("DEPRECATION")
+            val id = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) info.taskId else info.persistentId
+            id == taskId
+        }
+
+    private fun canUseBiometric(): Boolean =
+        BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) == BiometricManager.BIOMETRIC_SUCCESS
 
     private fun biometricCallback(generation: Int) =
         object : BiometricPrompt.AuthenticationCallback() {
