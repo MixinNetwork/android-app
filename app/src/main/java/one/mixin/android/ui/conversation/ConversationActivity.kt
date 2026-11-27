@@ -20,9 +20,11 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSA
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.Job
 
 @AndroidEntryPoint
@@ -30,7 +32,14 @@ class ConversationActivity : BlazeBaseActivity() {
     private var suppressHomeFallbackOnFinish = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        val hasAccount = Session.getAccount() != null
+        super.onCreate(if (hasAccount) savedInstanceState else null)
+        if (!hasAccount) {
+            suppressHomeFallbackOnFinish = true
+            LandingActivity.show(this)
+            finish()
+            return
+        }
         if (ConversationEmbedding.routeRootConversation(this) { suppressHomeFallbackOnFinish = true }) return
         setContentView(R.layout.activity_chat)
         if (savedInstanceState == null) {
@@ -48,6 +57,12 @@ class ConversationActivity : BlazeBaseActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (Session.getAccount() == null) {
+            suppressHomeFallbackOnFinish = true
+            LandingActivity.show(this)
+            finish()
+            return
+        }
         setIntent(intent)
         showConversation(intent)
     }
@@ -77,10 +92,13 @@ class ConversationActivity : BlazeBaseActivity() {
     }
 
     @Inject
-    lateinit var conversationRepository: ConversationRepository
+    lateinit var conversationRepositoryProvider: Provider<ConversationRepository>
 
     @Inject
-    lateinit var userRepository: UserRepository
+    lateinit var userRepositoryProvider: Provider<UserRepository>
+
+    private val userRepository: UserRepository
+        get() = userRepositoryProvider.get()
 
     private var conversationJob: Job? = null
 
