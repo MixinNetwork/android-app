@@ -102,7 +102,6 @@ import org.bitcoinj.crypto.MnemonicCode
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.system.exitProcess
 import one.mixin.android.ui.conversation.ConversationEmbedding
@@ -155,16 +154,20 @@ open class MixinApplication :
         private const val CLOSE_SCOPE_TIMEOUT_MILLIS = 3_000L
     }
 
-    private val userUnlockedInitLock = Any()
-
     @Volatile
     private var isUserUnlockedInitialized = false
 
     @Volatile
     private var isAppsFlyerInitialized = false
 
+    private var isFileLogTreePlanted = false
+    private var isOsmdroidInitialized = false
+    private var isEntityInitLaunched = false
+    private var isThirdPartyIdentityInitialized = false
+
     private var userUnlockedReceiver: BroadcastReceiver? = null
-    private val userUnlockedReceiverRetryCount = AtomicInteger(0)
+    private var userUnlockedReceiverRetryCount = 0
+    private val userUnlockedInitPosted = AtomicBoolean(false)
     private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
     private var activityReferences: Int = 0
@@ -245,24 +248,37 @@ open class MixinApplication :
         if (isUserUnlockedInitialized) {
             return true
         }
-        synchronized(userUnlockedInitLock) {
-            if (isUserUnlockedInitialized) {
-                return true
-            }
-            if (!isUserUnlocked()) {
-                registerUserUnlockedReceiverLocked()
-                if (!isUserUnlocked()) {
-                    return false
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            if (userUnlockedInitPosted.compareAndSet(false, true)) {
+                mainHandler.post {
+                    userUnlockedInitPosted.set(false)
+                    ensureUserUnlockedInitOnMain()
                 }
             }
-            unregisterUserUnlockedReceiverLocked()
-            initCredentialProtectedComponents()
-            isUserUnlockedInitialized = true
-            return true
+            return isUserUnlockedInitialized
         }
+        return ensureUserUnlockedInitOnMain()
     }
 
-    private fun registerUserUnlockedReceiverLocked() {
+    private fun ensureUserUnlockedInitOnMain(): Boolean {
+        if (isUserUnlockedInitialized) {
+            return true
+        }
+        if (!isUserUnlocked()) {
+            registerUserUnlockedReceiverOnMain()
+            if (!isUserUnlocked()) {
+                return false
+            }
+        }
+        unregisterUserUnlockedReceiverOnMain()
+        val allInitialized = initCredentialProtectedComponentsOnMain()
+        if (allInitialized) {
+            isUserUnlockedInitialized = true
+        }
+        return allInitialized
+    }
+
+    private fun registerUserUnlockedReceiverOnMain() {
         if (userUnlockedReceiver != null) {
             return
         }
@@ -281,35 +297,77 @@ open class MixinApplication :
                 ContextCompat.RECEIVER_NOT_EXPORTED,
             )
             userUnlockedReceiver = receiver
-            userUnlockedReceiverRetryCount.set(0)
+            userUnlockedReceiverRetryCount = 0
         } catch (e: Exception) {
             Log.e(TAG, "Failed to register ACTION_USER_UNLOCKED receiver", e)
-            val attempt = userUnlockedReceiverRetryCount.incrementAndGet()
+            val attempt = ++userUnlockedReceiverRetryCount
             if (attempt <= 3) {
-                mainHandler.postDelayed({ ensureUserUnlockedInit() }, attempt * 2_000L)
+                mainHandler.postDelayed({ ensureUserUnlockedInitOnMain() }, attempt * 2_000L)
             }
         }
     }
 
-    private fun unregisterUserUnlockedReceiverLocked() {
+    private fun unregisterUserUnlockedReceiverOnMain() {
         val receiver = userUnlockedReceiver ?: return
         userUnlockedReceiver = null
         runCatching { unregisterReceiver(receiver) }
     }
 
-    private fun initCredentialProtectedComponents() {
-        Timber.plant(FileLogTree())
-        if (useOpenStreetMap()) {
-            org.osmdroid.config.Configuration.getInstance().load(
-                this,
-                this.getSharedPreferences("osm_prefs", MODE_PRIVATE)
-            )
+    private fun initCredentialProtectedComponentsOnMain(): Boolean {
+        if (!isFileLogTreePlanted) {
+            runCatching {
+                Timber.plant(FileLogTree())
+                isFileLogTreePlanted = true
+            }.onFailure {
+                Log.e(TAG, "Failed to plant FileLogTree", it)
+            }
         }
-        applicationScope.launch {
-            entityInitialize()
+        if (!isOsmdroidInitialized) {
+            if (useOpenStreetMap()) {
+                runCatching {
+                    org.osmdroid.config.Configuration.getInstance().load(
+                        this,
+                        this.getSharedPreferences("osm_prefs", MODE_PRIVATE),
+                    )
+                    isOsmdroidInitialized = true
+                }.onFailure {
+                    Log.e(TAG, "Failed to initialize osmdroid configuration", it)
+                }
+            } else {
+                isOsmdroidInitialized = true
+            }
         }
-        initAppsFlyer()
-        Session.getAccount()?.let(ThirdPartyUserIdentity::setUser)
+        if (!isEntityInitLaunched) {
+            runCatching {
+                applicationScope.launch {
+                    entityInitialize()
+                }
+                isEntityInitLaunched = true
+            }.onFailure {
+                Log.e(TAG, "Failed to launch entityInitialize", it)
+            }
+        }
+        if (!isAppsFlyerInitialized) {
+            runCatching {
+                initAppsFlyer()
+            }.onFailure {
+                Log.e(TAG, "Failed to initialize AppsFlyer", it)
+            }
+        }
+        if (!isThirdPartyIdentityInitialized) {
+            runCatching {
+                Session.getAccount()?.let(ThirdPartyUserIdentity::setUser)
+                isThirdPartyIdentityInitialized = true
+            }.onFailure {
+                Log.e(TAG, "Failed to set third-party user identity", it)
+            }
+        }
+        val appsFlyerReady = BuildConfig.APPSFLYER_DEV_KEY.isBlank() || isAppsFlyerInitialized
+        return isFileLogTreePlanted &&
+            isOsmdroidInitialized &&
+            isEntityInitLaunched &&
+            appsFlyerReady &&
+            isThirdPartyIdentityInitialized
     }
 
     private fun initAppsFlyer() {
@@ -344,8 +402,11 @@ open class MixinApplication :
             }
             return
         }
-        if (!isAppsFlyerInitialized && !ensureUserUnlockedInit()) {
-            return
+        if (!isAppsFlyerInitialized) {
+            ensureUserUnlockedInitOnMain()
+            if (!isAppsFlyerInitialized) {
+                return
+            }
         }
         if (!AppsFlyerLib.getInstance().isSessionReady) {
             return
