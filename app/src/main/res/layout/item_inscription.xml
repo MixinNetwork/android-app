@@ -5,8 +5,9 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
+    android:clipToOutline="true"
     android:foreground="@drawable/ripple_round_8_mask"
-    android:background="@drawable/bg_inscription">
+    android:background="@drawable/bg_round_white_8dp">
 
     <one.mixin.android.widget.InscriptionView
         android:id="@+id/inscription"
@@ -60,5 +61,14 @@
             android:layout_marginTop="2dp" />
 
     </LinearLayout>
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_inscription"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
