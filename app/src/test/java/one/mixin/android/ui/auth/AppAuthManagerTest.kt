@@ -309,6 +309,21 @@ class AppAuthManagerTest {
     }
 
     @Test
+    fun authenticatingTaskDoesNotReceiveActiveDeepLinkFromAnotherTask() {
+        configure(0)
+        val first = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        val second = Robolectric.buildActivity(
+            AppAuthActivity::class.java,
+            Intent().setData(Uri.parse("mixin://users/another-task")),
+        ).get()
+        val manager = AppAuthManager(preferences, taskIdOf = { if (it === first) 1 else 2 })
+        manager.onActivityStarted(first)
+        manager.onActivityStarted(second)
+
+        assertNull(manager.onAuthenticated(taskId = 1))
+    }
+
+    @Test
     fun pendingDeepLinkIsRecordedEvenWhenTaskAlreadyPending() {
         configure(0)
         val manager = manager()
@@ -602,7 +617,6 @@ class AppAuthManagerTest {
         manager.onActivityStopped(lock2)
         assertFalse(manager.isLocked)
         val target = activity(taskId = 1)
-        shadowOf(target).nextStartedActivity
         manager.onActivityStarted(target)
         assertFalse(manager.checkAndShow(target))
         assertFalse(manager.isLocked)
@@ -769,6 +783,30 @@ class AppAuthManagerTest {
             assertFalse(manager.isLocked)
             assertNull(shadowOf(target).nextStartedActivity)
         }
+    }
+
+    @Test
+    fun lateAuthActivityDoesNotInterruptPostAuthHandoff() {
+        configure(0)
+        val manager = manager()
+        val lock = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityStarted(lock)
+        assertTrue(manager.isLocked)
+        val lockEpoch = manager.lockEpoch
+        assertNull(manager.onAuthenticated(expectNextActivity = true))
+        manager.onActivityStopped(lock)
+
+        val lateLock = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityStarted(lateLock)
+        assertTrue(lateLock.isFinishing)
+        manager.onActivityStopped(lateLock)
+
+        val target = activity()
+        manager.onActivityStarted(target)
+
+        assertFalse(manager.isLocked)
+        assertEquals(lockEpoch, manager.lockEpoch)
+        assertNull(shadowOf(target).nextStartedActivity)
     }
 
     @Test

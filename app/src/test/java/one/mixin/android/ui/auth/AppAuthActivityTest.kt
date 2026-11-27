@@ -36,6 +36,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -620,8 +621,15 @@ class AppAuthActivityTest {
         val activity = controller.get()
         val first = showingPinSheet(activity)
 
-        first.dismissNow()
-        ReflectionHelpers.callInstanceMethod<Unit>(activity, "showPinVerification")
+        val dialog = requireNotNull(first.dialog)
+        // Close the window before the fragment receives its dismissal callback.
+        ReflectionHelpers.callInstanceMethod<Unit>(dialog, "dismissInternal")
+        assertSame(first, activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG))
+        assertTrue(first.isAdded)
+        assertFalse(first.isRemoving)
+        assertFalse(dialog.isShowing)
+
+        activity.findViewById<View>(R.id.pin_tv).performClick()
 
         val second = showingPinSheet(activity)
         assertTrue(second !== first)
