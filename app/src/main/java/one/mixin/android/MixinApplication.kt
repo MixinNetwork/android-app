@@ -3,16 +3,24 @@ package one.mixin.android
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.MutableContextWrapper
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.UserManager
+import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import androidx.annotation.RequiresApi
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
+import androidx.core.content.ContextCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.media3.common.util.UnstableApi
 import androidx.work.Configuration
@@ -144,8 +152,25 @@ open class MixinApplication :
 
         fun get(): MixinApplication = appContext as MixinApplication
 
+        private const val TAG = "MixinApplication"
         private const val CLOSE_SCOPE_TIMEOUT_MILLIS = 3_000L
     }
+
+    @Volatile
+    private var isUserUnlockedInitialized = false
+
+    @Volatile
+    private var isAppsFlyerInitialized = false
+
+    private var isFileLogTreePlanted = false
+    private var isOsmdroidInitialized = false
+    private var isEntityInitLaunched = false
+    private var isThirdPartyIdentityInitialized = false
+
+    private var userUnlockedReceiver: BroadcastReceiver? = null
+    private var userUnlockedReceiverRetryCount = 0
+    private val userUnlockedInitPosted = AtomicBoolean(false)
+    private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
     private var activityReferences: Int = 0
     private var isActivityChangingConfigurations = false
@@ -177,12 +202,6 @@ open class MixinApplication :
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
         RxJavaPlugins.setErrorHandler {}
-        if (useOpenStreetMap()) {
-            org.osmdroid.config.Configuration.getInstance().load(
-                this,
-                this.getSharedPreferences("osm_prefs", MODE_PRIVATE)
-            )
-        }
 
         initNativeLibs(applicationContext)
 
@@ -192,12 +211,8 @@ open class MixinApplication :
             exitProcess(2)
         }
 
-        applicationScope.launch {
-            entityInitialize()
-        }
         initBugsnag()
-        initAppsFlyer()
-        Session.getAccount()?.let(ThirdPartyUserIdentity::setUser)
+        ensureUserUnlockedInit()
     }
 
     private fun initMnemonicCode() {
@@ -224,8 +239,141 @@ open class MixinApplication :
         Bugsnag.start(this, config)
     }
 
+    private fun isUserUnlocked(): Boolean {
+        val userManager = getSystemService(UserManager::class.java)
+        return userManager?.isUserUnlocked != false
+    }
+
+    fun ensureUserUnlockedInitialized(): Boolean = ensureUserUnlockedInit()
+
+    private fun ensureUserUnlockedInit(): Boolean {
+        if (isUserUnlockedInitialized) {
+            return true
+        }
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            if (userUnlockedInitPosted.compareAndSet(false, true)) {
+                mainHandler.post {
+                    userUnlockedInitPosted.set(false)
+                    ensureUserUnlockedInitOnMain()
+                }
+            }
+            return isUserUnlockedInitialized
+        }
+        return ensureUserUnlockedInitOnMain()
+    }
+
+    private fun ensureUserUnlockedInitOnMain(): Boolean {
+        if (isUserUnlockedInitialized) {
+            return true
+        }
+        if (!isUserUnlocked()) {
+            registerUserUnlockedReceiverOnMain()
+            if (!isUserUnlocked()) {
+                return false
+            }
+        }
+        unregisterUserUnlockedReceiverOnMain()
+        val allInitialized = initCredentialProtectedComponentsOnMain()
+        if (allInitialized) {
+            isUserUnlockedInitialized = true
+        }
+        return allInitialized
+    }
+
+    private fun registerUserUnlockedReceiverOnMain() {
+        if (userUnlockedReceiver != null) {
+            return
+        }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_USER_UNLOCKED) {
+                    ensureUserUnlockedInit()
+                }
+            }
+        }
+        try {
+            ContextCompat.registerReceiver(
+                this,
+                receiver,
+                IntentFilter(Intent.ACTION_USER_UNLOCKED),
+                ContextCompat.RECEIVER_NOT_EXPORTED,
+            )
+            userUnlockedReceiver = receiver
+            userUnlockedReceiverRetryCount = 0
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to register ACTION_USER_UNLOCKED receiver", e)
+            val attempt = ++userUnlockedReceiverRetryCount
+            if (attempt <= 3) {
+                mainHandler.postDelayed({ ensureUserUnlockedInitOnMain() }, attempt * 2_000L)
+            }
+        }
+    }
+
+    private fun unregisterUserUnlockedReceiverOnMain() {
+        val receiver = userUnlockedReceiver ?: return
+        userUnlockedReceiver = null
+        runCatching { unregisterReceiver(receiver) }
+    }
+
+    private fun initCredentialProtectedComponentsOnMain(): Boolean {
+        if (!isFileLogTreePlanted) {
+            runCatching {
+                Timber.plant(FileLogTree())
+                isFileLogTreePlanted = true
+            }.onFailure {
+                Log.e(TAG, "Failed to plant FileLogTree", it)
+            }
+        }
+        if (!isOsmdroidInitialized) {
+            if (useOpenStreetMap()) {
+                runCatching {
+                    org.osmdroid.config.Configuration.getInstance().load(
+                        this,
+                        this.getSharedPreferences("osm_prefs", MODE_PRIVATE),
+                    )
+                    isOsmdroidInitialized = true
+                }.onFailure {
+                    Log.e(TAG, "Failed to initialize osmdroid configuration", it)
+                }
+            } else {
+                isOsmdroidInitialized = true
+            }
+        }
+        if (!isEntityInitLaunched) {
+            runCatching {
+                applicationScope.launch {
+                    entityInitialize()
+                }
+                isEntityInitLaunched = true
+            }.onFailure {
+                Log.e(TAG, "Failed to launch entityInitialize", it)
+            }
+        }
+        if (!isAppsFlyerInitialized) {
+            runCatching {
+                initAppsFlyer()
+            }.onFailure {
+                Log.e(TAG, "Failed to initialize AppsFlyer", it)
+            }
+        }
+        if (!isThirdPartyIdentityInitialized) {
+            runCatching {
+                Session.getAccount()?.let(ThirdPartyUserIdentity::setUser)
+                isThirdPartyIdentityInitialized = true
+            }.onFailure {
+                Log.e(TAG, "Failed to set third-party user identity", it)
+            }
+        }
+        val appsFlyerReady = BuildConfig.APPSFLYER_DEV_KEY.isBlank() || isAppsFlyerInitialized
+        return isFileLogTreePlanted &&
+            isOsmdroidInitialized &&
+            isEntityInitLaunched &&
+            appsFlyerReady &&
+            isThirdPartyIdentityInitialized
+    }
+
     private fun initAppsFlyer() {
-        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank() || isAppsFlyerInitialized) {
             return
         }
         AppsFlyerLib.getInstance().apply {
@@ -239,16 +387,33 @@ open class MixinApplication :
                     Timber.e("AppsFlyer Conversion Data Error: $error")
                 }
             }, this@MixinApplication)
+            isAppsFlyerInitialized = true
             registerSessionReadyListener {
                 startAppsFlyer()
             }
         }
     }
 
-    fun startAppsFlyer(userId: String? = Session.getAccountId()) {
-        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank() || !AppsFlyerLib.getInstance().isSessionReady) {
+    fun startAppsFlyer(userId: String? = null) {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank() || !isUserUnlocked()) {
             return
         }
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            mainHandler.post {
+                startAppsFlyer(userId)
+            }
+            return
+        }
+        if (!isAppsFlyerInitialized) {
+            ensureUserUnlockedInitOnMain()
+            if (!isAppsFlyerInitialized) {
+                return
+            }
+        }
+        if (!AppsFlyerLib.getInstance().isSessionReady) {
+            return
+        }
+        val resolvedUserId = userId ?: Session.getAccountId()
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
         val appInstanceIdTask = firebaseAnalytics.appInstanceId
         val sessionIdTask = firebaseAnalytics.sessionId
@@ -262,7 +427,7 @@ open class MixinApplication :
                     additionalData["ga_session_id"] = sessionIdTask.result
                 }
                 AppsFlyerLib.getInstance().apply {
-                    userId?.let { setCustomerUserId(ThirdPartyUserIdentity.appsFlyerCustomerUserId(it)) }
+                    resolvedUserId?.let { setCustomerUserId(ThirdPartyUserIdentity.appsFlyerCustomerUserId(it)) }
                     setAdditionalData(additionalData)
                     start(object : AppsFlyerRequestListener {
                         override fun onSuccess() = Unit
@@ -289,17 +454,17 @@ open class MixinApplication :
         CronetProviderInstaller.installProvider(this)
         CursorWindowFixer.fix(this)
         if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree(), FileLogTree())
-        } else {
-            Timber.plant(FileLogTree())
+            Timber.plant(Timber.DebugTree())
         }
     }
 
     override val workManagerConfiguration: Configuration
-        get() =
-            Configuration.Builder()
+        get() {
+            ensureUserUnlockedInit()
+            return Configuration.Builder()
                 .setWorkerFactory(getWorkerFactory())
                 .build()
+        }
 
     override fun getCameraXConfig() = Camera2Config.defaultConfig()
 
@@ -453,6 +618,7 @@ open class MixinApplication :
     }
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+        ensureUserUnlockedInit()
         activity.window.enableWideColorGamutIfSupported()
     }
 
@@ -462,6 +628,7 @@ open class MixinApplication :
         activity: Activity,
         savedInstanceState: Bundle?,
     ) {
+        ensureUserUnlockedInit()
         createdActivities.add(activity)
     }
 

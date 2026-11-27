@@ -1,10 +1,11 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.Typeface
-import android.media.MediaScannerConnection
+import android.os.Build
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -19,13 +20,17 @@ import androidx.core.view.doOnLayout
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withResumed
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
@@ -46,11 +51,14 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.extension.savePngBitmapToUniqueCacheFile
+import one.mixin.android.extension.savePngToPublicDownloads
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.ShareCoverRepository
@@ -63,14 +71,15 @@ import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.widget.bottomSheetHeight
+import timber.log.Timber
 import java.io.File
-import java.io.FileOutputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -446,16 +455,27 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     private fun shareToSystem() {
-        lifecycleScope.launch {
-            val file = createShareFile()
-            val uri = FileProvider.getUriForFile(requireContext(), BuildConfig.APPLICATION_ID + ".provider", file)
-            val share = android.content.Intent().apply {
-                action = android.content.Intent.ACTION_SEND
-                type = "image/png"
-                putExtra(android.content.Intent.EXTRA_STREAM, uri)
+        if (shareJob?.isActive == true) return
+        shareJob = lifecycleScope.launch {
+            try {
+                if (!isAdded) return@launch
+                val file = createShareFile()
+                if (!isAdded) return@launch
+                val uri = FileProvider.getUriForFile(requireContext(), BuildConfig.APPLICATION_ID + ".provider", file)
+                val share = android.content.Intent().apply {
+                    action = android.content.Intent.ACTION_SEND
+                    type = "image/png"
+                    putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                dismiss()
+                startActivity(android.content.Intent.createChooser(share, getString(R.string.Share)))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to share perps position image")
+                toast(R.string.Save_failure)
             }
-            dismiss()
-            startActivity(android.content.Intent.createChooser(share, getString(R.string.Share)))
         }
     }
 
@@ -526,26 +546,63 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         toast(R.string.copied_to_clipboard)
     }
 
+    private var saveJob: Job? = null
+    private var shareJob: Job? = null
+
     private fun saveToAlbum() {
-        lifecycleScope.launch {
-            val bitmap = createShareBitmap()
-            val dir = requireContext().getPublicDownloadPath()
-            dir.mkdirs()
-            val file = File(dir, "${buildFileName()}_position.png")
-            saveBitmapToFile(file, bitmap)
-            MediaScannerConnection.scanFile(requireContext(), arrayOf(file.toString()), null, null)
-            dismiss()
-            toast(getString(R.string.Save_to, dir.path))
+        if (saveJob?.isActive == true) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(scope(Lifecycle.Event.ON_STOP))
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            performSaveToAlbum()
+                        } else if (isAdded) {
+                            requireContext().openPermissionSetting()
+                        }
+                    },
+                    {
+                        toast(R.string.Save_failure)
+                    },
+                )
+        } else {
+            performSaveToAlbum()
+        }
+    }
+
+    private fun performSaveToAlbum() {
+        if (saveJob?.isActive == true) return
+        saveJob = lifecycleScope.launch {
+            try {
+                if (!isAdded) return@launch
+                val context = requireContext()
+                val bitmap = createShareBitmap()
+                val fileName = "${buildFileName()}_position.png"
+                val savedPath =
+                    withContext(Dispatchers.IO) {
+                        context.savePngToPublicDownloads(bitmap, fileName)
+                    }
+                if (isAdded) {
+                    dismiss()
+                }
+                toast(getString(R.string.Save_to, savedPath))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to save perps position image")
+                toast(R.string.Save_failure)
+            }
         }
     }
 
     private suspend fun createShareFile(): File {
+        val context = requireContext()
         val bitmap = createShareBitmap()
-        val file = File(requireContext().cacheDir, "${buildFileName()}_position.png")
-        withContext(Dispatchers.IO) {
-            saveBitmapToFile(file, bitmap)
+        return withContext(Dispatchers.IO) {
+            context.savePngBitmapToUniqueCacheFile("${buildFileName()}_position", bitmap)
         }
-        return file
     }
 
     private fun createShareBitmap(): Bitmap = currentPosterHolder()?.itemBinding?.topCard?.drawShareBitmap() ?: binding.posterPager.drawShareBitmap()
@@ -553,12 +610,6 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     private fun currentPosterHolder(): PosterViewHolder? {
         val recyclerView = binding.posterPager.getChildAt(0) as? RecyclerView ?: return null
         return recyclerView.findViewHolderForAdapterPosition(binding.posterPager.currentItem) as? PosterViewHolder
-    }
-
-    private fun saveBitmapToFile(file: File, bitmap: Bitmap) {
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-        }
     }
 
     private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL

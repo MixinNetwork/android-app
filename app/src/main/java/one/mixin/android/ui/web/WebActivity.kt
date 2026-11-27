@@ -76,7 +76,9 @@ class WebActivity : BaseActivity() {
                             putString(
                                 WebFragment.CONVERSATION_ID,
                                 conversationId ?: app?.let {
-                                    generateConversationId(Session.getAccountId()!!, it.appId)
+                                    Session.getAccountId()?.let { accountId ->
+                                        generateConversationId(accountId, it.appId)
+                                    }
                                 },
                             )
                             putParcelable(WebFragment.ARGS_APP, app)
@@ -97,7 +99,7 @@ class WebActivity : BaseActivity() {
     private lateinit var binding: ActivityWebBinding
 
     private val supportPage by lazy {
-        intent.extras?.let {
+        intent?.extras?.let {
             isSupportBotPage(it.getParcelableCompat(WebFragment.ARGS_APP, App::class.java)?.appId, it.getString(WebFragment.URL).orEmpty())
         } == true
     }
@@ -107,7 +109,7 @@ class WebActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         if (supportPage) {
             overridePendingTransition(0, 0)
-        } else if (intent.extras != null) {
+        } else if (!intent?.extras?.getString(WebFragment.URL).isNullOrBlank()) {
             overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
         } else {
             overridePendingTransition(R.anim.fade_in, R.anim.stay)
@@ -134,10 +136,7 @@ class WebActivity : BaseActivity() {
             object : SixLayout.OnCloseListener {
                 override fun onClose(index: Int) {
                     releaseClip(index)
-                    supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.run {
-                        val fragment = (this as WebFragment)
-                        fragment.resetIndex(index)
-                    }
+                    notifyClipRemoved(index)
                     binding.six.loadData(clips, loadViewAction)
                 }
             },
@@ -198,10 +197,35 @@ class WebActivity : BaseActivity() {
         }
     }
 
-    private var loadViewAction = fun(index: Int) {
+    private fun notifyClipRemoved(removedIndex: Int) {
+        supportFragmentManager.fragments.forEach { fragment ->
+            if (fragment is WebFragment) {
+                fragment.resetIndex(removedIndex)
+            }
+        }
+    }
+
+    private fun showClipOverview() {
+        isExpand = false
+        FloatingWebClip.getInstance(this.isNightMode()).hide()
+        SystemUIManager.lightUI(window, !isNightMode())
+        hideWeb()
+    }
+
+    private var loadViewAction: (Int) -> Unit = fun(index: Int) {
+        val clip = clips.getOrNull(index) ?: return
+        val clipUrl: String? = clip.url
+        if (clipUrl.isNullOrBlank()) {
+            releaseClip(index)
+            notifyClipRemoved(index)
+            binding.six.loadData(clips, loadViewAction)
+            if (clips.isEmpty() && supportFragmentManager.findFragmentByTag(WebFragment.TAG) == null) {
+                finish()
+            }
+            return
+        }
         val extras = Bundle()
-        val clip = clips[index]
-        extras.putString(WebFragment.URL, clip.url)
+        extras.putString(WebFragment.URL, clipUrl)
         extras.putString(WebFragment.CONVERSATION_ID, clip.conversationId)
         extras.putInt(WebFragment.ARGS_INDEX, index)
         extras.putParcelable(WebFragment.ARGS_APP, clip.app)
@@ -219,10 +243,11 @@ class WebActivity : BaseActivity() {
         ).commit()
     }
 
-    private fun handleExtras(intent: Intent) {
+    private fun handleExtras(intent: Intent?) {
         binding.six.loadData(clips, loadViewAction)
-        val extras = intent.extras
-        if (extras != null) {
+        val extras = intent?.extras
+        val url = extras?.getString(WebFragment.URL)
+        if (extras != null && !url.isNullOrBlank()) {
             isExpand = true
             releaseWeb()
             supportFragmentManager.beginTransaction().add(
@@ -230,11 +255,33 @@ class WebActivity : BaseActivity() {
                 WebFragment.newInstance(extras),
                 WebFragment.TAG,
             ).commit()
+        } else if (clips.isNotEmpty() || supportFragmentManager.findFragmentByTag(WebFragment.TAG) != null) {
+            showClipOverview()
+        } else if (extras == null && hasSavedClips()) {
+            showClipOverview()
+            ensureClipsLoaded {
+                if (isFinishing || isDestroyed) return@ensureClipsLoaded
+                binding.six.loadData(clips, loadViewAction)
+                if (clips.isEmpty() && supportFragmentManager.findFragmentByTag(WebFragment.TAG) == null) {
+                    finish()
+                }
+            }
+        } else {
+            finish()
+        }
+    }
+
+    fun handleInvalidWebFragment(fragment: WebFragment) {
+        supportFragmentManager.beginTransaction()
+            .remove(fragment)
+            .commitAllowingStateLoss()
+        if (clips.isEmpty()) {
+            finish()
         } else {
             isExpand = false
             FloatingWebClip.getInstance(this.isNightMode()).hide()
             SystemUIManager.lightUI(window, !isNightMode())
-            hideWeb()
+            binding.six.loadData(clips, loadViewAction)
         }
     }
 

@@ -1,6 +1,7 @@
 package one.mixin.android.util.debug
 
 import android.os.Build
+import android.os.UserManager
 import android.provider.Settings
 import android.util.Log
 import one.mixin.android.BuildConfig
@@ -27,6 +28,10 @@ class FileLogTree : Timber.Tree() {
         message: String,
         t: Throwable?,
     ) {
+        val userManager = MixinApplication.appContext.getSystemService(UserManager::class.java)
+        if (userManager?.isUserUnlocked == false) {
+            return
+        }
         val directory = MixinApplication.appContext.cacheDir
         val defaultSharedPreferences = MixinApplication.appContext.defaultSharedPreferences
         val topActivity = MixinApplication.get().topActivity

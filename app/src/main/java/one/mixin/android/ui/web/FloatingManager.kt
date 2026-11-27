@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.webkit.WebViewClient
 import androidx.annotation.MainThread
@@ -14,6 +16,7 @@ import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
@@ -34,7 +37,11 @@ import one.mixin.android.widget.MixinWebView
 import timber.log.Timber
 
 private const val PREF_FLOATING = "floating"
+private const val MAX_CLIPS = 6
 private var screenshot: Bitmap? = null
+private var initClipsJob: Job? = null
+private var clipsLoadedFromPrefs = false
+private val pendingInitCallbacks = mutableListOf<() -> Unit>()
 
 fun getScreenshot() = screenshot
 
@@ -149,15 +156,19 @@ data class WebClip(
     @Transient val isFinished: Boolean = false,
 )
 
+private fun destroyClipWebView(clip: WebClip) {
+    clip.webView?.destroy()
+    clip.webView?.webViewClient = object : WebViewClient() {}
+    clip.webView?.webChromeClient = null
+}
+
 fun updateClip(
     index: Int,
     webClip: WebClip,
 ) {
     if (index < clips.size) {
         if (clips[index].webView != webClip.webView) {
-            clips[index].webView?.destroy()
-            clips[index].webView?.webViewClient = object : WebViewClient() {}
-            clips[index].webView?.webChromeClient = null
+            destroyClipWebView(clips[index])
         }
         clips.removeAt(index)
         clips.add(index, webClip)
@@ -170,7 +181,7 @@ fun showClip() {
 
 fun holdClip(webClip: WebClip) {
     if (!clips.contains(webClip)) {
-        if (clips.size >= 6) {
+        if (clips.size >= MAX_CLIPS) {
             toast(R.string.web_full)
         } else {
             clips.add(webClip)
@@ -179,17 +190,63 @@ fun holdClip(webClip: WebClip) {
     }
 }
 
+fun hasSavedClips(): Boolean {
+    val content = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_FLOATING, null)
+    return !content.isNullOrBlank() && content.trim() != "[]"
+}
+
+@MainThread
+fun ensureClipsLoaded(onLoaded: () -> Unit) {
+    if (clips.isNotEmpty() || clipsLoadedFromPrefs) {
+        onLoaded()
+        return
+    }
+    pendingInitCallbacks.add(onLoaded)
+    initClips()
+}
+
 private fun initClips() {
-    MixinApplication.get().applicationScope.launch(SINGLE_THREAD) {
-        val content = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
+    if (initClipsJob?.isActive == true) return
+    initClipsJob = MixinApplication.get().applicationScope.launch(SINGLE_THREAD) {
+        val prefs = MixinApplication.appContext.defaultSharedPreferences
+        val content = prefs.getString(PREF_FLOATING, null)
         val type = object : TypeToken<List<WebClip>>() {}.type
-        val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
-        clips.clear()
-        if (list.isEmpty()) return@launch
-        clips.addAll(list)
-        MixinApplication.get().currentActivity?.let { _ ->
-            withContext(Dispatchers.Main) {
-                FloatingWebClip.getInstance().show()
+        val list = content?.takeIf { it.isNotBlank() }?.let {
+            runCatching { GsonHelper.customGson.fromJson<List<WebClip>>(it, type) }.getOrNull()
+        }
+        val validClips = list?.filter { clip ->
+            val clipUrl: String? = clip.url
+            !clipUrl.isNullOrBlank()
+        }.orEmpty()
+        val hadInvalidClips = !content.isNullOrBlank() && (list == null || validClips.size != list.size)
+        withContext(Dispatchers.Main) {
+            if (!isActive) return@withContext
+            clipsLoadedFromPrefs = true
+            initClipsJob = null
+            var restoredAdded = false
+            if (validClips.isNotEmpty()) {
+                val remainingSlots = (MAX_CLIPS - clips.size).coerceAtLeast(0)
+                val toAdd = validClips.take(remainingSlots)
+                validClips.drop(toAdd.size).forEach(::destroyClipWebView)
+                clips.addAll(toAdd)
+                restoredAdded = toAdd.isNotEmpty()
+            }
+            if (hadInvalidClips || restoredAdded) {
+                if (clips.isEmpty()) {
+                    saveJob?.cancel()
+                    saveJob = null
+                    MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
+                } else {
+                    saveClips()
+                }
+            }
+            val callbacks = pendingInitCallbacks.toList()
+            pendingInitCallbacks.clear()
+            callbacks.forEach { it.invoke() }
+            if (clips.isNotEmpty()) {
+                MixinApplication.get().currentActivity?.let { _ ->
+                    FloatingWebClip.getInstance().show()
+                }
             }
         }
     }
@@ -197,7 +254,9 @@ private fun initClips() {
 
 fun refresh() {
     if (clips.isEmpty()) {
-        initClips()
+        if (!clipsLoadedFromPrefs) {
+            initClips()
+        }
     } else {
         FloatingWebClip.getInstance().show()
     }
@@ -205,9 +264,7 @@ fun refresh() {
 
 fun releaseClip(index: Int) {
     if (index < clips.size && index >= 0) {
-        clips[index].webView?.destroy()
-        clips[index].webView?.webViewClient = object : WebViewClient() {}
-        clips[index].webView?.webChromeClient = null
+        destroyClipWebView(clips[index])
         clips.removeAt(index)
         if (clips.isEmpty()) {
             saveJob?.cancel()
@@ -253,16 +310,23 @@ fun replaceApp(app: App) {
 }
 
 fun releaseAll() {
-    clips.forEach { clip ->
-        clip.webView?.destroy()
-        clip.webView?.webViewClient = object : WebViewClient() {}
-        clip.webView?.webChromeClient = null
+    if (Looper.myLooper() != Looper.getMainLooper()) {
+        MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
+        Handler(Looper.getMainLooper()).post { releaseAll() }
+        return
     }
+    initClipsJob?.cancel()
+    initClipsJob = null
+    clipsLoadedFromPrefs = true
+    clips.forEach(::destroyClipWebView)
     clips.clear()
     saveJob?.cancel()
     saveJob = null
     MixinApplication.appContext.defaultSharedPreferences.remove(PREF_FLOATING)
     FloatingWebClip.getInstance().hide()
+    val callbacks = pendingInitCallbacks.toList()
+    pendingInitCallbacks.clear()
+    callbacks.forEach { it.invoke() }
 }
 
 @MainThread

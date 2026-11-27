@@ -18,12 +18,21 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
+import one.mixin.android.ui.landing.LandingActivity
+import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Provider
 
 @AndroidEntryPoint
 class BubbleActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        val hasAccount = Session.getAccount() != null
+        super.onCreate(if (hasAccount) savedInstanceState else null)
+        if (!hasAccount) {
+            LandingActivity.show(this)
+            finish()
+            return
+        }
         isBubbled =
             if (Build.VERSION.SDK_INT >= 31) {
                 isLaunchedFromBubble
@@ -43,6 +52,11 @@ class BubbleActivity : BlazeBaseActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (Session.getAccount() == null) {
+            LandingActivity.show(this)
+            finish()
+            return
+        }
         setIntent(intent)
         showConversation(intent)
     }
@@ -50,17 +64,31 @@ class BubbleActivity : BlazeBaseActivity() {
     var isBubbled = false
 
     @Inject
-    lateinit var conversationRepository: ConversationRepository
+    lateinit var conversationRepositoryProvider: Provider<ConversationRepository>
 
     @Inject
-    lateinit var userRepository: UserRepository
+    lateinit var userRepositoryProvider: Provider<UserRepository>
+
+    private val userRepository: UserRepository
+        get() = userRepositoryProvider.get()
 
     private fun showConversation(intent: Intent) {
         val bundle = intent.extras ?: return
         lifecycleScope.launch(
-            CoroutineExceptionHandler { _, _ ->
+            CoroutineExceptionHandler { _, throwable ->
+                if (Session.getAccount() == null) {
+                    LandingActivity.show(this)
+                    finish()
+                    return@CoroutineExceptionHandler
+                }
+                val fallbackExtras = intent.extras
+                if (fallbackExtras == null || (fallbackExtras.getString(CONVERSATION_ID) == null && fallbackExtras.getString(RECIPIENT_ID) == null)) {
+                    Timber.e(throwable, "Invalid bubble conversation intent extras")
+                    finish()
+                    return@CoroutineExceptionHandler
+                }
                 replaceFragment(
-                    ConversationFragment.newInstance(intent.extras!!),
+                    ConversationFragment.newInstance(fallbackExtras),
                     R.id.container,
                     ConversationFragment.TAG,
                 )

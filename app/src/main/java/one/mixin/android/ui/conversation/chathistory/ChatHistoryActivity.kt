@@ -67,6 +67,7 @@ import one.mixin.android.ui.conversation.chathistory.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
 import one.mixin.android.ui.media.pager.overlay.MediaViewerOverlay
@@ -106,6 +107,7 @@ import one.mixin.android.widget.buildBottomSheetView
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Provider
 
 @UnstableApi @AndroidEntryPoint
 class ChatHistoryActivity : BaseActivity() {
@@ -120,16 +122,29 @@ class ChatHistoryActivity : BaseActivity() {
     }
 
     @Inject
-    lateinit var userRepository: UserRepository
+    lateinit var userRepositoryProvider: Provider<UserRepository>
 
     @Inject
-    lateinit var conversationRepository: ConversationRepository
+    lateinit var conversationRepositoryProvider: Provider<ConversationRepository>
 
     @Inject
-    lateinit var messenger: SendMessageHelper
+    lateinit var messengerProvider: Provider<SendMessageHelper>
 
     @Inject
-    lateinit var jobManager: MixinJobManager
+    lateinit var jobManagerProvider: Provider<MixinJobManager>
+
+    private val userRepository: UserRepository
+        get() = userRepositoryProvider.get()
+
+    private val conversationRepository: ConversationRepository
+        get() = conversationRepositoryProvider.get()
+
+    private val messenger: SendMessageHelper
+        get() = messengerProvider.get()
+
+    private val jobManager: MixinJobManager
+        get() = jobManagerProvider.get()
+
     private val conversationId by lazy {
         requireNotNull(intent.getStringExtra(CONVERSATION_ID))
     }
@@ -152,7 +167,13 @@ class ChatHistoryActivity : BaseActivity() {
     private var firstLoad = true
 
     public override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        val hasAccount = Session.getAccount() != null
+        super.onCreate(if (hasAccount) savedInstanceState else null)
+        if (!hasAccount) {
+            LandingActivity.show(this)
+            finish()
+            return
+        }
         binding = ActivityChatHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.container.backgroundImage = WallpaperManager.getWallpaper(this@ChatHistoryActivity)
@@ -251,6 +272,10 @@ class ChatHistoryActivity : BaseActivity() {
     }
 
     override fun onStop() {
+        if (!::binding.isInitialized) {
+            super.onStop()
+            return
+        }
         binding.recyclerView.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)

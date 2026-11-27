@@ -20,17 +20,27 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSA
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.Job
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ConversationActivity : BlazeBaseActivity() {
     private var suppressHomeFallbackOnFinish = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        val hasAccount = Session.getAccount() != null
+        super.onCreate(if (hasAccount) savedInstanceState else null)
+        if (!hasAccount) {
+            suppressHomeFallbackOnFinish = true
+            LandingActivity.show(this)
+            finish()
+            return
+        }
         if (ConversationEmbedding.routeRootConversation(this) { suppressHomeFallbackOnFinish = true }) return
         setContentView(R.layout.activity_chat)
         if (savedInstanceState == null) {
@@ -48,6 +58,12 @@ class ConversationActivity : BlazeBaseActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        if (Session.getAccount() == null) {
+            suppressHomeFallbackOnFinish = true
+            LandingActivity.show(this)
+            finish()
+            return
+        }
         setIntent(intent)
         showConversation(intent)
     }
@@ -77,10 +93,13 @@ class ConversationActivity : BlazeBaseActivity() {
     }
 
     @Inject
-    lateinit var conversationRepository: ConversationRepository
+    lateinit var conversationRepositoryProvider: Provider<ConversationRepository>
 
     @Inject
-    lateinit var userRepository: UserRepository
+    lateinit var userRepositoryProvider: Provider<UserRepository>
+
+    private val userRepository: UserRepository
+        get() = userRepositoryProvider.get()
 
     private var conversationJob: Job? = null
 
@@ -88,9 +107,21 @@ class ConversationActivity : BlazeBaseActivity() {
         val bundle = intent.extras ?: return
         conversationJob?.cancel()
         conversationJob = lifecycleScope.launch(
-            CoroutineExceptionHandler { _, _ ->
+            CoroutineExceptionHandler { _, throwable ->
+                if (Session.getAccount() == null) {
+                    suppressHomeFallbackOnFinish = true
+                    LandingActivity.show(this)
+                    finish()
+                    return@CoroutineExceptionHandler
+                }
+                val fallbackExtras = intent.extras
+                if (fallbackExtras == null || (fallbackExtras.getString(CONVERSATION_ID) == null && fallbackExtras.getString(RECIPIENT_ID) == null)) {
+                    Timber.e(throwable, "Invalid conversation intent extras")
+                    finish()
+                    return@CoroutineExceptionHandler
+                }
                 replaceFragment(
-                    ConversationFragment.newInstance(intent.extras!!),
+                    ConversationFragment.newInstance(fallbackExtras),
                     R.id.container,
                     ConversationFragment.TAG,
                 )

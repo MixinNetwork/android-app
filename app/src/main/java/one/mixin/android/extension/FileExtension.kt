@@ -4,6 +4,7 @@ package one.mixin.android.extension
 
 import android.Manifest
 import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.database.Cursor
@@ -11,15 +12,19 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.media.MediaScannerConnection
 import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.system.ErrnoException
+import android.system.OsConstants
 import android.util.Base64
 import android.util.Size
 import android.webkit.MimeTypeMap
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.EnvironmentCompat
@@ -1175,4 +1180,231 @@ val oldMediaPath by lazy {
 
 val ancientMediaPath by lazy {
     MixinApplication.appContext.getAncientMediaPath()?.toUri()?.toString()
+}
+
+/**
+ * Compresses [bitmap] as PNG into [file], deleting any partial file if compression or I/O fails.
+ */
+fun savePngBitmapToFile(file: File, bitmap: Bitmap) {
+    try {
+        FileOutputStream(file).use { out ->
+            if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
+                throw IOException("Failed to compress bitmap")
+            }
+            out.flush()
+        }
+    } catch (e: Exception) {
+        runCatching { file.deleteOnExists() }
+        throw e
+    }
+}
+
+private const val SHARE_CACHE_RETENTION_MILLIS = 60 * 60 * 1000L
+
+/**
+ * Creates a unique PNG file in `cacheDir/share` (falling back to [cacheDir]) after pruning stale files,
+ * and compresses [bitmap] into it, deleting any partial file on failure.
+ */
+fun Context.savePngBitmapToUniqueCacheFile(
+    baseName: String,
+    bitmap: Bitmap,
+): File {
+    val shareDir = File(cacheDir, "share")
+    val targetDir = if (shareDir.exists() || shareDir.mkdirs()) {
+        val cutoff = System.currentTimeMillis() - SHARE_CACHE_RETENTION_MILLIS
+        shareDir.listFiles()?.forEach { existing ->
+            if (existing.isFile && existing.lastModified() < cutoff) {
+                runCatching { existing.delete() }
+            }
+        }
+        shareDir
+    } else {
+        cacheDir
+    }
+    val sanitized = baseName.toValidFileName().ifBlank { "share" }
+    val prefix = if (sanitized.length < 3) "img_${sanitized}_" else "${sanitized}_"
+    val file = File.createTempFile(prefix, ".png", targetDir)
+    savePngBitmapToFile(file, bitmap)
+    return file
+}
+
+/**
+ * Saves [bitmap] as a PNG into public Downloads (via MediaStore on Q+, or public directory with storage permission),
+ * falling back to MediaStore Images, and returns the saved directory path.
+ */
+fun Context.savePngToPublicDownloads(
+    bitmap: Bitmap,
+    fileName: String,
+): String =
+    saveToPublicDownloads(
+        fileName = fileName,
+        mimeType = "image/png",
+        imagesCollectionFallback = true,
+        imagesRelativePath = "${Environment.DIRECTORY_PICTURES}${File.separator}Mixin",
+        imagesDisplayDirPath = getPublicPicturePath().path,
+    ) { out ->
+        if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
+            throw IOException("Failed to compress bitmap")
+        }
+        out.flush()
+    }
+
+/**
+ * Copies [sourceFile] into public Downloads (via MediaStore on Q+, or public directory with storage permission),
+ * returning the saved directory path.
+ */
+fun Context.saveFileToPublicDownloads(
+    sourceFile: File,
+    fileName: String,
+    mimeType: String = "image/png",
+): String =
+    saveToPublicDownloads(
+        fileName = fileName,
+        mimeType = mimeType,
+        imagesCollectionFallback = mimeType.startsWith("image/"),
+        imagesRelativePath = "${Environment.DIRECTORY_PICTURES}${File.separator}Mixin",
+        imagesDisplayDirPath = getPublicPicturePath().path,
+    ) { out ->
+        FileInputStream(sourceFile).use { input ->
+            input.copyTo(out)
+        }
+        out.flush()
+    }
+
+/**
+ * Detects PNG, JPEG, GIF or WebP from the leading bytes of an image file,
+ * returning the MIME type paired with its file extension, or null when unknown.
+ */
+fun detectImageType(header: ByteArray): Pair<String, String>? {
+    fun matches(
+        offset: Int,
+        vararg bytes: Int,
+    ): Boolean = header.size >= offset + bytes.size && bytes.indices.all { header[offset + it] == bytes[it].toByte() }
+    return when {
+        matches(0, 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A) -> "image/png" to "png"
+        matches(0, 0xFF, 0xD8, 0xFF) -> "image/jpeg" to "jpg"
+        matches(0, 0x47, 0x49, 0x46, 0x38) -> "image/gif" to "gif"
+        matches(0, 0x52, 0x49, 0x46, 0x46) && matches(8, 0x57, 0x45, 0x42, 0x50) -> "image/webp" to "webp"
+        else -> null
+    }
+}
+
+private fun Context.saveToPublicDownloads(
+    fileName: String,
+    mimeType: String,
+    imagesCollectionFallback: Boolean,
+    imagesRelativePath: String,
+    imagesDisplayDirPath: String,
+    writer: (FileOutputStreamCompat) -> Unit,
+): String {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        var lastError: Exception
+        try {
+            return saveStreamToMediaStore(
+                collectionUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                relativePath = "${Environment.DIRECTORY_DOWNLOADS}${File.separator}Mixin",
+                displayDirPath = getPublicDownloadPath().path,
+                fileName = fileName,
+                mimeType = mimeType,
+                writer = writer,
+            )
+        } catch (e: Exception) {
+            if (isNoSpaceError(e)) throw e
+            lastError = e
+            Timber.w(e, "Failed to save %s to MediaStore.Downloads", fileName)
+        }
+        if (imagesCollectionFallback) {
+            try {
+                return saveStreamToMediaStore(
+                    collectionUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    relativePath = imagesRelativePath,
+                    displayDirPath = imagesDisplayDirPath,
+                    fileName = fileName,
+                    mimeType = mimeType,
+                    writer = writer,
+                )
+            } catch (e: Exception) {
+                if (isNoSpaceError(e)) throw e
+                lastError = e
+                Timber.w(e, "Failed to save %s to MediaStore.Images", fileName)
+            }
+        }
+        throw lastError
+    }
+
+    if (!hasWritePermission()) {
+        throw IOException("Missing external storage write permission")
+    }
+    val dir = getPublicDownloadPath()
+    if (!dir.exists() && !dir.mkdirs()) {
+        throw IOException("Failed to create directory: ${dir.path}")
+    }
+    val file = File(dir, fileName)
+    try {
+        FileOutputStream(file).use { out ->
+            writer(out)
+        }
+    } catch (e: Exception) {
+        runCatching { file.deleteOnExists() }
+        throw e
+    }
+    MediaScannerConnection.scanFile(this, arrayOf(file.toString()), null, null)
+    return dir.path
+}
+
+private typealias FileOutputStreamCompat = java.io.OutputStream
+
+@RequiresApi(Build.VERSION_CODES.Q)
+private fun Context.saveStreamToMediaStore(
+    collectionUri: Uri,
+    relativePath: String,
+    displayDirPath: String,
+    fileName: String,
+    mimeType: String,
+    writer: (java.io.OutputStream) -> Unit,
+): String {
+    val values =
+        ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+            put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+    val resolver = contentResolver
+    val uri =
+        resolver.insert(collectionUri, values)
+            ?: throw IOException("Failed to insert MediaStore entry in $relativePath")
+    try {
+        val outputStream =
+            resolver.openOutputStream(uri)
+                ?: throw IOException("Failed to open output stream for $uri")
+        outputStream.use(writer)
+        val doneValues =
+            ContentValues().apply {
+                put(MediaStore.MediaColumns.IS_PENDING, 0)
+            }
+        val updatedRows = resolver.update(uri, doneValues, null, null)
+        if (updatedRows != 1) {
+            throw IOException("Failed to finalize MediaStore entry for $uri (updatedRows=$updatedRows)")
+        }
+        return displayDirPath
+    } catch (e: Exception) {
+        runCatching { resolver.delete(uri, null, null) }
+        throw e
+    }
+}
+
+private fun isNoSpaceError(throwable: Throwable): Boolean {
+    var current: Throwable? = throwable
+    while (current != null) {
+        if (current is ErrnoException && current.errno == OsConstants.ENOSPC) {
+            return true
+        }
+        val message = current.message
+        if (message != null && (message.contains("ENOSPC", ignoreCase = true) || message.contains("No space left on device", ignoreCase = true))) {
+            return true
+        }
+        current = current.cause
+    }
+    return false
 }

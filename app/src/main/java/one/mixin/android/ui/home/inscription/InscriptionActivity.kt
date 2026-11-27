@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.inscription
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ClipData
@@ -11,8 +12,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
-import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
@@ -38,9 +39,12 @@ import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.request.allowHardware
+import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -57,6 +61,7 @@ import one.mixin.android.databinding.ViewInscriptionMenuBinding
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.detectImageType
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getCapturedImage
@@ -64,9 +69,14 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableExtraCompat
-import one.mixin.android.extension.getPublicDownloadPath
+import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.launchUntilStop
+import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.saveFileToPublicDownloads
+import one.mixin.android.extension.savePngBitmapToUniqueCacheFile
+import one.mixin.android.extension.savePngToPublicDownloads
 import one.mixin.android.extension.toBytes
+import one.mixin.android.extension.toValidFileName
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncInscriptionsJob
@@ -82,11 +92,12 @@ import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.image.withDiskCacheFile
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import java.io.File
-import java.io.FileOutputStream
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -178,37 +189,94 @@ class InscriptionActivity : BaseActivity() {
         jobManager.addJobInBackground(SyncInscriptionsJob(listOf(inscriptionHash)))
     }
 
+    private fun buildInscriptionFileName(extension: String, base: String = inscriptionHash): String =
+        "${(base.takeIf { it.isNotBlank() } ?: "inscription").toValidFileName()}.$extension"
+
+    private var saveJob: Job? = null
+    private var shareJob: Job? = null
+
     private val onSave: (size: IntSize, bottomSize: IntSize) -> Unit = { size, bottomSize ->
-        lifecycleScope.launch {
+        if (saveJob?.isActive != true) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                performSave(size, bottomSize)
+                            } else {
+                                openPermissionSetting()
+                            }
+                        },
+                        {
+                            toast(R.string.Save_failure)
+                        },
+                    )
+            } else {
+                performSave(size, bottomSize)
+            }
+        }
+    }
+
+    private fun performSave(size: IntSize, bottomSize: IntSize) {
+        if (saveJob?.isActive == true) return
+        saveJob = lifecycleScope.launch {
             inScreenshot = true
-            delay(100)
-            val bitmap = binding.overflow.drawToBitmap()
-            val dir = getPublicDownloadPath()
-            dir.mkdirs()
-            val file = File(dir, "$inscriptionHash.png")
-            saveBitmapToFile(file, cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height))
-            isShareDialogVisible = false
-            MediaScannerConnection.scanFile(this@InscriptionActivity, arrayOf(file.toString()), null, null)
-            toast(getString(R.string.Save_to, dir.path))
-            inScreenshot = false
+            try {
+                delay(100)
+                if (isFinishing || isDestroyed) return@launch
+                val bitmap = binding.overflow.drawToBitmap()
+                val cropped = cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height)
+                val savedPath =
+                    withContext(Dispatchers.IO) {
+                        savePngToPublicDownloads(cropped, buildInscriptionFileName("png"))
+                    }
+                isShareDialogVisible = false
+                toast(getString(R.string.Save_to, savedPath))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to save inscription share image")
+                toast(R.string.Save_failure)
+            } finally {
+                inScreenshot = false
+            }
         }
     }
 
     private val onShare: (size: IntSize, bottomSize: IntSize) -> Unit = { size, bottomSize ->
-        lifecycleScope.launch {
-            inScreenshot = true
-            delay(100)
-            val bitmap = binding.overflow.drawToBitmap()
-            val file = File(cacheDir, "$inscriptionHash.png")
-            saveBitmapToFile(file, cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height))
-            isShareDialogVisible = false
-            val uri = FileProvider.getUriForFile(this@InscriptionActivity, BuildConfig.APPLICATION_ID + ".provider", file)
-            val share = Intent()
-            share.action = Intent.ACTION_SEND
-            share.type = "image/png"
-            share.putExtra(Intent.EXTRA_STREAM, uri)
-            startActivity(Intent.createChooser(share, getString(R.string.Share)))
-            inScreenshot = false
+        if (shareJob?.isActive != true) {
+            shareJob = lifecycleScope.launch {
+                inScreenshot = true
+                try {
+                    delay(100)
+                    if (isFinishing || isDestroyed) return@launch
+                    val bitmap = binding.overflow.drawToBitmap()
+                    val cropped = cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height)
+                    val baseName = buildInscriptionFileName("png").removeSuffix(".png")
+                    val file = withContext(Dispatchers.IO) {
+                        savePngBitmapToUniqueCacheFile(baseName, cropped)
+                    }
+                    if (isFinishing || isDestroyed) return@launch
+                    isShareDialogVisible = false
+                    val uri = FileProvider.getUriForFile(this@InscriptionActivity, BuildConfig.APPLICATION_ID + ".provider", file)
+                    val share = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "image/png"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    startActivity(Intent.createChooser(share, getString(R.string.Share)))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to share inscription image")
+                    toast(R.string.Save_failure)
+                } finally {
+                    inScreenshot = false
+                }
+            }
         }
     }
 
@@ -268,9 +336,30 @@ class InscriptionActivity : BaseActivity() {
             }
         }
         bottomBinding.saveTv.setOnClickListener {
-            lifecycleScope.launch {
-                saveInscription("${inscriptionState.name}#${inscriptionState.sequence}",inscriptionState.contentURL)
-                bottomSheet.dismiss()
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                lifecycleScope.launch {
+                                    saveInscription("${inscriptionState.name}#${inscriptionState.sequence}", inscriptionState.contentURL)
+                                    bottomSheet.dismiss()
+                                }
+                            } else {
+                                openPermissionSetting()
+                            }
+                        },
+                        {
+                            toast(R.string.Save_failure)
+                        },
+                    )
+            } else {
+                lifecycleScope.launch {
+                    saveInscription("${inscriptionState.name}#${inscriptionState.sequence}", inscriptionState.contentURL)
+                    bottomSheet.dismiss()
+                }
             }
         }
 
@@ -373,22 +462,27 @@ class InscriptionActivity : BaseActivity() {
             toast(R.string.Try_Again)
             return
         }
-        val file =
-            withContext(Dispatchers.IO) {
-                val dir = getPublicDownloadPath()
-                dir.mkdirs()
-                val destination = File(dir, "$name.png")
-                loader.withDiskCacheFile(result) { cachedFile ->
-                    cachedFile.copy(destination)
-                    destination
+        try {
+            val savedPath =
+                withContext(Dispatchers.IO) {
+                    loader.withDiskCacheFile(result) { cachedFile ->
+                        val header = ByteArray(12)
+                        val headerSize = cachedFile.inputStream().use { it.read(header) }
+                        val (mimeType, extension) = detectImageType(header.copyOf(headerSize.coerceAtLeast(0))) ?: ("image/png" to "png")
+                        saveFileToPublicDownloads(cachedFile, buildInscriptionFileName(extension, name), mimeType)
+                    }
                 }
+            if (savedPath == null) {
+                toast(R.string.Try_Again)
+                return
             }
-        if (file == null) {
-            toast(R.string.Try_Again)
-            return
+            toast(getString(R.string.Save_to, savedPath))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to save inscription media")
+            toast(R.string.Save_failure)
         }
-        MediaScannerConnection.scanFile(this@InscriptionActivity, arrayOf(file.toString()), null, null)
-        toast(getString(R.string.Save_to, file.parent))
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -441,12 +535,6 @@ class InscriptionActivity : BaseActivity() {
                     }
                 },
             )
-        }
-    }
-
-    private fun saveBitmapToFile(file: File, bitmap: Bitmap) {
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
         }
     }
 }
