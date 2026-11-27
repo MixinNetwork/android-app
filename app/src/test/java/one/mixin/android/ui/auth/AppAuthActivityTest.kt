@@ -125,11 +125,15 @@ class AppAuthActivityTest {
     }
 
     @Test
-    fun pinSuccessWhileStoppedUnlocksWhenActivityStarts() {
+    fun backgroundedPinSuccessDoesNotUnlockWhenActivityRestarts() {
         val fakeApp = FakeMixinApplication()
         MixinApplication.appContext = fakeApp
+        fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
         controller.create().start().resume().visible()
         val activity = controller.get()
+        fakeApp.appAuth.onActivityStarted(activity)
+        assertTrue(fakeApp.appAuth.isLocked)
+
         val dialog = VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
         ReflectionHelpers.callInstanceMethod<Unit>(
             activity,
@@ -138,6 +142,7 @@ class AppAuthActivityTest {
         )
         assertTrue(dialog.disableToast)
         controller.pause().stop()
+        fakeApp.appAuth.onActivityStopped(activity)
 
         val onPinSuccess = ReflectionHelpers.getField<((String) -> Unit)?>(dialog, "onPinSuccess")
         onPinSuccess?.invoke("123456")
@@ -145,30 +150,96 @@ class AppAuthActivityTest {
         assertNull(ShadowToast.getLatestToast())
 
         controller.start()
-        assertTrue(activity.isFinishing)
-        assertEquals(activity.getString(R.string.Successful), ShadowToast.getTextOfLatestToast())
+        assertFalse(activity.isFinishing)
+        assertTrue(fakeApp.appAuth.isLocked)
+        assertNull(ShadowToast.getLatestToast())
         controller.resume()
     }
 
     @Test
-    fun pinSuccessAfterSaveInstanceStateSurvivesRecreation() {
+    fun pendingPinUnlockIsInvalidatedWhenAppGoesToBackground() {
         val fakeApp = FakeMixinApplication()
         MixinApplication.appContext = fakeApp
+        fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+        controller.create().start().resume().visible()
+        val activity = controller.get()
+        fakeApp.appAuth.onActivityStarted(activity)
+
+        val dialog = VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
+        ReflectionHelpers.callInstanceMethod<Unit>(
+            activity,
+            "bindPinVerification",
+            ClassParameter.from(VerifyBottomSheetDialogFragment::class.java, dialog),
+        )
+        // Simulate stopping during a config-change window so pendingPinUnlock becomes populated.
+        ReflectionHelpers.setField(activity, "mChangingConfigurations", true)
+        controller.pause().stop()
+        ReflectionHelpers.getField<((String) -> Unit)?>(dialog, "onPinSuccess")?.invoke("123456")
+        assertTrue(ViewModelProvider(activity)[AppAuthViewModel::class.java].pendingPinUnlock)
+
+        // Then app enters background (e.g. non-config stop / process backgrounded), advancing lockEpoch.
+        ReflectionHelpers.setField(activity, "mChangingConfigurations", false)
+        fakeApp.appAuth.onActivityStopped(activity)
+        controller.start()
+        assertFalse(activity.isFinishing)
+        assertTrue(fakeApp.appAuth.isLocked)
+        assertFalse(ViewModelProvider(activity)[AppAuthViewModel::class.java].pendingPinUnlock)
+        controller.resume()
+    }
+
+    @Test
+    fun pinSuccessIsNotPersistedAcrossProcessRecreation() {
+        val fakeApp = FakeMixinApplication()
+        MixinApplication.appContext = fakeApp
+        fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
         controller.create().start().resume().visible()
         val oldActivity = controller.get()
+        fakeApp.appAuth.onActivityStarted(oldActivity)
+
         val dialog = VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
         ReflectionHelpers.callInstanceMethod<Unit>(
             oldActivity,
             "bindPinVerification",
             ClassParameter.from(VerifyBottomSheetDialogFragment::class.java, dialog),
         )
-        val savedState = Bundle()
-        controller.pause().stop().saveInstanceState(savedState)
+        ReflectionHelpers.setField(oldActivity, "mChangingConfigurations", true)
+        controller.pause().stop()
+        ReflectionHelpers.getField<((String) -> Unit)?>(dialog, "onPinSuccess")?.invoke("123456")
 
-        val onPinSuccess = ReflectionHelpers.getField<((String) -> Unit)?>(dialog, "onPinSuccess")
-        onPinSuccess?.invoke("123456")
-        assertFalse(oldActivity.isFinishing)
+        val savedState = Bundle()
+        controller.saveInstanceState(savedState)
+        assertFalse(savedState.containsKey("pending_pin_unlock"))
+
+        // Even if a restored bundle contained a legacy pending_pin_unlock key, a fresh process must not auto-unlock.
+        savedState.putBoolean("pending_pin_unlock", true)
+        val restoredController = Robolectric.buildActivity(AppAuthActivity::class.java)
+        ReflectionHelpers.setField(restoredController.get(), "injected", true)
+        restoredController.create(savedState).start()
+        val restoredActivity = restoredController.get()
+        assertFalse(restoredActivity.isFinishing)
+        assertTrue(fakeApp.appAuth.isLocked)
         assertNull(ShadowToast.getLatestToast())
+        restoredController.resume().pause().stop().destroy()
+    }
+
+    @Test
+    fun pinSuccessDuringConfigurationChangeSurvivesRecreation() {
+        val fakeApp = FakeMixinApplication()
+        MixinApplication.appContext = fakeApp
+        fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+        controller.create().start().resume().visible()
+        val oldActivity = controller.get()
+        fakeApp.appAuth.onActivityStarted(oldActivity)
+
+        val dialog = VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
+        ReflectionHelpers.callInstanceMethod<Unit>(
+            oldActivity,
+            "bindPinVerification",
+            ClassParameter.from(VerifyBottomSheetDialogFragment::class.java, dialog),
+        )
+        ReflectionHelpers.setField(oldActivity, "mChangingConfigurations", true)
+        controller.pause().stop()
+        ReflectionHelpers.getField<((String) -> Unit)?>(dialog, "onPinSuccess")?.invoke("123456")
 
         controller.recreate()
         val recreatedActivity = controller.get()

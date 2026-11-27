@@ -33,6 +33,9 @@ internal class AppAuthManager(
     private var authenticatedInForeground = false
     private var pendingDeepLink: Uri? = null
 
+    var lockEpoch: Long = 0L
+        private set
+
     @Volatile
     var isLocked = false
         private set
@@ -122,6 +125,7 @@ internal class AppAuthManager(
         if (!removed || startedActivities.isNotEmpty() || activity.isChangingConfigurations) return
         foregroundChecked = false
         authenticatedInForeground = false
+        lockEpoch++
         backgroundElapsedRealtime = elapsedRealtime()
         launchingAuthTasks.clear()
         activeAuthTasks.clear()
@@ -162,7 +166,7 @@ internal class AppAuthManager(
         activity: Activity,
         fromResume: Boolean,
     ): Boolean {
-        if (activity is AppAuthActivity || activity.isFinishing || activity.isDestroyed) return isLocked
+        if (activity is AppAuthActivity) return isLocked
         val mode = preferences.getInt(PREF_APP_AUTH, -1)
         if (mode == -1) {
             isLocked = false
@@ -171,8 +175,9 @@ internal class AppAuthManager(
             return false
         }
         if (authenticatedInForeground) return false
+        val isActivityClosing = activity.isFinishing || activity.isDestroyed
         if (!isLocked && !foregroundChecked) {
-            if (activity in startedActivities) {
+            if (!isActivityClosing && activity in startedActivities) {
                 foregroundChecked = true
             }
             val backgroundTime = preferences.getLong(PREF_APP_ENTER_BACKGROUND, 0)
@@ -184,6 +189,7 @@ internal class AppAuthManager(
             }
         }
         if (!isLocked) return false
+        if (isActivityClosing) return true
         if (activity is UrlInterpreterActivity) {
             recordPendingDeepLink(activity.intent?.data)
         }

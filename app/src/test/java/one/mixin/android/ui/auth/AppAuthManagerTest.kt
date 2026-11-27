@@ -651,6 +651,28 @@ class AppAuthManagerTest {
         assertNotNull(shadowOf(mainActivity).nextStartedActivity)
     }
 
+    @Test
+    fun finishingActivityStillEvaluatesLockStateAndBlocksWithoutLaunchingUi() {
+        configure(0)
+        val immediateManager = manager()
+        val finishingActivity = activity(taskId = 1).apply { finish() }
+        assertTrue(finishingActivity.isFinishing)
+        assertTrue(immediateManager.checkAndShow(finishingActivity))
+        assertTrue(immediateManager.isLocked)
+        assertNull(shadowOf(finishingActivity).nextStartedActivity)
+
+        configure(1, wallTime - 1_000)
+        val graceManager = manager()
+        val graceFinishing = activity(taskId = 2).apply { finish() }
+        assertFalse(graceManager.checkAndShow(graceFinishing))
+        assertFalse(graceManager.isLocked)
+
+        wallTime += 60_001
+        assertTrue(graceManager.checkAndShow(graceFinishing))
+        assertTrue(graceManager.isLocked)
+        assertNull(shadowOf(graceFinishing).nextStartedActivity)
+    }
+
     private fun assertWindowSecure(window: Window, expected: Boolean) {
         assertEquals(expected, (window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0)
         assertEquals(expected, FlagSecureReason.isSecured(window))

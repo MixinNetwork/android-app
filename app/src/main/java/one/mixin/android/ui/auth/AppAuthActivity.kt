@@ -35,13 +35,13 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 class AppAuthViewModel : ViewModel() {
     var clearWhenPinSuccess: Boolean = false
     var pendingPinUnlock: Boolean = false
+    var pendingPinUnlockEpoch: Long = -1L
 }
 
 @AndroidEntryPoint
 class AppAuthActivity : BaseActivity() {
     companion object {
         private const val STATE_CLEAR_WHEN_PIN_SUCCESS = "clear_when_pin_success"
-        private const val STATE_PENDING_PIN_UNLOCK = "pending_pin_unlock"
         private const val MAX_AUTO_RETRY_COUNT = 3
 
         fun show(activity: Activity) {
@@ -66,6 +66,7 @@ class AppAuthActivity : BaseActivity() {
     private var pendingShowPin = false
     private var autoRetryCount = 0
     private var authenticated = false
+    private var stoppedForBackground = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,8 +76,6 @@ class AppAuthActivity : BaseActivity() {
         if (savedInstanceState != null) {
             viewModel.clearWhenPinSuccess =
                 viewModel.clearWhenPinSuccess || savedInstanceState.getBoolean(STATE_CLEAR_WHEN_PIN_SUCCESS)
-            viewModel.pendingPinUnlock =
-                viewModel.pendingPinUnlock || savedInstanceState.getBoolean(STATE_PENDING_PIN_UNLOCK)
         }
         onBackPressedDispatcher.addCallback(this) {
             dismissToBackground()
@@ -109,9 +108,15 @@ class AppAuthActivity : BaseActivity() {
 
     override fun onStart() {
         super.onStart()
+        stoppedForBackground = false
         if (isFinishing) return
-        if (viewModel.pendingPinUnlock && !authenticated) {
-            viewModel.pendingPinUnlock = false
+        val appAuth = MixinApplication.appAuthOrNull()
+        val canConsumePendingPin =
+            viewModel.pendingPinUnlock &&
+                (appAuth == null || appAuth.lockEpoch == viewModel.pendingPinUnlockEpoch)
+        viewModel.pendingPinUnlock = false
+        viewModel.pendingPinUnlockEpoch = -1L
+        if (canConsumePendingPin && !authenticated) {
             applyPinSuccessUnlock()
             return
         }
@@ -148,14 +153,16 @@ class AppAuthActivity : BaseActivity() {
     override fun onStop() {
         cancelPrompt()
         if (!isChangingConfigurations && !authenticated) {
+            stoppedForBackground = true
             intent?.data = null
+            viewModel.pendingPinUnlock = false
+            viewModel.pendingPinUnlockEpoch = -1L
         }
         super.onStop()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean(STATE_CLEAR_WHEN_PIN_SUCCESS, viewModel.clearWhenPinSuccess)
-        outState.putBoolean(STATE_PENDING_PIN_UNLOCK, viewModel.pendingPinUnlock)
         super.onSaveInstanceState(outState)
     }
 
@@ -240,8 +247,10 @@ class AppAuthActivity : BaseActivity() {
         dialog.setOnPinSuccess {
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 applyPinSuccessUnlock()
-            } else {
+            } else if (!stoppedForBackground) {
+                val appAuth = MixinApplication.appAuthOrNull()
                 viewModel.pendingPinUnlock = true
+                viewModel.pendingPinUnlockEpoch = appAuth?.lockEpoch ?: 0L
             }
         }.setOnResult { success ->
             if (!success && !authenticated && !viewModel.pendingPinUnlock) {
