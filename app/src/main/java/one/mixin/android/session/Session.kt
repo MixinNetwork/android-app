@@ -15,6 +15,7 @@ import okio.ByteString.Companion.toByteString
 import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.INTERVAL_1_HOUR
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.referral.PendingReferralStore
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.calculateAgreement
@@ -139,6 +140,7 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.clear()
         ThirdPartyUserIdentity.clearUser()
+        PendingReferralStore.clear(MixinApplication.appContext)
     }
 
     fun storeEd25519Seed(token: String) {

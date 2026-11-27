@@ -2214,6 +2214,7 @@
     <string name="referral_program_introduction_2">会员返佣单比最高 1000 USD。</string>
     <string name="referral_program_introduction_3">返佣资格终生有效。</string>
     <string name="apply_referral_code">绑定邀请码</string>
+    <string name="referred_by_a_friend">由好友推荐？</string>
     <string name="bind_referral_code">绑定邀请码</string>
     <string name="apply_referral_code_benefit">将邀请码绑定到你的账户，解锁 Mixin 专属福利。</string>
     <string name="referral_program_introduction_header">参与邀请计划，邀请好友分享赚币：</string>
