@@ -312,6 +312,33 @@ object MarketPageMapper {
         fallbackMarkets: List<MarketItem> = emptyList(),
     ): List<MarketItem> = markets.ifEmpty { fallbackMarkets }
 
+    fun cryptoMarkets(
+        subTab: MarketSubTab,
+        favorites: List<MarketItem>,
+        featured: List<MarketItem>,
+        trending: List<MarketItem>,
+        gainers: List<MarketItem>,
+        losers: List<MarketItem>,
+        stocks: List<MarketItem>,
+        all: List<MarketItem>,
+    ): List<MarketListEntry.Spot> {
+        val markets =
+            when (subTab) {
+                MarketSubTab.FAVORITE -> favorites.ifEmpty { featured }
+                MarketSubTab.TRENDING -> spotMarkets(trending, all)
+                MarketSubTab.TOP_GAINERS -> spotMarkets(gainers, all)
+                MarketSubTab.TOP_LOSERS -> spotMarkets(losers, all)
+                MarketSubTab.STOCKS -> stocks
+                MarketSubTab.ALL -> all
+                else -> trending
+            }
+        val type = if (subTab == MarketSubTab.STOCKS) SpotMarketType.STOCK else SpotMarketType.CRYPTO
+        val favoriteIds = favorites.mapTo(mutableSetOf()) { it.coinId }
+        return markets.map { market ->
+            MarketListEntry.Spot(market.copy(isFavored = market.coinId in favoriteIds), type)
+        }
+    }
+
     fun perpetualMarkets(
         markets: List<PerpsMarket>,
         subTab: MarketSubTab,

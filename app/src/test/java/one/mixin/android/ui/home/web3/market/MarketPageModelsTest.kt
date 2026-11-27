@@ -377,6 +377,38 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun cryptoTabsKeepStockMarketsReturnedByTheirDataSource() {
+        val stock = market("hood")
+        fun entries(subTab: MarketSubTab, favorites: List<MarketItem> = listOf(stock)) =
+            MarketPageMapper.cryptoMarkets(
+                subTab = subTab,
+                favorites = favorites,
+                featured = listOf(stock, market("featured")),
+                trending = listOf(stock, market("trending")),
+                gainers = listOf(stock, market("gainer")),
+                losers = listOf(stock, market("loser")),
+                stocks = listOf(stock),
+                all = listOf(stock, market("all")),
+            )
+
+        val cases = mapOf(
+            MarketSubTab.TRENDING to "trending",
+            MarketSubTab.TOP_GAINERS to "gainer",
+            MarketSubTab.TOP_LOSERS to "loser",
+            MarketSubTab.ALL to "all",
+        )
+        cases.forEach { (tab, otherCoinId) ->
+            assertEquals(tab.name, listOf("hood", otherCoinId), entries(tab).map { it.market.coinId })
+        }
+        val favorite = entries(MarketSubTab.FAVORITE).single()
+        assertEquals("hood", favorite.market.coinId)
+        assertTrue(favorite.isFavored)
+        val recommendations = entries(MarketSubTab.FAVORITE, favorites = emptyList())
+        assertEquals(listOf("hood", "featured"), recommendations.map { it.market.coinId })
+        assertTrue(recommendations.none { it.isFavored })
+    }
+
+    @Test
     fun perpetualOnlySelectionForcesTwentyFourHourDisplay() {
         val state =
             MarketPageUiState(
