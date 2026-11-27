@@ -44,7 +44,19 @@ class Room3DatabaseCompatibilityTest {
             "SELECT asset_id || ':' || COALESCE(primitive_asset_id, 'missing') FROM tokens",
             "asset:missing",
             schemaVersion = 72,
-            migrations = arrayOf(MixinDatabaseMigrations.MIGRATION_72_73),
+            migrations = arrayOf(MixinDatabaseMigrations.MIGRATION_72_73, MixinDatabaseMigrations.MIGRATION_73_74),
+        )
+    }
+
+    @Test
+    fun addressLastUsedMigrationPreservesExistingAddresses() {
+        verifyLegacyDatabase(
+            MixinDatabase::class.java,
+            "INSERT INTO addresses(address_id, type, asset_id, chain_id, destination, label, updated_at, tag, dust) VALUES('address', 'address', 'asset', 'chain', 'dest', 'Label', '2026-01-01T00:00:00Z', NULL, NULL)",
+            "SELECT address_id || ':' || COALESCE(last_used_at, 'missing') FROM addresses",
+            "address:missing",
+            schemaVersion = 73,
+            migrations = arrayOf(MixinDatabaseMigrations.MIGRATION_73_74),
         )
     }
 

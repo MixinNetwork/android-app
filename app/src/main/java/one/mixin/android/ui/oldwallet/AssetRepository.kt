@@ -134,7 +134,7 @@ class AssetRepository
 
     suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) = assetService.withdrawals(withdrawalRequest)
 
-    fun saveAddr(addr: Address) = addressDao.insert(addr)
+    suspend fun saveAddr(addr: Address) = addressDao.insertKeepingLastUsed(listOf(addr))
 
     suspend fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
 
@@ -241,7 +241,7 @@ class AssetRepository
             },
             successBlock = { response ->
                 response.data?.let {
-                    addressDao.insert(it)
+                    addressDao.insertKeepingLastUsed(listOf(it))
                     result = addressDao.findAddressById(addressId, chainId)
                 }
             },

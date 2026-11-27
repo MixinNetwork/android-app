@@ -16,7 +16,8 @@ class RefreshAddressJob(private val chainId: String) : BaseJob(
         val response = tokenService.addresses(chainId)
         if (response.isSuccess && response.data != null) {
             response.data?.let {
-                addressDao.insertList(it)
+                assetRepo.saveAddresses(it)
+                assetRepo.backfillAddressLastUsed(it)
             }
         }
     }

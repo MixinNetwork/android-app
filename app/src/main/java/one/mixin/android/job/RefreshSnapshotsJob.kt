@@ -17,8 +17,13 @@ class RefreshSnapshotsJob : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy
 
     override fun onRun(): Unit =
         runBlocking {
+            // The cutoff is fixed before refreshing, so a refresh that catches up has every withdrawal before it.
+            assetRepo.addressLastUsedCutoff()
             val startPosition = PropertyHelper.findValueByKey(PREF_SNAPSHOT_OFFSET, TIME_ZERO)
-            refreshSnapshots(startPosition)
+            if (refreshSnapshots(startPosition) != null) {
+                assetRepo.markAddressHistorySynced()
+            }
+            assetRepo.backfillAddressLastUsed()
         }
 
     private suspend fun refreshSnapshots(offset: String): List<SafeSnapshot>? {

@@ -45,7 +45,9 @@ data class Address(
     val tag: String?,
     @ColumnInfo(name = "dust")
     @SerializedName("dust")
-    val dust: String?
+    val dust: String?,
+    @ColumnInfo(name = "last_used_at")
+    val lastUsedAt: Long? = null,
 ) : Parcelable
 
 
