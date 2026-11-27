@@ -81,7 +81,7 @@ class AppAuthActivity : BaseActivity() {
             autoRetryCount = 0
             binding.swirl.removeCallbacks(resetSwirlRunnable)
             resetSwirlState()
-            showPrompt()
+            if (canUseBiometric()) showPrompt() else showPinVerification()
         }
         binding.pinTv.setOnClickListener {
             showPinVerification()
@@ -168,7 +168,7 @@ class AppAuthActivity : BaseActivity() {
 
     private fun showPrompt() {
         promptScheduled = false
-        if (promptActive || authenticated || isFinishing || pendingShowPin) return
+        if (promptActive || authenticated || isFinishing || pendingShowPin || !canUseBiometric()) return
         val pinDialog = supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG)
         if (pinDialog != null && !pinDialog.isRemoving) return
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {

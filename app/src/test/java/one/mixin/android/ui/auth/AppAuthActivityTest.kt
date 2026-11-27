@@ -230,8 +230,10 @@ class AppAuthActivityTest {
         savedState.putBoolean("pending_pin_unlock", true)
         val restoredController = Robolectric.buildActivity(AppAuthActivity::class.java)
         ReflectionHelpers.setField(restoredController.get(), "injected", true)
-        restoredController.create(savedState).start()
+        restoredController.create(savedState)
         val restoredActivity = restoredController.get()
+        assertFalse(ViewModelProvider(restoredActivity)[AppAuthViewModel::class.java].pendingPinUnlock)
+        restoredController.start()
         assertFalse(restoredActivity.isFinishing)
         assertTrue(fakeApp.appAuth.isLocked)
         assertNull(ShadowToast.getLatestToast())
@@ -572,6 +574,51 @@ class AppAuthActivityTest {
 
         assertTrue(activity.isFinishing)
         assertEquals(0, fakeApp.defaultSharedPreferences.getInt(PREF_APP_AUTH, -1))
+    }
+
+    @Test
+    fun noUsableBiometricPinSheetCancelDoesNotOpenBiometricPrompt() {
+        val biometricManager = ApplicationProvider.getApplicationContext<Context>()
+            .getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+        Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
+        controller.create().start().resume().visible()
+        val activity = controller.get()
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
+        val dialog = activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as VerifyBottomSheetDialogFragment
+        dialog.dismissNow()
+
+        ReflectionHelpers.getField<((Boolean) -> Unit)?>(dialog, "onResult")?.invoke(false)
+        mainLooper.idleFor(1000, TimeUnit.MILLISECONDS)
+
+        assertNull(ReflectionHelpers.getStaticField<Any?>(ShadowBiometricPrompt::class.java, "currentAuthenticateSession"))
+        assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptActive"))
+        assertFalse(activity.isFinishing)
+        assertTrue(activity.findViewById<TextView>(R.id.pin_tv).isVisible)
+        activity.findViewById<View>(R.id.pin_tv).performClick()
+        assertNotNull(activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG))
+    }
+
+    @Test
+    fun noUsableBiometricSwirlClickOpensPinVerificationInsteadOfPrompt() {
+        val biometricManager = ApplicationProvider.getApplicationContext<Context>()
+            .getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+        Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
+        controller.create().start().resume().visible()
+        val activity = controller.get()
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
+        (activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as VerifyBottomSheetDialogFragment)
+            .dismissNow()
+        assertNull(activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG))
+
+        activity.findViewById<View>(R.id.swirl).performClick()
+        mainLooper.idleFor(1000, TimeUnit.MILLISECONDS)
+
+        assertNull(ReflectionHelpers.getStaticField<Any?>(ShadowBiometricPrompt::class.java, "currentAuthenticateSession"))
+        assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptActive"))
+        assertTrue(activity.findViewById<TextView>(R.id.pin_tv).isVisible)
+        assertNotNull(activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG))
     }
 
     @Test
