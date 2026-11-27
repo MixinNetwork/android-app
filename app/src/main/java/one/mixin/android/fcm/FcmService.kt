@@ -18,6 +18,7 @@ class FcmService : FirebaseMessagingService() {
     lateinit var jobManager: MixinJobManager
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        MixinApplication.get().ensureUserUnlockedInitialized()
         BlazeMessageService.startService(MixinApplication.appContext, ACTION_ACTIVITY_PAUSE)
         Timber.d("FcmService From: " + remoteMessage.from)
     }
@@ -25,6 +26,7 @@ class FcmService : FirebaseMessagingService() {
     // Legacy token registration delivers this callback instead of onRegistered.
     @Suppress("OVERRIDE_DEPRECATION")
     override fun onNewToken(token: String) {
+        MixinApplication.get().ensureUserUnlockedInitialized()
         if (Session.checkToken() && MixinApplication.get().isOnline.get()) {
             jobManager.addJobInBackground(RefreshFcmJob(notificationToken = token))
         }

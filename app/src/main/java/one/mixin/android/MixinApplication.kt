@@ -11,6 +11,8 @@ import android.content.MutableContextWrapper
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.UserManager
 import android.util.Log
 import android.webkit.CookieManager
@@ -100,6 +102,7 @@ import org.bitcoinj.crypto.MnemonicCode
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.system.exitProcess
 import one.mixin.android.ui.conversation.ConversationEmbedding
@@ -161,6 +164,8 @@ open class MixinApplication :
     private var isAppsFlyerInitialized = false
 
     private var userUnlockedReceiver: BroadcastReceiver? = null
+    private val userUnlockedReceiverRetryCount = AtomicInteger(0)
+    private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
     private var activityReferences: Int = 0
     private var isActivityChangingConfigurations = false
@@ -234,6 +239,8 @@ open class MixinApplication :
         return userManager?.isUserUnlocked != false
     }
 
+    fun ensureUserUnlockedInitialized(): Boolean = ensureUserUnlockedInit()
+
     private fun ensureUserUnlockedInit(): Boolean {
         if (isUserUnlockedInitialized) {
             return true
@@ -274,8 +281,13 @@ open class MixinApplication :
                 ContextCompat.RECEIVER_NOT_EXPORTED,
             )
             userUnlockedReceiver = receiver
+            userUnlockedReceiverRetryCount.set(0)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to register ACTION_USER_UNLOCKED receiver", e)
+            val attempt = userUnlockedReceiverRetryCount.incrementAndGet()
+            if (attempt <= 3) {
+                mainHandler.postDelayed({ ensureUserUnlockedInit() }, attempt * 2_000L)
+            }
         }
     }
 
@@ -286,6 +298,7 @@ open class MixinApplication :
     }
 
     private fun initCredentialProtectedComponents() {
+        Timber.plant(FileLogTree())
         if (useOpenStreetMap()) {
             org.osmdroid.config.Configuration.getInstance().load(
                 this,
@@ -323,6 +336,12 @@ open class MixinApplication :
 
     fun startAppsFlyer(userId: String? = null) {
         if (BuildConfig.APPSFLYER_DEV_KEY.isBlank() || !isUserUnlocked()) {
+            return
+        }
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            mainHandler.post {
+                startAppsFlyer(userId)
+            }
             return
         }
         if (!isAppsFlyerInitialized && !ensureUserUnlockedInit()) {
@@ -371,17 +390,17 @@ open class MixinApplication :
         CronetProviderInstaller.installProvider(this)
         CursorWindowFixer.fix(this)
         if (BuildConfig.DEBUG) {
-            Timber.plant(Timber.DebugTree(), FileLogTree())
-        } else {
-            Timber.plant(FileLogTree())
+            Timber.plant(Timber.DebugTree())
         }
     }
 
     override val workManagerConfiguration: Configuration
-        get() =
-            Configuration.Builder()
+        get() {
+            ensureUserUnlockedInit()
+            return Configuration.Builder()
                 .setWorkerFactory(getWorkerFactory())
                 .build()
+        }
 
     override fun getCameraXConfig() = Camera2Config.defaultConfig()
 

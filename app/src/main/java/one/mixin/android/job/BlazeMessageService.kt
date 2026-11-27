@@ -237,6 +237,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @SuppressLint("AutoDispose")
     override fun onCreate() {
         super.onCreate()
+        MixinApplication.get().ensureUserUnlockedInitialized()
         if (!Session.checkToken()) {
             Timber.i("Stop BlazeMessageService onCreate without an active session")
             stopSelf()
