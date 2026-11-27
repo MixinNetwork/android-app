@@ -97,7 +97,7 @@ class WebActivity : BaseActivity() {
     private lateinit var binding: ActivityWebBinding
 
     private val supportPage by lazy {
-        intent.extras?.let {
+        intent?.extras?.let {
             isSupportBotPage(it.getParcelableCompat(WebFragment.ARGS_APP, App::class.java)?.appId, it.getString(WebFragment.URL).orEmpty())
         } == true
     }
@@ -107,7 +107,7 @@ class WebActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         if (supportPage) {
             overridePendingTransition(0, 0)
-        } else if (intent.extras != null) {
+        } else if (!intent?.extras?.getString(WebFragment.URL).isNullOrBlank()) {
             overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
         } else {
             overridePendingTransition(R.anim.fade_in, R.anim.stay)
@@ -199,9 +199,11 @@ class WebActivity : BaseActivity() {
     }
 
     private var loadViewAction = fun(index: Int) {
+        val clip = clips.getOrNull(index) ?: return
+        val clipUrl: String? = clip.url
+        if (clipUrl.isNullOrBlank()) return
         val extras = Bundle()
-        val clip = clips[index]
-        extras.putString(WebFragment.URL, clip.url)
+        extras.putString(WebFragment.URL, clipUrl)
         extras.putString(WebFragment.CONVERSATION_ID, clip.conversationId)
         extras.putInt(WebFragment.ARGS_INDEX, index)
         extras.putParcelable(WebFragment.ARGS_APP, clip.app)
@@ -219,10 +221,11 @@ class WebActivity : BaseActivity() {
         ).commit()
     }
 
-    private fun handleExtras(intent: Intent) {
+    private fun handleExtras(intent: Intent?) {
         binding.six.loadData(clips, loadViewAction)
-        val extras = intent.extras
-        if (extras != null) {
+        val extras = intent?.extras
+        val url = extras?.getString(WebFragment.URL)
+        if (extras != null && !url.isNullOrBlank()) {
             isExpand = true
             releaseWeb()
             supportFragmentManager.beginTransaction().add(
@@ -230,6 +233,8 @@ class WebActivity : BaseActivity() {
                 WebFragment.newInstance(extras),
                 WebFragment.TAG,
             ).commit()
+        } else if (extras != null && clips.isEmpty() && supportFragmentManager.findFragmentByTag(WebFragment.TAG) == null) {
+            finish()
         } else {
             isExpand = false
             FloatingWebClip.getInstance(this.isNightMode()).hide()

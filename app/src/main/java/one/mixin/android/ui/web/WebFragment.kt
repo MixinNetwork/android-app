@@ -241,25 +241,25 @@ class WebFragment : BaseFragment() {
 
     private val bottomViewModel by viewModels<BottomSheetViewModel>()
     private val url: String by lazy {
-        requireArguments().getString(URL)!!
+        arguments?.getString(URL).orEmpty()
     }
     private val conversationId: String? by lazy {
-        requireArguments().getString(CONVERSATION_ID)
+        arguments?.getString(CONVERSATION_ID)
     }
     private var app: App? = null
     private var supportPage = false
     private val appCard: AppCardData? by lazy {
-        requireArguments().getParcelableCompat(ARGS_APP_CARD, AppCardData::class.java)
+        arguments?.getParcelableCompat(ARGS_APP_CARD, AppCardData::class.java)
     }
     private val shareable: Boolean by lazy {
-        requireArguments().getBoolean(ARGS_SHAREABLE, true)
+        arguments?.getBoolean(ARGS_SHAREABLE, true) ?: true
     }
 
     private val injectable: Boolean by lazy {
-        requireArguments().getBoolean(ARGS_INJECTABLE, true)
+        arguments?.getBoolean(ARGS_INJECTABLE, true) ?: true
     }
     private val fixedTitle: String? by lazy {
-        requireArguments().getString(ARGS_FIXED_TITLE)
+        arguments?.getString(ARGS_FIXED_TITLE)
     }
 
     private var currentUrl: String? = null
@@ -319,7 +319,7 @@ class WebFragment : BaseFragment() {
     }
 
     override fun onBackPressed(): Boolean {
-        if (webView.canGoBack()) {
+        if (::webView.isInitialized && webView.canGoBack()) {
             webView.goBack()
             return true
         }
@@ -380,7 +380,7 @@ class WebFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        index = requireArguments().getInt(ARGS_INDEX, -1)
+        index = arguments?.getInt(ARGS_INDEX, -1) ?: -1
     }
 
     private var _binding: FragmentWebBinding? = null
@@ -402,6 +402,10 @@ class WebFragment : BaseFragment() {
         view: View,
         savedInstanceState: Bundle?,
     ) {
+        if (url.isBlank()) {
+            activity?.finish()
+            return
+        }
         if (activity is LandingActivity) {
             applySafeTopPadding(view)
         }
@@ -446,7 +450,7 @@ class WebFragment : BaseFragment() {
             ),
         )
 
-        app = requireArguments().getParcelableCompat(ARGS_APP, App::class.java)
+        app = arguments?.getParcelableCompat(ARGS_APP, App::class.java)
         supportPage = isSupportBotPage(app?.appId, url)
         if (supportPage) {
             showSupportHeader()
@@ -686,7 +690,7 @@ class WebFragment : BaseFragment() {
                         _binding?.titleTv?.text = fixedTitle ?: title
                         if (once) {
                             once = false
-                            val saveName = requireArguments().getBoolean(ARGS_SAVE_NAME, false)
+                            val saveName = arguments?.getBoolean(ARGS_SAVE_NAME, false) ?: false
                             if (saveName) {
                                 saveName(title, url)
                             }
@@ -1388,30 +1392,32 @@ class WebFragment : BaseFragment() {
     var titleColor: Int = Color.WHITE
 
     override fun onDestroyView() {
-        webView.stopLoading()
-        when {
-            hold -> {
-                generateWebClip()?.let { webClip ->
-                    holdClip(webClip)
+        if (::webView.isInitialized) {
+            webView.stopLoading()
+            when {
+                hold -> {
+                    generateWebClip()?.let { webClip ->
+                        holdClip(webClip)
+                    }
+                }
+
+                index < 0 -> {
+                    webView.destroy()
+                    webView.webViewClient = object : WebViewClient() {}
+                    webView.webChromeClient = null
+                }
+
+                else -> {
+                    generateWebClip()?.let { webClip ->
+                        updateClip(index, webClip)
+                    }
                 }
             }
-
-            index < 0 -> {
-                webView.destroy()
-                webView.webViewClient = object : WebViewClient() {}
-                webView.webChromeClient = null
-            }
-
-            else -> {
-                generateWebClip()?.let { webClip ->
-                    updateClip(index, webClip)
-                }
-            }
+            unregisterForContextMenu(webView)
+            binding.webLl.removeView(webView)
         }
         progressDialog?.dismiss()
         permissionAlert?.dismiss()
-        unregisterForContextMenu(webView)
-        binding.webLl.removeView(webView)
         processor.close()
         if (customView != null) {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
