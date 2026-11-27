@@ -497,60 +497,30 @@ class MarketPageViewModel
 
         private fun rebuildEntries() {
             val state = _uiState.value
-            val favoriteCoinIds = favoriteSpotMarkets.mapTo(mutableSetOf()) { it.coinId }
             val favoritePerpetualMarketIds = favoritePerpetualMarkets.mapTo(mutableSetOf()) { it.marketId }
-            fun List<MarketItem>.withFavoriteState() =
-                map { market -> market.copy(isFavored = market.coinId in favoriteCoinIds) }
-
-            val stockCoinIds = stockMarkets.mapTo(mutableSetOf()) { it.coinId }
-            val favoriteCryptoMarkets = favoriteSpotMarkets.filterNot { it.coinId in stockCoinIds }
             val entries =
                 when (state.selectedTopTab) {
                     MarketTopTab.WATCHLIST ->
                         MarketPageMapper.watchlist(
                             spotFavorites = favoriteSpotMarkets,
                             perpetualFavorites = favoritePerpetualMarkets,
-                            stockCoinIds = stockCoinIds,
+                            stockCoinIds = stockMarkets.mapTo(mutableSetOf()) { it.coinId },
                             subTab = state.selectedSubTab ?: MarketSubTab.CRYPTO,
                             spotFeatured = featuredSpotMarkets,
                             perpetualFeatured = featuredPerpetualMarkets,
                         )
 
-                    MarketTopTab.CRYPTO -> {
-                        val subTab = state.selectedSubTab ?: MarketSubTab.TRENDING
-                        val source =
-                            when (subTab) {
-                                MarketSubTab.FAVORITE ->
-                                    favoriteCryptoMarkets.ifEmpty {
-                                        featuredSpotMarkets.filterNot { it.coinId in stockCoinIds }
-                                    }
-                                MarketSubTab.TOP_GAINERS -> topGainerMarkets
-                                MarketSubTab.TOP_LOSERS -> topLoserMarkets
-                                MarketSubTab.STOCKS -> stockMarkets
-                                MarketSubTab.ALL -> allMarkets
-                                else -> trendingMarkets
-                            }
-                        val fallbackMarkets =
-                            when (subTab) {
-                                MarketSubTab.TRENDING,
-                                MarketSubTab.TOP_GAINERS,
-                                MarketSubTab.TOP_LOSERS,
-                                -> allMarkets
-                                else -> emptyList()
-                            }
-                        MarketPageMapper
-                            .spotMarkets(
-                                markets = source.withFavoriteState(),
-                                fallbackMarkets = fallbackMarkets.withFavoriteState(),
-                            )
-                            .filter { subTab == MarketSubTab.STOCKS || it.coinId !in stockCoinIds }
-                            .map {
-                                MarketListEntry.Spot(
-                                    it,
-                                    if (subTab == MarketSubTab.STOCKS) SpotMarketType.STOCK else SpotMarketType.CRYPTO,
-                                )
-                            }
-                    }
+                    MarketTopTab.CRYPTO ->
+                        MarketPageMapper.cryptoMarkets(
+                            subTab = state.selectedSubTab ?: MarketSubTab.TRENDING,
+                            favorites = favoriteSpotMarkets,
+                            featured = featuredSpotMarkets,
+                            trending = trendingMarkets,
+                            gainers = topGainerMarkets,
+                            losers = topLoserMarkets,
+                            stocks = stockMarkets,
+                            all = allMarkets,
+                        )
 
                     MarketTopTab.PERPETUAL -> {
                         val source =
@@ -581,9 +551,10 @@ class MarketPageViewModel
                                 )
                             }
                         } else {
-                            stockMarkets
-                                .withFavoriteState()
-                                .map { MarketListEntry.Spot(it, SpotMarketType.STOCK) }
+                            val favoriteCoinIds = favoriteSpotMarkets.mapTo(mutableSetOf()) { it.coinId }
+                            stockMarkets.map { market ->
+                                MarketListEntry.Spot(market.copy(isFavored = market.coinId in favoriteCoinIds), SpotMarketType.STOCK)
+                            }
                         }
 
                     MarketTopTab.INDICATOR -> emptyList()
@@ -599,7 +570,7 @@ class MarketPageViewModel
 
                         state.selectedTopTab == MarketTopTab.CRYPTO &&
                             state.selectedSubTab == MarketSubTab.FAVORITE ->
-                            favoriteCryptoMarkets.isEmpty()
+                            favoriteSpotMarkets.isEmpty()
 
                         state.selectedTopTab == MarketTopTab.PERPETUAL &&
                             state.selectedSubTab == MarketSubTab.FAVORITE ->
@@ -666,8 +637,7 @@ class MarketPageViewModel
                 MarketTopTab.CRYPTO ->
                     when (state.selectedSubTab) {
                         MarketSubTab.FAVORITE -> {
-                            val stockCoinIds = stockMarkets.mapTo(mutableSetOf()) { it.coinId }
-                            if (favoriteSpotMarkets.none { it.coinId !in stockCoinIds }) {
+                            if (favoriteSpotMarkets.isEmpty()) {
                                 MarketPageDataSource.SPOT_FEATURED
                             } else {
                                 MarketPageDataSource.SPOT_FAVORITE
