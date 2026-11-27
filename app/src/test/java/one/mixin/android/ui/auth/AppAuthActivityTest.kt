@@ -9,6 +9,7 @@ import android.os.Looper
 import android.view.View
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -270,6 +271,44 @@ class AppAuthActivityTest {
         mainLooper.idle()
         assertTrue(shadowOf(activity).isTaskMovedToBack)
         assertFalse(activity.isFinishing)
+    }
+
+    @Test
+    fun negativeButtonUsesVerifyPinAndOpensPinVerification() {
+        val biometricManager = ApplicationProvider.getApplicationContext<Context>()
+            .getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+        Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
+        controller.create().start().resume().visible()
+        val activity = controller.get()
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
+        val session = currentAuthenticateSession()
+
+        authenticateWithError(session, BiometricPrompt.ERROR_NEGATIVE_BUTTON, activity.getString(R.string.Verify_PIN))
+        mainLooper.idle()
+
+        assertFalse(shadowOf(activity).isTaskMovedToBack)
+        assertFalse(activity.isFinishing)
+        assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptActive"))
+        assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptScheduled"))
+        assertTrue(activity.findViewById<TextView>(R.id.pin_tv).isVisible)
+        val fragment = activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG)
+        assertNotNull(fragment)
+    }
+
+    @Test
+    fun resolveAppAuthAuthenticatorsPrefersStrongAndFallsBackToWeak() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val shadowBiometric = Shadow.extract<ShadowBiometricManager>(
+            context.getSystemService(android.hardware.biometrics.BiometricManager::class.java),
+        )
+        shadowBiometric.setCanAuthenticate(true)
+        shadowBiometric.setAuthenticatorType(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG)
+        assertEquals(BiometricManager.Authenticators.BIOMETRIC_STRONG, resolveAppAuthAuthenticators(context))
+
+        shadowBiometric.setCanAuthenticate(false)
+        shadowBiometric.setAuthenticatorType(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK)
+        assertEquals(BiometricManager.Authenticators.BIOMETRIC_WEAK, resolveAppAuthAuthenticators(context))
     }
 
     @Test

@@ -63,6 +63,7 @@ class AppAuthActivity : BaseActivity() {
     private var promptActive = false
     private var promptScheduled = false
     private var retryPromptOnResume = false
+    private var pendingShowPin = false
     private var autoRetryCount = 0
     private var authenticated = false
 
@@ -91,14 +92,7 @@ class AppAuthActivity : BaseActivity() {
             showPrompt()
         }
         binding.pinTv.setOnClickListener {
-            if (supportFragmentManager.isStateSaved) return@setOnClickListener
-            cancelPrompt()
-            val dialog = supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as? VerifyBottomSheetDialogFragment
-                ?: VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
-            bindPinVerification(dialog)
-            if (!dialog.isAdded) {
-                dialog.showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
-            }
+            showPinVerification()
         }
     }
 
@@ -121,6 +115,10 @@ class AppAuthActivity : BaseActivity() {
             applyPinSuccessUnlock()
             return
         }
+        if (pendingShowPin) {
+            showPinVerification()
+            return
+        }
         autoRetryCount = 0
         retryPromptOnResume = false
         schedulePrompt()
@@ -128,6 +126,10 @@ class AppAuthActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (pendingShowPin) {
+            showPinVerification()
+            return
+        }
         if (retryPromptOnResume) {
             retryPromptOnResume = false
             schedulePrompt()
@@ -163,7 +165,7 @@ class AppAuthActivity : BaseActivity() {
     }
 
     private fun schedulePrompt(delayMs: Long = 100) {
-        if (promptActive || authenticated || isFinishing) return
+        if (promptActive || authenticated || isFinishing || pendingShowPin) return
         binding.swirl.removeCallbacks(showPromptRunnable)
         promptScheduled = true
         binding.swirl.postDelayed(showPromptRunnable, delayMs)
@@ -171,7 +173,7 @@ class AppAuthActivity : BaseActivity() {
 
     private fun showPrompt() {
         promptScheduled = false
-        if (promptActive || authenticated || isFinishing) return
+        if (promptActive || authenticated || isFinishing || pendingShowPin) return
         val pinDialog = supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG)
         if (pinDialog != null && !pinDialog.isRemoving) return
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
@@ -187,10 +189,27 @@ class AppAuthActivity : BaseActivity() {
         biometricPrompt = showAppAuthPrompt(
             this,
             getString(R.string.Confirm_fingerprint),
-            getString(R.string.Cancel),
+            getString(R.string.Verify_PIN),
             biometricCallback(generation),
             getString(R.string.Unlock_with_fingerprint),
         )
+    }
+
+    private fun showPinVerification() {
+        if (authenticated || isFinishing) return
+        if (supportFragmentManager.isStateSaved) {
+            pendingShowPin = true
+            return
+        }
+        pendingShowPin = false
+        cancelPrompt()
+        binding.pinTv.isVisible = true
+        val dialog = supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as? VerifyBottomSheetDialogFragment
+            ?: VerifyBottomSheetDialogFragment.newInstance(disableBiometric = true)
+        bindPinVerification(dialog)
+        if (!dialog.isAdded) {
+            dialog.showNow(supportFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+        }
     }
 
     private fun cancelPrompt() {
@@ -296,8 +315,11 @@ class AppAuthActivity : BaseActivity() {
     private fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
         promptActive = false
         when (errorCode) {
-            BiometricPrompt.ERROR_USER_CANCELED, BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
+            BiometricPrompt.ERROR_USER_CANCELED -> {
                 moveTaskToBack(true)
+            }
+            BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
+                showPinVerification()
             }
             BiometricPrompt.ERROR_CANCELED -> {
                 if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
