@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.hardware.biometrics.BiometricManager as FrameworkBiometricManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.CancellationSignal
@@ -18,13 +19,16 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ApplicationProvider
+import dagger.hilt.android.flags.FragmentGetContextFix
 import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories
 import dagger.hilt.android.internal.managers.ActivityComponentManager
+import dagger.hilt.android.internal.managers.FragmentComponentManager
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment_GeneratedInjector
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import org.junit.After
@@ -60,6 +64,8 @@ import java.util.concurrent.TimeUnit
     shadows = [
         AppAuthActivityTest.ShadowActivityComponentManager::class,
         AppAuthActivityTest.ShadowDefaultViewModelFactories::class,
+        AppAuthActivityTest.ShadowFragmentComponentManager::class,
+        AppAuthActivityTest.ShadowFragmentGetContextFix::class,
     ],
 )
 class AppAuthActivityTest {
@@ -405,7 +411,7 @@ class AppAuthActivityTest {
         val session = currentAuthenticateSession()
         // Keep the PIN sheet's BiometricLayout off the Firebase-backed keyguard path.
         val biometricManager = ApplicationProvider.getApplicationContext<Context>()
-            .getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+            .getSystemService(FrameworkBiometricManager::class.java)
         Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
 
         authenticateWithError(session, BiometricPrompt.ERROR_NEGATIVE_BUTTON, activity.getString(R.string.Verify_PIN))
@@ -416,23 +422,27 @@ class AppAuthActivityTest {
         assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptActive"))
         assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptScheduled"))
         assertTrue(activity.findViewById<TextView>(R.id.pin_tv).isVisible)
-        val fragment = activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG)
-        assertNotNull(fragment)
+        showingPinSheet(activity)
     }
 
     @Test
-    fun resolveAppAuthAuthenticatorsPrefersStrongAndFallsBackToWeak() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val shadowBiometric = Shadow.extract<ShadowBiometricManager>(
-            context.getSystemService(android.hardware.biometrics.BiometricManager::class.java),
-        )
-        shadowBiometric.setCanAuthenticate(true)
-        shadowBiometric.setAuthenticatorType(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG)
-        assertEquals(BiometricManager.Authenticators.BIOMETRIC_STRONG, resolveAppAuthAuthenticators(context))
+    fun showAppAuthPromptAllowsWeakBiometricsEvenWhenStrongIsAvailable() {
+        val activity = controller.get()
+        val biometric = activity.getSystemService(FrameworkBiometricManager::class.java)
+        Shadow.extract<ShadowBiometricManager>(biometric).setAuthenticatorType(FrameworkBiometricManager.Authenticators.BIOMETRIC_STRONG)
+        controller.create().start().resume().visible()
+        shadowOf(Looper.getMainLooper()).idleFor(100, TimeUnit.MILLISECONDS)
+        val prompt = requireNotNull(ShadowBiometricPrompt.getCurrentPrompt())
+        assertEquals(BiometricManager.Authenticators.BIOMETRIC_WEAK, prompt.allowedAuthenticators)
+    }
 
-        shadowBiometric.setCanAuthenticate(false)
-        shadowBiometric.setAuthenticatorType(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK)
-        assertEquals(BiometricManager.Authenticators.BIOMETRIC_WEAK, resolveAppAuthAuthenticators(context))
+    @Test
+    @Config(shadows = [UnknownBiometricManager::class])
+    fun unknownBiometricStatusStillAttemptsAuthentication() {
+        controller.create().start().resume().visible()
+        shadowOf(Looper.getMainLooper()).idleFor(100, TimeUnit.MILLISECONDS)
+        assertNotNull(ShadowBiometricPrompt.getCurrentPrompt())
+        assertNull(controller.get().supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG))
     }
 
     @Test
@@ -527,7 +537,7 @@ class AppAuthActivityTest {
         val fakeApp = FakeMixinApplication()
         MixinApplication.appContext = fakeApp
         fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
-        val biometricManager = fakeApp.getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+        val biometricManager = fakeApp.getSystemService(FrameworkBiometricManager::class.java)
         Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(true)
         controller.create().start().resume().visible()
         val activity = controller.get()
@@ -559,7 +569,7 @@ class AppAuthActivityTest {
         val fakeApp = FakeMixinApplication()
         MixinApplication.appContext = fakeApp
         fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
-        val biometricManager = fakeApp.getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+        val biometricManager = fakeApp.getSystemService(FrameworkBiometricManager::class.java)
         Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
         controller.create().start().resume().visible()
         val activity = controller.get()
@@ -569,7 +579,7 @@ class AppAuthActivityTest {
         assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptActive"))
         assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptScheduled"))
         assertTrue(activity.findViewById<TextView>(R.id.pin_tv).isVisible)
-        val dialog = activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as VerifyBottomSheetDialogFragment
+        val dialog = showingPinSheet(activity)
         ReflectionHelpers.getField<((String) -> Unit)?>(dialog, "onPinSuccess")?.invoke("123456")
 
         assertTrue(activity.isFinishing)
@@ -579,16 +589,15 @@ class AppAuthActivityTest {
     @Test
     fun noUsableBiometricPinSheetCancelDoesNotOpenBiometricPrompt() {
         val biometricManager = ApplicationProvider.getApplicationContext<Context>()
-            .getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+            .getSystemService(FrameworkBiometricManager::class.java)
         Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
         controller.create().start().resume().visible()
         val activity = controller.get()
         val mainLooper = shadowOf(Looper.getMainLooper())
         mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
-        val dialog = activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as VerifyBottomSheetDialogFragment
+        val dialog = showingPinSheet(activity)
         dialog.dismissNow()
 
-        ReflectionHelpers.getField<((Boolean) -> Unit)?>(dialog, "onResult")?.invoke(false)
         mainLooper.idleFor(1000, TimeUnit.MILLISECONDS)
 
         assertNull(ReflectionHelpers.getStaticField<Any?>(ShadowBiometricPrompt::class.java, "currentAuthenticateSession"))
@@ -596,20 +605,19 @@ class AppAuthActivityTest {
         assertFalse(activity.isFinishing)
         assertTrue(activity.findViewById<TextView>(R.id.pin_tv).isVisible)
         activity.findViewById<View>(R.id.pin_tv).performClick()
-        assertNotNull(activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG))
+        showingPinSheet(activity)
     }
 
     @Test
     fun noUsableBiometricSwirlClickOpensPinVerificationInsteadOfPrompt() {
         val biometricManager = ApplicationProvider.getApplicationContext<Context>()
-            .getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+            .getSystemService(FrameworkBiometricManager::class.java)
         Shadow.extract<ShadowBiometricManager>(biometricManager).setCanAuthenticate(false)
         controller.create().start().resume().visible()
         val activity = controller.get()
         val mainLooper = shadowOf(Looper.getMainLooper())
         mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
-        (activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as VerifyBottomSheetDialogFragment)
-            .dismissNow()
+        showingPinSheet(activity).dismissNow()
         assertNull(activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG))
 
         activity.findViewById<View>(R.id.swirl).performClick()
@@ -618,7 +626,7 @@ class AppAuthActivityTest {
         assertNull(ReflectionHelpers.getStaticField<Any?>(ShadowBiometricPrompt::class.java, "currentAuthenticateSession"))
         assertFalse(ReflectionHelpers.getField<Boolean>(activity, "promptActive"))
         assertTrue(activity.findViewById<TextView>(R.id.pin_tv).isVisible)
-        assertNotNull(activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG))
+        showingPinSheet(activity)
     }
 
     @Test
@@ -749,6 +757,105 @@ class AppAuthActivityTest {
         lock2Controller.stop().destroy()
     }
 
+    @Test
+    fun latePinCallbackCannotUnlockAfterReturningToForeground() {
+        val app = FakeMixinApplication()
+        MixinApplication.appContext = app
+        app.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+        val biometric = Shadow.extract<ShadowBiometricManager>(app.getSystemService(FrameworkBiometricManager::class.java))
+        biometric.setCanAuthenticate(false)
+        val activity = controller.create().start().resume().visible().get()
+        app.appAuth.onActivityStarted(activity)
+        val sheet = showingPinSheet(activity)
+        val oldSuccess = ReflectionHelpers.getField<(String) -> Unit>(sheet, "onPinSuccess")
+        val epoch = app.appAuth.lockEpoch
+        controller.pause().stop()
+        app.appAuth.onActivityStopped(activity)
+        biometric.setCanAuthenticate(true)
+        controller.start().resume()
+        app.appAuth.onActivityStarted(activity)
+        assertTrue(app.appAuth.lockEpoch > epoch)
+        assertFalse(sheet.isAdded)
+        oldSuccess("123456")
+        assertTrue(app.appAuth.isLocked)
+        assertFalse(activity.isFinishing)
+    }
+
+    @Test
+    fun backgroundClearsPinDisplayRequestedAfterStateWasSaved() {
+        val activity = controller.create().start().resume().visible().get()
+        shadowOf(Looper.getMainLooper()).idleFor(100, TimeUnit.MILLISECONDS)
+        val firstSession = currentAuthenticateSession()
+        controller.pause().saveInstanceState(Bundle())
+        activity.findViewById<View>(R.id.pin_tv).performClick()
+        assertTrue(ReflectionHelpers.getField<Boolean>(activity, "pendingShowPin"))
+        controller.stop().start().resume()
+        shadowOf(Looper.getMainLooper()).idleFor(100, TimeUnit.MILLISECONDS)
+        assertNotNull(ShadowBiometricPrompt.getCurrentPrompt())
+        assertTrue(firstSession !== currentAuthenticateSession())
+        assertNull(activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG))
+    }
+
+    @Test
+    fun firstOwnTaskCancelAfterForeignTaskCancelDoesNotLaunchHome() {
+        val app = FakeMixinApplication()
+        MixinApplication.appContext = app
+        app.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+        val foreign = controller.get()
+        val manager = AppAuthManager(app.defaultSharedPreferences, taskIdOf = { if (it === foreign) 1 else 2 })
+        ReflectionHelpers.setField(app, "appAuth\$delegate", lazyOf(manager))
+        controller.create().start().resume()
+        manager.onActivityStarted(foreign)
+        foreign.onBackPressedDispatcher.onBackPressed()
+        assertTrue(foreign.isFinishing)
+        val ownController = Robolectric.buildActivity(AppAuthActivity::class.java)
+        val own = ownController.get()
+        ReflectionHelpers.setField(own, "injected", true)
+        ownController.create().start().resume()
+        manager.onActivityStarted(own)
+        registerOwnTask(own)
+        own.onBackPressedDispatcher.onBackPressed()
+        assertTrue(shadowOf(own).isTaskMovedToBack)
+        assertNull(shadowOf(own).nextStartedActivity)
+        ownController.pause().stop().destroy()
+    }
+
+    @Test
+    fun restoredLaunchIntentReplaysOnlyForConfigurationChange() {
+        val uri = Uri.parse("mixin://users/restored")
+        for (configChange in listOf(false, true)) {
+            val original = Robolectric.buildActivity(AppAuthActivity::class.java, Intent(Intent.ACTION_VIEW, uri))
+            val lock = original.get()
+            ReflectionHelpers.setField(lock, "injected", true)
+            original.create().start().resume().pause()
+            ReflectionHelpers.setField(lock, "mChangingConfigurations", configChange)
+            val state = Bundle()
+            original.saveInstanceState(state).stop().destroy()
+
+            val app = FakeMixinApplication()
+            MixinApplication.appContext = app
+            app.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+            val restored = Robolectric.buildActivity(AppAuthActivity::class.java, Intent(Intent.ACTION_VIEW, uri))
+            val activity = restored.get()
+            ReflectionHelpers.setField(activity, "injected", true)
+            restored.create(state).start().resume().visible()
+            app.appAuth.onActivityStarted(activity)
+            shadowOf(Looper.getMainLooper()).idleFor(100, TimeUnit.MILLISECONDS)
+            ShadowBiometricPrompt.authenticateCurrentSessionSuccessfully()
+            shadowOf(Looper.getMainLooper()).idle()
+            val target = shadowOf(activity).nextStartedActivity
+            assertEquals(if (configChange) UrlInterpreterActivity::class.java.name else MainActivity::class.java.name, target?.component?.className)
+            assertEquals(if (configChange) uri else null, target?.data)
+            restored.pause().stop().destroy()
+        }
+    }
+
+    private fun showingPinSheet(activity: AppAuthActivity): VerifyBottomSheetDialogFragment {
+        val sheet = activity.supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as VerifyBottomSheetDialogFragment
+        assertTrue(sheet.isAdded && sheet.dialog?.isShowing == true)
+        return sheet
+    }
+
     private fun registerOwnTask(activity: Activity) {
         val appTask = ShadowAppTask.newInstance()
         Shadow.extract<ShadowAppTask>(appTask).setTaskInfo(ActivityManager.RecentTaskInfo().apply { taskId = activity.taskId })
@@ -789,12 +896,40 @@ class AppAuthActivityTest {
             ) { _, _, _ -> null }
     }
 
+    @Implements(FragmentComponentManager::class, isInAndroidSdk = false)
+    class ShadowFragmentComponentManager {
+        @Implementation
+        fun generatedComponent(): Any = Proxy.newProxyInstance(
+            FragmentComponentManager::class.java.classLoader,
+            arrayOf(VerifyBottomSheetDialogFragment_GeneratedInjector::class.java),
+        ) { _, _, _ -> null }
+    }
+
+    @Implements(FragmentGetContextFix::class, isInAndroidSdk = false)
+    class ShadowFragmentGetContextFix {
+        companion object {
+            @JvmStatic
+            @Implementation
+            fun isFragmentGetContextFixDisabled(context: Context): Boolean = true
+        }
+    }
+
+    @Implements(FrameworkBiometricManager::class)
+    class UnknownBiometricManager {
+        @Implementation
+        fun canAuthenticate(authenticators: Int): Int = BiometricManager.BIOMETRIC_STATUS_UNKNOWN
+    }
+
     @Implements(DefaultViewModelFactories::class, isInAndroidSdk = false)
     class ShadowDefaultViewModelFactories {
         companion object {
             @JvmStatic
             @Implementation
             fun getActivityFactory(activity: ComponentActivity, delegateFactory: ViewModelProvider.Factory): ViewModelProvider.Factory = delegateFactory
+
+            @JvmStatic
+            @Implementation
+            fun getFragmentFactory(fragment: Fragment, delegateFactory: ViewModelProvider.Factory): ViewModelProvider.Factory = delegateFactory
         }
     }
 }

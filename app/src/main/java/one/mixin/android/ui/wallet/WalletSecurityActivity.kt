@@ -3,21 +3,19 @@
 package one.mixin.android.ui.wallet
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.util.FlagSecureReason
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 @AndroidEntryPoint
 class WalletSecurityActivity : BlazeBaseActivity() {
-    private var flagSecureReason: FlagSecureReason? = null
     private val mode: Mode by lazy {
         val modeOrdinal = intent.getIntExtra(EXTRA_MODE, Mode.IMPORT_MNEMONIC.ordinal)
         Mode.entries[modeOrdinal]
@@ -26,7 +24,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (mode.requiresSecureWindow()) {
-            flagSecureReason = FlagSecureReason(window) { true }.apply { attach() }
+            window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
         setContentView(R.layout.activity_add_wallet)
         onBackPressedDispatcher.addCallback(
@@ -90,8 +88,9 @@ class WalletSecurityActivity : BlazeBaseActivity() {
     }
 
     override fun onDestroy() {
-        flagSecureReason?.detach()
-        flagSecureReason = null
+        if (mode.requiresSecureWindow()) {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
         super.onDestroy()
     }
 
@@ -102,7 +101,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
         const val EXTRA_PIN = "extra_pin"
 
         fun show(activity: Activity, mode: Mode, chainId: String? = null, walletId: String? = null, pin: String? = null) {
-            val intent = Intent(activity, WalletSecurityActivity::class.java)
+            val intent = android.content.Intent(activity, WalletSecurityActivity::class.java)
             intent.putExtra(EXTRA_MODE, mode.ordinal)
             chainId?.let { intent.putExtra(EXTRA_CHAIN_ID, it) }
             walletId?.let { intent.putExtra(EXTRA_WALLET_ID, it) }

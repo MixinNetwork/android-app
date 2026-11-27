@@ -2,6 +2,7 @@ package one.mixin.android.ui.oldwallet.biometric
 
 import android.content.DialogInterface
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,7 +22,6 @@ import one.mixin.android.tip.isTipNodeException
 import one.mixin.android.ui.oldwallet.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.FlagSecureReason
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
@@ -32,29 +32,19 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     override val centerOnExpandedScreen = true
 
     private var biometricDialog: BiometricDialog? = null
-    private var pinSecure = true
-    private var flagSecureReason: FlagSecureReason? = null
 
     @Inject
     lateinit var pinCipher: PinCipher
 
-    private fun setPinSecure(secure: Boolean) {
-        pinSecure = secure
-        flagSecureReason?.invalidate()
-    }
-
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         val dialog = super.onCreateDialog(savedInstanceState)
-        pinSecure = true
-        flagSecureReason?.detach()
-        flagSecureReason = FlagSecureReason(dialog.window) { pinSecure }.apply { attach() }
+        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         return dialog
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        flagSecureReason?.detach()
-        flagSecureReason = null
+        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         biometricDialog?.callback = null
     }
 
@@ -112,7 +102,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     ) {
         if (!isAdded) return
         biometricLayout.showErrorInfo(content, animate, tickMillis, errorAction)
-        setPinSecure(false)
+        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     private var isSuccess = false
@@ -124,7 +114,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         biometricLayout.showDone(returnTo) {
             isSuccess = true
             dismiss()
-            setPinSecure(false)
+            dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
 
@@ -140,7 +130,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     protected fun showPin() {
         if (!isAdded) return
-        setPinSecure(true)
+        dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         biometricLayout.showPin(true)
     }
 
@@ -177,7 +167,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             } else {
                 handleWithErrorCodeAndDesc(pin, requireNotNull(response.error))
             }
-            setPinSecure(false)
+            dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
 
     protected suspend fun handleThrowableWithPin(
@@ -189,11 +179,11 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 handleWithErrorCodeAndDesc(pin, t.error)
             }
             is TipCounterNotSyncedException -> {
-                setPinSecure(true)
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 biometricLayout.showPin(true)
             }
             else -> {
-                setPinSecure(true)
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 biometricLayout.showPin(true)
                 if (t.isTipNodeException()) {
                     showErrorInfo(t.getTipExceptionMsg(requireContext(), null), true, errorAction = BiometricLayout.ErrorAction.Close)
@@ -237,7 +227,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             }
 
             override fun showPin() {
-                setPinSecure(true)
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 biometricLayout.showPin(false)
             }
 

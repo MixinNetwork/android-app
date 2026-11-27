@@ -3,6 +3,7 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.core.view.isVisible
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_TITLE
@@ -14,7 +15,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.biometric.BiometricDialog
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.BiometricUtil
-import one.mixin.android.util.FlagSecureReason
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
@@ -44,7 +44,6 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentPinInputBottomSheetBinding::inflate)
 
     private var biometricDialog: BiometricDialog? = null
-    private var flagSecureReason: FlagSecureReason? = null
 
     private val biometricInfo: BiometricInfo? by lazy {
         arguments?.getParcelableCompat(ARGS_BIOMETRIC_INFO, BiometricInfo::class.java)
@@ -56,15 +55,13 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         val dialog = super.onCreateDialog(savedInstanceState)
-        flagSecureReason?.detach()
-        flagSecureReason = FlagSecureReason(dialog.window) { true }.apply { attach() }
+        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         return dialog
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        flagSecureReason?.detach()
-        flagSecureReason = null
+        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         biometricDialog?.callback = null
     }
 
@@ -153,7 +150,7 @@ class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             override fun showPin() {
-                flagSecureReason?.attach()
+                dialog?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
 
             override fun onCancel() {

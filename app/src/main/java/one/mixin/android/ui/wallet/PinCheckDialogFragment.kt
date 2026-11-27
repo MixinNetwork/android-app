@@ -11,6 +11,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
@@ -33,7 +34,6 @@ import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.isTipNodeException
 import one.mixin.android.ui.common.TaskDialogActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.FlagSecureReason
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.isExpandedSheetScreen
@@ -58,7 +58,6 @@ class PinCheckDialogFragment : DialogFragment() {
     private val disposable = CompositeDisposable()
 
     private var dialogCallback: ((Boolean) -> Unit)? = null
-    private var flagSecureReason: FlagSecureReason? = null
 
     fun setDialogCallback(dialogCallback: ((Boolean) -> Unit)?) {
         this.dialogCallback = dialogCallback
@@ -72,8 +71,7 @@ class PinCheckDialogFragment : DialogFragment() {
         super.setupDialog(dialog, style)
         isCancelable = false
         dialog.setCanceledOnTouchOutside(false)
-        flagSecureReason?.detach()
-        flagSecureReason = FlagSecureReason(dialog.window) { true }.apply { attach() }
+        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         dialogCallback?.invoke(true)
         dialog.setContentView(binding.root)
         binding.apply {
@@ -117,8 +115,7 @@ class PinCheckDialogFragment : DialogFragment() {
     override fun onDestroy() {
         super.onDestroy()
         dialogCallback?.invoke(false)
-        flagSecureReason?.detach()
-        flagSecureReason = null
+        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     private fun verify(pinCode: String) =
@@ -231,8 +228,6 @@ class PinCheckDialogFragment : DialogFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        flagSecureReason?.detach()
-        flagSecureReason = null
         disposable.dispose()
     }
 

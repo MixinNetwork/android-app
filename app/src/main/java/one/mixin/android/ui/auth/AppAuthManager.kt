@@ -20,6 +20,10 @@ internal class AppAuthManager(
     private val currentTimeMillis: () -> Long = System::currentTimeMillis,
     private val taskIdOf: (Activity) -> Int = Activity::getTaskId,
 ) {
+    companion object {
+        private const val DEFERRED_BACKGROUND_TIMEOUT_MS = 700L
+    }
+
     private val createdActivities = mutableSetOf<Activity>()
     private val startedActivities = mutableSetOf<Activity>()
     private val authActivities = mutableSetOf<Activity>()
@@ -32,7 +36,12 @@ internal class AppAuthManager(
     private var inForeground = false
     private var foregroundChecked = false
     private var authenticatedInForeground = false
-    private var pendingDeepLink: Uri? = null
+    private val pendingDeepLinks = linkedMapOf<Int, Uri>()
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var awaitingPostAuthActivity = false
+    private var pendingBackgroundElapsed: Long? = null
+    private var pendingBackgroundWallTime: Long? = null
+    private val deferredBackgroundRunnable = Runnable { completeDeferredBackground() }
 
     var lockEpoch: Long = 0L
         private set
@@ -54,9 +63,10 @@ internal class AppAuthManager(
 
     fun isEnabled(): Boolean = preferences.getInt(PREF_APP_AUTH, -1) != -1
 
-    fun recordPendingDeepLink(uri: Uri?) {
+    fun recordPendingDeepLink(taskId: Int, uri: Uri?) {
         if (uri != null) {
-            pendingDeepLink = uri
+            pendingDeepLinks.remove(taskId)
+            pendingDeepLinks[taskId] = uri
         }
     }
 
@@ -72,6 +82,8 @@ internal class AppAuthManager(
     }
 
     fun onActivityStarted(activity: Activity) {
+        cancelDeferredBackground()
+        awaitingPostAuthActivity = false
         if (startedActivities.isEmpty()) {
             inForeground = true
         }
@@ -88,7 +100,9 @@ internal class AppAuthManager(
                     isLocked = false
                     foregroundChecked = true
                     authenticatedInForeground = false
-                    pendingDeepLink = null
+                    activeAuthTasks.clear()
+                    cancelledAuthTasks.clear()
+                    pendingDeepLinks.clear()
                 }
                 activity.finish()
                 return
@@ -98,8 +112,8 @@ internal class AppAuthManager(
             launchingAuthTasks.remove(taskId)
             activeAuthTasks.add(taskId)
             cancelledAuthTasks.remove(taskId)
-            if (pendingDeepLink == null) {
-                recordPendingDeepLink(activity.intent?.data)
+            if (activity.intent?.data != null && taskId !in pendingDeepLinks) {
+                recordPendingDeepLink(taskId, activity.intent?.data)
             }
             lock()
         } else {
@@ -124,20 +138,55 @@ internal class AppAuthManager(
         startedAuthActivities.remove(activity)
         resumedAuthActivities.remove(activity)
         startedActivities.remove(activity)
-        startedActivities.removeAll { it.isFinishing || it.isDestroyed }
-        if (!inForeground || startedActivities.isNotEmpty() || activity.isChangingConfigurations) return
+        startedActivities.removeAll { it.isDestroyed }
+        if (!inForeground || startedActivities.isNotEmpty()) return
+        if (activity.isChangingConfigurations || awaitingPostAuthActivity) {
+            scheduleDeferredBackground()
+        } else {
+            enterBackground()
+        }
+    }
+
+    private fun scheduleDeferredBackground() {
+        if (pendingBackgroundElapsed != null) return
+        pendingBackgroundElapsed = elapsedRealtime()
+        pendingBackgroundWallTime = currentTimeMillis()
+        mainHandler.postDelayed(deferredBackgroundRunnable, DEFERRED_BACKGROUND_TIMEOUT_MS)
+    }
+
+    private fun cancelDeferredBackground() {
+        mainHandler.removeCallbacks(deferredBackgroundRunnable)
+        pendingBackgroundElapsed = null
+        pendingBackgroundWallTime = null
+    }
+
+    private fun completeDeferredBackground() {
+        val elapsed = pendingBackgroundElapsed ?: elapsedRealtime()
+        val wallTime = pendingBackgroundWallTime ?: currentTimeMillis()
+        cancelDeferredBackground()
+        if (inForeground && startedActivities.isEmpty()) enterBackground(elapsed, wallTime)
+    }
+
+    fun onUiHidden() {
+        runOnMain {
+            if (pendingBackgroundElapsed != null && inForeground && startedActivities.isEmpty()) completeDeferredBackground()
+        }
+    }
+
+    private fun enterBackground(backgroundElapsed: Long = elapsedRealtime(), backgroundWallTime: Long = currentTimeMillis()) {
         inForeground = false
         foregroundChecked = false
         authenticatedInForeground = false
+        awaitingPostAuthActivity = false
         lockEpoch++
-        backgroundElapsedRealtime = elapsedRealtime()
+        backgroundElapsedRealtime = backgroundElapsed
         launchingAuthTasks.clear()
         activeAuthTasks.clear()
         cancelledAuthTasks.clear()
         if (isLocked) {
-            pendingDeepLink = null
+            pendingDeepLinks.clear()
         } else {
-            preferences.putLong(PREF_APP_ENTER_BACKGROUND, currentTimeMillis())
+            preferences.putLong(PREF_APP_ENTER_BACKGROUND, backgroundWallTime)
         }
     }
 
@@ -153,11 +202,12 @@ internal class AppAuthManager(
         }
     }
 
-    fun onAuthCancelled(activity: Activity): Boolean {
+    fun onAuthCancelled(activity: Activity, ownTask: Boolean = true): Boolean {
         val taskId = taskIdOf(activity)
         activeAuthTasks.remove(taskId)
-        cancelledAuthTasks.add(taskId)
         launchingAuthTasks.remove(taskId)
+        if (!ownTask) return false
+        cancelledAuthTasks.add(taskId)
         return cancelledAuthTasks.size > 1
     }
 
@@ -192,7 +242,7 @@ internal class AppAuthManager(
         if (!isLocked) return false
         if (isActivityClosing) return true
         if (activity is UrlInterpreterActivity) {
-            recordPendingDeepLink(activity.intent?.data)
+            recordPendingDeepLink(taskIdOf(activity), activity.intent?.data)
         }
         if (shouldLaunchAuthForTask(activity, fromResume)) {
             val taskId = taskIdOf(activity)
@@ -237,7 +287,7 @@ internal class AppAuthManager(
         return false
     }
 
-    fun onAuthenticated(): Uri? {
+    fun onAuthenticated(taskId: Int? = null, expectNextActivity: Boolean = false): Uri? {
         isLocked = false
         foregroundChecked = true
         authenticatedInForeground = true
@@ -248,8 +298,9 @@ internal class AppAuthManager(
         startedAuthActivities.clear()
         resumedAuthActivities.clear()
         preferences.putLong(PREF_APP_ENTER_BACKGROUND, 0)
-        val deepLink = pendingDeepLink
-        pendingDeepLink = null
+        val deepLink = taskId?.let { pendingDeepLinks[it] } ?: pendingDeepLinks.values.lastOrNull()
+        pendingDeepLinks.clear()
+        awaitingPostAuthActivity = deepLink != null || expectNextActivity
         authActivities.forEach { it.finish() }
         startedActivities.removeAll { it in authActivities }
         authActivities.clear()
@@ -265,7 +316,10 @@ internal class AppAuthManager(
             launchingAuthTasks.clear()
             activeAuthTasks.clear()
             cancelledAuthTasks.clear()
-            pendingDeepLink = null
+            cancelDeferredBackground()
+            awaitingPostAuthActivity = false
+            pendingDeepLinks.clear()
+            lockEpoch++
             preferences.putLong(PREF_APP_ENTER_BACKGROUND, 0)
             startedAuthActivities.clear()
             authActivities.forEach { it.finish() }
@@ -289,11 +343,10 @@ internal class AppAuthManager(
     }
 
     private fun runOnMain(block: () -> Unit) {
-        val mainLooper = Looper.getMainLooper()
-        if (Looper.myLooper() == mainLooper) {
+        if (Looper.myLooper() == mainHandler.looper) {
             block()
         } else {
-            Handler(mainLooper).post(block)
+            mainHandler.post(block)
         }
     }
 

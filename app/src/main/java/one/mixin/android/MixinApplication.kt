@@ -3,6 +3,7 @@ package one.mixin.android
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
+import android.content.ComponentCallbacks2
 import android.content.Context
 import android.content.MutableContextWrapper
 import android.os.Build
@@ -198,6 +199,11 @@ open class MixinApplication :
         initBugsnag()
         initAppsFlyer()
         Session.getAccount()?.let(ThirdPartyUserIdentity::setUser)
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) appAuth.onUiHidden()
     }
 
     private fun initMnemonicCode() {

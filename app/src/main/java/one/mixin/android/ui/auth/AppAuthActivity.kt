@@ -39,6 +39,7 @@ class AppAuthViewModel : ViewModel() {
 @AndroidEntryPoint
 class AppAuthActivity : BaseActivity() {
     companion object {
+        private const val STATE_DEEP_LINK_DISCARDED = "deep_link_discarded"
         private const val MAX_AUTO_RETRY_COUNT = 3
 
         fun show(activity: Activity) {
@@ -56,6 +57,8 @@ class AppAuthActivity : BaseActivity() {
 
     private var biometricPrompt: BiometricPrompt? = null
 
+    private var pinSessionGeneration = 0
+    private var deepLinkDiscarded = false
     private var promptGeneration = 0
     private var promptActive = false
     private var promptScheduled = false
@@ -67,6 +70,10 @@ class AppAuthActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState?.getBoolean(STATE_DEEP_LINK_DISCARDED) == true) {
+            deepLinkDiscarded = true
+            intent?.data = null
+        }
         binding = ActivityAppAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
         updateLayout()
@@ -91,8 +98,9 @@ class AppAuthActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.data != null) {
+            deepLinkDiscarded = false
             setIntent(intent)
-            MixinApplication.appAuthOrNull()?.recordPendingDeepLink(intent.data)
+            MixinApplication.appAuthOrNull()?.recordPendingDeepLink(taskId, intent.data)
         }
         autoRetryCount = 0
         binding.swirl.removeCallbacks(resetSwirlRunnable)
@@ -147,11 +155,21 @@ class AppAuthActivity : BaseActivity() {
         cancelPrompt()
         if (!isChangingConfigurations && !authenticated) {
             stoppedForBackground = true
+            pinSessionGeneration++
+            pendingShowPin = false
+            (supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as? VerifyBottomSheetDialogFragment)
+                ?.dismissAllowingStateLoss()
+            deepLinkDiscarded = true
             intent?.data = null
             viewModel.pendingPinUnlock = false
             viewModel.pendingPinUnlockEpoch = -1L
         }
         super.onStop()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_DEEP_LINK_DISCARDED, deepLinkDiscarded || (!isChangingConfigurations && !authenticated))
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -228,16 +246,21 @@ class AppAuthActivity : BaseActivity() {
     }
 
     private fun bindPinVerification(dialog: VerifyBottomSheetDialogFragment) {
+        val sessionToken = ++pinSessionGeneration
+        val sessionEpoch = MixinApplication.appAuthOrNull()?.lockEpoch
         dialog.disableToast = true
         dialog.setOnPinSuccess {
+            if (sessionToken != pinSessionGeneration) return@setOnPinSuccess
+            val currentAppAuth = MixinApplication.appAuthOrNull()
+            if (currentAppAuth != null && sessionEpoch != null && currentAppAuth.lockEpoch != sessionEpoch) return@setOnPinSuccess
             if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                 applyPinSuccessUnlock()
             } else if (!stoppedForBackground) {
-                val appAuth = MixinApplication.appAuthOrNull()
                 viewModel.pendingPinUnlock = true
-                viewModel.pendingPinUnlockEpoch = appAuth?.lockEpoch ?: 0L
+                viewModel.pendingPinUnlockEpoch = sessionEpoch ?: currentAppAuth?.lockEpoch ?: 0L
             }
         }.setOnResult { success ->
+            if (sessionToken != pinSessionGeneration) return@setOnResult
             if (!success && !authenticated && !viewModel.pendingPinUnlock) {
                 autoRetryCount = 0
                 schedulePrompt()
@@ -272,7 +295,7 @@ class AppAuthActivity : BaseActivity() {
         val intentData = intent.data
         val wasTaskRoot = isTaskRoot
         val appAuth = MixinApplication.appAuthOrNull()
-        val data = if (appAuth != null) appAuth.onAuthenticated() else intentData
+        val data = if (appAuth != null) appAuth.onAuthenticated(taskId = taskId, expectNextActivity = wasTaskRoot) else intentData
         if (data != null) {
             UrlInterpreterActivity.show(this, data)
         } else if (wasTaskRoot) {
@@ -315,16 +338,6 @@ class AppAuthActivity : BaseActivity() {
             BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
                 showPinVerification()
             }
-            BiometricPrompt.ERROR_CANCELED -> {
-                if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-                    retryPromptOnResume = true
-                } else if (autoRetryCount < MAX_AUTO_RETRY_COUNT) {
-                    autoRetryCount++
-                    schedulePrompt(1000)
-                } else {
-                    showError(errString.ifBlank { getString(R.string.Touch_the_fingerprint_sensor) })
-                }
-            }
             BiometricPrompt.ERROR_NO_BIOMETRICS,
             BiometricPrompt.ERROR_HW_NOT_PRESENT,
             BiometricPrompt.ERROR_HW_UNAVAILABLE,
@@ -338,7 +351,7 @@ class AppAuthActivity : BaseActivity() {
                     retryPromptOnResume = true
                 } else if (autoRetryCount < MAX_AUTO_RETRY_COUNT) {
                     autoRetryCount++
-                    refreshSwirl(errString)
+                    if (errorCode != BiometricPrompt.ERROR_CANCELED) refreshSwirl(errString)
                     schedulePrompt(1000)
                 } else {
                     showError(errString.ifBlank { getString(R.string.Touch_the_fingerprint_sensor) })
@@ -348,12 +361,14 @@ class AppAuthActivity : BaseActivity() {
     }
 
     private fun dismissToBackground() {
-        val shouldGoHome = MixinApplication.appAuthOrNull()?.onAuthCancelled(this) == true
+        cancelPrompt()
         if (!isInOwnTask()) {
             // Hosted in another app's task (e.g. a share sheet): close only our pages and leave the host app.
+            MixinApplication.appAuthOrNull()?.onAuthCancelled(this, ownTask = false)
             finishAffinity()
             return
         }
+        val shouldGoHome = MixinApplication.appAuthOrNull()?.onAuthCancelled(this, ownTask = true) == true
         moveTaskToBack(true)
         if (shouldGoHome) {
             startActivity(
@@ -366,7 +381,7 @@ class AppAuthActivity : BaseActivity() {
     }
 
     private fun isInOwnTask(): Boolean =
-        getSystemService(ActivityManager::class.java).appTasks.any { appTask ->
+        getSystemService(ActivityManager::class.java)?.appTasks.orEmpty().any { appTask ->
             // getTaskInfo() throws if the task was removed after appTasks was read.
             val info = runCatching { appTask.taskInfo }.getOrNull() ?: return@any false
             @Suppress("DEPRECATION")
@@ -375,7 +390,10 @@ class AppAuthActivity : BaseActivity() {
         }
 
     private fun canUseBiometric(): Boolean =
-        BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK) == BiometricManager.BIOMETRIC_SUCCESS
+        when (BiometricManager.from(this).canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)) {
+            BiometricManager.BIOMETRIC_SUCCESS, BiometricManager.BIOMETRIC_STATUS_UNKNOWN -> true
+            else -> false
+        }
 
     private fun biometricCallback(generation: Int) =
         object : BiometricPrompt.AuthenticationCallback() {

@@ -13,7 +13,6 @@ import androidx.test.core.app.ApplicationProvider
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.Constants.Account.PREF_APP_ENTER_BACKGROUND
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.util.FlagSecureReason
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -25,6 +24,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import java.util.concurrent.TimeUnit
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -283,22 +283,23 @@ class AppAuthManagerTest {
 
     @Test
     @Config(sdk = [33])
-    fun sensitiveScreenFlagSecureReasonWorksIndependentlyOfAppAuth() {
+    fun sensitiveScreenKeepsFlagSecureWhenAppAuthIsToggled() {
         configure(0)
         val manager = manager()
         val activity = activity()
         manager.onActivityCreated(activity)
         assertWindowSecure(activity.window, false)
 
-        val sensitiveReason = FlagSecureReason(activity.window) { true }.apply { attach() }
+        activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         assertWindowSecure(activity.window, true)
 
         preferences.edit().putInt(PREF_APP_AUTH, -1).commit()
         shadowOf(Looper.getMainLooper()).idle()
         assertWindowSecure(activity.window, true)
 
-        sensitiveReason.detach()
-        assertWindowSecure(activity.window, false)
+        preferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+        shadowOf(Looper.getMainLooper()).idle()
+        assertWindowSecure(activity.window, true)
     }
 
     @Test
@@ -743,6 +744,68 @@ class AppAuthManagerTest {
         val next = activity()
         manager.onActivityStarted(next)
         assertNotNull(shadowOf(next).nextStartedActivity)
+    }
+
+    @Test
+    fun authenticatingTaskGetsItsOwnRestoredDeepLink() {
+        configure(0)
+        val firstUri = Uri.parse("mixin://users/first")
+        val secondUri = Uri.parse("mixin://users/second")
+        for ((taskId, expected) in listOf(1 to firstUri, 2 to secondUri)) {
+            val first = Robolectric.buildActivity(AppAuthActivity::class.java, Intent().setData(firstUri)).get()
+            val second = Robolectric.buildActivity(AppAuthActivity::class.java, Intent().setData(secondUri)).get()
+            val manager = AppAuthManager(preferences, taskIdOf = { if (it === first) 1 else 2 })
+            manager.onActivityStarted(first)
+            manager.onActivityStarted(second)
+            assertEquals(expected, manager.onAuthenticated(taskId))
+            assertNull(manager.onAuthenticated())
+        }
+    }
+
+    @Test
+    fun postAuthActivityStartingDuringHandoffStaysUnlocked() {
+        configure(0)
+        for (expectNextActivity in listOf(true, false)) {
+            val manager = manager()
+            val intent = Intent()
+            if (!expectNextActivity) intent.data = Uri.parse("mixin://users/handoff")
+            val lock = Robolectric.buildActivity(AppAuthActivity::class.java, intent).get()
+            manager.onActivityStarted(lock)
+            assertEquals(intent.data, manager.onAuthenticated(expectNextActivity = expectNextActivity))
+            manager.onActivityStopped(lock)
+            shadowOf(Looper.getMainLooper()).idleFor(699, TimeUnit.MILLISECONDS)
+            val target = activity()
+            manager.onActivityStarted(target)
+            shadowOf(Looper.getMainLooper()).idleFor(1, TimeUnit.MILLISECONDS)
+            assertEquals(0L, manager.lockEpoch)
+            assertFalse(manager.isLocked)
+            assertNull(shadowOf(target).nextStartedActivity)
+        }
+    }
+
+    @Test
+    fun timeoutOrUiHiddenConfirmsBackgroundAfterHandoffOrConfigurationChange() {
+        configure(0)
+        for (configChange in listOf(true, false)) {
+            for (uiHidden in listOf(true, false)) {
+                val manager = manager()
+                val last = if (configChange) activity().apply { changingConfigurations = true }
+                    else Robolectric.buildActivity(AppAuthActivity::class.java).get()
+                manager.onActivityStarted(last)
+                manager.onAuthenticated(expectNextActivity = !configChange)
+                manager.onActivityStopped(last)
+                val stopTime = wallTime
+                wallTime += 699
+                shadowOf(Looper.getMainLooper()).idleFor(699, TimeUnit.MILLISECONDS)
+                assertEquals(0L, manager.lockEpoch)
+                if (uiHidden) manager.onUiHidden()
+                shadowOf(Looper.getMainLooper()).idleFor(if (uiHidden) 0 else 1, TimeUnit.MILLISECONDS)
+                assertEquals(1L, manager.lockEpoch)
+                assertEquals(stopTime, preferences.getLong(PREF_APP_ENTER_BACKGROUND, -1))
+                manager.onActivityStarted(activity())
+                assertTrue(manager.isLocked)
+            }
+        }
     }
 
     private fun assertWindowSecure(window: Window, expected: Boolean) {
