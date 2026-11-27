@@ -506,7 +506,8 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     private fun createShareBitmap(): Bitmap = binding.llMarketShare.drawShareBitmap()
 
     private fun shareToSystem() {
-        lifecycleScope.launch {
+        if (shareJob?.isActive == true) return
+        shareJob = lifecycleScope.launch {
             try {
                 if (!isAdded) return@launch
                 val file = createShareFile()
@@ -651,6 +652,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     }
 
     private var saveJob: Job? = null
+    private var shareJob: Job? = null
 
     private suspend fun createShareFile(): File {
         val context = requireContext()

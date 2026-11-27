@@ -455,7 +455,8 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     private fun shareToSystem() {
-        lifecycleScope.launch {
+        if (shareJob?.isActive == true) return
+        shareJob = lifecycleScope.launch {
             try {
                 if (!isAdded) return@launch
                 val file = createShareFile()
@@ -546,6 +547,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     private var saveJob: Job? = null
+    private var shareJob: Job? = null
 
     private fun saveToAlbum() {
         if (saveJob?.isActive == true) return

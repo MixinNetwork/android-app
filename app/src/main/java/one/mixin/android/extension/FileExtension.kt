@@ -1199,16 +1199,31 @@ fun savePngBitmapToFile(file: File, bitmap: Bitmap) {
     }
 }
 
+private const val SHARE_CACHE_RETENTION_MILLIS = 60 * 60 * 1000L
+
 /**
- * Creates a unique PNG file in [cacheDir] and compresses [bitmap] into it, deleting any partial file on failure.
+ * Creates a unique PNG file in `cacheDir/share` (falling back to [cacheDir]) after pruning stale files,
+ * and compresses [bitmap] into it, deleting any partial file on failure.
  */
 fun Context.savePngBitmapToUniqueCacheFile(
     baseName: String,
     bitmap: Bitmap,
 ): File {
+    val shareDir = File(cacheDir, "share")
+    val targetDir = if (shareDir.exists() || shareDir.mkdirs()) {
+        val cutoff = System.currentTimeMillis() - SHARE_CACHE_RETENTION_MILLIS
+        shareDir.listFiles()?.forEach { existing ->
+            if (existing.isFile && existing.lastModified() < cutoff) {
+                runCatching { existing.delete() }
+            }
+        }
+        shareDir
+    } else {
+        cacheDir
+    }
     val sanitized = baseName.toValidFileName().ifBlank { "share" }
     val prefix = if (sanitized.length < 3) "img_${sanitized}_" else "${sanitized}_"
-    val file = File.createTempFile(prefix, ".png", cacheDir)
+    val file = File.createTempFile(prefix, ".png", targetDir)
     savePngBitmapToFile(file, bitmap)
     return file
 }
