@@ -181,14 +181,26 @@ fun holdClip(webClip: WebClip) {
 
 private fun initClips() {
     MixinApplication.get().applicationScope.launch(SINGLE_THREAD) {
-        val content = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return@launch
+        val prefs = MixinApplication.appContext.defaultSharedPreferences
+        val content = prefs.getString(PREF_FLOATING, null) ?: return@launch
         val type = object : TypeToken<List<WebClip>>() {}.type
-        val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
-        clips.clear()
-        if (list.isEmpty()) return@launch
-        clips.addAll(list)
-        MixinApplication.get().currentActivity?.let { _ ->
-            withContext(Dispatchers.Main) {
+        val list = runCatching { GsonHelper.customGson.fromJson<List<WebClip>>(content, type) }.getOrNull()
+        val validClips = list?.filter { clip ->
+            val clipUrl: String? = clip.url
+            !clipUrl.isNullOrBlank()
+        }.orEmpty()
+        if (list != null && validClips.size != list.size) {
+            if (validClips.isEmpty()) {
+                prefs.remove(PREF_FLOATING)
+            } else {
+                prefs.putString(PREF_FLOATING, GsonHelper.customGson.toJson(validClips))
+            }
+        }
+        withContext(Dispatchers.Main) {
+            clips.clear()
+            if (validClips.isEmpty()) return@withContext
+            clips.addAll(validClips)
+            MixinApplication.get().currentActivity?.let { _ ->
                 FloatingWebClip.getInstance().show()
             }
         }

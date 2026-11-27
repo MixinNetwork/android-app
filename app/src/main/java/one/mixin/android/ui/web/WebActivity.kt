@@ -76,7 +76,9 @@ class WebActivity : BaseActivity() {
                             putString(
                                 WebFragment.CONVERSATION_ID,
                                 conversationId ?: app?.let {
-                                    generateConversationId(Session.getAccountId()!!, it.appId)
+                                    Session.getAccountId()?.let { accountId ->
+                                        generateConversationId(accountId, it.appId)
+                                    }
                                 },
                             )
                             putParcelable(WebFragment.ARGS_APP, app)
@@ -198,10 +200,17 @@ class WebActivity : BaseActivity() {
         }
     }
 
-    private var loadViewAction = fun(index: Int) {
+    private var loadViewAction: (Int) -> Unit = fun(index: Int) {
         val clip = clips.getOrNull(index) ?: return
         val clipUrl: String? = clip.url
-        if (clipUrl.isNullOrBlank()) return
+        if (clipUrl.isNullOrBlank()) {
+            releaseClip(index)
+            binding.six.loadData(clips, loadViewAction)
+            if (clips.isEmpty() && supportFragmentManager.findFragmentByTag(WebFragment.TAG) == null) {
+                finish()
+            }
+            return
+        }
         val extras = Bundle()
         extras.putString(WebFragment.URL, clipUrl)
         extras.putString(WebFragment.CONVERSATION_ID, clip.conversationId)
@@ -233,13 +242,27 @@ class WebActivity : BaseActivity() {
                 WebFragment.newInstance(extras),
                 WebFragment.TAG,
             ).commit()
-        } else if (extras != null && clips.isEmpty() && supportFragmentManager.findFragmentByTag(WebFragment.TAG) == null) {
+        } else if (clips.isEmpty() && supportFragmentManager.findFragmentByTag(WebFragment.TAG) == null) {
             finish()
         } else {
             isExpand = false
             FloatingWebClip.getInstance(this.isNightMode()).hide()
             SystemUIManager.lightUI(window, !isNightMode())
             hideWeb()
+        }
+    }
+
+    fun handleInvalidWebFragment(fragment: WebFragment) {
+        supportFragmentManager.beginTransaction()
+            .remove(fragment)
+            .commitAllowingStateLoss()
+        if (clips.isEmpty()) {
+            finish()
+        } else {
+            isExpand = false
+            FloatingWebClip.getInstance(this.isNightMode()).hide()
+            SystemUIManager.lightUI(window, !isNightMode())
+            binding.six.loadData(clips, loadViewAction)
         }
     }
 

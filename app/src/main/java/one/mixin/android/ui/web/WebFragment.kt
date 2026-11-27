@@ -403,7 +403,17 @@ class WebFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ) {
         if (url.isBlank()) {
-            activity?.finish()
+            val webActivity = activity as? WebActivity
+            if (webActivity != null) {
+                webActivity.handleInvalidWebFragment(this)
+            } else {
+                parentFragmentManager.beginTransaction()
+                    .remove(this)
+                    .commitAllowingStateLoss()
+                if (parentFragmentManager.fragments.none { it != this }) {
+                    activity?.finish()
+                }
+            }
             return
         }
         if (activity is LandingActivity) {
@@ -704,7 +714,7 @@ class WebFragment : BaseFragment() {
                     val sp = requireContext().defaultSharedPreferences
                     val str = sp.getString(PREF_RECENT_SEARCH, null)
                     val searches = if (str.isNullOrBlank()) mutableListOf()
-                    else GsonHelper.customGson.fromJson(str, Array<RecentSearch>::class.java).toMutableList()
+                    else GsonHelper.customGson.fromJson(str, Array<RecentSearch>::class.java)?.toMutableList() ?: mutableListOf()
                     val recent = RecentSearch(RecentSearchType.LINK, title = name, subTitle = url)
                     searches.remove(recent)
                     searches.add(0, recent)
@@ -1360,6 +1370,7 @@ class WebFragment : BaseFragment() {
 
     private fun generateWebClip(): WebClip? {
         val currentUrl = webView.url ?: url
+        if (currentUrl.isBlank()) return null
         val v = webView
         if (v.height <= 0) return null
         val screenshot = createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
