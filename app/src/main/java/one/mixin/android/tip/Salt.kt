@@ -36,13 +36,18 @@ internal fun storeEncryptedSalt(
         list
     } else mutableListOf()
 
-    val cipher = getEncryptCipher(Constants.Tip.ALIAS_SPEND_SALT)
-    val edit = context.defaultSharedPreferences.edit()
-    val ciphertext = cipher.doFinal(encryptedSalt)
-    val newSalt = (cipher.iv + ciphertext).toHex()
-    historicalSalts.add(0, newSalt)
-    edit.putString(Constants.Tip.SPEND_SALT, historicalSalts.joinToString())
-    return edit.commit()
+    return runCatching {
+        val cipher = getEncryptCipher(Constants.Tip.ALIAS_SPEND_SALT)
+        val edit = context.defaultSharedPreferences.edit()
+        val ciphertext = cipher.doFinal(encryptedSalt)
+        val newSalt = (cipher.iv + ciphertext).toHex()
+        historicalSalts.add(0, newSalt)
+        edit.putString(Constants.Tip.SPEND_SALT, historicalSalts.joinToString())
+        edit.commit()
+    }.onFailure {
+        reportKeyStoreError("storeEncryptedSalt", it)
+        clearSalts(context)
+    }.getOrDefault(false)
 }
 
 // for debug

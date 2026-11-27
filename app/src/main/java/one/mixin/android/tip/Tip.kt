@@ -638,7 +638,6 @@ class Tip
             Session.storeAccount(account)
         }
 
-        @Throws(TipException::class)
         private fun encryptAndSaveTipPriv(
             context: Context,
             pin: String,
@@ -647,9 +646,7 @@ class Tip
         ) {
             val privTipKey = (aesKey + pin.toByteArray()).sha3Sum256()
             val privTip = aesEncrypt(privTipKey, tipPriv)
-            if (!storeTipPriv(context, privTip)) {
-                throw TipException("Store tip error")
-            }
+            storeTipPrivSafely(context, privTip)
         }
 
         @Throws(TipException::class)
@@ -784,20 +781,8 @@ class Tip
             return cipher.doFinal(ciphertext)
         }
 
-        private fun storeTipPriv(
-            context: Context,
-            tipPriv: ByteArray,
-        ): Boolean {
-            val cipher = getEncryptCipher(Constants.Tip.ALIAS_TIP_PRIV)
-            val edit = context.defaultSharedPreferences.edit()
-            val ciphertext = cipher.doFinal(tipPriv)
-            edit.putString(Constants.Tip.TIP_PRIV, (cipher.iv + ciphertext).toHex())
-            return edit.commit()
-        }
-
         private fun clearTipPriv(context: Context) {
-            context.defaultSharedPreferences.remove(Constants.Tip.TIP_PRIV)
-            deleteKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)
+            clearTipPrivStorage(context)
         }
 
         fun getMnemonicFromEncryptedPreferences(context: Context): ByteArray? {
@@ -848,3 +833,28 @@ internal fun shouldMarkPendingMnemonicAsExported(
     !hasPhone ||
         localEntropy == null ||
         safeEntropy?.let { shouldRemoveLocalMnemonic(localEntropy, it) } == true
+
+internal fun storeTipPrivSafely(
+    context: Context,
+    privTip: ByteArray,
+) {
+    try {
+        val cipher = getEncryptCipher(Constants.Tip.ALIAS_TIP_PRIV)
+        val edit = context.defaultSharedPreferences.edit()
+        val ciphertext = cipher.doFinal(privTip)
+        edit.putString(Constants.Tip.TIP_PRIV, (cipher.iv + ciphertext).toHex())
+        if (!edit.commit()) {
+            Timber.e("Store tip priv returned false")
+            clearTipPrivStorage(context)
+        }
+    } catch (e: Exception) {
+        // TIP priv is recoverable from nodes; avoid failing when local KeyStore cannot encrypt.
+        reportKeyStoreError("storeTipPriv", e)
+        clearTipPrivStorage(context)
+    }
+}
+
+internal fun clearTipPrivStorage(context: Context) {
+    context.defaultSharedPreferences.remove(Constants.Tip.TIP_PRIV)
+    deleteKeyByAlias(Constants.Tip.ALIAS_TIP_PRIV)
+}

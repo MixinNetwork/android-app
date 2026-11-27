@@ -7,6 +7,7 @@ import android.security.keystore.KeyProperties.AUTH_BIOMETRIC_STRONG
 import android.security.keystore.KeyProperties.AUTH_DEVICE_CREDENTIAL
 import com.bugsnag.android.Bugsnag
 import one.mixin.android.util.reportException
+import timber.log.Timber
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -15,7 +16,13 @@ import javax.crypto.spec.IvParameterSpec
 
 fun getEncryptCipher(alias: String): Cipher {
     val cipher = Cipher.getInstance("AES/CBC/PKCS7Padding")
-    cipher.init(Cipher.ENCRYPT_MODE, getKeyByAlias(alias))
+    try {
+        cipher.init(Cipher.ENCRYPT_MODE, getKeyByAlias(alias))
+    } catch (e: Exception) {
+        reportKeyStoreError("getEncryptCipher", e)
+        deleteKeyByAlias(alias)
+        cipher.init(Cipher.ENCRYPT_MODE, getKeyByAlias(alias))
+    }
     return cipher
 }
 
@@ -37,29 +44,41 @@ fun deleteKeyByAlias(alias: String): Boolean {
         ks.deleteEntry(alias)
         return true
     } catch (e: Exception) {
-        reportException("deleteKeyByAlias", e)
-        Bugsnag.notify(e)
+        reportKeyStoreError("deleteKeyByAlias", e)
     }
     return false
+}
+
+internal fun reportKeyStoreError(
+    tag: String,
+    e: Throwable,
+) {
+    Timber.e(e, "$tag failed")
+    runCatching {
+        reportException(tag, e)
+        Bugsnag.notify(e)
+    }
 }
 
 private fun getKeyByAlias(
     alias: String,
     userAuthenticationRequired: Boolean = false,
-): SecretKey? {
+): SecretKey {
     val ks: KeyStore =
         KeyStore.getInstance("AndroidKeyStore").apply {
             load(null)
         }
-    var key: SecretKey? = null
     try {
-        key = ks.getKey(alias, null) as? SecretKey
+        val key = ks.getKey(alias, null) as? SecretKey
         if (key != null) {
             return key
         }
+        if (ks.containsAlias(alias)) {
+            ks.deleteEntry(alias)
+        }
     } catch (e: Exception) {
-        reportException("getKeyByAlias", e)
-        Bugsnag.notify(e)
+        reportKeyStoreError("getKeyByAlias", e)
+        runCatching { ks.deleteEntry(alias) }
     }
     try {
         val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
@@ -85,10 +104,9 @@ private fun getKeyByAlias(
             }
         }
         keyGenerator.init(builder.build())
-        key = keyGenerator.generateKey()
+        return keyGenerator.generateKey()
     } catch (e: Exception) {
-        reportException("getKeyByAlias", e)
-        Bugsnag.notify(e)
+        reportKeyStoreError("getKeyByAlias", e)
+        throw e
     }
-    return key
 }
