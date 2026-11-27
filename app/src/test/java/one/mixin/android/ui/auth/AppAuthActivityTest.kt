@@ -271,6 +271,38 @@ class AppAuthActivityTest {
         mainLooper.idle()
         assertTrue(shadowOf(activity).isTaskMovedToBack)
         assertFalse(activity.isFinishing)
+        assertNull(shadowOf(activity).nextStartedActivity)
+    }
+
+    @Test
+    fun cancellingSecondTaskLockScreenRoutesToHomeToAvoidLoop() {
+        val fakeApp = FakeMixinApplication()
+        MixinApplication.appContext = fakeApp
+        fakeApp.defaultSharedPreferences.edit().putInt(PREF_APP_AUTH, 0).commit()
+
+        val firstLock = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        assertFalse(fakeApp.appAuth.onAuthCancelled(firstLock))
+
+        // Second task lock screen (distinct taskId) triggers HOME intent when cancelled to prevent looping.
+        val secondManager = AppAuthManager(
+            fakeApp.defaultSharedPreferences,
+            taskIdOf = { activity -> if (activity === firstLock) 1 else 2 },
+        )
+        assertFalse(secondManager.onAuthCancelled(firstLock))
+        ReflectionHelpers.setField(fakeApp, "appAuth\$delegate", lazyOf(secondManager))
+
+        controller.create().start().resume().visible()
+        val activity = controller.get()
+        val mainLooper = shadowOf(Looper.getMainLooper())
+        mainLooper.idleFor(100, TimeUnit.MILLISECONDS)
+        authenticateWithError(currentAuthenticateSession(), BiometricPrompt.ERROR_USER_CANCELED, "User canceled")
+        mainLooper.idle()
+
+        assertTrue(shadowOf(activity).isTaskMovedToBack)
+        val homeIntent = shadowOf(activity).nextStartedActivity
+        assertNotNull(homeIntent)
+        assertEquals(Intent.ACTION_MAIN, homeIntent.action)
+        assertTrue(homeIntent.hasCategory(Intent.CATEGORY_HOME))
     }
 
     @Test

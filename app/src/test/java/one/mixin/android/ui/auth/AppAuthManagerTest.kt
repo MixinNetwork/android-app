@@ -541,6 +541,116 @@ class AppAuthManagerTest {
         assertEquals(true, activity.recentsScreenshotEnabled)
     }
 
+    @Test
+    fun cancellingAuthSuppressesResumeRelockAndFlagsMultiTaskEscape() {
+        configure(0)
+        val mainActivity = activity(taskId = 1)
+        val callActivity = activity(taskId = 2)
+
+        val lock1 = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        val lock2 = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        val multiTaskManager = AppAuthManager(
+            preferences,
+            { elapsed },
+            { wallTime },
+            { activity ->
+                when (activity) {
+                    mainActivity, lock1 -> 1
+                    else -> 2
+                }
+            },
+        )
+        multiTaskManager.onActivityStarted(mainActivity)
+        assertNotNull(shadowOf(mainActivity).nextStartedActivity)
+        multiTaskManager.onActivityStarted(lock1)
+        multiTaskManager.onActivityResumed(lock1)
+
+        // First cancellation moves task 1 away without triggering a second prompt on resume.
+        assertFalse(multiTaskManager.onAuthCancelled(lock1))
+        multiTaskManager.onActivityPaused(lock1)
+        multiTaskManager.onActivityStopped(lock1)
+        multiTaskManager.onActivityResumed(mainActivity)
+        assertNull(shadowOf(mainActivity).nextStartedActivity)
+
+        // Background task 2 resuming passively does not re-launch a lock screen via onActivityResumed.
+        multiTaskManager.onActivityResumed(callActivity)
+        assertNull(shadowOf(callActivity).nextStartedActivity)
+
+        // If task 2 starts via onActivityStarted while locked and user cancels again, signal home escape.
+        multiTaskManager.onActivityStarted(callActivity)
+        assertNotNull(shadowOf(callActivity).nextStartedActivity)
+        multiTaskManager.onActivityStarted(lock2)
+        assertTrue(multiTaskManager.onAuthCancelled(lock2))
+        multiTaskManager.onActivityStopped(mainActivity)
+        multiTaskManager.onActivityStopped(callActivity)
+        multiTaskManager.onActivityStopped(lock2)
+
+        // Returning from background resets cancelled state and locks normally again.
+        multiTaskManager.onActivityStarted(mainActivity)
+        assertTrue(multiTaskManager.isLocked)
+        assertNotNull(shadowOf(mainActivity).nextStartedActivity)
+    }
+
+    @Test
+    fun lateAuthActivityStartAfterForegroundUnlockFinishesWithoutRelocking() {
+        configure(0)
+        val mainActivity = activity(taskId = 1)
+        val otherActivity = activity(taskId = 2)
+        val lock1 = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        val lock2 = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        val manager = AppAuthManager(
+            preferences,
+            { elapsed },
+            { wallTime },
+            { activity ->
+                when (activity) {
+                    mainActivity, lock1 -> 1
+                    else -> 2
+                }
+            },
+        )
+
+        manager.onActivityStarted(mainActivity)
+        manager.onActivityStarted(otherActivity)
+        manager.onActivityStarted(lock1)
+        assertNull(manager.onAuthenticated())
+        assertFalse(manager.isLocked)
+
+        // A second AppAuthActivity that finishes launching after unlock must close instead of locking again.
+        manager.onActivityStarted(lock2)
+        assertTrue(lock2.isFinishing)
+        assertFalse(manager.isLocked)
+
+        // Once the app goes to background and returns, locking resumes as expected.
+        manager.onActivityStopped(mainActivity)
+        manager.onActivityStopped(otherActivity)
+        manager.onActivityStarted(mainActivity)
+        assertTrue(manager.isLocked)
+        assertNotNull(shadowOf(mainActivity).nextStartedActivity)
+    }
+
+    @Test
+    fun pendingLaunchDeduplicationDoesNotExpireByElapsedTimeAlone() {
+        configure(0)
+        val manager = manager()
+        val mainActivity = activity(taskId = 0)
+        manager.onActivityCreated(mainActivity)
+        manager.onActivityStarted(mainActivity)
+        assertNotNull(shadowOf(mainActivity).nextStartedActivity)
+
+        // Simulate slow cold-start taking longer than 500ms before AppAuthActivity starts.
+        elapsed += 5_000L
+        manager.onActivityResumed(mainActivity)
+        assertNull(shadowOf(mainActivity).nextStartedActivity)
+
+        val lockActivity = Robolectric.buildActivity(AppAuthActivity::class.java).get()
+        manager.onActivityCreated(lockActivity)
+        manager.onActivityStarted(lockActivity)
+        // Once AppAuthActivity has started without resuming, content resuming can bring it back.
+        manager.onActivityResumed(mainActivity)
+        assertNotNull(shadowOf(mainActivity).nextStartedActivity)
+    }
+
     private fun assertWindowSecure(window: Window, expected: Boolean) {
         assertEquals(expected, (window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0)
         assertEquals(expected, FlagSecureReason.isSecured(window))

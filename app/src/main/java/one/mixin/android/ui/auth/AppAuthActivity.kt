@@ -79,7 +79,7 @@ class AppAuthActivity : BaseActivity() {
                 viewModel.pendingPinUnlock || savedInstanceState.getBoolean(STATE_PENDING_PIN_UNLOCK)
         }
         onBackPressedDispatcher.addCallback(this) {
-            moveTaskToBack(true)
+            dismissToBackground()
         }
         (supportFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as? VerifyBottomSheetDialogFragment)
             ?.let(::bindPinVerification)
@@ -316,7 +316,7 @@ class AppAuthActivity : BaseActivity() {
         promptActive = false
         when (errorCode) {
             BiometricPrompt.ERROR_USER_CANCELED -> {
-                moveTaskToBack(true)
+                dismissToBackground()
             }
             BiometricPrompt.ERROR_NEGATIVE_BUTTON -> {
                 showPinVerification()
@@ -355,6 +355,19 @@ class AppAuthActivity : BaseActivity() {
                     showError(errString.ifBlank { getString(R.string.Touch_the_fingerprint_sensor) })
                 }
             }
+        }
+    }
+
+    private fun dismissToBackground() {
+        val shouldGoHome = MixinApplication.appAuthOrNull()?.onAuthCancelled(this) == true
+        moveTaskToBack(true)
+        if (shouldGoHome) {
+            startActivity(
+                Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_HOME)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                },
+            )
         }
     }
 
