@@ -7,10 +7,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import java.time.Instant
 
 class PendingReferralStorePostSignUpTest {
     private val context: Context = InMemoryPrefsContext()
+    private val signUpAt = 1_000_000L
+    private val minute = 60L * 1000
 
     @Before
     fun setUp() {
@@ -19,67 +20,73 @@ class PendingReferralStorePostSignUpTest {
 
     @Test
     fun getForPostSignUp_requiresSignUpMarker() {
-        PendingReferralStore.save(context, "crmlsv")
-        assertNull(PendingReferralStore.getForPostSignUp(context))
+        PendingReferralStore.save(context, "crmlsv", signUpAt)
+        assertNull(PendingReferralStore.getForPostSignUp(context, signUpAt))
     }
 
     @Test
     fun getForPostSignUp_returnsCodeOnFirstHomeSessionAfterSignUp() {
-        PendingReferralStore.save(context, "crmlsv")
+        PendingReferralStore.save(context, "crmlsv", signUpAt)
         PendingReferralStore.markSignUpCompleted(context)
-        assertEquals("CRMLSV", PendingReferralStore.getForPostSignUp(context))
+        assertEquals("CRMLSV", PendingReferralStore.getForPostSignUp(context, signUpAt + 2 * 24 * 60 * minute))
     }
 
     @Test
     fun getForPostSignUp_returnsLateCodeInSameSession() {
         PendingReferralStore.markSignUpCompleted(context)
-        assertNull(PendingReferralStore.getForPostSignUp(context))
-        PendingReferralStore.save(context, "crmlsv")
-        assertEquals("CRMLSV", PendingReferralStore.getForPostSignUp(context))
+        assertNull(PendingReferralStore.getForPostSignUp(context, signUpAt))
+        PendingReferralStore.save(context, "crmlsv", signUpAt + minute)
+        assertEquals("CRMLSV", PendingReferralStore.getForPostSignUp(context, signUpAt + minute))
     }
 
     @Test
     fun getForPostSignUp_doesNotReturnCodeInLaterSession() {
-        PendingReferralStore.save(context, "crmlsv")
+        PendingReferralStore.save(context, "crmlsv", signUpAt)
         PendingReferralStore.markSignUpCompleted(context)
-        assertEquals("CRMLSV", PendingReferralStore.getForPostSignUp(context))
+        assertEquals("CRMLSV", PendingReferralStore.getForPostSignUp(context, signUpAt))
         PendingReferralStore.endPostSignUpSessionForTest()
-        PendingReferralStore.save(context, "other1")
-        assertNull(PendingReferralStore.getForPostSignUp(context))
+        PendingReferralStore.save(context, "other1", signUpAt + minute)
+        assertNull(PendingReferralStore.getForPostSignUp(context, signUpAt + minute))
     }
 
     @Test
-    fun getForPostSignUp_returnsCodeFromOldPersistedRecord() {
-        context.getSharedPreferences("pending_referral_prefs", Context.MODE_PRIVATE).edit()
-            .putString("pending_referral_code", "CRMLSV")
-            .putLong("pending_referral_saved_at", Instant.parse("2020-01-01T00:00:00Z").toEpochMilli())
-            .apply()
+    fun getForPostSignUp_returnsNullWhenPendingCodeExpired() {
+        val expiredAt = signUpAt + 7L * 24 * 60 * minute + minute
+        PendingReferralStore.save(context, "crmlsv", signUpAt)
         PendingReferralStore.markSignUpCompleted(context)
-        assertEquals("CRMLSV", PendingReferralStore.getForPostSignUp(context))
-        assertEquals("CRMLSV", PendingReferralStore.pendingCodeFlow.value)
+        assertNull(PendingReferralStore.getForPostSignUp(context, expiredAt))
+    }
+
+    @Test
+    fun getForPostSignUp_keepsSessionActiveForLateCodeAfterExpiredCode() {
+        val expiredAt = signUpAt + 7L * 24 * 60 * minute + minute
+        PendingReferralStore.save(context, "oldcod", signUpAt)
+        PendingReferralStore.markSignUpCompleted(context)
+        assertNull(PendingReferralStore.getForPostSignUp(context, expiredAt))
+        assertNull(PendingReferralStore.pendingCodeFlow.value)
+
+        PendingReferralStore.save(context, "newcod", expiredAt + minute)
+        assertEquals("NEWCOD", PendingReferralStore.getForPostSignUp(context, expiredAt + minute))
+    }
+
+    @Test
+    fun get_expiryPreservesPendingSignUpMarker() {
+        val expiredAt = signUpAt + 7L * 24 * 60 * minute + minute
+        PendingReferralStore.save(context, "oldcod", signUpAt)
+        PendingReferralStore.markSignUpCompleted(context)
+        assertNull(PendingReferralStore.get(context, expiredAt))
+
+        PendingReferralStore.save(context, "fresh1", expiredAt + minute)
+        assertEquals("FRESH1", PendingReferralStore.getForPostSignUp(context, expiredAt + minute))
     }
 
     @Test
     fun clear_removesPendingCodeAndSignUpMarker() {
-        PendingReferralStore.save(context, "crmlsv")
+        PendingReferralStore.save(context, "crmlsv", signUpAt)
         PendingReferralStore.markSignUpCompleted(context)
         PendingReferralStore.clear(context)
-        assertNull(PendingReferralStore.pendingCodeFlow.value)
-        assertNull(PendingReferralStore.get(context))
-
-        PendingReferralStore.save(context, "other1")
-        assertNull(PendingReferralStore.getForPostSignUp(context))
-    }
-
-    @Test
-    fun clear_endsActivePostSignUpSession() {
-        PendingReferralStore.save(context, "crmlsv")
-        PendingReferralStore.markSignUpCompleted(context)
-        assertEquals("CRMLSV", PendingReferralStore.getForPostSignUp(context))
-        PendingReferralStore.clear(context)
-
-        PendingReferralStore.save(context, "other1")
-        assertNull(PendingReferralStore.getForPostSignUp(context))
+        assertNull(PendingReferralStore.get(context, signUpAt))
+        assertNull(PendingReferralStore.getForPostSignUp(context, signUpAt))
     }
 
     private class InMemoryPrefsContext : ContextWrapper(null) {

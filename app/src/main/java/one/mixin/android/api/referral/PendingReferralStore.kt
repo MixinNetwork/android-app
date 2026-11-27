@@ -14,7 +14,9 @@ object PendingReferralStore {
 
     private const val PREFS_NAME = "pending_referral_prefs"
     private const val KEY_CODE = "pending_referral_code"
+    private const val KEY_SAVED_AT = "pending_referral_saved_at"
     private const val KEY_SIGN_UP_PENDING = "pending_referral_sign_up_pending"
+    private const val EXPIRY_MILLIS = 7L * 24 * 60 * 60 * 1000
     private const val DEEP_LINK_VALUE_REFERRAL = "referral"
     private const val DEEP_LINK_SUB1 = "deep_link_sub1"
     private const val PATH_REFERRALS = "referrals"
@@ -28,10 +30,15 @@ object PendingReferralStore {
 
     fun deepLinkSub1Key(): String = DEEP_LINK_SUB1
 
-    fun save(context: Context, rawCode: String?): Boolean {
+    fun save(
+        context: Context,
+        rawCode: String?,
+        nowMs: Long = System.currentTimeMillis(),
+    ): Boolean {
         val code = normalizeCode(rawCode) ?: return false
         prefs(context).edit {
             putString(KEY_CODE, code)
+            putLong(KEY_SAVED_AT, nowMs)
         }
         _pendingCodeFlow.value = code
         return true
@@ -43,22 +50,46 @@ object PendingReferralStore {
         }
     }
 
-    fun getForPostSignUp(context: Context): String? {
+    fun getForPostSignUp(
+        context: Context,
+        nowMs: Long = System.currentTimeMillis(),
+    ): String? {
         val sharedPrefs = prefs(context)
         if (sharedPrefs.getBoolean(KEY_SIGN_UP_PENDING, false)) {
             sharedPrefs.edit { remove(KEY_SIGN_UP_PENDING) }
             postSignUpSessionActive = true
         }
         if (!postSignUpSessionActive) return null
-        return get(context)
+        return get(context, nowMs)
     }
 
     internal fun endPostSignUpSessionForTest() {
         postSignUpSessionActive = false
     }
 
-    fun get(context: Context): String? {
-        val code = normalizeCode(prefs(context).getString(KEY_CODE, null))
+    fun get(
+        context: Context,
+        nowMs: Long = System.currentTimeMillis(),
+    ): String? {
+        val sharedPrefs = prefs(context)
+        val code = normalizeCode(sharedPrefs.getString(KEY_CODE, null))
+        if (code == null) {
+            if (_pendingCodeFlow.value != null) {
+                _pendingCodeFlow.value = null
+            }
+            return null
+        }
+        val savedAt = sharedPrefs.getLong(KEY_SAVED_AT, 0L)
+        if (savedAt <= 0L || nowMs - savedAt > EXPIRY_MILLIS) {
+            sharedPrefs.edit {
+                remove(KEY_CODE)
+                remove(KEY_SAVED_AT)
+            }
+            if (_pendingCodeFlow.value != null) {
+                _pendingCodeFlow.value = null
+            }
+            return null
+        }
         if (_pendingCodeFlow.value != code) {
             _pendingCodeFlow.value = code
         }
