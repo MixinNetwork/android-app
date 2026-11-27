@@ -89,6 +89,29 @@ class PendingReferralStorePostSignUpTest {
         assertNull(PendingReferralStore.getForPostSignUp(context, signUpAt))
     }
 
+    @Test
+    fun invitedUserHasNoCodeToShowAndCachedCodeIsCleared() {
+        PendingReferralStore.save(context, "first1")
+        PendingReferralStore.markSignUpCompleted(context)
+
+        assertNull(PendingReferralStore.getAfterInvitedCheck(context, true))
+        assertNull(PendingReferralStore.get(context))
+        assertNull(PendingReferralStore.pendingCodeFlow.value)
+    }
+
+    @Test
+    fun uninvitedOrUnknownUserGetsLatestCodeToShowAndKeepsItCached() {
+        for (hasBeenInvited in listOf(false, null)) {
+            PendingReferralStore.save(context, "first1")
+            PendingReferralStore.markSignUpCompleted(context)
+            assertEquals("FIRST1", PendingReferralStore.getForPostSignUp(context))
+            PendingReferralStore.save(context, "second")
+
+            assertEquals("SECOND", PendingReferralStore.getAfterInvitedCheck(context, hasBeenInvited))
+            assertEquals("SECOND", PendingReferralStore.get(context))
+        }
+    }
+
     private class InMemoryPrefsContext : ContextWrapper(null) {
         private val prefsByName = mutableMapOf<String, SharedPreferences>()
 

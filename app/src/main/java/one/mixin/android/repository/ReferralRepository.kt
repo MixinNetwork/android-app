@@ -59,11 +59,6 @@ class ReferralRepository
         }
 
         suspend fun fetchHasBeenInvitedOrNull(logLabel: String): Boolean? {
-            if (!hasValidReferralMembership(Session.getAccount()?.membership)) {
-                Timber.d("Skip fetch referral before %s because membership is invalid or expired", logLabel)
-                return null
-            }
-
             runCatching {
                 userRepository.getBotPublicKey(REFERRAL_BOT_USER_ID, false)
             }.onFailure {

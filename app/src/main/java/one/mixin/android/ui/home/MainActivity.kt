@@ -66,6 +66,7 @@ import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -156,6 +157,7 @@ import one.mixin.android.job.RestoreTransactionJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.TranscriptAttachmentMigrationJob
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
@@ -268,6 +270,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     lateinit var accountRepoProvider: Provider<AccountRepository>
 
     @Inject
+    lateinit var referralRepositoryProvider: Provider<ReferralRepository>
+
+    @Inject
     lateinit var web3RepositoryProvider: Provider<Web3Repository>
 
     // Compose reads this, so the rail follows restores, reverts, and tab changes.
@@ -326,6 +331,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     private lateinit var binding: ActivityMainBinding
+
+    private var pendingReferralCheckJob: Job? = null
 
     private var isBottomNavigationGlassEnabled: Boolean = false
         set(value) {
@@ -649,19 +656,38 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     private fun maybeShowPendingReferral() {
-        if (!::binding.isInitialized || isFinishing || isDestroyed || supportFragmentManager.isStateSaved) return
-        if (!Session.checkToken() || !Session.hasSafe() || Session.getAccount()?.hasPin != true) return
-        if (MixinApplication.get().isAppAuthShown()) return
-        if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) || hasPendingImportMnemonic(this)) return
-        if (findLoginPinGate() != null) return
-        if (supportFragmentManager.findFragmentByTag(CheckRegisterBottomSheetDialogFragment.TAG) != null) return
-        if (supportFragmentManager.findFragmentByTag(InputReferralBottomSheetDialogFragment.TAG) != null) return
-        if (supportFragmentManager.findFragmentByTag(ReferralBindPreviewBottomSheetDialogFragment.TAG) != null) return
+        if (!canShowPendingReferral() || pendingReferralCheckJob?.isActive == true) return
 
-        val code = PendingReferralStore.getForPostSignUp(this) ?: return
-        InputReferralBottomSheetDialogFragment
-            .newInstance(defaultValue = code, isPostSignUp = true)
-            .showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+        PendingReferralStore.getForPostSignUp(this) ?: return
+        pendingReferralCheckJob = lifecycleScope.launch {
+            try {
+                val hasBeenInvited = withContext(Dispatchers.IO) {
+                    referralRepositoryProvider.get().fetchHasBeenInvitedOrNull("post_sign_up_referral")
+                }
+
+                if (!canShowPendingReferral() || !lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                    return@launch
+                }
+                val latestCode = PendingReferralStore.getAfterInvitedCheck(this@MainActivity, hasBeenInvited) ?: return@launch
+                InputReferralBottomSheetDialogFragment
+                    .newInstance(defaultValue = latestCode, isPostSignUp = true)
+                    .showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+            } finally {
+                pendingReferralCheckJob = null
+            }
+        }
+    }
+
+    private fun canShowPendingReferral(): Boolean {
+        if (!::binding.isInitialized || isFinishing || isDestroyed || supportFragmentManager.isStateSaved) return false
+        if (!Session.checkToken() || !Session.hasSafe() || Session.getAccount()?.hasPin != true) return false
+        if (MixinApplication.get().isAppAuthShown()) return false
+        if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) || hasPendingImportMnemonic(this)) return false
+        if (findLoginPinGate() != null) return false
+        if (supportFragmentManager.findFragmentByTag(CheckRegisterBottomSheetDialogFragment.TAG) != null) return false
+        if (supportFragmentManager.findFragmentByTag(InputReferralBottomSheetDialogFragment.TAG) != null) return false
+        if (supportFragmentManager.findFragmentByTag(ReferralBindPreviewBottomSheetDialogFragment.TAG) != null) return false
+        return true
     }
 
     private suspend fun openPendingMnemonicNext(pin: String? = null): Boolean {

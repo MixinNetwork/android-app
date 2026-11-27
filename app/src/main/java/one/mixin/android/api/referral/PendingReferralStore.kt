@@ -63,6 +63,14 @@ object PendingReferralStore {
         return get(context, nowMs)
     }
 
+    internal fun getAfterInvitedCheck(context: Context, hasBeenInvited: Boolean?): String? {
+        if (hasBeenInvited == true) {
+            clear(context)
+            return null
+        }
+        return getForPostSignUp(context)
+    }
+
     internal fun endPostSignUpSessionForTest() {
         postSignUpSessionActive = false
     }
