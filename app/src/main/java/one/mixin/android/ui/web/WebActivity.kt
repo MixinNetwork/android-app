@@ -136,10 +136,7 @@ class WebActivity : BaseActivity() {
             object : SixLayout.OnCloseListener {
                 override fun onClose(index: Int) {
                     releaseClip(index)
-                    supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.run {
-                        val fragment = (this as WebFragment)
-                        fragment.resetIndex(index)
-                    }
+                    notifyClipRemoved(index)
                     binding.six.loadData(clips, loadViewAction)
                 }
             },
@@ -200,11 +197,27 @@ class WebActivity : BaseActivity() {
         }
     }
 
+    private fun notifyClipRemoved(removedIndex: Int) {
+        supportFragmentManager.fragments.forEach { fragment ->
+            if (fragment is WebFragment) {
+                fragment.resetIndex(removedIndex)
+            }
+        }
+    }
+
+    private fun showClipOverview() {
+        isExpand = false
+        FloatingWebClip.getInstance(this.isNightMode()).hide()
+        SystemUIManager.lightUI(window, !isNightMode())
+        hideWeb()
+    }
+
     private var loadViewAction: (Int) -> Unit = fun(index: Int) {
         val clip = clips.getOrNull(index) ?: return
         val clipUrl: String? = clip.url
         if (clipUrl.isNullOrBlank()) {
             releaseClip(index)
+            notifyClipRemoved(index)
             binding.six.loadData(clips, loadViewAction)
             if (clips.isEmpty() && supportFragmentManager.findFragmentByTag(WebFragment.TAG) == null) {
                 finish()
@@ -242,13 +255,19 @@ class WebActivity : BaseActivity() {
                 WebFragment.newInstance(extras),
                 WebFragment.TAG,
             ).commit()
-        } else if (clips.isEmpty() && supportFragmentManager.findFragmentByTag(WebFragment.TAG) == null) {
-            finish()
+        } else if (clips.isNotEmpty() || supportFragmentManager.findFragmentByTag(WebFragment.TAG) != null) {
+            showClipOverview()
+        } else if (extras == null && hasSavedClips()) {
+            showClipOverview()
+            ensureClipsLoaded {
+                if (isFinishing || isDestroyed) return@ensureClipsLoaded
+                binding.six.loadData(clips, loadViewAction)
+                if (clips.isEmpty() && supportFragmentManager.findFragmentByTag(WebFragment.TAG) == null) {
+                    finish()
+                }
+            }
         } else {
-            isExpand = false
-            FloatingWebClip.getInstance(this.isNightMode()).hide()
-            SystemUIManager.lightUI(window, !isNightMode())
-            hideWeb()
+            finish()
         }
     }
 

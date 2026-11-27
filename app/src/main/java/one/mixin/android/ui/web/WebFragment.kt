@@ -269,9 +269,16 @@ class WebFragment : BaseFragment() {
     private var webAppInterface: WebAppInterface? = null
     private var index: Int = -1
 
-    fun resetIndex(index: Int) {
-        if (this.index == index) {
-            this.index = -1
+    fun resetIndex(removedIndex: Int) {
+        when {
+            this.index == removedIndex -> {
+                this.index = -1
+                arguments?.putInt(ARGS_INDEX, this.index)
+            }
+            this.index > removedIndex -> {
+                this.index -= 1
+                arguments?.putInt(ARGS_INDEX, this.index)
+            }
         }
     }
 
