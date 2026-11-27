@@ -125,6 +125,20 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
         seekTo(seekPos)
     }
 
+    fun isMuted(): Boolean = player.volume == 0f
+
+    fun setMuted(muted: Boolean) = setVolume(if (muted) 0f else 1f)
+
+    fun toggleMute(): Boolean = (!isMuted()).also { setMuted(it) }
+
+    fun getSpeed(): Float = player.playbackParameters.speed
+
+    fun seekBy(deltaMs: Long): Long {
+        val target = VideoPlayerControls.seekTarget(player.currentPosition, deltaMs, player.duration)
+        player.seekTo(target)
+        return target
+    }
+
     fun setVolume(volume: Float) {
         player.volume = volume
     }

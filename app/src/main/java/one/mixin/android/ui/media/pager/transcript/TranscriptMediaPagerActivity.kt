@@ -521,6 +521,7 @@ class TranscriptMediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismis
                     messageItem.isVideo(),
                     MediaPagerActivity.MediaSource.ChatHistory, //
                     messageItem.absolutePath(),
+                    transcriptId = transcriptId,
                 )
 
             val videoTexture = view.findViewById<TextureView>(R.id.video_texture)

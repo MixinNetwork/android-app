@@ -54,8 +54,15 @@ abstract class BaseViewHolder constructor(containerView: View) :
             MixinApplication.appContext.dpToPx(12f)
         }
         protected var isMe = false
+        protected var currentMessageId: String? = null
+        protected var currentMediaWidth: Int = 0
+        protected var currentMediaHeight: Int = 0
 
-        protected open fun bind(messageItem: ChatHistoryMessageItem) {}
+        protected open fun bind(messageItem: ChatHistoryMessageItem) {
+            currentMessageId = messageItem.messageId
+            currentMediaWidth = messageItem.mediaWidth ?: 0
+            currentMediaHeight = messageItem.mediaHeight ?: 0
+        }
 
         protected open fun chatLayout(
             isMe: Boolean,

@@ -60,8 +60,10 @@ interface MessageDao : BaseDao<Message> {
         LEFT JOIN pin_messages pm ON m.id = pm.message_id
         LEFT JOIN expired_messages em ON m.id = em.message_id
         """
-        private const val APP_CARD_COVER_MEDIA = "category = 'APP_CARD' AND content LIKE '%\"cover_url\":\"%' AND content NOT LIKE '%\"cover_url\":\"\"%'"
-        private const val APP_CARD_COVER_MEDIA_ALIAS = "m.category = 'APP_CARD' AND m.content LIKE '%\"cover_url\":\"%' AND m.content NOT LIKE '%\"cover_url\":\"\"%'"
+        private const val NORMALIZED_CONTENT = "REPLACE(REPLACE(REPLACE(REPLACE(content, ' ', ''), char(9), ''), char(10), ''), char(13), '')"
+        private const val NORMALIZED_CONTENT_ALIAS = "REPLACE(REPLACE(REPLACE(REPLACE(m.content, ' ', ''), char(9), ''), char(10), ''), char(13), '')"
+        private const val APP_CARD_COVER_MEDIA = "category = 'APP_CARD' AND $NORMALIZED_CONTENT LIKE '%\"cover_url\":\"%' AND $NORMALIZED_CONTENT NOT LIKE '%\"cover_url\":\"\"%'"
+        private const val APP_CARD_COVER_MEDIA_ALIAS = "m.category = 'APP_CARD' AND $NORMALIZED_CONTENT_ALIAS LIKE '%\"cover_url\":\"%' AND $NORMALIZED_CONTENT_ALIAS NOT LIKE '%\"cover_url\":\"\"%'"
     }
 
     // Read SQL
@@ -152,11 +154,12 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT count(1) FROM messages 
+        SELECT count(1) FROM messages m
         INDEXED BY index_messages_conversation_id_category
-        WHERE conversation_id = :conversationId
-        AND (category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA))
-        AND (created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
+        INNER JOIN users u ON m.user_id = u.user_id
+        WHERE m.conversation_id = :conversationId
+        AND (m.category IN ($IMAGES, $VIDEOS, $LIVES) OR ($APP_CARD_COVER_MEDIA_ALIAS))
+        AND (m.created_at < (SELECT created_at FROM messages WHERE id = :messageId) OR (m.created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND m.rowid < (SELECT rowid FROM messages WHERE id = :messageId)))
     """,
     )
     suspend fun indexMediaMessages(
@@ -192,10 +195,12 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT count(1) FROM messages
-        WHERE conversation_id = :conversationId 
-        AND category IN ($IMAGES, $VIDEOS)
-        AND (created_at > (SELECT created_at FROM messages WHERE id = :messageId) OR (created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)))
+        SELECT count(1) FROM messages m
+        INDEXED BY index_messages_conversation_id_category
+        INNER JOIN users u ON m.user_id = u.user_id
+        WHERE m.conversation_id = :conversationId
+        AND m.category IN ($IMAGES, $VIDEOS)
+        AND (m.created_at > (SELECT created_at FROM messages WHERE id = :messageId) OR (m.created_at = (SELECT created_at FROM messages WHERE id = :messageId) AND m.rowid > (SELECT rowid FROM messages WHERE id = :messageId)))
         """,
     )
     suspend fun indexMediaMessagesExcludeLive(

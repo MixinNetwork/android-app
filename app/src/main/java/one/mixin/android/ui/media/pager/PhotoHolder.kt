@@ -1,5 +1,6 @@
 package one.mixin.android.ui.media.pager
 
+import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
@@ -11,7 +12,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
-import one.mixin.android.vo.appCardMediaCoverUrl
+import one.mixin.android.vo.appCardCoverUrl
 import one.mixin.android.vo.isAppCard
 import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.PhotoView
@@ -22,6 +23,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         messageItem: MessageItem,
         needPostTransition: Boolean,
         mediaPagerAdapterListener: MediaPagerAdapterListener,
+        placeholderDrawable: Drawable? = null,
     ) {
         val imageView = (itemView as ViewGroup).getChildAt(0) as PhotoView
         val photoViewAttacher = imageView.attacher
@@ -29,9 +31,10 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         val appCardData = messageItem.appCardData
         if (messageItem.isAppCard()) {
             imageView.loadImage(
-                messageItem.appCardMediaCoverUrl(),
+                messageItem.appCardCoverUrl(),
                 holder = R.drawable.bot_default,
                 base64Holder = appCardData?.cover?.thumbnail,
+                placeholderDrawable = placeholderDrawable,
                 onSuccess = { _, _ ->
                     photoViewAttacher.isZoomable = true
                     if (needPostTransition) {
@@ -47,6 +50,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                 imageView.loadImage(
                     messageItem.absolutePath(),
                     base64Holder = messageItem.thumbImage,
+                    placeholderDrawable = placeholderDrawable,
                     onSuccess = { _, _ ->
                         photoViewAttacher.isZoomable = true
                         if (needPostTransition) {
@@ -59,6 +63,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                 imageView.loadImage(
                     messageItem.absolutePath(),
                     base64Holder = messageItem.thumbImage,
+                    placeholderDrawable = placeholderDrawable,
                     onSuccess = { _, _ ->
                         photoViewAttacher.isZoomable = true
                         if (needPostTransition) {

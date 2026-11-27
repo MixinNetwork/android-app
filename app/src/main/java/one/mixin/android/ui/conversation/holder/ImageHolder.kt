@@ -17,6 +17,8 @@ import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaThumbViewHolder
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -24,12 +26,24 @@ import one.mixin.android.vo.isSecret
 import one.mixin.android.widget.gallery.MimeType
 import kotlin.math.min
 
-class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(binding.root), Terminable {
+class ImageHolder constructor(val binding: ItemChatImageBinding) : MediaHolder(binding.root), Terminable, MediaThumbViewHolder {
+    private val cornerRadiusPx = itemView.context.dpToPx(4f).toFloat()
+
+    override val thumbMessageId: String? get() = currentMessageId
+
+    override fun createThumbLocation(clipHost: View?): MediaThumbLocation? =
+        MediaThumbLocation.fromView(
+            view = binding.chatImage,
+            clipHost = clipHost,
+            cornerRadii = MediaThumbLocation.uniformRadii(cornerRadiusPx),
+            contentWidth = currentMediaWidth,
+            contentHeight = currentMediaHeight,
+        )
+
     init {
-        val radius = itemView.context.dpToPx(4f).toFloat()
-        binding.chatImage.round(radius)
-        binding.chatTime.round(radius)
-        binding.progress.round(radius)
+        binding.chatImage.round(cornerRadiusPx)
+        binding.chatTime.round(cornerRadiusPx)
+        binding.progress.round(cornerRadiusPx)
     }
 
     fun bind(

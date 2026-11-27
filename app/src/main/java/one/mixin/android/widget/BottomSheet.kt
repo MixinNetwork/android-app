@@ -10,7 +10,10 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Outline
+import android.graphics.Paint
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -39,6 +42,7 @@ import androidx.activity.ComponentDialog
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.Type.systemBars
 import androidx.core.view.doOnPreDraw
@@ -86,7 +90,6 @@ class BottomSheet(
     private var originalCutoutMode: Int? = null
     private var landscapeWindow = false
     private var hasUsedLandscapeWindow = false
-    private var originalSystemUiVisibility = 0
     private var placeholder: View? = null
     private var placeholderBackground: Drawable? = null
 
@@ -96,10 +99,6 @@ class BottomSheet(
         landscapeWindow = landscape
         if (landscape) {
             hasUsedLandscapeWindow = true
-            originalSystemUiVisibility = container.systemUiVisibility
-            container.systemUiVisibility = originalSystemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        } else {
-            container.systemUiVisibility = originalSystemUiVisibility
         }
         window?.let { window ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -167,7 +166,7 @@ class BottomSheet(
     var lastInsets: WindowInsets? = null
 
     private val container: ContainerView by lazy { ContainerView(context) }
-    private val sheetContainer: FrameLayout by lazy { FrameLayout(context) }
+    private val sheetContainer: SheetContainerView by lazy { SheetContainerView(context) }
     private var customView: View? = null
     private var customViewHeight: Int = 0
 
@@ -218,6 +217,45 @@ class BottomSheet(
         super.onDetachedFromWindow()
     }
 
+    private inner class SheetContainerView(context: Context) : FrameLayout(context) {
+        private var bottomBarFillHeight: Int = 0
+        private val bottomBarPaint by lazy {
+            Paint().apply {
+                val attrColor = context.colorFromAttribute(R.attr.bg_white)
+                color =
+                    if (attrColor != 0) {
+                        attrColor
+                    } else {
+                        ContextCompat.getColor(
+                            context,
+                            if (context.isNightMode()) R.color.bgWhiteNight else R.color.bgWhite,
+                        )
+                    }
+            }
+        }
+
+        fun setBottomBarFill(inset: Int) {
+            val target = inset.coerceAtLeast(0)
+            if (bottomBarFillHeight != target || paddingBottom != target) {
+                bottomBarFillHeight = target
+                setPadding(paddingLeft, paddingTop, paddingRight, target)
+            }
+        }
+
+        override fun dispatchDraw(canvas: Canvas) {
+            if (bottomBarFillHeight > 0) {
+                canvas.drawRect(
+                    0f,
+                    (height - bottomBarFillHeight).toFloat(),
+                    width.toFloat(),
+                    height.toFloat(),
+                    bottomBarPaint,
+                )
+            }
+            super.dispatchDraw(canvas)
+        }
+    }
+
     private inner class ContainerView(context: Context) : FrameLayout(context) {
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouchEvent(ev: MotionEvent?): Boolean {
@@ -259,6 +297,7 @@ class BottomSheet(
             }
             wasHeightConstrained = constrainHeight
             if (landscapeWindow) {
+                sheetContainer.setBottomBarFill(0)
                 setMeasuredDimension(width, height)
                 val insets = landscapeInsets(height)
                 val availableWidth = (width - insets.left - insets.right).coerceAtLeast(0)
@@ -271,6 +310,7 @@ class BottomSheet(
                 return
             }
             if (centered) {
+                sheetContainer.setBottomBarFill(0)
                 setMeasuredDimension(width, height)
                 val insets = centeredInsets()
                 val margin = resources.getDimensionPixelSize(R.dimen.centered_sheet_margin)
@@ -284,8 +324,26 @@ class BottomSheet(
                 return
             }
             val lastInsets = this@BottomSheet.lastInsets
+            val bottomNavInset =
+                if (lastInsets != null) {
+                    val compatInsets = WindowInsetsCompat.toWindowInsetsCompat(lastInsets, container)
+                    val navBottom = compatInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+                    val imeBottom = compatInsets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                    val sysWindowBottom = lastInsets.getSystemWindowBottom()
+                    val keyboardOrLegacyBottom = max(imeBottom, sysWindowBottom)
+                    if (keyboardOrLegacyBottom > navBottom) {
+                        val resizedHeight = (context.windowHeight() - height).coerceAtLeast(0)
+                        height -= (keyboardOrLegacyBottom - resizedHeight).coerceAtLeast(0)
+                        0
+                    } else {
+                        val foldPaddingBottom = if (context.isExpandedSheetScreen()) paddingBottom else 0
+                        (navBottom - foldPaddingBottom).coerceAtLeast(0)
+                    }
+                } else {
+                    0
+                }
+            sheetContainer.setBottomBarFill(bottomNavInset)
             if (lastInsets != null) {
-                height -= lastInsets.getSystemWindowBottom()
                 width -= lastInsets.getSystemWindowLeft() + lastInsets.getSystemWindowRight()
             }
             setMeasuredDimension(width, height)
@@ -371,18 +429,27 @@ class BottomSheet(
     }
 
     init {
-        window?.addFlags(
-            WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-                or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
-        )
+        window?.let { window ->
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+                    or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                    or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+            )
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.statusBarColor = Color.TRANSPARENT
+            window.navigationBarColor = Color.TRANSPARENT
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                window.isStatusBarContrastEnforced = false
+                window.isNavigationBarContrastEnforced = false
+            }
+        }
         container.background = backDrawable
         container.setOnApplyWindowInsetsListener { v, insets ->
             lastInsets = insets
             v.requestLayout()
             insets.consumeSystemWindowInsets()
         }
-        container.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        container.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         backDrawable.alpha = 0
     }
 

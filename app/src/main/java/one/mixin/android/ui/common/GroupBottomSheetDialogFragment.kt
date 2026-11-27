@@ -73,6 +73,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.media.SharedMediaActivity
+import one.mixin.android.ui.media.pager.overlay.AvatarViewerOverlay
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.debug.debugLongClick
@@ -188,8 +189,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
             val icon = conversation.iconUrl?.takeIf { it.isNotBlank() }
                 ?: "android.resource://${requireContext().packageName}/${R.drawable.ic_group_place_holder}"
-            AvatarActivity.show(requireActivity(), icon, binding.avatar, R.drawable.ic_group_place_holder)
-            dismiss()
+            AvatarViewerOverlay.show(requireActivity(), icon, binding.avatar)
         }
         setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
         bottomViewModel.getConversationById(conversationId).observe(

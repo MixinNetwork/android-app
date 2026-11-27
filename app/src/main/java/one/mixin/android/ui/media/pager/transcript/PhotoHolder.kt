@@ -1,5 +1,6 @@
 package one.mixin.android.ui.media.pager.transcript
 
+import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
@@ -20,6 +21,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         messageItem: ChatHistoryMessageItem,
         needPostTransition: Boolean,
         mediaPagerAdapterListener: MediaPagerAdapterListener,
+        placeholderDrawable: Drawable? = null,
     ) {
         val imageView = (itemView as ViewGroup).getChildAt(0) as PhotoView
         val photoViewAttacher = imageView.attacher
@@ -35,11 +37,13 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                     }
                 },
                 base64Holder = messageItem.thumbImage,
+                placeholderDrawable = placeholderDrawable,
             )
         } else {
             imageView.loadImage(
                 messageItem.absolutePath(),
                 base64Holder = messageItem.thumbImage,
+                placeholderDrawable = placeholderDrawable,
                 onSuccess = { _, _ ->
                     photoViewAttacher.isZoomable = true
                     if (needPostTransition) {

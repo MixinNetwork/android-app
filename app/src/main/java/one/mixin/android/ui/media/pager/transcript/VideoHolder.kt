@@ -58,11 +58,20 @@ class VideoHolder(
         binding.playerView.playerControlView.pipView.alpha = 0.5f
 
         binding.playerView.apply {
+            if (currentMessageId != messageItem.messageId) {
+                playerControlView.visibilityListener = null
+                playerControlView.onVideoStateChanged = null
+                player = null
+                hideController()
+                binding.previewIv.isVisible = true
+            }
             currentMessageId = messageItem.messageId
+            playerControlView.liveSource = messageItem.isLive()
+            playerControlView.videoPath = if (messageItem.isLive()) null else messageItem.absolutePath()
             setPlaybackPrepare {
                 messageItem.loadVideoOrLive { showPb() }
             }
-            if (needPostTransition) {
+            if (needPostTransition && playerControlView.useBuiltInTopBar) {
                 player = VideoPlayer.player().player
             }
             refreshAction = {
@@ -83,6 +92,7 @@ class VideoHolder(
                             binding.previewIv.isVisible = false
                             binding.playerView.playerControlView.pipView.isEnabled = true
                             binding.playerView.playerControlView.pipView.alpha = 1f
+                            playerControlView.onVideoStateChanged?.invoke()
                         } else {
                             binding.previewIv.isVisible = true
                             binding.playerView.playerControlView.pipView.isEnabled = false

@@ -18,6 +18,8 @@ import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.MediaHolder
+import one.mixin.android.ui.media.pager.overlay.MediaThumbLocation
+import one.mixin.android.ui.media.pager.overlay.MediaThumbViewHolder
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MediaStatus
@@ -29,8 +31,19 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import kotlin.math.min
 
 class ImageCaptionHolder(val binding: ItemChatImageCaptionBinding) :
-    MediaHolder(binding.root) {
+    MediaHolder(binding.root), MediaThumbViewHolder {
     private val radius = 6.dp.toFloat()
+
+    override val thumbMessageId: String? get() = currentMessageId
+
+    override fun createThumbLocation(clipHost: View?): MediaThumbLocation? =
+        MediaThumbLocation.fromView(
+            view = binding.chatImage,
+            clipHost = clipHost,
+            cornerRadii = MediaThumbLocation.topRadii(radius),
+            contentWidth = currentMediaWidth,
+            contentHeight = currentMediaHeight,
+        )
 
     init {
         binding.chatTv.addAutoLinkMode(AutoLinkMode.MODE_URL, AutoLinkMode.MODE_MENTION)

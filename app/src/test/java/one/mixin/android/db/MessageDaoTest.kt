@@ -33,6 +33,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.User
+import one.mixin.android.vo.isAppCardWithMediaCover
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
@@ -72,6 +73,20 @@ class MessageDaoTest {
                     content = """{"app_id":"app","cover_url":"https://example.com/cover-url.jpg","title":"cover url"}""",
                     createdAt = "2026-06-29T00:01:00Z",
                 ),
+                appCardMessage(
+                    id = "spaced-cover-app-card",
+                    conversationId = conversationId,
+                    userId = userId,
+                    content = """{"app_id":"app","cover_url": "https://example.com/spaced.jpg"}""",
+                    createdAt = "2026-06-29T00:01:10Z",
+                ),
+                appCardMessage(
+                    id = "blank-cover-app-card",
+                    conversationId = conversationId,
+                    userId = userId,
+                    content = """{"app_id":"app","cover_url": "   "}""",
+                    createdAt = "2026-06-29T00:01:20Z",
+                ),
                 imageMessage("target-image", conversationId, userId, "2026-06-29T00:02:00Z"),
                 appCardMessage(
                     id = "nested-cover-app-card",
@@ -91,14 +106,64 @@ class MessageDaoTest {
         )
 
         assertNotNull(messageDao.getMediaMessage(conversationId, "cover-url-app-card"))
+        assertNotNull(messageDao.getMediaMessage(conversationId, "spaced-cover-app-card"))
+        assertNull(messageDao.getMediaMessage(conversationId, "blank-cover-app-card"))
         assertNull(messageDao.getMediaMessage(conversationId, "empty-cover-app-card"))
         assertNull(messageDao.getMediaMessage(conversationId, "nested-cover-app-card"))
         assertEquals(
-            listOf("image-before", "cover-url-app-card", "target-image"),
+            listOf("image-before", "cover-url-app-card", "spaced-cover-app-card", "target-image"),
             messageDao.getMediaMessagesList(conversationId).map { it.messageId },
         )
-        assertEquals(2, messageDao.indexMediaMessages(conversationId, "target-image"))
-        assertEquals(3, messageDao.countIndexMediaMessages(conversationId))
+        assertEquals(3, messageDao.indexMediaMessages(conversationId, "target-image"))
+        assertEquals(4, messageDao.countIndexMediaMessages(conversationId))
+    }
+
+    @Test
+    fun escapedCoverUrlFallsBackToStandaloneItem() = runBlocking {
+        val conversationId = "escaped-cover-conversation"
+        val userId = "user-id"
+        database.conversationDao().insert(conversation(conversationId))
+        database.userDao().insert(user(userId))
+        messageDao.insertList(
+            listOf(
+                appCardMessage(
+                    id = "escaped-cover-app-card",
+                    conversationId = conversationId,
+                    userId = userId,
+                    content = "{\"app_id\":\"app\",\"cover" + "\\" + "u005furl\":\"https://example.com/escaped.jpg\"}",
+                    createdAt = "2026-06-29T00:01:00Z",
+                ),
+                appCardMessage(
+                    id = "blank-cover-app-card",
+                    conversationId = conversationId,
+                    userId = userId,
+                    content = """{"app_id":"app","cover_url":"   "}""",
+                    createdAt = "2026-06-29T00:02:00Z",
+                ),
+            ),
+        )
+
+        // The SQL matcher misses the escaped value, so the pager query cannot find the item.
+        assertNull(messageDao.getMediaMessage(conversationId, "escaped-cover-app-card"))
+        assertTrue(messageDao.getMediaMessagesList(conversationId).isEmpty())
+
+        // The fallback reads the raw item and keeps it only when Gson sees a media cover.
+        val fallback = messageDao.suspendFindMessageItemById(conversationId, "escaped-cover-app-card")
+        assertNotNull(fallback)
+        assertTrue(fallback.isAppCardWithMediaCover())
+        assertFalse(messageDao.suspendFindMessageItemById(conversationId, "blank-cover-app-card")!!.isAppCardWithMediaCover())
+
+        // Deleted and recalled messages are not eligible, so the viewer still dismisses.
+        messageDao.deleteMessageById("escaped-cover-app-card")
+        assertNull(messageDao.suspendFindMessageItemById(conversationId, "escaped-cover-app-card"))
+        messageDao.insertList(
+            listOf(
+                MessageBuilder("recalled-app-card", conversationId, userId, MessageCategory.MESSAGE_RECALL.name, MessageStatus.SENT.name, "2026-06-29T00:03:00Z")
+                    .setContent("""{"app_id":"app","cover_url":"https://example.com/recalled.jpg"}""")
+                    .build(),
+            ),
+        )
+        assertFalse(messageDao.suspendFindMessageItemById(conversationId, "recalled-app-card")!!.isAppCardWithMediaCover())
     }
 
     @Test
