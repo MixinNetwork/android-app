@@ -36,6 +36,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -62,7 +63,7 @@ import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.savePngBitmapToFile
+import one.mixin.android.extension.savePngBitmapToUniqueCacheFile
 import one.mixin.android.extension.savePngToPublicDownloads
 import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
@@ -649,13 +650,14 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
     }
 
+    private var saveJob: Job? = null
+
     private suspend fun createShareFile(): File {
+        val context = requireContext()
         val bitmap = createShareBitmap()
-        val file = File(requireContext().cacheDir, "${buildFileName()}.png")
-        withContext(Dispatchers.IO) {
-            savePngBitmapToFile(file, bitmap)
+        return withContext(Dispatchers.IO) {
+            context.savePngBitmapToUniqueCacheFile(buildFileName(), bitmap)
         }
-        return file
     }
 
     private fun copyLink() {
@@ -672,6 +674,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     }
 
     private fun saveToAlbum() {
+        if (saveJob?.isActive == true) return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -694,7 +697,8 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     }
 
     private fun performSaveToAlbum() {
-        lifecycleScope.launch {
+        if (saveJob?.isActive == true) return
+        saveJob = lifecycleScope.launch {
             try {
                 delay(100)
                 if (!isAdded) return@launch

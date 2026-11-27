@@ -44,6 +44,7 @@ import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -71,7 +72,7 @@ import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.saveFileToPublicDownloads
-import one.mixin.android.extension.savePngBitmapToFile
+import one.mixin.android.extension.savePngBitmapToUniqueCacheFile
 import one.mixin.android.extension.savePngToPublicDownloads
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toValidFileName
@@ -190,30 +191,36 @@ class InscriptionActivity : BaseActivity() {
     private fun buildInscriptionFileName(base: String = inscriptionHash): String =
         "${(base.takeIf { it.isNotBlank() } ?: "inscription").toValidFileName()}.png"
 
+    private var saveJob: Job? = null
+    private var shareJob: Job? = null
+
     private val onSave: (size: IntSize, bottomSize: IntSize) -> Unit = { size, bottomSize ->
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
-            RxPermissions(this)
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            performSave(size, bottomSize)
-                        } else {
-                            openPermissionSetting()
-                        }
-                    },
-                    {
-                        toast(R.string.Save_failure)
-                    },
-                )
-        } else {
-            performSave(size, bottomSize)
+        if (saveJob?.isActive != true) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                performSave(size, bottomSize)
+                            } else {
+                                openPermissionSetting()
+                            }
+                        },
+                        {
+                            toast(R.string.Save_failure)
+                        },
+                    )
+            } else {
+                performSave(size, bottomSize)
+            }
         }
     }
 
     private fun performSave(size: IntSize, bottomSize: IntSize) {
-        lifecycleScope.launch {
+        if (saveJob?.isActive == true) return
+        saveJob = lifecycleScope.launch {
             inScreenshot = true
             try {
                 delay(100)
@@ -238,34 +245,36 @@ class InscriptionActivity : BaseActivity() {
     }
 
     private val onShare: (size: IntSize, bottomSize: IntSize) -> Unit = { size, bottomSize ->
-        lifecycleScope.launch {
-            inScreenshot = true
-            try {
-                delay(100)
-                if (isFinishing || isDestroyed) return@launch
-                val bitmap = binding.overflow.drawToBitmap()
-                val cropped = cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height)
-                val file = File(cacheDir, buildInscriptionFileName())
-                withContext(Dispatchers.IO) {
-                    savePngBitmapToFile(file, cropped)
+        if (shareJob?.isActive != true) {
+            shareJob = lifecycleScope.launch {
+                inScreenshot = true
+                try {
+                    delay(100)
+                    if (isFinishing || isDestroyed) return@launch
+                    val bitmap = binding.overflow.drawToBitmap()
+                    val cropped = cropCenterBitmap(bitmap, size.width, size.height, bottomSize.height)
+                    val baseName = buildInscriptionFileName().removeSuffix(".png")
+                    val file = withContext(Dispatchers.IO) {
+                        savePngBitmapToUniqueCacheFile(baseName, cropped)
+                    }
+                    if (isFinishing || isDestroyed) return@launch
+                    isShareDialogVisible = false
+                    val uri = FileProvider.getUriForFile(this@InscriptionActivity, BuildConfig.APPLICATION_ID + ".provider", file)
+                    val share = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "image/png"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    startActivity(Intent.createChooser(share, getString(R.string.Share)))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to share inscription image")
+                    toast(R.string.Save_failure)
+                } finally {
+                    inScreenshot = false
                 }
-                if (isFinishing || isDestroyed) return@launch
-                isShareDialogVisible = false
-                val uri = FileProvider.getUriForFile(this@InscriptionActivity, BuildConfig.APPLICATION_ID + ".provider", file)
-                val share = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "image/png"
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                startActivity(Intent.createChooser(share, getString(R.string.Share)))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to share inscription image")
-                toast(R.string.Save_failure)
-            } finally {
-                inScreenshot = false
             }
         }
     }

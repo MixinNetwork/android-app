@@ -30,6 +30,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
@@ -56,7 +57,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.savePngBitmapToFile
+import one.mixin.android.extension.savePngBitmapToUniqueCacheFile
 import one.mixin.android.extension.savePngToPublicDownloads
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -544,7 +545,10 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         toast(R.string.copied_to_clipboard)
     }
 
+    private var saveJob: Job? = null
+
     private fun saveToAlbum() {
+        if (saveJob?.isActive == true) return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -567,7 +571,8 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     private fun performSaveToAlbum() {
-        lifecycleScope.launch {
+        if (saveJob?.isActive == true) return
+        saveJob = lifecycleScope.launch {
             try {
                 if (!isAdded) return@launch
                 val context = requireContext()
@@ -591,12 +596,11 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     private suspend fun createShareFile(): File {
+        val context = requireContext()
         val bitmap = createShareBitmap()
-        val file = File(requireContext().cacheDir, "${buildFileName()}_position.png")
-        withContext(Dispatchers.IO) {
-            savePngBitmapToFile(file, bitmap)
+        return withContext(Dispatchers.IO) {
+            context.savePngBitmapToUniqueCacheFile("${buildFileName()}_position", bitmap)
         }
-        return file
     }
 
     private fun createShareBitmap(): Bitmap = currentPosterHolder()?.itemBinding?.topCard?.drawShareBitmap() ?: binding.posterPager.drawShareBitmap()

@@ -27,6 +27,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,7 +46,7 @@ import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.round
-import one.mixin.android.extension.savePngBitmapToFile
+import one.mixin.android.extension.savePngBitmapToUniqueCacheFile
 import one.mixin.android.extension.savePngToPublicDownloads
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toValidFileName
@@ -61,7 +62,6 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BadgeCircleImageView
 import timber.log.Timber
-import java.io.File
 
 @AndroidEntryPoint
 class DepositShareActivity : BaseActivity() {
@@ -268,35 +268,39 @@ class DepositShareActivity : BaseActivity() {
     private fun buildDepositFileName(): String =
         "${(tokenSymbol?.takeIf { it.isNotBlank() } ?: "mixin").toValidFileName()}_deposit.png"
 
+    private var saveJob: Job? = null
+    private var shareJob: Job? = null
+
     private val onShare: () -> Unit = {
-        lifecycleScope.launch {
-            try {
-                if (isFinishing || isDestroyed) return@launch
-                if (!binding.test.isLaidOut || binding.test.width <= 0 || binding.test.height <= 0) {
+        if (shareJob?.isActive != true) {
+            shareJob = lifecycleScope.launch {
+                try {
+                    if (isFinishing || isDestroyed) return@launch
+                    if (!binding.test.isLaidOut || binding.test.width <= 0 || binding.test.height <= 0) {
+                        toast(R.string.Save_failure)
+                        return@launch
+                    }
+                    val bitmap = binding.test.drawToBitmap()
+                    val baseName = buildDepositFileName().removeSuffix(".png")
+                    val file = withContext(Dispatchers.IO) {
+                        savePngBitmapToUniqueCacheFile(baseName, bitmap)
+                    }
+                    if (isFinishing || isDestroyed) return@launch
+                    val uri = FileProvider.getUriForFile(this@DepositShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
+                    val share = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "image/png"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    finish()
+                    startActivity(Intent.createChooser(share, getString(R.string.Share)))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to share deposit QR image")
                     toast(R.string.Save_failure)
-                    return@launch
                 }
-                val bitmap = binding.test.drawToBitmap()
-                val fileName = buildDepositFileName()
-                val file = File(cacheDir, fileName)
-                withContext(Dispatchers.IO) {
-                    savePngBitmapToFile(file, bitmap)
-                }
-                if (isFinishing || isDestroyed) return@launch
-                val uri = FileProvider.getUriForFile(this@DepositShareActivity, BuildConfig.APPLICATION_ID + ".provider", file)
-                val share = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "image/png"
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                finish()
-                startActivity(Intent.createChooser(share, getString(R.string.Share)))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to share deposit QR image")
-                toast(R.string.Save_failure)
             }
         }
     }
@@ -310,29 +314,32 @@ class DepositShareActivity : BaseActivity() {
     }
 
     private val onSave: () -> Unit = {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
-            RxPermissions(this)
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { granted ->
-                        if (granted) {
-                            performSave()
-                        } else {
-                            openPermissionSetting()
-                        }
-                    },
-                    {
-                        toast(R.string.Save_failure)
-                    },
-                )
-        } else {
-            performSave()
+        if (saveJob?.isActive != true) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && !hasWritePermission()) {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                performSave()
+                            } else {
+                                openPermissionSetting()
+                            }
+                        },
+                        {
+                            toast(R.string.Save_failure)
+                        },
+                    )
+            } else {
+                performSave()
+            }
         }
     }
 
     private fun performSave() {
-        lifecycleScope.launch {
+        if (saveJob?.isActive == true) return
+        saveJob = lifecycleScope.launch {
             try {
                 delay(100)
                 if (isFinishing || isDestroyed) return@launch

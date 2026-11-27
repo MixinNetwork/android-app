@@ -1200,8 +1200,22 @@ fun savePngBitmapToFile(file: File, bitmap: Bitmap) {
 }
 
 /**
+ * Creates a unique PNG file in [cacheDir] and compresses [bitmap] into it, deleting any partial file on failure.
+ */
+fun Context.savePngBitmapToUniqueCacheFile(
+    baseName: String,
+    bitmap: Bitmap,
+): File {
+    val sanitized = baseName.toValidFileName().ifBlank { "share" }
+    val prefix = if (sanitized.length < 3) "img_${sanitized}_" else "${sanitized}_"
+    val file = File.createTempFile(prefix, ".png", cacheDir)
+    savePngBitmapToFile(file, bitmap)
+    return file
+}
+
+/**
  * Saves [bitmap] as a PNG into public Downloads (via MediaStore on Q+, or public directory with storage permission),
- * falling back to MediaStore Images or app external Downloads, and returns the saved directory path.
+ * falling back to MediaStore Images, and returns the saved directory path.
  */
 fun Context.savePngToPublicDownloads(
     bitmap: Bitmap,
@@ -1251,6 +1265,7 @@ private fun Context.saveToPublicDownloads(
     writer: (FileOutputStreamCompat) -> Unit,
 ): String {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        var lastError: Exception
         try {
             return saveStreamToMediaStore(
                 collectionUri = MediaStore.Downloads.EXTERNAL_CONTENT_URI,
@@ -1262,6 +1277,7 @@ private fun Context.saveToPublicDownloads(
             )
         } catch (e: Exception) {
             if (isNoSpaceError(e)) throw e
+            lastError = e
             Timber.w(e, "Failed to save %s to MediaStore.Downloads", fileName)
         }
         if (imagesCollectionFallback) {
@@ -1276,35 +1292,31 @@ private fun Context.saveToPublicDownloads(
                 )
             } catch (e: Exception) {
                 if (isNoSpaceError(e)) throw e
+                lastError = e
                 Timber.w(e, "Failed to save %s to MediaStore.Images", fileName)
             }
         }
-        return saveStreamToAppExternalDir(fileName, writer)
+        throw lastError
     }
 
-    if (hasWritePermission()) {
-        try {
-            val dir = getPublicDownloadPath()
-            if (!dir.exists() && !dir.mkdirs()) {
-                throw IOException("Failed to create directory: ${dir.path}")
-            }
-            val file = File(dir, fileName)
-            try {
-                FileOutputStream(file).use { out ->
-                    writer(out)
-                }
-            } catch (e: Exception) {
-                runCatching { file.deleteOnExists() }
-                throw e
-            }
-            MediaScannerConnection.scanFile(this, arrayOf(file.toString()), null, null)
-            return dir.path
-        } catch (e: Exception) {
-            if (isNoSpaceError(e)) throw e
-            Timber.w(e, "Failed to save %s to public download dir", fileName)
-        }
+    if (!hasWritePermission()) {
+        throw IOException("Missing external storage write permission")
     }
-    return saveStreamToAppExternalDir(fileName, writer)
+    val dir = getPublicDownloadPath()
+    if (!dir.exists() && !dir.mkdirs()) {
+        throw IOException("Failed to create directory: ${dir.path}")
+    }
+    val file = File(dir, fileName)
+    try {
+        FileOutputStream(file).use { out ->
+            writer(out)
+        }
+    } catch (e: Exception) {
+        runCatching { file.deleteOnExists() }
+        throw e
+    }
+    MediaScannerConnection.scanFile(this, arrayOf(file.toString()), null, null)
+    return dir.path
 }
 
 private typealias FileOutputStreamCompat = java.io.OutputStream
@@ -1338,32 +1350,15 @@ private fun Context.saveStreamToMediaStore(
             ContentValues().apply {
                 put(MediaStore.MediaColumns.IS_PENDING, 0)
             }
-        resolver.update(uri, doneValues, null, null)
+        val updatedRows = resolver.update(uri, doneValues, null, null)
+        if (updatedRows != 1) {
+            throw IOException("Failed to finalize MediaStore entry for $uri (updatedRows=$updatedRows)")
+        }
         return displayDirPath
     } catch (e: Exception) {
         runCatching { resolver.delete(uri, null, null) }
         throw e
     }
-}
-
-private fun Context.saveStreamToAppExternalDir(
-    fileName: String,
-    writer: (java.io.OutputStream) -> Unit,
-): String {
-    val dir =
-        getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-            ?: throw IOException("External files directory unavailable")
-    if (!dir.exists() && !dir.mkdirs()) {
-        throw IOException("Failed to create directory: ${dir.path}")
-    }
-    val file = File(dir, fileName)
-    try {
-        FileOutputStream(file).use(writer)
-    } catch (e: Exception) {
-        runCatching { file.deleteOnExists() }
-        throw e
-    }
-    return dir.path
 }
 
 private fun isNoSpaceError(throwable: Throwable): Boolean {
