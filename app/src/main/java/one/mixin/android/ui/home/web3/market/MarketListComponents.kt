@@ -658,14 +658,18 @@ private fun priceChangePeriodLabel(period: MarketPriceChangePeriod): String =
         MarketPriceChangePeriod.SEVEN_DAYS -> stringResource(R.string.days_count_short, 7)
     }
 
-private fun formatMarketPercent(change: BigDecimal): String {
+internal fun formatMarketPercent(change: BigDecimal): String {
     val prefix = if (change > BigDecimal.ZERO) "+" else ""
     return "$prefix${change.numberFormat2()}%"
 }
 
-private fun formatSpotVolume(value: String): String =
+internal fun formatSpotVolume(
+    value: String,
+    fiatSymbol: String = Fiats.getSymbol(),
+    fiatRate: Double = Fiats.getRate(),
+): String =
     runCatching {
-        "${Fiats.getSymbol()}${BigDecimal(value).multiply(BigDecimal(Fiats.getRate())).numberFormatCompact()}"
+        "$fiatSymbol${BigDecimal(value).multiply(BigDecimal(fiatRate)).numberFormatCompact()}"
     }.getOrDefault(value)
 
 internal fun formatMarketListPrice(

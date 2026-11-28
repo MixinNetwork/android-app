@@ -365,6 +365,7 @@ class TradeFragment : BaseFragment() {
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
                                 autoFocusAmount = autoFocusAmount,
+                                onAutoFocusConsumed = { autoFocusAmount = false },
                                 initialTabIndex = initialTabIndex,
                                 source = getSource(),
                                 entrySource = getEntrySource(),
@@ -1393,6 +1394,12 @@ class TradeFragment : BaseFragment() {
     }
 
     private suspend fun refreshRecommendedMarkets() {
+        val duration =
+            if (defaultSharedPreferences.getInt(Account.PREF_MARKET_TOP_PERCENTAGE, 0) == 0) {
+                "7d"
+            } else {
+                "24h"
+            }
         val results =
             coroutineScope {
                 listOf(
@@ -1404,6 +1411,7 @@ class TradeFragment : BaseFragment() {
                     async {
                         swapViewModel.refreshRecommendedMarkets(
                             category = category,
+                            duration = duration,
                         )
                     }
                 }.map { it.await() }
