@@ -6,6 +6,7 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.isGooglePlayServicesAvailable
@@ -23,6 +24,9 @@ class SessionWorker @AssistedInject constructor(
 ) : BaseWork(context, parameters) {
 
     override suspend fun onRun(): Result {
+        if (MixinApplication.get().isOldVersion()) {
+            return Result.success()
+        }
         Timber.e("SessionWorker started")
         val account = Session.getAccount()
         if (account == null) {

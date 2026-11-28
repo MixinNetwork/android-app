@@ -39,7 +39,7 @@ class SendTranscriptJob(
 
     override fun onAdded() {
         super.onAdded()
-        if (chatWebSocket.connected) {
+        if (chatWebSocket.connected && !MixinApplication.get().isOldVersion()) {
             jobManager.start()
         }
         val conversation = conversationDao.findConversationById(message.conversationId)

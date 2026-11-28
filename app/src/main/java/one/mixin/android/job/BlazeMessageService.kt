@@ -150,6 +150,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             ctx: Context,
             action: String? = null,
         ) {
+            if (MixinApplication.get().isOldVersion()) {
+                Timber.i("Skip BlazeMessageService start because app version is outdated, action=%s", action)
+                return
+            }
             if (!Session.checkToken()) {
                 Timber.i("Skip BlazeMessageService start without an active session, action=%s", action)
                 return
@@ -237,8 +241,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @SuppressLint("AutoDispose")
     override fun onCreate() {
         super.onCreate()
-        if (!Session.checkToken()) {
-            Timber.i("Stop BlazeMessageService onCreate without an active session")
+        if (MixinApplication.get().isOldVersion() || !Session.checkToken()) {
+            Timber.i("Stop BlazeMessageService onCreate without an active session or outdated version")
             stopSelf()
             return
         }
@@ -285,8 +289,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         startId: Int,
     ): Int {
         super.onStartCommand(intent, flags, startId)
-        if (!Session.checkToken()) {
-            Timber.i("Stop BlazeMessageService onStartCommand without an active session")
+        if (MixinApplication.get().isOldVersion() || !Session.checkToken()) {
+            Timber.i("Stop BlazeMessageService onStartCommand without an active session or outdated version")
             stopSelf()
             return START_NOT_STICKY
         }
@@ -332,7 +336,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     override fun onNetworkChange(networkStatus: Int) {
-        if (networkStatus != NetworkUtil.DISCONNECTED && MixinApplication.get().isOnline.get()) {
+        if (networkStatus != NetworkUtil.DISCONNECTED && MixinApplication.get().isOnline.get() && !MixinApplication.get().isOldVersion()) {
             webSocket.connect()
         }
     }

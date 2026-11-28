@@ -370,6 +370,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     override fun onCreate(savedInstanceState: Bundle?) {
         val restoreState = if (Session.checkToken()) savedInstanceState else null
         super.onCreate(restoreState)
+        if (MixinApplication.get().isOldVersion()) {
+            InitializeActivity.showOldVersionAlert(this)
+            finish()
+            return
+        }
         if (BuildConfig.APPSFLYER_DEV_KEY.isNotBlank()) {
             AppsFlyerLib.getInstance().collectDataFromLauncherActivity(this)
         }

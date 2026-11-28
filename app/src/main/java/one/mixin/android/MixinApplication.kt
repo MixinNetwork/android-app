@@ -16,6 +16,8 @@ import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.media3.common.util.UnstableApi
 import androidx.work.Configuration
+import androidx.work.WorkManager
+import okhttp3.OkHttpClient
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -48,12 +50,14 @@ import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.di.NetworkDispatcherRegistry
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enableWideColorGamutIfSupported
 import one.mixin.android.extension.getStackTraceInfo
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.remove
 import one.mixin.android.job.BlazeMessageService
@@ -92,6 +96,7 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
 import one.mixin.android.webrtc.disconnect
+import one.mixin.android.websocket.ChatWebSocket
 import org.bitcoinj.crypto.MnemonicCode
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
@@ -120,6 +125,14 @@ open class MixinApplication :
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)
+    interface NetworkRuntimeEntryPoint {
+        fun getChatWebSocket(): ChatWebSocket
+        fun getOkHttpClient(): OkHttpClient
+        fun getNetworkDispatcherRegistry(): NetworkDispatcherRegistry
+    }
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
     interface HiltWorkerFactoryEntryPoint {
         fun getHiltWorkerFactory(): HiltWorkerFactory
     }
@@ -135,6 +148,8 @@ open class MixinApplication :
     private fun getJobManager() = EntryPointAccessors.fromApplication(this, MixinJobManagerEntryPoint::class.java).getMixinJobManager()
 
     private fun getCallState() = EntryPointAccessors.fromApplication(this, CallStateLiveDataEntryPoint::class.java).getCallStateLiveData()
+
+    private fun getNetworkRuntime() = EntryPointAccessors.fromApplication(this, NetworkRuntimeEntryPoint::class.java)
 
     companion object {
         lateinit var appContext: Context
@@ -176,6 +191,7 @@ open class MixinApplication :
         registerActivityLifecycleCallbacks(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
+        syncOldVersionState()
         RxJavaPlugins.setErrorHandler {}
         if (useOpenStreetMap()) {
             org.osmdroid.config.Configuration.getInstance().load(
@@ -304,6 +320,26 @@ open class MixinApplication :
     override fun getCameraXConfig() = Camera2Config.defaultConfig()
 
     var isOnline = AtomicBoolean(false)
+    private val oldVersionBlocked = AtomicBoolean(false)
+
+    private fun syncOldVersionState() {
+        val blockedCode = defaultSharedPreferences.getInt(Constants.Account.PREF_OLD_VERSION_CODE, 0)
+        if (blockedCode >= BuildConfig.VERSION_CODE) {
+            oldVersionBlocked.set(true)
+        } else if (blockedCode > 0) {
+            defaultSharedPreferences.remove(Constants.Account.PREF_OLD_VERSION_CODE)
+        }
+    }
+
+    fun isOldVersion(): Boolean {
+        if (oldVersionBlocked.get()) return true
+        val blockedCode = defaultSharedPreferences.getInt(Constants.Account.PREF_OLD_VERSION_CODE, 0)
+        if (blockedCode >= BuildConfig.VERSION_CODE) {
+            oldVersionBlocked.set(true)
+            return true
+        }
+        return false
+    }
 
     fun gotoTimeWrong(serverTime: Long) {
         if (isOnline.compareAndSet(true, false)) {
@@ -324,17 +360,39 @@ open class MixinApplication :
     }
 
     fun gotoOldVersionAlert() {
-        if (isOnline.compareAndSet(true, false)) {
-            BlazeMessageService.stopService(this)
-            val callState = getCallState()
-            if (callState.isGroupCall()) {
-                disconnect<GroupCallService>(this)
-            } else if (callState.isVoiceCall()) {
-                disconnect<VoiceCallService>(this)
-            }
-            notificationManager.cancelAll()
+        val firstTrigger = oldVersionBlocked.compareAndSet(false, true)
+        isOnline.set(false)
+        defaultSharedPreferences.putInt(Constants.Account.PREF_OLD_VERSION_CODE, BuildConfig.VERSION_CODE)
+        if (firstTrigger) {
+            stopNetworkWorkForOldVersion()
             InitializeActivity.showOldVersionAlert(this)
         }
+    }
+
+    private fun stopNetworkWorkForOldVersion() {
+        BlazeMessageService.stopService(this)
+        runCatching {
+            val networkRuntime = getNetworkRuntime()
+            networkRuntime.getChatWebSocket().disconnect()
+            networkRuntime.getOkHttpClient().dispatcher.cancelAll()
+            networkRuntime.getNetworkDispatcherRegistry().cancelAll()
+        }
+        runCatching {
+            getJobManager().stop()
+        }
+        runCatching {
+            WorkManager.getInstance(this).apply {
+                cancelUniqueWork("Reconnect")
+                cancelUniqueWork("SessionWorker")
+            }
+        }
+        val callState = getCallState()
+        if (callState.isGroupCall()) {
+            disconnect<GroupCallService>(this)
+        } else if (callState.isVoiceCall()) {
+            disconnect<VoiceCallService>(this)
+        }
+        notificationManager.cancelAll()
     }
 
 
@@ -465,7 +523,20 @@ open class MixinApplication :
         createdActivities.add(activity)
     }
 
+    internal fun shouldRedirectToOldVersionAlert(activity: Activity): Boolean {
+        return isOldVersion() &&
+            !(activity is InitializeActivity && activity.intent?.getBooleanExtra(InitializeActivity.OLD_VERSION, false) == true)
+    }
+
     override fun onActivityStarted(activity: Activity) {
+        if (shouldRedirectToOldVersionAlert(activity)) {
+            if (activity !is AppAuthActivity) {
+                activityReferences += 1
+            }
+            InitializeActivity.showOldVersionAlert(activity)
+            activity.finish()
+            return
+        }
         if (activity !is AppAuthActivity) {
             activityReferences += 1
         } else {
@@ -477,7 +548,7 @@ open class MixinApplication :
             }
             appAuthShown = true
         }
-        if (activityReferences == 1 && activity !is AppAuthActivity && !isActivityChangingConfigurations) {
+        if (activityReferences == 1 && activity !is AppAuthActivity && !isActivityChangingConfigurations && !isOldVersion()) {
             checkAndShowAppAuth(activity)
         }
     }
@@ -575,6 +646,9 @@ open class MixinApplication :
     }
 
     fun checkAndShowAppAuth(activity: Activity): Boolean {
+        if (isOldVersion()) {
+            return false
+        }
         val appAuth = defaultSharedPreferences.getInt(PREF_APP_AUTH, -1)
         if (appAuth != -1) {
             if (appAuth == 0) {

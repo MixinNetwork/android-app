@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.SAFE_BOT_USER_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.WebBottomSheetDialogFragment
@@ -74,7 +75,7 @@ fun Context.openCustomerService(
     wallet: String = AnalyticsTracker.TradeWallet.MAIN,
 ) {
     val activity = findFragmentActivityOrNull()
-    if (Session.getAccount() == null || activity == null || activity.isFinishing || activity.isDestroyed) {
+    if (Session.getAccount() == null || MixinApplication.get().isOldVersion() || activity == null || activity.isFinishing || activity.isDestroyed) {
         openLegacyCustomerService(source, wallet)
         return
     }
