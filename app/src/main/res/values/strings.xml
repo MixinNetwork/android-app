@@ -2774,6 +2774,10 @@
     <string name="Select_asset">Select an asset to view</string>
     <string name="Select_market_item">Select a market to view</string>
     <string name="Select_explore_item">Select an item to open</string>
+    <string name="perps_copy_trade">Copying</string>
+    <string name="perps_publish_copy_trade">Publish Copy Trade</string>
+    <string name="perps_publish_copy_trade_desc">Earn 10% profit share from copiers</string>
+    <string name="perps_no_reducible_margin">No margin available to reduce</string>
     <string name="All_Networks">All Networks</string>
     <string name="Last_Updated">Last Updated</string>
     <string name="Last_Updated_at">Last Updated: %1$s</string>

@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -35,7 +36,6 @@ import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,11 +71,15 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -175,7 +179,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         var market by remember { mutableStateOf<PerpsMarket?>(null) }
         var loading by remember { mutableStateOf(false) }
         var error by remember { mutableStateOf<String?>(null) }
-        var availableMargin by remember(currentPosition.margin, currentPosition.quantity) { mutableStateOf<BigDecimal?>(null) }
+        var availableMargin by remember(currentPosition.margin, currentPosition.quantity, currentPosition.maxDecreaseMargin) { mutableStateOf<BigDecimal?>(null) }
         fun changeAmount(value: String) {
             if (!loading) {
                 amount = value
@@ -183,21 +187,24 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 error = null
             }
         }
-        val amountValue = if (increase) marginAdjustmentAmount(amount) else reduceMarginAmount(currentPosition.margin, amount, inputIsPercentage)
+        val maximumReduction = maximumMarginReduction(currentPosition.margin, currentPosition.maxDecreaseMargin, availableMargin)
+        val hasServerReductionLimit = currentPosition.maxDecreaseMargin?.toBigDecimalOrNull()?.signum()?.let { it >= 0 } == true
+        val reductionBase = if (hasServerReductionLimit) {
+            maximumReduction?.toPlainString()
+        } else currentPosition.margin
+        val amountValue = if (increase) marginAdjustmentAmount(amount) else reduceMarginAmount(reductionBase, amount, inputIsPercentage)
         val normalizedAmount = amountValue?.stripTrailingZeros()?.toPlainString().orEmpty()
         val liquidationState = remember(currentPosition.positionId, normalizedAmount, increase) { LiquidationPriceState() }
         val remoteLiquidationPrice = liquidationState.price
         val isLiquidationLoading = liquidationState.isLoading
         var liquidationError by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<String?>(null) }
         var liquidationPriceLimit by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<LiquidationPriceLimit?>(null) }
-        val totalMargin = marginAfterAdjustment(currentPosition.margin, normalizedAmount, increase, availableMargin)
-        val marginValue = currentPosition.margin?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO }
-        val maximumReduction = marginValue?.let { margin -> availableMargin?.min(margin) ?: margin }
+        val totalMargin = marginAfterAdjustment(currentPosition.margin, normalizedAmount, increase, maximumReduction)
         val exceedsReductionLimit = !increase && (
             (amountValue != null && maximumReduction != null && amountValue > maximumReduction) ||
                 (inputIsPercentage && (amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal(100))
             )
-        val percentage = marginReductionPercentage(currentPosition.margin, amountValue)
+        val percentage = marginReductionPercentage(reductionBase, amountValue)
         val reduceInput = when {
             reduceByPercent == inputIsPercentage -> amount
             reduceByPercent -> percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString().orEmpty()
@@ -212,10 +219,10 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             if (increase) {
                 selectedToken?.assetId in acceptedAssets && tokenBalance != null && !insufficientBalance
             } else {
-                availableMargin?.let { amountValue != null && amountValue <= it } ?: true
+                maximumReduction?.let { amountValue != null && amountValue <= it } ?: true
             }
 
-        LaunchedEffect(normalizedAmount, increase, currentPosition.updatedAt, exceedsReductionLimit) {
+        LaunchedEffect(normalizedAmount, increase, currentPosition.updatedAt, maximumReduction, exceedsReductionLimit) {
             liquidationError = null
             liquidationPriceLimit = null
             if (totalMargin == null || exceedsReductionLimit) {
@@ -266,14 +273,30 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             }
         }
 
+        fun showSubmissionError(message: String) {
+            error = message
+            toast(message)
+        }
+
         fun submit(submittedAmount: String) {
-            if (loading || position?.state != PerpsPosition.STATE_OPEN || !isCurrentWallet) return
-            val value = marginAdjustmentAmount(submittedAmount) ?: return
-            if (marginAfterAdjustment(currentPosition.margin, submittedAmount, increase, availableMargin) == null) return
+            if (loading || !increase || position?.state != PerpsPosition.STATE_OPEN || !isCurrentWallet) {
+                if (!loading) showSubmissionError(getString(R.string.Data_error))
+                return
+            }
+            val value = marginAdjustmentAmount(submittedAmount)
+            if (value == null || marginAfterAdjustment(currentPosition.margin, submittedAmount, true) == null) {
+                showSubmissionError(getString(R.string.Data_error))
+                return
+            }
             val token = selectedToken
             val estimatedLiquidationPrice = remoteLiquidationPrice
-            if (increase && (token == null || token.assetId !in acceptedAssets || tokenBalance == null || value > tokenBalance || estimatedLiquidationPrice == null)) return
-            if (increase) AnalyticsTracker.trackPerpsAddMarginPreview()
+            if (token == null || token.assetId !in acceptedAssets || tokenBalance == null || value > tokenBalance || estimatedLiquidationPrice == null) {
+                showSubmissionError(
+                    if (tokenBalance != null && value > tokenBalance) getString(R.string.insufficient_balance) else getString(R.string.Data_error),
+                )
+                return
+            }
+            AnalyticsTracker.trackPerpsAddMarginPreview()
             loading = true
             isCancelable = false
             error = null
@@ -284,50 +307,41 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         AdjustMarginRequest(
                             type = if (increase) "increase" else "decrease",
                             amount = value.stripTrailingZeros().toPlainString(),
-                            assetId = token?.assetId.takeIf { increase },
+                            assetId = token.assetId,
                         ),
                     )
                     val data = response.data
                     if (response.isSuccess && data != null) {
-                        if (increase && token != null) {
-                            if (data.paymentUrl.isNullOrBlank() || (data.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) {
-                                error = getString(R.string.Data_error)
-                                return@launch
-                            }
-                            PerpsConfirmBottomSheetDialogFragment.newInstance(
-                                marketSymbol = currentPosition.displaySymbol ?: currentPosition.tokenSymbol.orEmpty(),
-                                marketIcon = currentPosition.iconUrl.orEmpty(),
-                                isLong = currentPosition.side.equals("long", ignoreCase = true),
-                                amount = data.payAmount,
-                                leverage = currentPosition.leverage,
-                                entryPrice = market?.last ?: currentPosition.entryPrice,
-                                marginAssetPrice = token.priceUsd,
-                                tokenSymbol = token.symbol,
-                                liquidationPrice = estimatedLiquidationPrice,
-                                priceScale = market?.priceScale ?: currentPosition.priceScale,
-                                payUrl = data.paymentUrl,
-                                isAddMargin = true,
-                                marginBefore = currentPosition.margin,
-                            ).show(parentFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
-                        } else {
-                            AnalyticsTracker.trackPerpsReduceMarginEnd()
-                            RxBus.publish(PerpsTradeCompletedEvent)
-                            toast(R.string.perps_margin_submitted)
-                            viewModel.refreshSinglePosition(currentPosition.positionId, currentPosition.walletId)
-                            viewModel.refreshOrders(currentPosition.walletId)
+                        if (data.paymentUrl.isNullOrBlank() || (data.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) {
+                            showSubmissionError(getString(R.string.Data_error))
+                            return@launch
                         }
+                        PerpsConfirmBottomSheetDialogFragment.newInstance(
+                            marketSymbol = currentPosition.displaySymbol ?: currentPosition.tokenSymbol.orEmpty(),
+                            marketIcon = currentPosition.iconUrl.orEmpty(),
+                            isLong = currentPosition.side.equals("long", ignoreCase = true),
+                            amount = data.payAmount,
+                            leverage = currentPosition.leverage,
+                            entryPrice = market?.last ?: currentPosition.entryPrice,
+                            marginAssetPrice = token.priceUsd,
+                            tokenSymbol = token.symbol,
+                            liquidationPrice = estimatedLiquidationPrice,
+                            priceScale = market?.priceScale ?: currentPosition.priceScale,
+                            payUrl = data.paymentUrl,
+                            isAddMargin = true,
+                            marginBefore = currentPosition.margin,
+                        ).show(parentFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                         dismiss()
-                    } else if (!increase && response.errorCode == 10653) {
-                        availableMargin = availableMarginFromError(response.error?.extra)
-                        error = if (availableMargin == null) requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription) else null
                     } else {
-                        error = if (response.isSuccess) getString(R.string.Data_error) else
-                            requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                        showSubmissionError(
+                            if (response.isSuccess) getString(R.string.Data_error) else
+                                requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription),
+                        )
                     }
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    error = ErrorHandler.getErrorMessage(e)
+                    showSubmissionError(ErrorHandler.getErrorMessage(e))
                 } finally {
                     loading = false
                     isCancelable = true
@@ -336,20 +350,9 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }
 
         val submitCurrent by rememberUpdatedState(::submit)
-        if (!increase) {
-            DisposableEffect(lifecycleOwner) {
-                val manager = childFragmentManager
-                manager.setFragmentResultListener(PerpsCloseBottomSheetDialogFragment.RESULT_MARGIN_CONFIRMED, lifecycleOwner) { _, result ->
-                    if (result.getString(PerpsCloseBottomSheetDialogFragment.RESULT_POSITION_ID) == initialPosition.positionId) {
-                        result.getString(PerpsCloseBottomSheetDialogFragment.RESULT_AMOUNT)?.let { submitCurrent(it) }
-                    }
-                }
-                onDispose { manager.clearFragmentResultListener(PerpsCloseBottomSheetDialogFragment.RESULT_MARGIN_CONFIRMED) }
-            }
-        }
         MixinAppTheme {
             val reductionLimitError = if (exceedsReductionLimit && maximumReduction != null) {
-                val limit = formatPerpsMarginLimit(currentPosition.margin, maximumReduction, reduceByPercent)
+                val limit = formatPerpsMarginLimit(reductionBase, maximumReduction, reduceByPercent)
                 stringResource(R.string.max_removable, limit)
             } else null
             val errorText = if (insufficientBalance) stringResource(R.string.insufficient_balance) else
@@ -363,6 +366,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     val approvedAmount = normalizedAmount
                     AnalyticsTracker.trackPerpsReduceMarginPreview()
                     PerpsCloseBottomSheetDialogFragment.newInstance(currentPosition.toPosition(), reduceMarginAmount = approvedAmount)
+                        .setOnDone { dismiss() }
                         .show(childFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                 }
             }
@@ -471,21 +475,18 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         isPercentage = reduceByPercent,
                         amount = amountValue,
                         percentage = percentage,
-                        margin = marginValue,
+                        margin = reductionBase?.toBigDecimalOrNull(),
                         errorText = reductionLimitError ?: errorText,
                         enabled = !loading,
                         onInputChanged = ::changeAmount,
                         onApplyReductionLimit = maximumReduction?.takeIf { reductionLimitError != null }?.let { maximum ->
                             {
-                                if (reduceByPercent && !canFillMarginReductionAsPercentage(currentPosition.margin, maximum)) {
-                                    reduceByPercent = false
-                                }
-                                changeAmount(maximumMarginReductionInput(currentPosition.margin, maximum, reduceByPercent))
+                                val asPercentage = reduceByPercent && canFillMarginReductionAsPercentage(reductionBase, maximum)
+                                if (reduceByPercent && !asPercentage) reduceByPercent = false
+                                changeAmount(maximumMarginReductionInput(reductionBase, maximum, asPercentage))
                             }
                         },
                         onToggleMode = {
-                            amount = amountValue?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
-                            inputIsPercentage = false
                             reduceByPercent = !reduceByPercent
                             error = null
                         },
@@ -952,8 +953,6 @@ private fun PerpsMarginPreviewContent(initialInput: String, initialIsPercentage:
                     inputIsPercentage = isPercentage
                 },
                 onToggleMode = {
-                    input = amount?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
-                    inputIsPercentage = false
                     isPercentage = !isPercentage
                 },
             )

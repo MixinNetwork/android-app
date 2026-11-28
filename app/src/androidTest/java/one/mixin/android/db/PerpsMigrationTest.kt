@@ -267,6 +267,23 @@ class PerpsMigrationTest {
         }
     }
 
+    @Test
+    fun migrate_12_13_preservesPositionsAndAddsMarginReductionLimit() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 12).apply {
+            insertPositionV2()
+            close()
+        }
+        val db = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME, 13, true, PerpsDatabase.MIGRATION_12_13,
+        )
+        db.query("SELECT margin, leader_position_id, max_decrease_margin FROM positions WHERE position_id = 'position-1'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("100", cursor.getString(0))
+            assertEquals("", cursor.getString(1))
+            assertEquals("", cursor.getString(2))
+        }
+    }
+
     private fun assertColumn(
         db: SQLiteConnection,
         table: String,

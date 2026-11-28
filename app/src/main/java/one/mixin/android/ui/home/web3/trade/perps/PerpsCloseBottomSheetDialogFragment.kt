@@ -47,10 +47,12 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.PerpsTradeCompletedEvent
+import one.mixin.android.api.request.perps.AdjustMarginRequest
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -58,6 +60,7 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -68,6 +71,7 @@ import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
@@ -83,9 +87,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     companion object {
         const val TAG = "PerpsCloseBottomSheetDialogFragment"
-        const val RESULT_MARGIN_CONFIRMED = "perps_margin_confirmed"
-        const val RESULT_POSITION_ID = "position_id"
-        const val RESULT_AMOUNT = "amount"
         private const val ARGS_POSITION_ID = "args_position_id"
         private const val ARGS_REDUCE_MARGIN_AMOUNT = "args_reduce_margin_amount"
         private const val ARGS_REDUCE_QUANTITY = "args_reduce_quantity"
@@ -568,14 +569,36 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     }
 
     private fun confirmMargin() {
-        parentFragmentManager.setFragmentResult(
-            RESULT_MARGIN_CONFIRMED,
-            Bundle().apply {
-                putString(RESULT_POSITION_ID, positionId)
-                putString(RESULT_AMOUNT, requireNotNull(reduceMarginAmount))
-            },
-        )
-        dismiss()
+        errorInfo = null
+        step = Step.Sending
+        lifecycleScope.launch {
+            try {
+                val response = viewModel.adjustPerpsMargin(
+                    positionId,
+                    AdjustMarginRequest(
+                        type = "decrease",
+                        amount = requireNotNull(reduceMarginAmount).toBigDecimal().stripTrailingZeros().toPlainString(),
+                    ),
+                )
+                if (response.isSuccess && response.data != null) {
+                    step = Step.Done
+                    AnalyticsTracker.trackPerpsReduceMarginEnd()
+                    RxBus.publish(PerpsTradeCompletedEvent)
+                    toast(R.string.perps_margin_submitted)
+                } else {
+                    val message = if (response.isSuccess) getString(R.string.Data_error) else
+                        requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                    errorInfo = message
+                    toast(message)
+                    step = Step.Error
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                handleException(e)
+                toast(errorInfo ?: getString(R.string.Data_error))
+            }
+        }
     }
 
     private fun closePosition() {

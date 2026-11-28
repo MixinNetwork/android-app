@@ -300,7 +300,8 @@ fun String.checkUserOrApp(
 }
 
 internal fun Uri.shouldOpenAppHome(): Boolean =
-    toString().isAppScheme() && (getQueryParameter("action") == "open" || !getQueryParameter("page").isNullOrBlank())
+    (toString().isAppScheme() && !getQueryParameter("page").isNullOrBlank()) ||
+        ((toString().isAppScheme() || toString().isUserScheme()) && getQueryParameter("action") == "open")
 
 internal fun App.homeUriWithSchemeParameters(uri: Uri): String =
     runCatching {
