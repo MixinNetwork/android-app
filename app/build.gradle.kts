@@ -122,6 +122,7 @@ val tweetnaclVersion = rootProject.extra["tweetnaclVersion"] as String
 val sol4kUtilitiesVersion = rootProject.extra["sol4kUtilitiesVersion"] as String
 val desugarJdkLibsVersion = rootProject.extra["desugarJdkLibsVersion"] as String
 val bugsnagVersion = rootProject.extra["bugsnagVersion"] as String
+val lightweightChartsVersion = rootProject.extra["lightweightChartsVersion"] as String
 val appsFlyerVersion = rootProject.extra["appsFlyerVersion"] as String
 val installReferrerVersion = rootProject.extra["installReferrerVersion"] as String
 val billingVersion = rootProject.extra["billingVersion"] as String
@@ -380,6 +381,7 @@ dependencies {
     implementation("androidx.biometric:biometric:$biometricVersion")
     implementation("androidx.security:security-crypto:$securityCryptoVersion")
     implementation("androidx.webkit:webkit:$webkitVersion")
+    implementation("com.tradingview:lightweightcharts:$lightweightChartsVersion")
 
     implementation("org.sol4k:tweetnacl:$tweetnaclVersion")
     implementation("org.sol4k:utilities:$sol4kUtilitiesVersion")

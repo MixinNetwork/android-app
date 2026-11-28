@@ -142,7 +142,6 @@ fun OpenPositionPage(
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
     var showTpSlRequirements by remember { mutableStateOf(false) }
-    var remoteLiquidationPrice by remember { mutableStateOf<String?>(null) }
     var liquidationPriceLimit by remember { mutableStateOf<LiquidationPriceLimit?>(null) }
     var liquidationError by remember { mutableStateOf<String?>(null) }
     var isLiquidationLoading by remember { mutableStateOf(false) }
@@ -164,6 +163,9 @@ fun OpenPositionPage(
                 maxLeverage = market.leverage,
             ).toFloat(),
         )
+    }
+    var remoteLiquidationPrice by remember(selectedIsLong, usdtAmount, leverage, currentMarket.minAmount) {
+        mutableStateOf<String?>(null)
     }
 
     LaunchedEffect(marketId) {
@@ -250,10 +252,47 @@ fun OpenPositionPage(
     val aboveMaximumMargin = hasInputAmount && maximumMargin > BigDecimal.ZERO && inputAmount > maximumMargin
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val showAddAction = insufficientBalance || tokenBalance <= BigDecimal.ZERO
+    val validationCurrentPrice = currentMarket.last.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val validationLiquidationBound = remember(remoteLiquidationPrice, currentMarket.last, leverage, selectedIsLong) {
+        resolveTpSlLiquidationBound(
+            serverLiquidationPrice = remoteLiquidationPrice,
+            entryPrice = currentMarket.last,
+            currentPrice = currentMarket.last,
+            leverage = leverage.toInt(),
+            isLong = selectedIsLong,
+        )
+    }
+    val validationCalculationBasis = remember(currentMarket.last, usdtAmount, leverage) {
+        resolveTpSlCalculationBasis(
+            entryPrice = currentMarket.last,
+            currentPrice = currentMarket.last,
+            marginAmount = usdtAmount,
+            positionQuantity = null,
+            leverage = leverage.toInt(),
+        )
+    }
+    val tpSlError = validateTpSlPrice(
+        rawValue = takeProfitPrice,
+        currentPrice = validationCurrentPrice,
+        liquidationBound = validationLiquidationBound,
+        isLong = selectedIsLong,
+        isTakeProfit = true,
+        calculationBasis = validationCalculationBasis,
+        priceScale = currentMarket.priceScale,
+    ) ?: validateTpSlPrice(
+        rawValue = stopLossPrice,
+        currentPrice = validationCurrentPrice,
+        liquidationBound = validationLiquidationBound,
+        isLong = selectedIsLong,
+        isTakeProfit = false,
+        calculationBasis = validationCalculationBasis,
+        priceScale = currentMarket.priceScale,
+    )
     val canReview = hasInputAmount &&
         !belowMinimumMargin &&
         !aboveMaximumMargin &&
         !insufficientBalance &&
+        tpSlError == null &&
         !isLiquidationLoading &&
         !remoteLiquidationPrice.isNullOrBlank()
     val minimumMarginError = stringResource(
@@ -273,7 +312,11 @@ fun OpenPositionPage(
         aboveMaximumMargin -> maximumMarginError
         else -> null
     }
-    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError ?: liquidationLimitError ?: liquidationError
+    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() }
+        ?: marginLimitError
+        ?: liquidationLimitError
+        ?: liquidationError
+        ?: tpSlError
     val tokenNetworkName = currentToken?.chainName
         ?.takeIf { it.isNotBlank() }
         ?: currentToken?.chainSymbol
@@ -308,6 +351,7 @@ fun OpenPositionPage(
             entryPrice = null,
             marketId = currentMarket.marketId,
             priceScale = currentMarket.priceScale,
+            liquidationPrice = remoteLiquidationPrice,
         ).setOnApply { value ->
             if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
                 takeProfitPrice = value.orEmpty()
@@ -741,7 +785,7 @@ fun OpenPositionPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        if (isProcessing) return@MixinButton
+                        if (isProcessing || tpSlError != null) return@MixinButton
                         isProcessing = true
                         AnalyticsTracker.trackPerpsOpenPreview()
                         errorInfo = null
