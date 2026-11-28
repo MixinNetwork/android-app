@@ -55,6 +55,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import one.mixin.android.Constants.Account.PREF_HAS_USED_ADD_WALLET
 import one.mixin.android.Constants.Account.PREF_WALLET_CATEGORY_FILTER
 import one.mixin.android.R
@@ -68,6 +69,8 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.WCChangeEvent
+import one.mixin.android.tip.wc.WCSessionDeleteEvent
 import one.mixin.android.ui.home.homeNavigationInset
 import one.mixin.android.ui.home.homeNavigationScroll
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -108,6 +111,7 @@ fun AssetDashboardScreen(
     val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
     val hasSeenAddressBookBadge = remember { mutableStateOf(prefs.getBoolean(KEY_ADDRESS_BOOK_BADGE_SEEN, false)) }
     val wallets by viewModel.wallets.collectAsStateWithLifecycle()
+    val connectedWalletIds by viewModel.connectedWalletIds.collectAsStateWithLifecycle()
     var selectedCategory by remember { mutableStateOf<String?>(prefs.getString(PREF_WALLET_CATEGORY_FILTER, null)) }
     var isWalletInfoCardVisible by remember { mutableStateOf(true) }
 
@@ -123,15 +127,34 @@ fun AssetDashboardScreen(
         }
         lifecycleOwner.lifecycle.addObserver(observer)
 
-        val disposable = RxBus.listen(WalletRefreshedEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { _ ->
-                refreshTrigger++
+        val disposables =
+            CompositeDisposable().apply {
+                add(
+                    RxBus.listen(WalletRefreshedEvent::class.java)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe { _ ->
+                            refreshTrigger++
+                        },
+                )
+                add(
+                    RxBus.listen(WCChangeEvent::class.java)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe { _ ->
+                            viewModel.refreshConnectedWalletIds()
+                        },
+                )
+                add(
+                    RxBus.listen(WCSessionDeleteEvent::class.java)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe { _ ->
+                            viewModel.refreshConnectedWalletIds()
+                        },
+                )
             }
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            disposable.dispose()
+            disposables.dispose()
         }
     }
 
@@ -332,6 +355,7 @@ fun AssetDashboardScreen(
                 }
 
                 filteredWallets.forEach { wallet ->
+                    val isWalletConnected = wallet.id in connectedWalletIds
                     if (wallet.category == WalletCategory.MIXIN_SAFE.value) {
                         WalletCard(
                             name = wallet.name,
@@ -342,6 +366,7 @@ fun AssetDashboardScreen(
                         WalletCard(
                             name = wallet.name,
                             destination = WalletDestination.Watch(wallet.id, wallet.category),
+                            isConnected = isWalletConnected,
                             onClick = { onWalletCardClick.invoke(WalletDestination.Watch(wallet.id, wallet.category)) }
                         )
                     } else if (wallet.isImported()) {
@@ -349,12 +374,14 @@ fun AssetDashboardScreen(
                             name = wallet.name,
                             hasLocalPrivateKey = wallet.hasLocalPrivateKey,
                             destination = WalletDestination.Import(wallet.id, wallet.category),
+                            isConnected = isWalletConnected,
                             onClick = { onWalletCardClick.invoke(WalletDestination.Import(wallet.id, wallet.category)) },
                         )
                     } else {
                         WalletCard(
                             name = wallet.name,
                             destination = WalletDestination.Classic(wallet.id),
+                            isConnected = isWalletConnected,
                             onClick = { onWalletCardClick.invoke(WalletDestination.Classic(wallet.id)) }
                         )
                     }

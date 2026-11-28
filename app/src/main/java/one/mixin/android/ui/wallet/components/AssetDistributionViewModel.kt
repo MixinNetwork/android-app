@@ -14,6 +14,7 @@ import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.isOwner
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.Web3Repository
+import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.safe.UnifiedAssetItem
 import java.math.BigDecimal
@@ -30,6 +31,9 @@ class AssetDistributionViewModel @Inject constructor(
     private val _wallets = MutableStateFlow<List<WalletItem>>(emptyList())
     val wallets: StateFlow<List<WalletItem>> = _wallets
 
+    private val _connectedWalletIds = MutableStateFlow<Set<String>>(emptySet())
+    val connectedWalletIds: StateFlow<Set<String>> = _connectedWalletIds
+
     fun loadWallets() {
         viewModelScope.launch(Dispatchers.IO) {
             val wallets = web3Repository.getAllWallets().map {
@@ -37,6 +41,19 @@ class AssetDistributionViewModel @Inject constructor(
                 it
             }
             _wallets.value = wallets.sortedByDescending { it.value }
+            _connectedWalletIds.value =
+                WalletConnectV2.getConnectedWalletIds { destination ->
+                    web3Repository.getWalletByDestination(destination)?.id
+                }
+        }
+    }
+
+    fun refreshConnectedWalletIds() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _connectedWalletIds.value =
+                WalletConnectV2.getConnectedWalletIds { destination ->
+                    web3Repository.getWalletByDestination(destination)?.id
+                }
         }
     }
 

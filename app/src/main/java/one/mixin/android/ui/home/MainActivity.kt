@@ -69,6 +69,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import one.mixin.android.BuildConfig
@@ -105,6 +107,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.web3.vo.isWalletConnectSigningEligible
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -211,6 +214,7 @@ import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.walletDestinationFromJson
 import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.ui.wallet.components.walletDestinationToJson
+import one.mixin.android.ui.wallet.components.walletSelectionTarget
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.SERVER
@@ -242,6 +246,10 @@ import one.mixin.android.ui.conversation.ConversationEmbedding
 @AndroidEntryPoint
 class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callback {
     private lateinit var navigationController: NavigationController
+    private val walletConnectInitMutex = Mutex()
+    @Volatile
+    private var isWalletConnectInitialized = false
+    private var pendingOpenWalletSelector = false
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -481,6 +489,21 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             initWalletConnect()
         }
 
+        RxBus.listen(WCEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe { e ->
+                lifecycleScope.launch {
+                    WalletConnectActivity.show(this@MainActivity, e)
+                }
+            }
+        RxBus.listen(WCErrorEvent::class.java)
+            .autoDispose(destroyScope)
+            .subscribe {
+                if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                    WalletConnectActivity.show(this, it.error)
+                }
+            }
+
         initBottomNav()
         handlerCode(intent)
 
@@ -500,20 +523,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     when (e.badge) {
                         Account.PREF_NAV_MORE_BADGE_DISMISSED -> updateNavMoreBadge()
                     }
-                }
-            }
-        RxBus.listen(WCEvent::class.java)
-            .autoDispose(destroyScope)
-            .subscribe { e ->
-                lifecycleScope.launch {
-                    WalletConnectActivity.show(this@MainActivity, e)
-                }
-            }
-        RxBus.listen(WCErrorEvent::class.java)
-            .autoDispose(destroyScope)
-            .subscribe {
-                if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-                    WalletConnectActivity.show(this, it.error)
                 }
             }
 
@@ -1007,22 +1016,48 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private suspend fun initWalletConnect() {
         if (!WalletConnect.isEnabled()) return
-        try {
-            // Access initializes the WalletConnect singleton.
-            @Suppress("UNUSED_EXPRESSION")
-            WalletConnectV2
-            val classicWalletId = web3Repository.getClassicWalletId()
-            Web3Signer.init(
-                { classicWalletId },
-                { walletId ->
-                    runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
-                }, { walletId ->
-                    runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
+        walletConnectInitMutex.withLock {
+            if (isWalletConnectInitialized) return
+            withContext(Dispatchers.IO) {
+                try {
+                    // Access initializes the WalletConnect singleton.
+                    @Suppress("UNUSED_EXPRESSION")
+                    WalletConnectV2
+                    val classicWalletId = web3Repository.getClassicWalletId()
+                    Web3Signer.init(
+                        { classicWalletId },
+                        { walletId ->
+                            runBlocking(Dispatchers.IO) { web3Repository.getAddresses(walletId) }
+                        },
+                        { walletId ->
+                            runBlocking(Dispatchers.IO) { web3Repository.findWalletById(walletId) }
+                        },
+                    )
+                    val initialTarget = loadInitialWalletDestination().walletSelectionTarget()
+                    if (initialTarget != null) {
+                        val wallet = web3Repository.findWalletById(initialTarget.walletId)
+                        val category = wallet?.category ?: initialTarget.category
+                        val hasLocalKey = wallet?.hasLocalPrivateKey ?: (category == WalletCategory.CLASSIC.value)
+                        if (initialTarget.walletId != Web3Signer.currentWalletId ||
+                            category != Web3Signer.currentWalletCategory ||
+                            hasLocalKey != Web3Signer.hasLocalPrivateKey
+                        ) {
+                            val addresses = if (isWalletConnectSigningEligible(category, hasLocalKey)) {
+                                web3Repository.getAddresses(initialTarget.walletId)
+                            } else {
+                                emptyList()
+                            }
+                            Web3Signer.setWallet(initialTarget.walletId, category, hasLocalKey) { queryWalletId ->
+                                if (queryWalletId == initialTarget.walletId) addresses else emptyList()
+                            }
+                        }
+                    }
+                    isWalletConnectInitialized = true
+                } catch (e: Exception) {
+                    Timber.e("Failed to initialize WalletConnect: ${e.message}")
+                    reportException(e)
                 }
-            )
-        } catch (e: Exception) {
-            Timber.e("Failed to initialize WalletConnect: ${e.message}")
-            reportException(e)
+            }
         }
     }
 
@@ -1075,7 +1110,18 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     defaultSharedPreferences.putString(Account.PREF_USED_WALLET, json)
                 }
             }
-            binding.bottomNav.selectedItemId = R.id.nav_wallet
+            val openSelector = intent.getBooleanExtra(OPEN_WALLET_SELECTOR, false)
+            if (openSelector) {
+                pendingOpenWalletSelector = true
+                clearCodeAfterConsume(intent, OPEN_WALLET_SELECTOR)
+            }
+            if (binding.bottomNav.selectedItemId == R.id.nav_wallet && openSelector) {
+                pendingOpenWalletSelector = false
+                switchToDestination(NavigationController.Wallet)
+                findFragmentByTagTyped<WalletFragment>(NavigationController.Wallet.tag)?.requestOpenWalletSelector()
+            } else {
+                binding.bottomNav.selectedItemId = R.id.nav_wallet
+            }
             if (intent.getBooleanExtra(BUY, false)) {
                 WalletActivity.showBuy(
                     this, false, null, null,
@@ -1234,7 +1280,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 )
         } else if (intent.hasExtra(WALLET_CONNECT)) {
             val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
-            WalletConnect.connect(wcUrl)
+            clearCodeAfterConsume(intent, WALLET_CONNECT)
+            lifecycleScope.launch {
+                initWalletConnect()
+                WalletConnect.connect(wcUrl)
+            }
         }
     }
 
@@ -1362,18 +1412,26 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private fun switchToDestination(destination: NavigationController.Destination) {
         val fm = supportFragmentManager
         var fragment = fm.findFragmentByTag(destination.tag)
+        val openSelector = if (destination == NavigationController.Wallet) {
+            pendingOpenWalletSelector.also { pendingOpenWalletSelector = false }
+        } else {
+            false
+        }
         if (fragment == null) {
             fragment = when (destination) {
                 is NavigationController.ConversationList -> ConversationListFragment.newInstance()
                 is NavigationController.Wallet -> {
                     val initialWalletDestination = loadInitialWalletDestination()
-                    WalletFragment.newInstance(initialWalletDestination)
+                    WalletFragment.newInstance(initialWalletDestination, openSelector)
                 }
                 is NavigationController.Explore -> ExploreFragment()
                 is NavigationController.Market -> MarketFragment()
             }
         } else if (fragment is WalletFragment) {
             fragment.selectWalletDestination(loadInitialWalletDestination())
+            if (openSelector) {
+                fragment.requestOpenWalletSelector()
+            }
         }
 
         navigationController.navigate(fm, destination, fragment)
@@ -1803,6 +1861,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
         private const val WALLET_DESTINATION = "wallet_destination"
+        private const val OPEN_WALLET_SELECTOR = "open_wallet_selector"
         const val WALLET_CONNECT = "wallet_connect"
         private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
         private const val EXTRA_EMBEDDING_RELAYOUT = "embedding_relayout"
@@ -1812,11 +1871,13 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             buy: Boolean = false,
             walletDestination: WalletDestination? = null,
             buySource: String = AnalyticsTracker.TradeSource.WALLET_HOME,
+            openWalletSelector: Boolean = false,
         ) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
                 putExtra(BUY, buy)
                 if (buy) putExtra(CalculateFragment.ARGS_BUY_SOURCE, buySource)
+                if (openWalletSelector) putExtra(OPEN_WALLET_SELECTOR, true)
                 walletDestination?.let {
                     val json = walletDestinationToJson(it)
                     context.defaultSharedPreferences.putString(Account.PREF_USED_WALLET, json)

@@ -1256,4 +1256,11 @@
     <string name="network_fee_independent_of_amount">ネットワーク手数料は送金額に関係ありません。</string>
     <string name="mixin_support">Mixin サポート</string>
     <string name="real_people_real_support">本物の人による、本物のサポート。</string>
+    <string name="no_key_wallet_dapp_connect_warning_message">このウォレットはこのデバイスに秘密鍵がないため、dApp に接続できません。署名可能なウォレットに切り替えてください。</string>
+    <string name="watch_only_wallet_dapp_connect_warning_message">これはウォッチ専用ウォレットのため、dApp に接続できません。署名可能なウォレットに切り替えてください。</string>
+    <string name="unsupported_wallet_dapp_connect_warning_message">このウォレットはこのデバイスで署名できないため、dApp に接続できません。署名可能なウォレットに切り替えてください。</string>
+    <string name="switch_wallet">ウォレットを切り替え</string>
+    <string name="Connect">接続</string>
+    <string name="Connected">接続済み</string>
+    <string name="search_placeholder_wallet">名前、アドレス</string>
 </resources>

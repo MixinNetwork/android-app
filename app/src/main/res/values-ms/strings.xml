@@ -929,4 +929,11 @@
     <string name="network_fee_independent_of_amount">Yuran rangkaian tidak bergantung pada jumlah pemindahan.</string>
     <string name="mixin_support">Sokongan Mixin</string>
     <string name="real_people_real_support">Orang Sebenar. Sokongan Sebenar.</string>
+    <string name="no_key_wallet_dapp_connect_warning_message">Dompet ini tiada kunci peribadi pada peranti ini dan tidak boleh menyambung ke dApp. Tukar ke dompet yang boleh menandatangani.</string>
+    <string name="watch_only_wallet_dapp_connect_warning_message">Ini ialah dompet lihat sahaja dan tidak boleh menyambung ke dApp. Tukar ke dompet yang boleh menandatangani.</string>
+    <string name="unsupported_wallet_dapp_connect_warning_message">Dompet ini tidak boleh menandatangani pada peranti ini dan tidak boleh menyambung ke dApp. Tukar ke dompet yang boleh menandatangani.</string>
+    <string name="switch_wallet">Tukar Dompet</string>
+    <string name="Connect">Sambungkan</string>
+    <string name="Connected">Disambungkan</string>
+    <string name="search_placeholder_wallet">Nama, Alamat</string>
 </resources>

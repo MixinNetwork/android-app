@@ -584,6 +584,15 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private suspend fun refreshWalletHomeMetadata(id: String) {
         val wallet = web3ViewModel.findWalletById(id)
+        if (wallet != null &&
+            id == Web3Signer.currentWalletId &&
+            (wallet.hasLocalPrivateKey != Web3Signer.hasLocalPrivateKey || wallet.category != Web3Signer.currentWalletCategory)
+        ) {
+            val addresses = if (wallet.hasLocalPrivateKey) web3ViewModel.getAddresses(id) else emptyList()
+            Web3Signer.setWallet(wallet.id, wallet.category, wallet.hasLocalPrivateKey) { queryWalletId ->
+                if (queryWalletId == wallet.id) addresses else emptyList()
+            }
+        }
         isWatchWallet = wallet?.isWatch() == true
         importKeyAction = wallet?.let { walletHomeImportKeyAction(it.category, it.hasLocalPrivateKey) }
         importKeyChainId = if (importKeyAction?.kind == WalletHomeImportKeyKind.PRIVATE_KEY) {

@@ -134,7 +134,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.Session.getBotSignature
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipSignSpec
-import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.tip.wc.SigningWalletPrecheck
+import one.mixin.android.tip.wc.WCError
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -162,6 +163,7 @@ import one.mixin.android.ui.player.collapse as collapsePlayer
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.SettingActivity.Companion.ARGS_SUCCESS
+import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.tip.wc.sessionproposal.PeerUI
 import one.mixin.android.ui.tip.wc.showWalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -1052,6 +1054,15 @@ class WebFragment : BaseFragment() {
                             }
                         }
                     },
+                    onSigningWalletBlocked = { precheck ->
+                        lifecycleScope.launch {
+                            if (viewDestroyed()) return@launch
+                            WalletConnectActivity.show(
+                                requireActivity(),
+                                WCError(precheck.toException(requireContext())),
+                            )
+                        }
+                    },
                 ),
                 "_mw_",
             )
@@ -1147,9 +1158,19 @@ class WebFragment : BaseFragment() {
             lifecycleScope.launch {
                 webView.evaluateJavascript("$callbackFunction('')") {}
             }
+            return
         }
         lifecycleScope.launch {
-            WalletConnectTIP.peer = getPeerUI(Web3Signer.evmAddress)
+            val wallet = bottomViewModel.findWalletById(Web3Signer.currentWalletId)
+            val precheck = WalletConnect.evaluateSigningWallet(wallet, Web3Signer.currentWalletConnectAddresses())
+            if (precheck is SigningWalletPrecheck.Blocked) {
+                webView.evaluateJavascript("$callbackFunction('')") {}
+                WalletConnectActivity.show(requireActivity(), WCError(precheck.toException(requireContext())))
+                return@launch
+            }
+            val eligible = precheck as SigningWalletPrecheck.Eligible
+            WalletConnectTIP.walletId = eligible.walletId
+            WalletConnectTIP.peer = getPeerUI(eligible.addresses.evm)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
                 requireActivity(),
@@ -1161,12 +1182,19 @@ class WebFragment : BaseFragment() {
                         webView.evaluateJavascript("$callbackFunction('')") {}
                     }
                 },
-                callback = {
+                callback = { spendKey ->
+                    val latestWallet = bottomViewModel.findWalletById(Web3Signer.currentWalletId)
+                    val latestPrecheck = WalletConnect.evaluateSigningWallet(latestWallet, Web3Signer.currentWalletConnectAddresses())
                     val address =
-                        try {
-                            privateKeyToAddress(it, chainId)
-                        } catch (e: IllegalArgumentException) {
-                            Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
+                        if (latestPrecheck is SigningWalletPrecheck.Eligible && latestPrecheck.walletId == eligible.walletId) {
+                            try {
+                                val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), spendKey, chainId))
+                                CryptoWalletHelper.privateKeyToAddress(priv, chainId)
+                            } catch (e: Exception) {
+                                Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
+                                ""
+                            }
+                        } else {
                             ""
                         }
                     lifecycleScope.launch {
@@ -1294,6 +1322,22 @@ class WebFragment : BaseFragment() {
         if (!WalletConnect.isEnabled()) return
 
         lifecycleScope.launch {
+            val wallet = bottomViewModel.findWalletById(Web3Signer.currentWalletId)
+            val precheck = WalletConnect.evaluateSigningWallet(wallet, Web3Signer.currentWalletConnectAddresses())
+            if (precheck is SigningWalletPrecheck.Blocked) {
+                webView.evaluateJavascript("$callbackFunction('')") {}
+                WalletConnectActivity.show(requireActivity(), WCError(precheck.toException(requireContext())))
+                return@launch
+            }
+            val eligible = precheck as SigningWalletPrecheck.Eligible
+            if (WalletConnectTIP.walletId != null && WalletConnectTIP.walletId != eligible.walletId) {
+                webView.evaluateJavascript("$callbackFunction('')") {}
+                return@launch
+            }
+            WalletConnectTIP.walletId = eligible.walletId
+            if (WalletConnectTIP.peer == null) {
+                WalletConnectTIP.peer = getPeerUI(eligible.addresses.evm)
+            }
             WalletConnectTIP.signData = WalletConnect.WCSignData.TIPSignData(message)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
@@ -1306,10 +1350,17 @@ class WebFragment : BaseFragment() {
                         webView.evaluateJavascript("$callbackFunction('')") {}
                     }
                 },
-                callback = {
+                callback = { spendKey ->
                     if (isAdded) {
-                        val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), it, chainId))
-                        val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
+                        val latestWallet = bottomViewModel.findWalletById(Web3Signer.currentWalletId)
+                        val latestPrecheck = WalletConnect.evaluateSigningWallet(latestWallet, Web3Signer.currentWalletConnectAddresses())
+                        val sig =
+                            if (latestPrecheck is SigningWalletPrecheck.Eligible && latestPrecheck.walletId == eligible.walletId) {
+                                val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), spendKey, chainId))
+                                TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
+                            } else {
+                                ""
+                            }
                         lifecycleScope.launch {
                             webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(sig)})") {}
                         }
@@ -2048,6 +2099,7 @@ class WebFragment : BaseFragment() {
         val onWalletActionError: (Long, Int, String) -> Unit,
         val onBrowserSign: (JsSignMessage) -> Unit,
         val onEmptyAddress: (String) -> Unit,
+        val onSigningWalletBlocked: (SigningWalletPrecheck.Blocked) -> Unit = {},
     ) {
         @JavascriptInterface
         fun postMessage(json: String) {
@@ -2058,6 +2110,12 @@ class WebFragment : BaseFragment() {
                 val method = DAppMethod.fromValue(obj.getString("name"))
                 val network = obj.getString("network")
                 if (!isValidJavaScriptCallback(network)) return
+                val precheck = WalletConnect.checkCurrentSigningWallet()
+                if (precheck is SigningWalletPrecheck.Blocked) {
+                    onWalletActionError(id, WalletErrorCode.UNAUTHORIZED, precheck.localizedMessage(MixinApplication.appContext))
+                    onSigningWalletBlocked(precheck)
+                    return
+                }
                 val pageChainId = obj.optString("chainId")
                 if (network == Web3Signer.JsSignerNetwork.Solana.name) {
                     Web3Signer.useSolana()

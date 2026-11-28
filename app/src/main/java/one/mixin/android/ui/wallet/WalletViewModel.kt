@@ -54,6 +54,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.wc.SortOrder
+import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -89,6 +90,8 @@ internal constructor(
     private val _allWalletsFlow = MutableStateFlow<List<WalletItem>>(emptyList())
     val allWalletsFlow: StateFlow<List<WalletItem>> = _allWalletsFlow
 
+    private val _connectedWalletIds = MutableStateFlow<Set<String>>(emptySet())
+    val connectedWalletIds: StateFlow<Set<String>> = _connectedWalletIds
     private var loadAllWalletsJob: Job? = null
     private var searchWalletsJob: Job? = null
 
@@ -108,6 +111,15 @@ internal constructor(
             if (query.isEmpty()) {
                 _allWalletsFlow.value = wallets
             }
+        }
+    }
+
+    fun refreshConnectedWalletIds() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _connectedWalletIds.value =
+                WalletConnectV2.getConnectedWalletIds { destination ->
+                    web3Repository.getWalletByDestination(destination)?.id
+                }
         }
     }
 

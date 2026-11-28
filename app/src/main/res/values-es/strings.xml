@@ -1307,4 +1307,11 @@
     <string name="network_fee_independent_of_amount">Las comisiones de red no dependen del importe de la transferencia.</string>
     <string name="mixin_support">Soporte de Mixin</string>
     <string name="real_people_real_support">Personas reales. Soporte real.</string>
+    <string name="no_key_wallet_dapp_connect_warning_message">Esta billetera no tiene una clave privada en este dispositivo y no puede conectarse a dApps. Cambia a una billetera que pueda firmar.</string>
+    <string name="watch_only_wallet_dapp_connect_warning_message">Esta es una billetera de solo observación y no puede conectarse a dApps. Cambia a una billetera que pueda firmar.</string>
+    <string name="unsupported_wallet_dapp_connect_warning_message">Esta billetera no puede firmar en este dispositivo y no puede conectarse a dApps. Cambia a una billetera que pueda firmar.</string>
+    <string name="switch_wallet">Cambiar de billetera</string>
+    <string name="Connect">Conectar</string>
+    <string name="Connected">Conectado</string>
+    <string name="search_placeholder_wallet">Nombre, Dirección</string>
 </resources>

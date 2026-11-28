@@ -16,6 +16,7 @@ import one.mixin.android.tip.wc.WCError
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
+import one.mixin.android.tip.wc.WalletConnectSigningBlockedException
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.pay.WalletConnectPayBottomSheetDialogFragment
@@ -74,6 +75,25 @@ class WalletConnectActivity : BaseActivity() {
                 }
             }
         } else {
+            val throwable = error?.throwable
+            if (throwable is WalletConnectSigningBlockedException) {
+                handlingConnectError = true
+                val wcBottom = supportFragmentManager.findFragmentByTag(WalletConnectBottomSheetDialogFragment.TAG) as? WalletConnectBottomSheetDialogFragment
+                if (wcBottom != null) {
+                    if (wcBottom.isSigningBlocked) {
+                        return
+                    }
+                    wcBottom.dismiss()
+                }
+                (supportFragmentManager.findFragmentByTag(QrScanBottomSheetDialogFragment.TAG) as? QrScanBottomSheetDialogFragment)
+                    ?.dismissAllowingStateLoss()
+
+                WalletConnectBottomSheetDialogFragment.newBlockedInstance(
+                    throwable.message ?: getString(R.string.connect_wallet_failed),
+                ).showNow(supportFragmentManager, WalletConnectBottomSheetDialogFragment.TAG)
+                return
+            }
+
             if (error != null) {
                 handlingConnectError = true
             }

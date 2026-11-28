@@ -131,4 +131,8 @@ class BrowserWalletBottomSheetViewModel
         suspend fun findFirstAddressByWalletId(walletId: String): Web3Address? = withContext(Dispatchers.IO) {
             web3Repository.getAddresses(walletId).firstOrNull()
         }
+
+        suspend fun findWalletById(walletId: String) = withContext(Dispatchers.IO) {
+            if (walletId.isBlank()) null else web3Repository.findWalletById(walletId)
+        }
     }

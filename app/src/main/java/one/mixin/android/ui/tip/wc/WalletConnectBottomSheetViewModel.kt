@@ -75,6 +75,16 @@ class WalletConnectBottomSheetViewModel
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
 
+        suspend fun findWalletById(walletId: String) =
+            withContext(Dispatchers.IO) {
+                if (walletId.isBlank()) null else web3Repository.findWalletById(walletId)
+            }
+
+        suspend fun getAddresses(walletId: String) =
+            withContext(Dispatchers.IO) {
+                if (walletId.isBlank()) emptyList() else web3Repository.getAddresses(walletId)
+            }
+
         suspend fun outputsByAddress(
             address: String,
             assetId: String,

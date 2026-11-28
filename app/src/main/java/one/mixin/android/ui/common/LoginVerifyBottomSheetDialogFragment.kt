@@ -222,7 +222,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             ?.let { walletId -> web3Repository.findWalletById(walletId) }
             ?: return
         val addresses = web3Repository.getAddresses(wallet.id)
-        Web3Signer.setWalletIfCurrent(expectedWalletId, wallet.id, wallet.category) { queryWalletId ->
+        Web3Signer.setWalletIfCurrent(expectedWalletId, wallet.id, wallet.category, wallet.hasLocalPrivateKey) { queryWalletId ->
             if (queryWalletId == wallet.id) addresses else emptyList()
         }
     }

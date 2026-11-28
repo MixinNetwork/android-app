@@ -60,6 +60,10 @@ fun WalletItem.isMixinSafe(): Boolean {
     return category == WalletCategory.MIXIN_SAFE.value
 }
 
+fun WalletItem.isSigningEligible(): Boolean {
+    return isWalletConnectSigningEligible(category, hasLocalPrivateKey)
+}
+
 fun WalletItem.isOwner(): Boolean {
     return safeRole.equalsIgnoreCase("owner")
 }
