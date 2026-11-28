@@ -43,7 +43,6 @@ import one.mixin.android.extension.addToList
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -51,6 +50,7 @@ import one.mixin.android.extension.scrollToCenterCheckedRadio
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.RecentTokens
+import one.mixin.android.util.assetListComparator
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
@@ -310,7 +310,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                                     chainName = tokenItem.chainName,
                                                     chainSymbol = tokenItem.chainSymbol,
                                                     hidden = false,
-                                                    level = Constants.AssetLevel.VERIFIED
+                                                    level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
                                                 )
                                             }
                                         }
@@ -369,9 +369,17 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 it.symbol.containsIgnoreCase(s) || 
                 (it.chainName?.containsIgnoreCase(s) ?: false) ||
                 it.getChainDisplayName().containsIgnoreCase(s)
-            }.sortedByDescending { 
-                it.name.equalsIgnoreCase(s) || it.symbol.equalsIgnoreCase(s) 
-            })
+            }.sortedWith(
+                assetListComparator(
+                    query = s,
+                    symbol = { it.symbol },
+                    balance = { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO },
+                    price = { it.priceUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO },
+                    level = { it.level },
+                    name = { it.name },
+                    chainName = { it.chainName.orEmpty() },
+                ),
+            ))
             if (!isAdded) {
                 return@launch
             }
@@ -402,10 +410,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         val remoteAssets = fuzzyResults.filter {
             isWeb3TransferSupported(it.chainId) &&
                 (it.chainId != Constants.ChainId.Litecoin || hasLitecoinAddress)
-        }.map { item ->
+        }.mapNotNull { item ->
             bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId).let { local ->
-                if (local != null && (local.level >= 10 || local.hidden == false)) {
-                    local
+                if (local != null) {
+                    local.takeIf { it.level >= Constants.AssetLevel.UNKNOWN || it.hidden != true }
                 } else {
                     Web3TokenItem(
                         walletId = walletId ?: "",
@@ -424,7 +432,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         chainName = item.chainName,
                         chainSymbol = item.chainSymbol,
                         hidden = item.hidden,
-                        level = Constants.AssetLevel.VERIFIED
+                        level = item.level ?: Constants.AssetLevel.UNKNOWN
                     )
                 }
             }

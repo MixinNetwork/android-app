@@ -44,7 +44,19 @@ class Room3DatabaseCompatibilityTest {
             "SELECT asset_id || ':' || COALESCE(primitive_asset_id, 'missing') FROM tokens",
             "asset:missing",
             schemaVersion = 72,
-            migrations = arrayOf(MixinDatabaseMigrations.MIGRATION_72_73),
+            migrations = arrayOf(MixinDatabaseMigrations.MIGRATION_72_73, MixinDatabaseMigrations.MIGRATION_73_74),
+        )
+    }
+
+    @Test
+    fun tokenLevelMigrationPreservesExistingTokens() {
+        verifyLegacyDatabase(
+            MixinDatabase::class.java,
+            "INSERT INTO tokens(asset_id, kernel_asset_id, symbol, name, icon_url, price_btc, price_usd, chain_id, change_usd, change_btc, confirmations, asset_key, dust, precision) VALUES('asset', 'kernel', 'BTC', 'Bitcoin', '', '1', '100', 'asset', '0', '0', 1, '', '0', 8)",
+            "SELECT asset_id || ':' || COALESCE(level, 'missing') FROM tokens",
+            "asset:11",
+            schemaVersion = 73,
+            migrations = arrayOf(MixinDatabaseMigrations.MIGRATION_73_74),
         )
     }
 

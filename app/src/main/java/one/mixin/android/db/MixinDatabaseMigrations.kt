@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
+import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import one.mixin.android.db.datasource.execSQL
 import one.mixin.android.db.datasource.query
@@ -628,6 +629,13 @@ class MixinDatabaseMigrations private constructor() {
             object : Migration(72, 73) {
                 override suspend fun migrate(connection: SQLiteConnection) {
                     connection.execSQL("ALTER TABLE `tokens` ADD COLUMN `primitive_asset_id` TEXT")
+                }
+            }
+
+        val MIGRATION_73_74: Migration =
+            object : Migration(73, 74) {
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE `tokens` ADD COLUMN `level` INTEGER DEFAULT ${Constants.AssetLevel.VERIFIED}")
                 }
             }
 

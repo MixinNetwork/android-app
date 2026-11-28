@@ -26,9 +26,8 @@ private const val FUZZY_SEARCH_TOKEN_SQL =
         """
         WHERE ae.balance > 0 AND $NOT_PRIMITIVE_ASSET
         AND (a1.symbol LIKE '%' || ? || '%'  ESCAPE '\' OR a1.name LIKE '%' || ? || '%'  ESCAPE '\')
-        ORDER BY
-        a1.symbol = ? COLLATE NOCASE OR a1.name = ? COLLATE NOCASE DESC,
-        a1.price_usd*ae.balance DESC
+        AND (COALESCE(a1.level, 11) >= 10 OR ae.hidden IS NULL OR NOT ae.hidden)
+        ORDER BY CASE WHEN a1.symbol LIKE ? ESCAPE '\' THEN 1 ELSE 0 END DESC, COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(a1.level, 11) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, c.name ASC
         """
 
 private const val FUZZY_SEARCH_USER_SQL =
@@ -264,7 +263,7 @@ interface DataProviderQuerySpec {
 
     @GeneratedQuery(
         sql = FUZZY_SEARCH_TOKEN_SQL,
-        binds = ["symbol", "name", "symbol", "name"],
+        binds = ["symbol", "name", "symbol"],
         callable = "callableTokenItem",
     )
     suspend fun fuzzySearchToken(
