@@ -9,42 +9,84 @@ class LocalNetworkPermissionQueueTest {
     @Test
     fun cancelRemovesPendingDesktopCommandBeforePermissionGrant() {
         val queue = LocalNetworkPermissionQueue()
-        var ran = false
-
-        assertTrue(queue.enqueue(cancellableByDesktop = true) { ran = true })
-        assertTrue(queue.cancelPendingDesktopCommands())
-        assertFalse(queue.cancelPendingDesktopCommands())
-
-        queue.onPermissionResult(granted = true)
-        assertFalse(ran)
+        for (granted in listOf(true, false)) {
+            var denied = false
+            var executed = false
+            assertTrue(queue.enqueue(cancellableByDesktop = true, onDenied = { denied = true }) { executed = true })
+            assertTrue(queue.cancelPendingDesktopCommands())
+            assertFalse(queue.cancelPendingDesktopCommands())
+            assertFalse(queue.onPermissionResult(granted))
+            assertFalse(executed)
+            assertFalse(denied)
+        }
     }
 
     @Test
     fun cancelPreservesNonDesktopPendingActionAndNewDesktopCommandAfterCancelRuns() {
         val queue = LocalNetworkPermissionQueue()
         val executed = mutableListOf<String>()
-
-        assertTrue(queue.enqueue(cancellableByDesktop = false) { executed.add("manual") })
+        assertTrue(queue.enqueue { executed.add("manual") })
         assertFalse(queue.enqueue(cancellableByDesktop = true) { executed.add("old-desktop") })
         assertTrue(queue.cancelPendingDesktopCommands())
         assertFalse(queue.enqueue(cancellableByDesktop = true) { executed.add("new-desktop") })
-
-        queue.onPermissionResult(granted = true)
+        assertTrue(queue.onPermissionResult(granted = true))
         assertEquals(listOf("manual", "new-desktop"), executed)
     }
 
     @Test
-    fun deniedPermissionClearsPendingActionsAndAllowsRetry() {
+    fun deniedPermissionInvokesOnDeniedClearsQueueAndAllowsRetry() {
         val queue = LocalNetworkPermissionQueue()
-        var firstRan = false
-        var retryRan = false
+        var denied = false
+        var executed = false
+        assertTrue(queue.enqueue(onDenied = { denied = true }) { executed = true })
+        assertTrue(queue.onPermissionResult(granted = false))
+        assertTrue(denied)
+        assertFalse(executed)
 
-        assertTrue(queue.enqueue(cancellableByDesktop = true) { firstRan = true })
-        queue.onPermissionResult(granted = false)
-        assertFalse(firstRan)
+        var retried = false
+        assertTrue(queue.enqueue { retried = true })
+        assertTrue(queue.onPermissionResult(granted = true))
+        assertTrue(retried)
+        assertFalse(executed)
+    }
 
-        assertTrue(queue.enqueue(cancellableByDesktop = true) { retryRan = true })
-        queue.onPermissionResult(granted = true)
-        assertTrue(retryRan)
+    @Test
+    fun permissionErrorInvokesOnDeniedAndAllowsRetry() {
+        val queue = LocalNetworkPermissionQueue()
+        var denied = false
+        var executed = false
+        assertTrue(queue.enqueue(onDenied = { denied = true }) { executed = true })
+        queue.onPermissionError()
+        assertTrue(denied)
+        assertFalse(executed)
+
+        var retried = false
+        assertTrue(queue.enqueue { retried = true })
+        assertTrue(queue.onPermissionResult(granted = true))
+        assertTrue(retried)
+        assertFalse(executed)
+    }
+
+    @Test
+    fun clearDropsPendingActionsWithoutInvokingCallbacks() {
+        val queue = LocalNetworkPermissionQueue()
+        var denied = false
+        var executed = false
+        assertTrue(queue.enqueue(onDenied = { denied = true }) { executed = true })
+        queue.clear()
+        assertFalse(queue.onPermissionResult(granted = true))
+        assertFalse(executed)
+        assertFalse(denied)
+        assertTrue(queue.enqueue { })
+    }
+
+    @Test
+    fun desktopCancelDropsCancellableStartActionBeforePermissionGrant() {
+        val queue = LocalNetworkPermissionQueue()
+        var started = false
+        assertTrue(queue.enqueue(cancellableByDesktop = true) { started = true })
+        assertTrue(queue.cancelPendingDesktopCommands())
+        assertFalse(queue.onPermissionResult(granted = true))
+        assertFalse(started)
     }
 }

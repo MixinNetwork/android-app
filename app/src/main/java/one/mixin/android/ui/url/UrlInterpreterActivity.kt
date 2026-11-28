@@ -22,7 +22,6 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.oldwallet.OldTransferFragment
-import one.mixin.android.ui.transfer.TransferActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.web3.convertWcLink
 import timber.log.Timber
@@ -40,7 +39,6 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val APPS = "apps"
         private const val SNAPSHOTS = "snapshots"
         private const val CONVERSATIONS = "conversations"
-        private const val DEVICE_TRANSFER = "device-transfer"
         private const val BUY = "buy"
         private const val TIP = "tip"
         private const val MULTISIGS = "multisigs"
@@ -150,9 +148,6 @@ class UrlInterpreterActivity : BaseActivity() {
                         Timber.e(IllegalStateException(err))
                     },
                 )
-            }
-            DEVICE_TRANSFER -> {
-                TransferActivity.parseUri(this, uri, { finish() }) { finish() }
             }
             BUY -> {
                 MainActivity.showWallet(this, buy = true)

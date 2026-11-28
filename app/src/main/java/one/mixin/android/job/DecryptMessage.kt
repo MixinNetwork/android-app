@@ -49,7 +49,7 @@ import one.mixin.android.fts.insertFts4
 import one.mixin.android.fts.insertOrReplaceMessageFts4
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.session.Session
-import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.ui.transfer.IncomingTransferControlEvent
 import one.mixin.android.ui.transfer.vo.TransferCommand
 import one.mixin.android.ui.transfer.vo.TransferCommandAction
 import one.mixin.android.ui.web.replaceApp
@@ -502,13 +502,37 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
             } else if (plainData.action == PlainDataAction.DEVICE_TRANSFER.name) {
                 val content = plainData.content ?: return
-                val command = gson.fromJson(content, TransferCommand::class.java)
-                if (command.action == TransferCommandAction.CANCEL.value) {
-                    RxBus.publish(command)
+                val accountId = Session.getAccountId()
+                val extensionSessionId = Session.getExtensionSessionId()
+                if (!transferSessionManager.isRemoteControlAuthorized(
+                        senderUserId = data.userId,
+                        senderSessionId = data.sessionId,
+                        messageCreatedAt = data.createdAt,
+                        expectedAccountId = accountId,
+                        expectedExtensionSessionId = extensionSessionId,
+                    )
+                ) {
+                    return
+                }
+                val command =
+                    try {
+                        gson.fromJson(content, TransferCommand::class.java)
+                    } catch (e: Exception) {
+                        Timber.w(e, "Invalid device transfer command")
+                        return
+                    } ?: return
+                val accepted = if (command.action == TransferCommandAction.CANCEL.value) {
+                    transferSessionManager.cancelActiveSessionIfMatches(requireNotNull(accountId), data.sessionId)
                 } else {
-                    MixinApplication.get().currentActivity?.let { activity ->
-                        TransferActivity.show(activity, command)
-                    }
+                    transferSessionManager.canAcceptRemoteCommand(
+                        action = command.action,
+                        senderUserId = data.userId,
+                        senderSessionId = data.sessionId,
+                        commandUserId = command.userId,
+                    )
+                }
+                if (accepted) {
+                    RxBus.publish(IncomingTransferControlEvent(command, data.userId, data.sessionId))
                 }
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
                 plainData.ackMessages?.let { ackMessages ->

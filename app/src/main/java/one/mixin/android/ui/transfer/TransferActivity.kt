@@ -21,6 +21,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,7 +45,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.isConnectedToWiFi
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
@@ -72,10 +73,23 @@ import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Provider
+
+internal const val TRANSFER_SECRET_KEY_BYTES = 64
+
+internal fun decodeTransferSecretKey(secretKey: String?): ByteArray? {
+    if (secretKey.isNullOrBlank()) return null
+    return try {
+        secretKey.decodeBase64().takeIf { it.size == TRANSFER_SECRET_KEY_BYTES }
+    } catch (_: Exception) {
+        null
+    }
+}
 
 internal class LocalNetworkPermissionQueue {
     private class PendingAction(
         val cancellableByDesktop: Boolean,
+        val onDenied: () -> Unit,
         val action: () -> Unit,
     )
 
@@ -84,9 +98,10 @@ internal class LocalNetworkPermissionQueue {
 
     fun enqueue(
         cancellableByDesktop: Boolean = false,
+        onDenied: () -> Unit = {},
         action: () -> Unit,
     ): Boolean {
-        pendingActions.addLast(PendingAction(cancellableByDesktop, action))
+        pendingActions.addLast(PendingAction(cancellableByDesktop, onDenied, action))
         if (requestInFlight) return false
         requestInFlight = true
         return true
@@ -94,18 +109,26 @@ internal class LocalNetworkPermissionQueue {
 
     fun cancelPendingDesktopCommands(): Boolean = pendingActions.removeAll { it.cancellableByDesktop }
 
-    fun onPermissionResult(granted: Boolean) {
+    fun onPermissionResult(granted: Boolean): Boolean {
         requestInFlight = false
+        val actions = pendingActions.toList()
+        pendingActions.clear()
         if (granted) {
-            while (pendingActions.isNotEmpty()) {
-                pendingActions.removeFirst().action.invoke()
-            }
+            actions.forEach { it.action.invoke() }
         } else {
-            pendingActions.clear()
+            actions.forEach { it.onDenied.invoke() }
         }
+        return actions.isNotEmpty()
     }
 
     fun onPermissionError() {
+        requestInFlight = false
+        val actions = pendingActions.toList()
+        pendingActions.clear()
+        actions.forEach { it.onDenied.invoke() }
+    }
+
+    fun clear() {
         requestInFlight = false
         pendingActions.clear()
     }
@@ -116,8 +139,6 @@ internal class LocalNetworkPermissionQueue {
 class TransferActivity : BaseActivity() {
     companion object {
         const val ARGS_STATUS = "args_status"
-        const val ARGS_QR_CODE_CONTENT = "args_qr_code_content"
-        const val ARGS_COMMAND = "args_command"
 
         private const val ARGS_TRANSFER_TO_PHONE = 1
         private const val ARGS_TRANSFER_TO_PC = 2
@@ -159,57 +180,6 @@ class TransferActivity : BaseActivity() {
                 },
             )
         }
-
-        fun show(
-            context: Context,
-            qrCodeContent: String,
-        ) {
-            context.startActivity(
-                Intent(context, TransferActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    putExtra(ARGS_STATUS, ARGS_RESTORE_FROM_PHONE)
-                    putExtra(ARGS_QR_CODE_CONTENT, qrCodeContent)
-                },
-            )
-        }
-
-        fun show(
-            context: Context,
-            transferCommandData: TransferCommand,
-        ) {
-            val status =
-                if (transferCommandData.action == TransferCommandAction.PULL.value) {
-                    ARGS_RESTORE_FROM_PC
-                } else {
-                    if (transferCommandData.action == TransferCommandAction.PUSH.value) {
-                        ARGS_TRANSFER_TO_PC
-                    } else {
-                        null
-                    } ?: return
-                }
-            context.startActivity(
-                Intent(context, TransferActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    putExtra(ARGS_STATUS, status)
-                    putExtra(ARGS_COMMAND, transferCommandData)
-                },
-            )
-        }
-
-        fun parseUri(
-            context: Context,
-            uri: Uri,
-            success: (() -> Unit)? = null,
-            fallback: () -> Unit,
-        ) {
-            val data = uri.getQueryParameter("data")
-            if (data == null) {
-                fallback.invoke()
-                return
-            }
-            show(context, data)
-            success?.invoke()
-        }
     }
 
     private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
@@ -220,7 +190,9 @@ class TransferActivity : BaseActivity() {
     lateinit var transferServer: TransferServer
 
     @Inject
-    lateinit var transferClient: TransferClient
+    lateinit var transferClientProvider: Provider<TransferClient>
+
+    private var transferClient: TransferClient? = null
 
     @Inject
     lateinit var status: TransferStatusLiveData
@@ -228,7 +200,44 @@ class TransferActivity : BaseActivity() {
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
 
+    @Inject
+    lateinit var transferSessionManager: TransferSessionManager
+
+    private var activeSessionId: String? = null
+    private var pairingDialog: Dialog? = null
+    private val localNetworkPermissionQueue = LocalNetworkPermissionQueue()
+
     var shouldLogout = false
+
+    private fun withLocalNetworkPermission(
+        cancellableByDesktop: Boolean = false,
+        onDenied: () -> Unit = {},
+        action: () -> Unit,
+    ) {
+        if (Build.VERSION.SDK_INT < 37 ||
+            applicationInfo.targetSdkVersion < 37 ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) == PackageManager.PERMISSION_GRANTED
+        ) {
+            action()
+            return
+        }
+        if (!localNetworkPermissionQueue.enqueue(cancellableByDesktop, onDenied, action)) return
+        RxPermissions(this)
+            .request(Manifest.permission.ACCESS_LOCAL_NETWORK)
+            .autoDispose(destroyScope)
+            .subscribe(
+                { granted ->
+                    val hadPendingActions = localNetworkPermissionQueue.onPermissionResult(granted)
+                    if (!granted && hadPendingActions) {
+                        openPermissionSetting()
+                    }
+                },
+                { throwable ->
+                    localNetworkPermissionQueue.onPermissionError()
+                    Timber.e(throwable)
+                },
+            )
+    }
 
     override fun onBackPressed() {
         if (status.value in
@@ -248,6 +257,7 @@ class TransferActivity : BaseActivity() {
     }
 
     private fun callbackScan(data: Intent?) {
+        if (argsStatus != ARGS_RESTORE_FROM_PHONE) return
         val text = data?.getStringExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT) ?: return
         val content =
             try {
@@ -256,12 +266,11 @@ class TransferActivity : BaseActivity() {
                 toast(R.string.Data_error)
                 null
             } ?: return
-        connectToQrCodeContent(content)
+        handleQrCodeContent(content)
     }
 
     private var dialog: Dialog? = null
     private var retryDialog: Dialog? = null
-    private val localNetworkPermissionQueue = LocalNetworkPermissionQueue()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -278,34 +287,6 @@ class TransferActivity : BaseActivity() {
             onBackPressed()
         }
         setupTransfer()
-    }
-
-    private fun withLocalNetworkPermission(
-        cancellableByDesktop: Boolean = false,
-        action: () -> Unit,
-    ) {
-        if (Build.VERSION.SDK_INT < 37 ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) == PackageManager.PERMISSION_GRANTED
-        ) {
-            action()
-            return
-        }
-        if (!localNetworkPermissionQueue.enqueue(cancellableByDesktop, action)) return
-        RxPermissions(this)
-            .request(Manifest.permission.ACCESS_LOCAL_NETWORK)
-            .autoDispose(destroyScope)
-            .subscribe(
-                { granted ->
-                    localNetworkPermissionQueue.onPermissionResult(granted)
-                    if (!granted) {
-                        openPermissionSetting()
-                    }
-                },
-                { throwable ->
-                    localNetworkPermissionQueue.onPermissionError()
-                    Timber.e(throwable)
-                },
-            )
     }
 
     private fun setupTransfer() {
@@ -403,20 +384,30 @@ class TransferActivity : BaseActivity() {
                                     .setPositiveButton(R.string.Retry) { dialog, _ ->
                                         dialog.dismiss()
                                         status.value = TransferStatus.INITIALIZING
-                                        lifecycleScope.launch {
-                                            transferServer.restartServer { transferCommandData ->
-                                                lifecycleScope.launch(Dispatchers.Main) {
-                                                    val qrCode =
-                                                        gson.toJson(transferCommandData)
-                                                            .base64Encode()
-                                                            .run {
-                                                                "$DEVICE_TRANSFER?data=$this"
-                                                            }
-                                                            .generateQRCode(240.dp).first
-                                                    binding.qr.setImageBitmap(qrCode)
-                                                    binding.qrFl.fadeIn()
-                                                    binding.initLl.isVisible = false
-                                                    binding.waitingLl.isVisible = false
+                                        withLocalNetworkPermission {
+                                            if (isFinishing || isDestroyed) return@withLocalNetworkPermission
+                                            val accountId = Session.getAccountId() ?: return@withLocalNetworkPermission
+                                            val sessionId =
+                                                transferSessionManager.initiateSession(
+                                                    direction = TransferDirection.TRANSFER_TO_PHONE,
+                                                    accountId = accountId,
+                                                ).sessionId
+                                            activeSessionId = sessionId
+                                            lifecycleScope.launch {
+                                                transferServer.restartServer(sessionId) { transferCommandData ->
+                                                    lifecycleScope.launch(Dispatchers.Main) {
+                                                        val qrCode =
+                                                            gson.toJson(transferCommandData)
+                                                                .base64Encode()
+                                                                .run {
+                                                                    "$DEVICE_TRANSFER?data=$this"
+                                                                }
+                                                                .generateQRCode(240.dp).first
+                                                        binding.qr.setImageBitmap(qrCode)
+                                                        binding.qrFl.fadeIn()
+                                                        binding.initLl.isVisible = false
+                                                        binding.waitingLl.isVisible = false
+                                                    }
                                                 }
                                             }
                                         }
@@ -464,33 +455,14 @@ class TransferActivity : BaseActivity() {
                 }
             }
         }
+        if (argsStatus == ARGS_TRANSFER_TO_PC) {
+            initiatePcTransferSession()
+        }
         if (argsStatus == ARGS_TRANSFER_TO_PC || argsStatus == ARGS_RESTORE_FROM_PC) {
-            RxBus.listen(TransferCommand::class.java)
+            RxBus.listen(IncomingTransferControlEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(destroyScope)
-                .subscribe { command ->
-                    if (command.action == TransferCommandAction.CANCEL.value) {
-                        lifecycleScope.launch {
-                            val canceledPending = localNetworkPermissionQueue.cancelPendingDesktopCommands()
-                            if (status.value == TransferStatus.WAITING_MESSAGE) {
-                                status.value = TransferStatus.INITIALIZING
-                            } else if (!transferServer.cancelWaiting() && !canceledPending) {
-                                return@launch
-                            }
-                            toast(R.string.Canceled)
-                        }
-                    }
-                }
-        }
-        intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
-            withLocalNetworkPermission(cancellableByDesktop = true) {
-                handleCommand(this)
-            }
-        }
-        intent.getStringExtra(ARGS_QR_CODE_CONTENT)?.let { qrCodeContent ->
-            withLocalNetworkPermission {
-                connectToQrCodeContent(qrCodeContent)
-            }
+                .subscribe { handleIncomingControlEvent(it) }
         }
     }
 
@@ -552,11 +524,27 @@ class TransferActivity : BaseActivity() {
                     .show()
                 return@setOnClickListener
             }
-            withLocalNetworkPermission {
+            val expectedSessionId = activeSessionId
+            val cancellableByDesktop = argsStatus == ARGS_TRANSFER_TO_PC || argsStatus == ARGS_RESTORE_FROM_PC
+            withLocalNetworkPermission(cancellableByDesktop = cancellableByDesktop) {
+                if (cancellableByDesktop &&
+                    expectedSessionId != null &&
+                    (activeSessionId != expectedSessionId ||
+                        transferSessionManager.getSessionState(expectedSessionId) == TransferSessionState.CANCELLED)
+                ) {
+                    return@withLocalNetworkPermission
+                }
                 when (argsStatus) {
                     ARGS_TRANSFER_TO_PHONE -> {
+                        val accountId = Session.getAccountId() ?: return@withLocalNetworkPermission
+                        val sessionId =
+                            transferSessionManager.initiateSession(
+                                direction = TransferDirection.TRANSFER_TO_PHONE,
+                                accountId = accountId,
+                            ).sessionId
+                        activeSessionId = sessionId
                         lifecycleScope.launch {
-                            transferServer.startServer(selectConversation, selectDate) { transferCommandData ->
+                            transferServer.startServer(sessionId, selectConversation, selectDate) { transferCommandData ->
                                 lifecycleScope.launch(Dispatchers.Main) {
                                     val qrCode =
                                         gson.toJson(transferCommandData)
@@ -577,7 +565,7 @@ class TransferActivity : BaseActivity() {
                     ARGS_TRANSFER_TO_PC -> {
                         if (this@TransferActivity.status.value != TransferStatus.CREATED) {
                             if (chatWebSocket.connected) {
-                                pushRequest()
+                                pushRequest(initiatePcTransferSession())
                             } else {
                                 alertDialogBuilder()
                                     .setTitle(getString(R.string.Unable_connect_desktop))
@@ -610,6 +598,12 @@ class TransferActivity : BaseActivity() {
                             .autoDispose(stopScope)
                             .subscribe { granted ->
                                 if (granted) {
+                                    val accountId = Session.getAccountId() ?: return@subscribe
+                                    activeSessionId =
+                                        transferSessionManager.initiateSession(
+                                            direction = TransferDirection.RESTORE_FROM_PHONE,
+                                            accountId = accountId,
+                                        ).sessionId
                                     getScanResult.launch(
                                         Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true),
                                     )
@@ -698,15 +692,6 @@ class TransferActivity : BaseActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
-            withLocalNetworkPermission(cancellableByDesktop = true) {
-                handleCommand(this)
-            }
-        }
-    }
-
     private var transferDisposable: Disposable? = null
     private var transferSpeedDisposable: Disposable? = null
 
@@ -741,35 +726,93 @@ class TransferActivity : BaseActivity() {
         }
     }
 
-    private fun handleCommand(transferCommandData: TransferCommand) {
-        when (transferCommandData.action) {
-            TransferCommandAction.PUSH.value -> {
-                lifecycleScope.launch {
-                    connect(transferCommandData) {
-                        sendMessage(gson.toJson(TransferCommand(TransferCommandAction.CANCEL.value)))
-                    }
+    private fun handleIncomingControlEvent(event: IncomingTransferControlEvent) {
+        if (isFinishing || isDestroyed) return
+        val command = event.command
+        val accountId = Session.getAccountId() ?: return
+        val sessionId = activeSessionId ?: return
+        if (command.action == TransferCommandAction.CANCEL.value) {
+            if (transferSessionManager.getSessionState(sessionId) != TransferSessionState.CANCELLED) return
+            val canceledPending = localNetworkPermissionQueue.cancelPendingDesktopCommands()
+            pairingDialog?.dismiss()
+            pairingDialog = null
+            val previousStatus = status.value
+            if (previousStatus == TransferStatus.FINISHED || previousStatus == TransferStatus.ERROR) return
+            if (argsStatus == ARGS_RESTORE_FROM_PC) {
+                transferClient?.cancelAndExit()
+                transferClient = null
+            } else {
+                transferServer.exit()
+                initiatePcTransferSession()
+            }
+            status.value = TransferStatus.INITIALIZING
+            if (previousStatus != TransferStatus.INITIALIZING || canceledPending) toast(R.string.Canceled)
+            return
+        }
+        when (argsStatus) {
+            ARGS_RESTORE_FROM_PC -> {
+                if (command.action != TransferCommandAction.PUSH.value) return
+                if (!validateIncomingPushCommand(command, accountId, requireDeviceId = false)) return
+                if (!transferSessionManager.beginPairingConfirmation(sessionId, accountId, command.deviceId, command.code)) {
+                    toast(R.string.transfer_pairing_expired_or_cancelled)
+                    status.value = TransferStatus.INITIALIZING
+                    return
                 }
+                showPairingConfirmationDialog(command, sessionId)
             }
 
-            TransferCommandAction.PULL.value -> {
-                pushRequest()
+            ARGS_TRANSFER_TO_PC -> {
+                if (command.action != TransferCommandAction.PULL.value) return
+                if (!transferSessionManager.beginPairingConfirmation(sessionId, accountId, command.deviceId, command.code)) {
+                    toast(R.string.transfer_pairing_expired_or_cancelled)
+                    return
+                }
+                showPushApprovalDialog(command, sessionId)
             }
-
-            else -> {}
         }
     }
 
     private suspend fun connect(
         transferCommandData: TransferCommand,
+        authorization: TransferAuthorization,
         onConnectionFailed: () -> Unit = {},
     ) {
-        transferClient.connectToServer(
-            requireNotNull(transferCommandData.ip),
-            requireNotNull(transferCommandData.port),
-            TransferCommand(TransferCommandAction.CONNECT.value, code = transferCommandData.code, userId = Session.getAccountId()),
-            requireNotNull(transferCommandData.secretKey).decodeBase64(),
-            onConnectionFailed,
+        val ip = requireNotNull(transferCommandData.ip)
+        val port = requireNotNull(transferCommandData.port)
+        val key =
+            decodeTransferSecretKey(transferCommandData.secretKey) ?: run {
+                Timber.w("Invalid transfer key")
+                transferSessionManager.cancelSession(authorization.sessionId)
+                onConnectionFailed()
+                status.value = TransferStatus.ERROR
+                return
+            }
+        connect(
+            ip,
+            port,
+            TransferCommand(
+                TransferCommandAction.CONNECT.value,
+                code = transferCommandData.code,
+                deviceId = getStringDeviceId(),
+                userId = Session.getAccountId(),
+            ),
+            key = key,
+            authorization = authorization,
+            onConnectionFailed = onConnectionFailed,
         )
+    }
+
+    private suspend fun connect(
+        ip: String,
+        port: Int,
+        transferCommand: TransferCommand,
+        key: ByteArray,
+        authorization: TransferAuthorization,
+        onConnectionFailed: () -> Unit = {},
+    ) {
+        val client = transferClientProvider.get()
+        transferClient = client
+        client.connectToServer(ip, port, transferCommand, key, authorization, onConnectionFailed)
     }
 
     override fun onStop() {
@@ -783,8 +826,24 @@ class TransferActivity : BaseActivity() {
 
     override fun onDestroy() {
         dialog?.dismiss()
-        transferServer.exit()
-        transferClient.exit()
+        pairingDialog?.dismiss()
+        pairingDialog = null
+        localNetworkPermissionQueue.clear()
+        val sessionState = activeSessionId?.let(transferSessionManager::getSessionState)
+        val pcTransferActive = when (sessionState) {
+            TransferSessionState.INITIATED -> status.value == TransferStatus.WAITING_MESSAGE
+            TransferSessionState.AWAITING_PAIRING, TransferSessionState.CONSUMED, TransferSessionState.SENDING -> true
+            else -> false
+        }
+        if ((argsStatus == ARGS_RESTORE_FROM_PC || argsStatus == ARGS_TRANSFER_TO_PC) && pcTransferActive) {
+            sendCancelToPc()
+        }
+        if (status.value != TransferStatus.FINISHED) transferSessionManager.cancelSession(activeSessionId)
+        if (argsStatus == ARGS_RESTORE_FROM_PHONE || argsStatus == ARGS_RESTORE_FROM_PC) {
+            if (status.value == TransferStatus.FINISHED) transferClient?.exit(true) else transferClient?.cancelAndExit()
+        } else {
+            transferServer.exit()
+        }
         status.value = TransferStatus.INITIALIZING
         super.onDestroy()
     }
@@ -796,7 +855,7 @@ class TransferActivity : BaseActivity() {
         }
     }
 
-    private fun connectToQrCodeContent(content: String) =
+    private fun handleQrCodeContent(content: String) =
         lifecycleScope.launch(
             CoroutineExceptionHandler { _, throwable ->
                 Timber.e(throwable)
@@ -817,18 +876,202 @@ class TransferActivity : BaseActivity() {
                     }
                     return@launch
                 }
-            if (transferCommandData.userId != Session.getAccountId()) {
-                toast(R.string.not_yours)
-                finish()
+            if (transferCommandData == null) {
+                withContext(Dispatchers.Main) {
+                    toast(R.string.Data_error)
+                }
+                return@launch
+            }
+            val accountId = Session.getAccountId()
+            val sessionId = activeSessionId
+            if (accountId.isNullOrBlank() || sessionId.isNullOrBlank()) {
+                withContext(Dispatchers.Main) {
+                    toast(R.string.transfer_pairing_expired_or_cancelled)
+                }
+                return@launch
+            }
+            if (transferCommandData.userId != accountId) {
+                withContext(Dispatchers.Main) {
+                    toast(R.string.not_yours)
+                    transferSessionManager.cancelSession(sessionId)
+                    finish()
+                }
                 return@launch
             }
             if (transferCommandData.version > CURRENT_TRANSFER_VERSION) {
-                toast(R.string.Version_not_supported)
-                finish()
+                withContext(Dispatchers.Main) {
+                    toast(R.string.Version_not_supported)
+                    transferSessionManager.cancelSession(sessionId)
+                    finish()
+                }
                 return@launch
             }
-            connect(transferCommandData)
+            if (!validateIncomingPushCommand(transferCommandData, accountId, requireDeviceId = true)) {
+                transferSessionManager.cancelSession(sessionId)
+                return@launch
+            }
+            if (!transferSessionManager.beginPairingConfirmation(sessionId, accountId, transferCommandData.deviceId, transferCommandData.code)) {
+                withContext(Dispatchers.Main) {
+                    toast(R.string.transfer_pairing_expired_or_cancelled)
+                }
+                return@launch
+            }
+            withContext(Dispatchers.Main) {
+                showPairingConfirmationDialog(transferCommandData, sessionId)
+            }
         }
+
+    private fun validateIncomingPushCommand(
+        command: TransferCommand,
+        accountId: String,
+        requireDeviceId: Boolean,
+    ): Boolean {
+        if (command.action != TransferCommandAction.PUSH.value) {
+            toast(R.string.Data_error)
+            return false
+        }
+        if (!command.userId.isNullOrBlank() && command.userId != accountId) {
+            toast(R.string.not_yours)
+            return false
+        }
+        if (command.version > CURRENT_TRANSFER_VERSION) {
+            toast(R.string.Version_not_supported)
+            return false
+        }
+        val port = command.port
+        val remoteDeviceId: String? = command.deviceId
+        if (command.ip.isNullOrBlank() ||
+            port == null ||
+            port !in 1..65535 ||
+            decodeTransferSecretKey(command.secretKey) == null ||
+            command.code == null ||
+            (requireDeviceId && remoteDeviceId.isNullOrBlank())
+        ) {
+            toast(R.string.Data_error)
+            return false
+        }
+        return true
+    }
+
+    private fun showPairingConfirmationDialog(
+        command: TransferCommand,
+        sessionId: String,
+    ) {
+        if (isFinishing || isDestroyed) return
+        pairingDialog?.dismiss()
+        val platformLabel: String = command.platform?.takeIf { it.isNotBlank() } ?: getString(R.string.app_name)
+        val endpointLabel =
+            command.code?.let { "#$it" }
+                ?: command.ip.orEmpty()
+        pairingDialog =
+            alertDialogBuilder()
+                .setTitle(R.string.transfer_pairing_confirm_title)
+                .setMessage(getString(R.string.transfer_pairing_confirm_message, platformLabel, endpointLabel))
+                .setCancelable(false)
+                .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                    dialog.dismiss()
+                    pairingDialog = null
+                    transferSessionManager.cancelSession(sessionId)
+                    if (argsStatus == ARGS_RESTORE_FROM_PC) sendCancelToPc(sessionId)
+                    status.value = TransferStatus.INITIALIZING
+                }
+                .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                    dialog.dismiss()
+                    pairingDialog = null
+                    withLocalNetworkPermission(
+                        cancellableByDesktop = argsStatus == ARGS_RESTORE_FROM_PC,
+                        onDenied = {
+                            val state = transferSessionManager.getSessionState(sessionId)
+                            if (state == TransferSessionState.AWAITING_PAIRING || state == TransferSessionState.EXPIRED) {
+                                transferSessionManager.cancelSession(sessionId)
+                                if (argsStatus == ARGS_RESTORE_FROM_PC) sendCancelToPc(sessionId)
+                                status.value = TransferStatus.INITIALIZING
+                            }
+                        },
+                    ) {
+                        if (isFinishing || isDestroyed) return@withLocalNetworkPermission
+                        val authorization =
+                            transferSessionManager.confirmAndConsumePairing(
+                                sessionId = sessionId,
+                                accountId = Session.getAccountId(),
+                                peerDeviceId = command.deviceId,
+                            )
+                        if (authorization == null) {
+                            toast(R.string.transfer_pairing_expired_or_cancelled)
+                            status.value = TransferStatus.INITIALIZING
+                            return@withLocalNetworkPermission
+                        }
+                        lifecycleScope.launch {
+                            connect(command, authorization) {
+                                if (argsStatus == ARGS_RESTORE_FROM_PC) {
+                                    sendCancelToPc(authorization.sessionId)
+                                }
+                            }
+                        }
+                    }
+                }
+                .create()
+        pairingDialog?.show()
+    }
+
+    private fun showPushApprovalDialog(
+        command: TransferCommand,
+        sessionId: String,
+    ) {
+        if (isFinishing || isDestroyed) return
+        pairingDialog?.dismiss()
+        val platformLabel = command.platform?.takeIf { it.isNotBlank() } ?: getString(R.string.desktop)
+        val deviceLabel = command.deviceId?.takeIf { it.isNotBlank() } ?: platformLabel
+        pairingDialog =
+            alertDialogBuilder()
+                .setTitle(R.string.transfer_pairing_confirm_title)
+                .setMessage(getString(R.string.transfer_pairing_confirm_message, platformLabel, deviceLabel))
+                .setCancelable(false)
+                .setNegativeButton(R.string.Cancel) { dialog, _ ->
+                    dialog.dismiss()
+                    pairingDialog = null
+                    transferSessionManager.cancelSession(sessionId)
+                    sendCancelToPc(sessionId)
+                    initiatePcTransferSession()
+                }
+                .setPositiveButton(R.string.Confirm) { dialog, _ ->
+                    dialog.dismiss()
+                    pairingDialog = null
+                    withLocalNetworkPermission(
+                        cancellableByDesktop = true,
+                        onDenied = {
+                            val state = transferSessionManager.getSessionState(sessionId)
+                            if (state == TransferSessionState.AWAITING_PAIRING || state == TransferSessionState.EXPIRED) {
+                                transferSessionManager.cancelSession(sessionId)
+                                sendCancelToPc(sessionId)
+                                initiatePcTransferSession()
+                            }
+                        },
+                    ) {
+                        if (isFinishing || isDestroyed) return@withLocalNetworkPermission
+                        val authorization =
+                            transferSessionManager.confirmAndConsumePairing(
+                                sessionId = sessionId,
+                                accountId = Session.getAccountId(),
+                                peerDeviceId = command.deviceId,
+                            )
+                        if (authorization == null) {
+                            toast(R.string.transfer_pairing_expired_or_cancelled)
+                            if (transferSessionManager.getSessionState(sessionId) == TransferSessionState.EXPIRED) {
+                                initiatePcTransferSession()
+                            }
+                            return@withLocalNetworkPermission
+                        }
+                        pushRequest(
+                            sessionId = authorization.sessionId,
+                            expectedAccountId = authorization.expectedAccountId,
+                            expectedExtensionSessionId = authorization.expectedExtensionSessionId,
+                        )
+                    }
+                }
+                .create()
+        pairingDialog?.show()
+    }
 
     private val gson by lazy {
         GsonHelper.customGson
@@ -840,11 +1083,29 @@ class TransferActivity : BaseActivity() {
     @Inject
     lateinit var participantDao: ParticipantDao
 
-    private fun sendMessage(content: String) =
-        lifecycleScope.launch(Dispatchers.IO) {
+    private fun sendCancelToPc(sessionId: String? = activeSessionId) {
+        val boundExtensionSessionId = transferSessionManager.getBoundExtensionSessionId(sessionId) ?: return
+        sendMessage(
+            gson.toJson(TransferCommand(TransferCommandAction.CANCEL.value, deviceId = getStringDeviceId())),
+            MixinApplication.get().applicationScope,
+            targetExtensionSessionId = boundExtensionSessionId,
+        )
+    }
+
+    private fun sendMessage(
+        content: String,
+        scope: CoroutineScope = lifecycleScope,
+        targetAccountId: String? = null,
+        targetExtensionSessionId: String? = null,
+    ) =
+        scope.launch(Dispatchers.IO) {
             try {
-                val accountId = Session.getAccountId() ?: return@launch
-                val sessionId = Session.getExtensionSessionId() ?: return@launch
+                val currentAccountId = Session.getAccountId() ?: return@launch
+                if (targetAccountId != null && currentAccountId != targetAccountId) return@launch
+                val currentExtensionSessionId = Session.getExtensionSessionId() ?: return@launch
+                if (targetExtensionSessionId != null && currentExtensionSessionId != targetExtensionSessionId) return@launch
+                val accountId = targetAccountId ?: currentAccountId
+                val sessionId = targetExtensionSessionId ?: currentExtensionSessionId
                 val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
                 val plainText =
                     gson.toJson(
@@ -871,24 +1132,89 @@ class TransferActivity : BaseActivity() {
         }
 
     private fun pullRequest() {
+        val accountId = Session.getAccountId() ?: return
+        val extensionSessionId = Session.getExtensionSessionId()
+        if (extensionSessionId.isNullOrBlank()) {
+            toast(R.string.Please_log_in_to_the_desktop_first)
+            return
+        }
+        activeSessionId =
+            transferSessionManager.initiateSession(
+                direction = TransferDirection.RESTORE_FROM_PC,
+                accountId = accountId,
+                expectedExtensionSessionId = extensionSessionId,
+            ).sessionId
         val encodeText =
             gson.toJson(
                 TransferCommand(
                     TransferCommandAction.PULL.value,
+                    deviceId = getStringDeviceId(),
                 ),
             )
         status.value = TransferStatus.WAITING_MESSAGE
-        sendMessage(encodeText)
+        sendMessage(
+            encodeText,
+            targetAccountId = accountId,
+            targetExtensionSessionId = extensionSessionId,
+        )
     }
 
-    private fun pushRequest() {
+    private fun initiatePcTransferSession(): TransferSession? {
+        val accountId = Session.getAccountId() ?: return null
+        val extensionSessionId = Session.getExtensionSessionId()?.takeIf { it.isNotBlank() } ?: return null
+        val session =
+            transferSessionManager.initiateSession(
+                direction = TransferDirection.TRANSFER_TO_PC,
+                accountId = accountId,
+                expectedExtensionSessionId = extensionSessionId,
+            )
+        activeSessionId = session.sessionId
+        return session
+    }
+
+    private fun pushRequest(session: TransferSession?) {
+        pushRequest(
+            sessionId = session?.sessionId,
+            expectedAccountId = session?.accountId,
+            expectedExtensionSessionId = session?.expectedExtensionSessionId,
+        )
+    }
+
+    private fun pushRequest(
+        sessionId: String?,
+        expectedAccountId: String?,
+        expectedExtensionSessionId: String?,
+    ) {
+        if (sessionId.isNullOrBlank() || expectedAccountId.isNullOrBlank() || expectedExtensionSessionId.isNullOrBlank()) {
+            toast(R.string.Please_log_in_to_the_desktop_first)
+            return
+        }
+        if (Session.getAccountId() != expectedAccountId || Session.getExtensionSessionId() != expectedExtensionSessionId) {
+            transferSessionManager.cancelSession(sessionId)
+            toast(R.string.transfer_pairing_expired_or_cancelled)
+            initiatePcTransferSession()
+            return
+        }
         lifecycleScope.launch {
-            transferServer.startServer(selectConversation, selectDate) { transferData ->
-                val encodeText =
-                    gson.toJson(
-                        transferData,
-                    )
-                sendMessage(encodeText)
+            transferServer.startServer(sessionId, selectConversation, selectDate) { transferData ->
+                if (Session.getAccountId() != expectedAccountId || Session.getExtensionSessionId() != expectedExtensionSessionId) {
+                    transferSessionManager.cancelSession(sessionId)
+                    transferServer.exit()
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        if (!isFinishing && !isDestroyed) {
+                            toast(R.string.transfer_pairing_expired_or_cancelled)
+                            status.value = TransferStatus.INITIALIZING
+                            initiatePcTransferSession()
+                        }
+                    }
+                    return@startServer
+                }
+                val encodeText = gson.toJson(transferData)
+                sendMessage(
+                    encodeText,
+                    targetAccountId = expectedAccountId,
+                    targetExtensionSessionId = expectedExtensionSessionId,
+                )
             }
         }
     }

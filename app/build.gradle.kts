@@ -294,6 +294,9 @@ android {
             all { it.maxHeapSize = "2g" }
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
+            all {
+                it.maxHeapSize = "2g"
+            }
         }
     }
 
