@@ -1183,8 +1183,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
             ?: throw IllegalStateException("Gasless payload is not a Solana base64 transaction")
-        val tx = VersionedTransactionCompat.from(rawPayload)
-        val signedTx = Web3Signer.signSolanaTransaction(privateKey, tx) {
+        val feeToken = if (feeAssetId == token.assetId) token else web3ViewModel.web3TokenItemById(token.walletId, feeAssetId)
+        val signedTx = Web3Signer.signSolanaGaslessTransfer(privateKey, rawPayload, fromAddress, token, amount, toAddress, feeToken, feeAmount) {
             rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
         }
         if (!signedTx.allSignerSigned()) {
