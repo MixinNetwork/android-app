@@ -63,6 +63,8 @@ internal fun shouldHandleRecentTokenClick(type: Int, chainId: String): Boolean =
 
 @AndroidEntryPoint
 class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "Web3TokenListBottomSheetDialogFragment"
 
@@ -111,7 +113,6 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.apply {
             radio.isVisible = true
             radioAll.isChecked = true
-            radio.scrollToCenterCheckedRadio(radioGroup)
             radioAll.isVisible = true
             radioBtc.isVisible = true
             radioEth.isVisible = true
@@ -122,6 +123,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioPolygon.isVisible = true
             radioSolana.isVisible = true
             radioArc.isVisible = true
+            radio.scrollToCenterCheckedRadio(radioGroup, smooth = false)
             radioGroup.setOnCheckedChangeListener { _, id ->
                 currentChain = when (id) {
                     R.id.radio_eth -> {
