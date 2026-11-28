@@ -82,7 +82,8 @@ class RefreshWeb3Job : BaseJob(
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
             },
-            defaultErrorHandle = {}
+            defaultErrorHandle = logJobError,
+            defaultExceptionHandle = logJobException
         )
     }
 
@@ -109,7 +110,8 @@ class RefreshWeb3Job : BaseJob(
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
             },
-            defaultErrorHandle = {}
+            defaultErrorHandle = logJobError,
+            defaultExceptionHandle = logJobException
         )
     }
 
@@ -150,7 +152,8 @@ class RefreshWeb3Job : BaseJob(
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
             },
-            defaultErrorHandle = {}
+            defaultErrorHandle = logJobError,
+            defaultExceptionHandle = logJobException
         )
     }
 
@@ -199,7 +202,8 @@ class RefreshWeb3Job : BaseJob(
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
             },
-            defaultErrorHandle = {}
+            defaultErrorHandle = logJobError,
+            defaultExceptionHandle = logJobException
         )
     }
 

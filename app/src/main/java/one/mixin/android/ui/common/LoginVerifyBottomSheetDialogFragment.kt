@@ -41,6 +41,7 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.tip.TipFlowInteractor
 import one.mixin.android.ui.wallet.signUtxoAddressMessage
 import one.mixin.android.ui.wallet.validateWalletAddressUpdateResponse
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -179,7 +180,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             val msg = "TIP $TAG checkCounter ${e.stackTraceToString()}"
             Timber.e(msg)
             reportException(msg, e)
-            showErrorWhenCheckCounterFailed(e.message ?: "checkCounter failed", account)
+            showErrorWhenCheckCounterFailed(ErrorHandler.getErrorMessage(e), account)
         }
     }
 

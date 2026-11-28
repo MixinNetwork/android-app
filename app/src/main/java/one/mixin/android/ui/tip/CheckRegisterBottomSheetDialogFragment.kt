@@ -33,6 +33,7 @@ import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
 import one.mixin.android.ui.logs.LogViewerBottomSheet
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
@@ -114,7 +115,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                 },
                 exceptionBlock = { t ->
                     Timber.e("TIP $TAG sync account ${t.stackTraceToString()}")
-                    showErrorWhenRefreshAccountFailed(t.message ?: "refresh account failed")
+                    showErrorWhenRefreshAccountFailed(ErrorHandler.getErrorMessage(t))
                     return@handleMixinResponse false
                 },
                 failureBlock = {
@@ -158,7 +159,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             val msg = "TIP $TAG checkCounter ${e.stackTraceToString()}"
             Timber.e(msg)
             reportException(msg, e)
-            showErrorWhenCheckCounterFailed(e.message ?: "checkCounter failed", account)
+            showErrorWhenCheckCounterFailed(ErrorHandler.getErrorMessage(e), account)
         }
     }
 
@@ -220,7 +221,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             val msg = "TIP $TAG register public key ${e.stackTraceToString()}"
             Timber.e(msg)
             reportException(msg, e)
-            showErrorWhenRegisterFailed(pin, e.message ?: "register public key failed, please retry")
+            showErrorWhenRegisterFailed(pin, ErrorHandler.getErrorMessage(e))
         }
     }
 

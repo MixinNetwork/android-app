@@ -28,6 +28,8 @@ class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) 
                         handleMixinResponse(
                             invokeNetwork = { contactService.syncContacts(mutableList) },
                             successBlock = {},
+                            defaultErrorHandle = logJobError,
+                            defaultExceptionHandle = logJobException,
                         )
                     }
                 },

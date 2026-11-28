@@ -35,6 +35,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.session.buildHashMembers
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.safe.TokenItem
@@ -190,7 +191,7 @@ class UtxosFragment : BaseFragment() {
     private fun forceSyncUtxo() {
         lifecycleScope.launch(
             CoroutineExceptionHandler { _, throwable ->
-                showError(throwable.message ?: getString(R.string.Unknown))
+                showError(ErrorHandler.getErrorMessage(throwable))
             },
         ) {
             loadingDialog?.dismiss()
@@ -217,7 +218,7 @@ class UtxosFragment : BaseFragment() {
                 lifecycleScope.launch(
                     CoroutineExceptionHandler { _, throwable ->
                         dialog.dismiss()
-                        showError(throwable.message ?: getString(R.string.Unknown))
+                        showError(ErrorHandler.getErrorMessage(throwable))
                     },
                 ) {
                     loadingDialog?.dismiss()
